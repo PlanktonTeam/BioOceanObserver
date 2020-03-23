@@ -5,9 +5,9 @@ account: imos-plankton
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 360264
-bundleId: 1448547
+bundleId: 2316971
 url: https://imos-plankton.shinyapps.io/Copepods/
-when: 1529963871.83119
+when: 1565742661.27194
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: .RData|DESCRIPTION|PlanktonIndexesOld.csv|Rplots.pdf
+ignoredFiles: .RData|DESCRIPTION|Rplots.pdf
