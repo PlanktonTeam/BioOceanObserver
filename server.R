@@ -56,20 +56,27 @@
 
 function(input, output, session) {
   
-  library(plyr)
-  library(dplyr)
-  library(ggplot2)
+  library(tidyverse)
   library(lubridate)
   library(gridExtra)
-  library(rworldmap)
-  library(tidyr)
+  library(rnaturalearth)
+  library(rnaturalearthdata)
+
   
   # Combine the selected variables into a new data frame
-  # setwd("~/UNSW/IMOS/Shiny")
+  z_bio_file <- "http://geoserver-123.aodn.org.au/geoserver/ows?typeName=anmn_nrs_bgc_plankton_biomass_data&SERVICE=WFS&outputFormat=csv&REQUEST=GetFeature&VERSION=1.0.0";
+  z_bio_out_file <- paste0('Data',.Platform$file.sep,'IMOS National Reference Station (NRS) - Zooplankton Biomass.csv')
   
-  # rm(list = ls())
+  z_abund_file <- "http://geoserver-123.aodn.org.au/geoserver/ows?typeName=IMOS_National_Reference_Station_(NRS)_-_Zooplankton_Abundance-Derived_NRS_Indices&SERVICE=WFS&outputFormat=csv&REQUEST=GetFeature&VERSION=1.0.0";
+  z_abund_out_file <- paste0('Data',.Platform$file.sep,'IMOS_National_Reference_Station_(NRS)_-_Zooplankton_Abundance.csv')
   
-  dat <- read.csv('PlanktonIndexes.csv')
+  IMOS_National_Reference_Station_(NRS)_-_Zooplankton_Abundance-Derived_NRS_Indices
+  
+  
+  # Get the data
+  z_bio <- download.file(z_abund_file,z_bio_out_file, method = "auto", quiet=FALSE);
+  
+  dat <- read_csv('PlanktonIndexes.csv')
   meta <- read.csv('NRS_Meta.csv')
   
   dat$SAMPLE_DATE_UTC <- as.Date(dat$SAMPLE_DATE_UTC,"%d/%m/%y",tz = "GMT")

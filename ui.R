@@ -1,5 +1,5 @@
 pageWithSidebar(
-  headerPanel('IMOS National Reference Station Copepods'),
+  headerPanel('IMOS National Reference Station Zooplankton'),
   sidebarPanel(
     imageOutput("IMOS_Logo",height="65px"),
     plotOutput('plotmap',height = "200px"),
