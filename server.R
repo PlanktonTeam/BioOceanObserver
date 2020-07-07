@@ -1,82 +1,15 @@
-# rm(list=ls())
-# setwd("~/UNSW/IMOS/Shiny")
-# dat <- read.csv('PlanktonIndexes.csv')
-# meta <- read.csv('NRS_Meta.csv')
-# dat$SAMPLE_DATE_UTC <- as.Date(dat$SAMPLE_DATE_UTC,"%d/%m/%y",tz = "GMT")
-# 
-# colnames(dat)[colnames(dat)=="SAMPLE_DATE_UTC"] <- "Date_UTC"
-# colnames(dat)[colnames(dat)=="T_COP_ABUN_M3"] <- "Copepod_Abundance_ind_m3"
-# colnames(dat)[colnames(dat)=="COP_AVG_MM"] <- "Copepod_AvgSize_mm"
-# colnames(dat)[colnames(dat)=="HERB_CARN_RAT"] <- "Herbivore_Carnivore_Ratio"
-# colnames(dat)[colnames(dat)=="COPES_SAMPLES"] <- "Number_Copepods"
-# colnames(dat)[colnames(dat)=="COPE_DIVERSITY"] <- "Copepod_Diversity"
-# colnames(dat)[colnames(dat)=="COPE_EVEN"] <- "Copepod_Evenness"
-# colnames(dat)[colnames(dat)=="CARBON_MGM3"] <- "Carbon_Biomass_mg_m3"
-# 
-# dat$STATION[dat$STATION == "PH4"] <- "PHB"
-# 
-# dat$STATION2 <- dat$STATION
-# dat$STATION2 <- revalue(dat$STATION2, c("PHB"="Port Hacking (PHB)", "DAR"="Darwin Harbour (DAR)", "ESP"="Esperance (ESP)", 
-#                                         "KAI"="Kangaroo Island (KAI)", "MAI"="Maria Island (MAI)", "NIN"="Ningaloo Reef (NIN)",
-#                                         "NSI"="North Stradbroke Island (NSI)", "ROT"="Rottnest Island (ROT)", "YON"="Yongala (YON)"))
-# 
-# dat$Month <- month(dat$Date_UTC, label=TRUE, abbr=TRUE) 
-# dat$Year <- year(dat$Date_UTC)
-# 
-# dat <- complete(dat, Year, STATION)
-# 
-# dat$STATION <- factor(dat$STATION) # Drop excess factors
-# dat$STATION2 <- factor(dat$STATION2) # Drop excess factors
-# 
-# 
-# # Sort in ascending date order
-# dat <- arrange(dat, Date_UTC)
-# 
-# sta = "MAI"
-# input <- data.frame(sta)
-# input$ycol <- "Copepod_Diversity"
-# 
-# selectedData <- as.data.frame(filter(dat, dat$STATION %in% input$sta))
-# 
-# # Drop unwanted factor levels from whole dataframe
-# selectedData[] <- lapply(selectedData, function(x) if(is.factor(x)) factor(x) else x)
-# 
-# 
-# selectedData$Month <- month(selectedData$Date_UTC, label=TRUE, abbr=TRUE)
-# selectedData$Year <- year(selectedData$Date_UTC)
-# selectedData$ycol <- selectedData[, colnames(selectedData) %in% input$ycol]
-# 
-# # END OF TESTING ----------------------------------------------------------
-# 
-# 
-# 
-
-
-
 
 function(input, output, session) {
   
-  library(tidyverse)
+  library(plyr)
+  library(dplyr)
+  library(ggplot2)
   library(lubridate)
   library(gridExtra)
-  library(rnaturalearth)
-  library(rnaturalearthdata)
-
+  library(rworldmap)
+  library(tidyr)
   
-  # Combine the selected variables into a new data frame
-  z_bio_file <- "http://geoserver-123.aodn.org.au/geoserver/ows?typeName=anmn_nrs_bgc_plankton_biomass_data&SERVICE=WFS&outputFormat=csv&REQUEST=GetFeature&VERSION=1.0.0";
-  z_bio_out_file <- paste0('Data',.Platform$file.sep,'IMOS National Reference Station (NRS) - Zooplankton Biomass.csv')
-  
-  z_abund_file <- "http://geoserver-123.aodn.org.au/geoserver/ows?typeName=IMOS_National_Reference_Station_(NRS)_-_Zooplankton_Abundance-Derived_NRS_Indices&SERVICE=WFS&outputFormat=csv&REQUEST=GetFeature&VERSION=1.0.0";
-  z_abund_out_file <- paste0('Data',.Platform$file.sep,'IMOS_National_Reference_Station_(NRS)_-_Zooplankton_Abundance.csv')
-  
-  IMOS_National_Reference_Station_(NRS)_-_Zooplankton_Abundance-Derived_NRS_Indices
-  
-  
-  # Get the data
-  z_bio <- download.file(z_abund_file,z_bio_out_file, method = "auto", quiet=FALSE);
-  
-  dat <- read_csv('PlanktonIndexes.csv')
+  dat <- read.csv('PlanktonIndexes.csv')
   meta <- read.csv('NRS_Meta.csv')
   
   dat$SAMPLE_DATE_UTC <- as.Date(dat$SAMPLE_DATE_UTC,"%d/%m/%y",tz = "GMT")
@@ -94,8 +27,8 @@ function(input, output, session) {
   
   dat$STATION2 <- dat$STATION
   dat$STATION2 <- revalue(dat$STATION2, c("PHB"="Port Hacking (PHB)", "DAR"="Darwin Harbour (DAR)", "ESP"="Esperance (ESP)", 
-                          "KAI"="Kangaroo Island (KAI)", "MAI"="Maria Island (MAI)", "NIN"="Ningaloo Reef (NIN)",
-                          "NSI"="North Stradbroke Island (NSI)", "ROT"="Rottnest Island (ROT)", "YON"="Yongala (YON)"))
+                                          "KAI"="Kangaroo Island (KAI)", "MAI"="Maria Island (MAI)", "NIN"="Ningaloo Reef (NIN)",
+                                          "NSI"="North Stradbroke Island (NSI)", "ROT"="Rottnest Island (ROT)", "YON"="Yongala (YON)"))
   
   dat$Month <- month(dat$Date_UTC, label=TRUE, abbr=TRUE) 
   dat$Year <- year(dat$Date_UTC)
@@ -105,20 +38,20 @@ function(input, output, session) {
   dat$STATION <- factor(dat$STATION) # Drop excess factors
   dat$STATION2 <- factor(dat$STATION2) # Drop excess factors
   
-
+  
   # Sort in ascending date order
   dat <- arrange(dat, Date_UTC)
   
-   output$Site <- renderUI({
+  output$Site <- renderUI({
     checkboxGroupInput("sta", label = h3("Select NRS Station"), 
                        choiceValues = levels(dat$STATION),
                        choiceNames = levels(dat$STATION2),
                        selected = "MAI")
   })
-   
-   # I need to figure out a way to pad out the dataframe to include all combinations so that the bars are the same width
-   # selectedData <- complete(selectedData,
-                            
+  
+  # I need to figure out a way to pad out the dataframe to include all combinations so that the bars are the same width
+  # selectedData <- complete(selectedData,
+  
   selectedData <- reactive({
     selectedData <- as.data.frame(filter(dat, dat$STATION %in% input$sta))
     
@@ -127,7 +60,7 @@ function(input, output, session) {
     selectedData$Month <- month(selectedData$Date_UTC, label=TRUE, abbr=TRUE)
     selectedData$Year <- year(selectedData$Date_UTC)
     selectedData$ycol <- selectedData[, colnames(selectedData) %in% input$ycol]
-  
+    
     return(selectedData)
   })
   
@@ -145,7 +78,7 @@ function(input, output, session) {
     "Developed by:"
   })
   output$affiliation2 <- renderText({ 
-    "Dr Jason Everett (UNSW Australia)"
+    "Dr Jason Everett (The University of QLD)"
   })
   output$affiliation3 <- renderText({ 
     "using IMOS data (www.imos.org.au)"
@@ -163,10 +96,10 @@ function(input, output, session) {
   plotInput <- reactive({
     par(mar = c(7.1, 4.1, 0, 1))
     p1 <- ggplot(selectedData(), aes(x=Date_UTC, y=ycol)) +
-    geom_line(aes(group = STATION, color = STATION)) +
-    geom_point(aes(group = STATION, color = STATION)) +
-    scale_x_date() +
-    labs(y = input$ycol)
+      geom_line(aes(group = STATION, color = STATION)) +
+      geom_point(aes(group = STATION, color = STATION)) +
+      scale_x_date() +
+      labs(y = input$ycol)
     
     cdata <- ddply(selectedData(), c("Month","STATION"), summarise,
                    mean = mean(ycol),
@@ -185,10 +118,10 @@ function(input, output, session) {
     
     ##
     cdata2 <- ddply(selectedData(), c("Year","STATION"), summarise,
-                   mean = mean(ycol),
-                   N    = length(ycol),
-                   sd   = sd(ycol),
-                   se   = sd / sqrt(N)
+                    mean = mean(ycol),
+                    N    = length(ycol),
+                    sd   = sd(ycol),
+                    se   = sd / sqrt(N)
     )
     
     # Error bars represent standard error of the mean
@@ -202,16 +135,16 @@ function(input, output, session) {
     
     grid.arrange(p1, p2, p3, top=0, bottom=10, left=4.1, right=0.5)
   })
-
-    output$plot1 <- renderPlot({
-      print(plotInput())
-    },
-    height=600
-    )
-    
-    
-    
-    plotMapInput <- reactive({  
+  
+  output$plot1 <- renderPlot({
+    print(plotInput())
+  },
+  height=600
+  )
+  
+  
+  
+  plotMapInput <- reactive({  
     data("countryExData", envir=environment(), package="rworldmap")
     mymap <- joinCountryData2Map(countryExData, 
                                  joinCode = "ISO3", nameJoinColumn = "ISO3V10", mapResolution = "low")
@@ -229,19 +162,19 @@ function(input, output, session) {
       labs(x = '', y = '') +
       coord_fixed()
     pmap
-    })
-    
-    output$plotmap <- renderPlot({
-      print(plotMapInput())
-    }
-    # height=200
-    )
-    
+  })
+  
+  output$plotmap <- renderPlot({
+    print(plotMapInput())
+  }
+  # height=200
+  )
+  
   # # Table of selected dataset ----
   # output$table <- renderTable({
   #   datasetInput()
   # })
-
+  
   # Downloadable csv of selected dataset ----
   output$downloadData <- downloadHandler(
     filename = function() {paste(input$ycol, ".csv", sep = "")},
@@ -258,5 +191,5 @@ function(input, output, session) {
       ggsave(file, plot = plotInput(), device = "png")
     }
   )
-
+  
 }

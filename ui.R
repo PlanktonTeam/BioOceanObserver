@@ -1,5 +1,5 @@
 pageWithSidebar(
-  headerPanel('IMOS National Reference Station Zooplankton'),
+  headerPanel('IMOS National Reference Station Copepods'),
   sidebarPanel(
     imageOutput("IMOS_Logo",height="65px"),
     plotOutput('plotmap',height = "200px"),
@@ -7,14 +7,13 @@ pageWithSidebar(
     uiOutput("ycol"),
     
     # Button
-    downloadButton("downloadData", "Download Data"),
-    downloadButton('downloadPlot', 'Download Plot'),
-    
-    
+    downloadButton("downloadData", "Data"),
+    downloadButton('downloadPlot', 'Plot'),
+    downloadButton('downloadNote', 'Notebook'),
     textOutput("affiliation1"),
     textOutput("affiliation2"),
     textOutput("affiliation3")
-    ),
+  ),
   
   mainPanel(
     textOutput("selected_var"),
