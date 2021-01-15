@@ -8,35 +8,32 @@ function(input, output, session) {
   
   meta <- read.csv('NRS_Meta.csv')
   
-  dat <- read_csv('PlanktonIndexes.csv') %>% 
-    mutate(SAMPLE_DATE_UTC = dmy_hm(SAMPLE_DATE_UTC, tz = "UTC")) %>% 
-    rename(Date_UTC = SAMPLE_DATE_UTC, Copepod_Abundance_ind_m3 = T_COP_ABUN_M3,
-           Copepod_AvgSize_mm = COP_AVG_MM, Herbivore_Carnivore_Ratio = HERB_CARN_RAT,
-           Number_Copepods = COPES_SAMPLES, Copepod_Diversity = COPE_DIVERSITY,
-           Copepod_Evenness = COPE_EVEN, Carbon_Biomass_mg_m3 = CARBON_MGM3) %>% 
-    mutate(STATION2 = STATION,
-           STATION2 = str_replace_all(STATION2, "PHB", "Port Hacking (PHB)"),
-           STATION2 = str_replace_all(STATION2, "DAR", "Darwin Harbour (DAR)"),
-           STATION2 = str_replace_all(STATION2, "ESP", "Esperance (ESP)"),
-           STATION2 = str_replace_all(STATION2, "KAI", "Kangaroo Island (KAI)"),
-           STATION2 = str_replace_all(STATION2, "MAI", "Maria Island (MAI)"),
-           STATION2 = str_replace_all(STATION2, "NIN", "Ningaloo Reef (NIN)"),
-           STATION2 = str_replace_all(STATION2, "NSI", "North Stradbroke Island (NSI)"),
-           STATION2 = str_replace_all(STATION2, "ROT", "Rottnest Island (ROT)"),
-           STATION2 = str_replace_all(STATION2, "YON", "Yongala (YON)")) %>% 
-    mutate(Month = month(Date_UTC, label = TRUE, abbr = TRUE),
-           Year = year(Date_UTC),
-           STATION = factor(STATION),
-           STATION2 = factor(STATION2)) %>% 
-    arrange(Date_UTC) %>% # Sort in ascending date order
-    complete(Year, STATION) # Turns implicit missing values into explicit missing values.
+  datNRSi <- read_csv("https://raw.githubusercontent.com/jaseeverett/IMOS_Toolbox/master/Plankton/Output/NRS_Indices.csv") %>% 
+    mutate(Code = str_sub(NRScode, 1, 3),
+           Name = Code,
+           # Do these dynamically.
+           Name = str_replace_all(Name, "PHB", "Port Hacking (PHB)"),
+           Name = str_replace_all(Name, "DAR", "Darwin Harbour (DAR)"),
+           Name = str_replace_all(Name, "ESP", "Esperance (ESP)"),
+           Name = str_replace_all(Name, "KAI", "Kangaroo Island (KAI)"),
+           Name = str_replace_all(Name, "MAI", "Maria Island (MAI)"),
+           Name = str_replace_all(Name, "NIN", "Ningaloo Reef (NIN)"),
+           Name = str_replace_all(Name, "NSI", "North Stradbroke Island (NSI)"),
+           Name = str_replace_all(Name, "ROT", "Rottnest Island (ROT)"),
+           Name = str_replace_all(Name, "YON", "Yongala (YON)"),
+           Month = month(SampleDateLocal, label = TRUE, abbr = TRUE),
+           Year = year(SampleDateLocal),
+           Code = factor(Code),
+           Name = factor(Name)) %>% 
+    arrange(SampleDateLocal) %>% # Sort in ascending date order
+    complete(Year, Code) # Turns implicit missing values into explicit missing values.
   
-  
+
   output$Site <- renderUI({
     checkboxGroupInput("sta", 
-                       label = h3("Select NRS Station"), 
-                       choiceValues = levels(dat$STATION),
-                       choiceNames = levels(dat$STATION2),
+                       label = h3("Select NRS Code"), 
+                       choiceValues = levels(datNRSi$Code),
+                       choiceNames = levels(datNRSi$Name),
                        selected = "MAI")
   })
   
@@ -44,49 +41,49 @@ function(input, output, session) {
   # selectedData <- complete(selectedData,
   
   selectedData <- reactive({
-    selectedData <- as.data.frame(filter(dat, dat$STATION %in% input$sta))
+    selectedData <- as.data.frame(filter(datNRSi, datNRSi$Code %in% input$sta))
     
     # Drop unwanted factor levels from whole dataframe
     selectedData[] <- lapply(selectedData, function(x) if(is.factor(x)) factor(x) else x)
-    selectedData$Month <- month(selectedData$Date_UTC, label = TRUE, abbr = TRUE)
-    selectedData$Year <- year(selectedData$Date_UTC)
+    # selectedData$Month <- month(selectedData$SampleDateLocal, label = TRUE, abbr = TRUE)
+    # selectedData$Year <- year(selectedData$SampleDateLocal)
     selectedData$ycol <- selectedData[, colnames(selectedData) %in% input$ycol]
     
     return(selectedData)
   })
   
   output$ycol <- renderUI({
-    selectInput('ycol', 'Variable', names(dat[5:10]))
+    selectInput('ycol', 'Variable', names(select(datNRSi,ZoopAbundance_m3:CopepodEvenness)))
   })
   
   # Use this code if I want to print out something on the UI
   output$selected_var <- renderText({ 
     
-    # paste(selectedData()$STATION)
+    # paste(selectedData()$Code)
     
   })
   
   
   # Plot abundance spectra by species
   output$timeseries <- renderPlot({
-    # if (is.null(dat()))
+    # if (is.null(datNRSi()))
     #     return(NULL)
     
-    p1 <- ggplot(selectedData(), aes(x = Date_UTC, y = ycol)) +
-      geom_line(aes(group = STATION, color = STATION)) +
-      geom_point(aes(group = STATION, color = STATION)) +
+    p1 <- ggplot(selectedData(), aes(x = SampleDateLocal, y = ycol)) +
+      geom_line(aes(group = Code, color = Code)) +
+      geom_point(aes(group = Code, color = Code)) +
       scale_x_datetime() +
       labs(y = input$ycol)
     
     dat_mth <- selectedData() %>% 
-      group_by(Month, STATION) %>% 
-      summarise(mean = mean(ycol),
+      group_by(Month, Code) %>% 
+      summarise(mean = mean(ycol, na.rm = TRUE),
                 N = length(ycol),
-                sd = sd(ycol),
+                sd = sd(ycol, na.rm = TRUE),
                 se = sd / sqrt(N))
     
     # Error bars represent standard error of the mean
-    p2 <- ggplot(data = dat_mth, aes(x = Month, y = mean, fill = STATION)) + 
+    p2 <- ggplot(data = dat_mth, aes(x = Month, y = mean, fill = Code)) + 
       geom_col(position = position_dodge()) +
       geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
                     width = .2,                    # Width of the error bars
@@ -95,14 +92,14 @@ function(input, output, session) {
     
     ##
     dat_yr <- selectedData() %>% 
-      group_by(Year, STATION) %>% 
-      summarise(mean = mean(ycol),
+      group_by(Year, Code) %>% 
+      summarise(mean = mean(ycol, na.rm = TRUE),
                 N = length(ycol),
-                sd = sd(ycol),
+                sd = sd(ycol, na.rm = TRUE),
                 se = sd / sqrt(N))
     
     # Error bars represent standard error of the mean
-    p3 <- ggplot(data = dat_yr, aes(x = Year, y = mean, fill = STATION)) + 
+    p3 <- ggplot(data = dat_yr, aes(x = Year, y = mean, fill = Code)) + 
       geom_col(position = position_dodge()) +
       geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
                     width = .2,                    # Width of the error bars
@@ -121,7 +118,7 @@ function(input, output, session) {
     meta_sf <- meta %>% 
       st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
     
-    meta2_sf <- subset(meta_sf, meta_sf$STATION %in% selectedData()$STATION)
+    meta2_sf <- subset(meta_sf, meta_sf$Code %in% selectedData()$Code)
     
     pmap <- ggplot() + 
       geom_sf(data = aust, size = 0.05, fill = "grey80") +
@@ -131,8 +128,8 @@ function(input, output, session) {
       scale_y_continuous(expand = c(0, 0), limits = c(-45, -9)) +
       theme_void() +
       theme(axis.title = element_blank(), panel.background = element_rect(fill = NA, colour = NA))
-  
-  }, height = 200)
+    pmap
+  })
   
   
   # # Table of selected dataset ----
@@ -145,7 +142,7 @@ function(input, output, session) {
     filename = function() {paste(input$ycol, ".csv", sep = "")},
     # colnames(selectedData)[colnames(selectedData)=="ycol"] <- paste(input$ycol),
     content = function(file) {
-      write.table(selectedData(), file, row.names = FALSE, col.names = c("Date_UTC", "Month", "Station", input$ycol), sep = ",")
+      write.table(selectedData(), file, row.names = FALSE, col.names = c("SampleDateLocal", "Month", "Code", input$ycol), sep = ",")
     }
   )
   
