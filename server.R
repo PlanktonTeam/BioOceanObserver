@@ -1,4 +1,3 @@
-
 function(input, output, session) {
   
   library(tidyverse)
@@ -67,34 +66,19 @@ function(input, output, session) {
     
   })
   
-  output$affiliation1 <- renderText({ 
-    "Developed by:"
-  })
-  output$affiliation2 <- renderText({ 
-    "Jason Everett (UQ, UNSW, CSIRO) and Claire Davies (CSIRO)"
-  })
-  output$affiliation3 <- renderText({ 
-    "using IMOS data (www.imos.org.au)"
-  })
   
-  output$IMOS_Logo <- renderImage({ 
-    list(src = "logo.png",
-         # width=165,
-         # height=55,
-         alt = "This is alternate text")
-  }, deleteFile = FALSE)
-  
-  # browser()  
-  
-  plotInput <- reactive({
-    # par(mar = c(7.1, 4.1, 0, 1))
+  # Plot abundance spectra by species
+  output$timeseries <- renderPlot({
+    # if (is.null(dat()))
+    #     return(NULL)
+    
     p1 <- ggplot(selectedData(), aes(x = Date_UTC, y = ycol)) +
       geom_line(aes(group = STATION, color = STATION)) +
       geom_point(aes(group = STATION, color = STATION)) +
       scale_x_datetime() +
       labs(y = input$ycol)
     
-    cdata <- selectedData() %>% 
+    dat_mth <- selectedData() %>% 
       group_by(Month, STATION) %>% 
       summarise(mean = mean(ycol),
                 N = length(ycol),
@@ -102,7 +86,7 @@ function(input, output, session) {
                 se = sd / sqrt(N))
     
     # Error bars represent standard error of the mean
-    p2 <- ggplot(data = cdata, aes(x = Month, y = mean, fill = STATION)) + 
+    p2 <- ggplot(data = dat_mth, aes(x = Month, y = mean, fill = STATION)) + 
       geom_col(position = position_dodge()) +
       geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
                     width = .2,                    # Width of the error bars
@@ -110,7 +94,7 @@ function(input, output, session) {
       labs(y = input$ycol)
     
     ##
-    cdata2 <- selectedData() %>% 
+    dat_yr <- selectedData() %>% 
       group_by(Year, STATION) %>% 
       summarise(mean = mean(ycol),
                 N = length(ycol),
@@ -118,30 +102,25 @@ function(input, output, session) {
                 se = sd / sqrt(N))
     
     # Error bars represent standard error of the mean
-    p3 <- ggplot(data = cdata2, aes(x = Year, y = mean, fill = STATION)) + 
+    p3 <- ggplot(data = dat_yr, aes(x = Year, y = mean, fill = STATION)) + 
       geom_col(position = position_dodge()) +
       geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
                     width = .2,                    # Width of the error bars
                     position = position_dodge(.9)) +
       labs(y = input$ycol)
     
-    p1 / p2 / p3
-  })
-  
-  output$plot1 <- renderPlot({
-    print(plotInput())
+    p1 / p2 / p3 # Use patchwork to arrange plots
   },
-  height=600
-  )
+  height=600)
   
   
-  plotMapInput <- reactive({  
-
+  output$plotmap <- renderPlot({
+    
     aust <- ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
-
+    
     meta_sf <- meta %>% 
       st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-      
+    
     meta2_sf <- subset(meta_sf, meta_sf$STATION %in% selectedData()$STATION)
     
     pmap <- ggplot() + 
@@ -152,14 +131,9 @@ function(input, output, session) {
       scale_y_continuous(expand = c(0, 0), limits = c(-45, -9)) +
       theme_void() +
       theme(axis.title = element_blank(), panel.background = element_rect(fill = NA, colour = NA))
-    pmap
-  })
   
-  output$plotmap <- renderPlot({
-    print(plotMapInput())
-  }
-  # height=200
-  )
+  }, height = 200)
+  
   
   # # Table of selected dataset ----
   # output$table <- renderTable({
