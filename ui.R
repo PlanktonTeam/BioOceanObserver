@@ -1,8 +1,8 @@
 pageWithSidebar(
-  headerPanel('IMOS National Reference Station Copepods'),
+  headerPanel('IMOS Bio Ocean Observer'),
   sidebarPanel(
-    imageOutput("IMOS_Logo",height="65px"),
-    plotOutput('plotmap',height = "200px"),
+    imageOutput("IMOS_Logo", height="65px"),
+    plotOutput('plotmap', height = "200px"),
     uiOutput("Site"),
     uiOutput("ycol"),
     
