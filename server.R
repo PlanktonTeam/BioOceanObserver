@@ -10,17 +10,7 @@ function(input, output, session) {
   
   datNRSi <- read_csv("https://raw.githubusercontent.com/jaseeverett/IMOS_Toolbox/master/Plankton/Output/NRS_Indices.csv") %>% 
     mutate(Code = str_sub(NRScode, 1, 3),
-           Name = Code,
-           # Do these dynamically.
-           Name = str_replace_all(Name, "PHB", "Port Hacking (PHB)"),
-           Name = str_replace_all(Name, "DAR", "Darwin Harbour (DAR)"),
-           Name = str_replace_all(Name, "ESP", "Esperance (ESP)"),
-           Name = str_replace_all(Name, "KAI", "Kangaroo Island (KAI)"),
-           Name = str_replace_all(Name, "MAI", "Maria Island (MAI)"),
-           Name = str_replace_all(Name, "NIN", "Ningaloo Reef (NIN)"),
-           Name = str_replace_all(Name, "NSI", "North Stradbroke Island (NSI)"),
-           Name = str_replace_all(Name, "ROT", "Rottnest Island (ROT)"),
-           Name = str_replace_all(Name, "YON", "Yongala (YON)"),
+           Name = str_c(Station, " (",Code,")"), # Create neat name for plotting
            Month = month(SampleDateLocal, label = TRUE, abbr = TRUE),
            Year = year(SampleDateLocal),
            Code = factor(Code),
@@ -45,8 +35,6 @@ function(input, output, session) {
     
     # Drop unwanted factor levels from whole dataframe
     selectedData[] <- lapply(selectedData, function(x) if(is.factor(x)) factor(x) else x)
-    # selectedData$Month <- month(selectedData$SampleDateLocal, label = TRUE, abbr = TRUE)
-    # selectedData$Year <- year(selectedData$SampleDateLocal)
     selectedData$ycol <- selectedData[, colnames(selectedData) %in% input$ycol]
     
     return(selectedData)
