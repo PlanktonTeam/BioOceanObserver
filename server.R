@@ -107,7 +107,7 @@ function(input, output, session) {
     meta_sf <- meta %>% 
       st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
     
-    meta2_sf <- subset(meta_sf, meta_sf$Code %in% selectedData()$Code)
+    meta2_sf <- subset(meta_sf, meta_sf$STATION %in% selectedData()$Code)
     
     pmap <- ggplot() + 
       geom_sf(data = aust, size = 0.05, fill = "grey80") +
