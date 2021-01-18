@@ -2,7 +2,9 @@ function(input, output, session) {
   
   library(tidyverse)
   library(lubridate)
+  library(rgeos)
   library(rnaturalearth)
+  library(rnaturalearthdata)
   library(sf)
   library(patchwork)
   
@@ -17,7 +19,6 @@ function(input, output, session) {
            Name = factor(Name)) %>% 
     arrange(SampleDateLocal) %>% # Sort in ascending date order
     complete(Year, Code) # Turns implicit missing values into explicit missing values.
-  
 
   output$Site <- renderUI({
     checkboxGroupInput("sta", 
