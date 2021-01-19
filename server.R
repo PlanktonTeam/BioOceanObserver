@@ -1,14 +1,18 @@
 function(input, output, session) {
   
-  library(tidyverse)
   library(lubridate)
   library(rgeos)
   library(rnaturalearth)
   library(rnaturalearthdata)
   library(sf)
   library(patchwork)
+  library(plotly)
+  library(tidyverse)
   
-  meta <- read.csv('NRS_Meta.csv')
+  theme_set(theme_bw())
+
+  ### NRS timeseries data  
+  meta <- read.csv('NRS_Meta.csv') # probably should have this file, and access it from, the same place as the other files
   
   datNRSi <- read_csv("https://raw.githubusercontent.com/jaseeverett/IMOS_Toolbox/master/Plankton/Output/NRS_Indices.csv") %>% 
     mutate(Code = str_sub(NRScode, 1, 3),
@@ -50,11 +54,10 @@ function(input, output, session) {
     
     # paste(selectedData()$Code)
     
-  })
-  
-  
-  # Plot abundance spectra by species
-  output$timeseries <- renderPlot({
+      })
+
+    # Plot abundance spectra by species
+  output$timeseries <- renderPlotly({
     # if (is.null(datNRSi()))
     #     return(NULL)
     
@@ -63,8 +66,9 @@ function(input, output, session) {
       geom_point(aes(group = Code, color = Code)) +
       scale_x_datetime() +
       labs(y = input$ycol)
+    p1 <- ggplotly(p1)
     
-    dat_mth <- selectedData() %>% 
+    dat_mth <- selectedData() %>% filter(Month != 'NA') %>% # need to drop NA from month, added to dataset by complete(Year, Code)
       group_by(Month, Code) %>% 
       summarise(mean = mean(ycol, na.rm = TRUE),
                 N = length(ycol),
@@ -72,14 +76,16 @@ function(input, output, session) {
                 se = sd / sqrt(N))
     
     # Error bars represent standard error of the mean
-    p2 <- ggplot(data = dat_mth, aes(x = Month, y = mean, fill = Code)) + 
+    p2 <- ggplot(data = dat_mth, aes(x = Month, y = mean, fill = Code)) +  
       geom_col(position = position_dodge()) +
       geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
                     width = .2,                    # Width of the error bars
                     position = position_dodge(.9)) +
-      labs(y = input$ycol)
+      labs(y = input$ycol) +
+      theme(legend.text = element_blank(),
+            legend.title = element_blank())
+    p2 <- ggplotly(p2)
     
-    ##
     dat_yr <- selectedData() %>% 
       group_by(Year, Code) %>% 
       summarise(mean = mean(ycol, na.rm = TRUE),
@@ -93,14 +99,17 @@ function(input, output, session) {
       geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
                     width = .2,                    # Width of the error bars
                     position = position_dodge(.9)) +
-      labs(y = input$ycol)
+      labs(y = input$ycol) +
+      theme(legend.text = element_blank(),
+            legend.title = element_blank())
+    p3 <- ggplotly(p3)
     
-    p1 / p2 / p3 # Use patchwork to arrange plots
-  },
-  height=600)
+    subplot(p1, p2, p3, nrows = 3, titleY = TRUE, titleX = TRUE, margin = 0.05) # Use plotly to arrange plots
+    # need to sort out legends, can do this by using plotly to create the graphs rather than converting from ggplot
+    #p1 / p2 / p3 # Use patchwork to arrange plots
+  })
   
-  
-  output$plotmap <- renderPlot({
+  output$plotmap <- renderPlotly({
     
     aust <- ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
     
@@ -117,7 +126,7 @@ function(input, output, session) {
       scale_y_continuous(expand = c(0, 0), limits = c(-45, -9)) +
       theme_void() +
       theme(axis.title = element_blank(), panel.background = element_rect(fill = NA, colour = NA))
-    pmap
+    ggplotly(pmap)
   })
   
   
@@ -142,5 +151,47 @@ function(input, output, session) {
       ggsave(file, plot = plotInput(), device = "png")
     }
   )
+  #### End of NRS timeseries
   
+  ## Env Data - NRS BGC
+  # select depths
+   NRSBGCEnvData <- read_csv("https://raw.githubusercontent.com/jaseeverett/IMOS_Toolbox/master/Plankton/Output/NRS_CombinedWaterQuality.csv") %>% 
+     pivot_longer(-c(NRScode:IMOSsampleCode)) %>% drop_na()
+   
+   observe({
+      updateSelectInput(session, "depth", "Select a depth", 
+                        choices = NRSBGCEnvData[NRSBGCEnvData$Station == input$station & NRSBGCEnvData$name == input$parameter,]$SampleDepth_m)
+    })
+   
+  # Subset data
+    selected <- reactive({
+      req(input$date)
+      validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
+      validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
+      NRSBGCEnvData %>%
+        filter(Station %in% input$station,
+              SampleDateLocal > as.POSIXct(input$date[1]) & SampleDateLocal < as.POSIXct(input$date[2]),
+              name %in% input$parameter,
+              SampleDepth_m == input$depth) %>%
+        mutate(Station = as.factor(Station),
+               name = as.factor(name))
+    })
+
+   # Create timeseries object the plotOutput function is expecting
+  output$plot <- renderPlotly({
+    p <- ggplot(selected()) + geom_line(aes(SampleDateLocal, value, colour = Station)) +
+      labs(x = "Time") +
+      theme_bw()
+    if(nlevels(unique(selected()$name)) > 1){
+      p <- p + facet_grid(name~., scales = "free")
+    }
+    if(input$smoother){
+      p <- p + geom_smooth(aes(SampleDateLocal, value, colour = Station))
+    }
+    ggplotly(p)
+  })
+
+  # # create table output
+  output$table <- DT::renderDataTable(
+    selected() )
 }
