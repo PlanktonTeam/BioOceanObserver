@@ -47,23 +47,7 @@ navbarPage(title = div(img(src = "logo.png", style="margin-top: -10px; padding-r
                       tabPanel("Section 3"))),
            tabPanel("Environmenal Data",
                     tabsetPanel(
-                      tabPanel("NRS BGC parameters",
-                                sidebarLayout(
-                                  sidebarPanel(
-                                    # station selector
-                                    selectInput(inputId = 'station', label = "Select a station", choices = unique(NRSBGCEnvData$Station), selected = 'Port Hacking', multiple = TRUE),
-                                    # Date selector
-                                    dateRangeInput("date", "Select a date range", start = "2009-01-01", end = "2020-11-30", min = "2009-01-01", max = Sys.Date()),
-                                    # select parameter
-                                    selectInput(inputId = 'parameter', label = 'Select a parameter', choices = unique(NRSBGCEnvData$name), selected = 'Silicate_umol_L', multiple = TRUE),
-                                    selectInput(inputId = 'depth', label = 'Select a depth', choices = FALSE),
-                                    # Select whether to overlay smooth trend line
-                                    checkboxInput(inputId = "smoother", label = strong("Overlay smooth trend line"), value = FALSE)),
-                                  mainPanel(
-                                     tabsetPanel(
-                                       tabPanel("Plot", plotlyOutput("plot")),
-                                       tabPanel("Data table", DT::DTOutput("table"))
-                               )))),
+                      tabPanel("NRS BGC parameters", EnvDataBGCUI("one")),
                       tabPanel("Section 2"),
                       tabPanel("Section 3"))),
            navbarMenu("", icon = icon("question-circle"),
