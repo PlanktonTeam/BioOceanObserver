@@ -58,8 +58,7 @@ navbarPage(title = div(img(src = "logo.png", style="margin-top: -10px; padding-r
                                     selectInput(inputId = 'parameter', label = 'Select a parameter', choices = unique(NRSBGCEnvData$name), selected = 'Silicate_umol_L', multiple = TRUE),
                                     selectInput(inputId = 'depth', label = 'Select a depth', choices = FALSE),
                                     # Select whether to overlay smooth trend line
-                                    checkboxInput(inputId = "smoother", label = strong("Overlay smooth trend line"), value = FALSE)
-                               ),
+                                    checkboxInput(inputId = "smoother", label = strong("Overlay smooth trend line"), value = FALSE)),
                                   mainPanel(
                                      tabsetPanel(
                                        tabPanel("Plot", plotlyOutput("plot")),
