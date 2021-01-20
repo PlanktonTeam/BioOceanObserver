@@ -3,6 +3,9 @@ library(shiny)
 library(shinythemes)
 library(plotly)
 
+source("ZooTsNRS.R")
+source("EnvDataBGC.R")
+
 navbarPage(title = div(img(src = "logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),
            windowTitle="The Biological Ocean Observatory",
            theme = shinytheme("flatly"), 
@@ -22,18 +25,7 @@ navbarPage(title = div(img(src = "logo.png", style="margin-top: -10px; padding-r
                       tabPanel("Section 3"))),
            tabPanel("Zooplankton",
                     tabsetPanel(
-                      tabPanel("Time Series",
-                               sidebarLayout(
-                                 sidebarPanel(
-                                   plotlyOutput("plotmap", height = "200px"),
-                                   uiOutput("Site"),
-                                   uiOutput("ycol"),
-                                   downloadButton("downloadData", "Data"),
-                                   downloadButton("downloadPlot", "Plot"),
-                                   downloadButton("downloadNote", "Notebook")),
-                                 mainPanel(
-                                   textOutput("selected_var"),
-                                   plotlyOutput("timeseries", height = "800px")))),
+                      tabPanel("Time Series", ZooTsNRSUI("one")),
                       tabPanel("Spatial Analysis", 
                                h3("Some spatial maps can go here - For example CPR data or GAM outputs?")),
                       tabPanel("Climatology",
