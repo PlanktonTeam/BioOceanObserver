@@ -19,5 +19,5 @@ function(input, output, session) {
   ZooTsNRS("one")
   
   ## Env Data - NRS BGC
-  EnvDataBGC("two")
+  EnvDataBGC("one")
 }

@@ -10,49 +10,49 @@ ZooTsNRSUI <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-          plotlyOutput(nsZooTsNRS("plotmap"), height = "200px"),
-          uiOutput(nsZooTsNRS("Site")),
-          uiOutput(nsZooTsNRS("ycol")),
-          downloadButton(nsZooTsNRS("downloadData"), "Data"),
-          downloadButton(nsZooTsNRS("downloadPlot"), "Plot"),
-          downloadButton(nsZooTsNRS("downloadNote"), "Notebook")
+           plotlyOutput(nsZooTsNRS("plotmap"), height = "200px"),
+           uiOutput(nsZooTsNRS("Site")),
+           uiOutput(nsZooTsNRS("ycol")),
+           downloadButton(nsZooTsNRS("downloadData"), "Data"),
+           downloadButton(nsZooTsNRS("downloadPlot"), "Plot"),
+           downloadButton(nsZooTsNRS("downloadNote"), "Notebook")
           ),
         mainPanel(
-          textOutput(nsZooTsNRS("selected_var")),
-          plotlyOutput(nsZooTsNRS("timeseries"), height = "800px")
+           textOutput(nsZooTsNRS("selected_var")),
+           plotlyOutput(nsZooTsNRS("timeseries"), height = "800px")
           )))
 }
 
 # function for server
-
 ZooTsNRS <- function(id){
   moduleServer(
     id,
     function(input, output, session) {
-        meta <- read.csv('NRS_Meta.csv') # probably should have this file, and access it from, the same place as the other files
-        
-        datNRSi <- read_csv("https://raw.githubusercontent.com/jaseeverett/IMOS_Toolbox/master/Plankton/Output/NRS_Indices.csv") %>% 
-          mutate(Code = str_sub(NRScode, 1, 3),
-                 Name = str_c(Station, " (",Code,")"), # Create neat name for plotting
-                 Month = month(SampleDateLocal, label = TRUE, abbr = TRUE),
-                 Year = year(SampleDateLocal),
-                 Code = factor(Code),
-                 Name = factor(Name)) %>% 
-          arrange(SampleDateLocal) %>% # Sort in ascending date order
-          complete(Year, Code) # Turns implicit missing values into explicit missing values.
-        
-         output$Site <- renderUI({
-          checkboxGroupInput(session$nsZooTsNRS("sta"),
-                             label = h3("Select NRS Code"),
-                             choiceValues = levels(datNRSi$Code),
-                             choiceNames = levels(datNRSi$Name),
-                             selected = "MAI")
-        })
+      meta <- read.csv('NRS_Meta.csv') # probably should have this file, and access it from, the same place as the other files
       
-        # # I need to figure out a way to pad out the dataframe to include all combinations so that the bars are the same width
-        # # selectedData <- complete(selectedData,
+      datNRSi <- read_csv("https://raw.githubusercontent.com/jaseeverett/IMOS_Toolbox/master/Plankton/Output/NRS_Indices.csv") %>% 
+        mutate(Code = str_sub(NRScode, 1, 3),
+               Name = str_c(Station, " (",Code,")"), # Create neat name for plotting
+               Month = month(SampleDateLocal, label = TRUE, abbr = TRUE),
+               Year = year(SampleDateLocal),
+               Code = factor(Code),
+               Name = factor(Name)) %>% 
+        arrange(SampleDateLocal) %>% # Sort in ascending date order
+        complete(Year, Code) # Turns implicit missing values into explicit missing values.
+      
+      output$Site <- renderUI({
+        ns <- session$nsZooTsNRS
+        checkboxGroupInput(session$ns("sta"),
+                           label = h3("Select NRS Code"),
+                           choiceValues = levels(datNRSi$Code),
+                           choiceNames = levels(datNRSi$Name),
+                           selected = "MAI")
+        })
 
-        selectedData <- reactive({
+          # I need to figure out a way to pad out the dataframe to include all combinations so that the bars are the same width
+          #selectedData <- complete(selectedData,
+
+          selectedData <- reactive({
           selectedData <- as.data.frame(filter(datNRSi, datNRSi$Code %in% input$sta))
 
           # Drop unwanted factor levels from whole dataframe
@@ -62,21 +62,23 @@ ZooTsNRS <- function(id){
           return(selectedData)
         })
 
-        output$ycol <- renderUI({
-          selectInput(session$nsZooTsNRS("ycol"), 'Variable', names(select(datNRSi,ZoopAbundance_m3:CopepodEvenness)))
+          output$ycol <- renderUI({
+            ns <- session$nsZooTsNRS
+            selectInput(session$ns("ycol"), 'Variable', names(select(datNRSi,ZoopAbundance_m3:CopepodEvenness)))
         })
 
         # Use this code if I want to print out something on the UI
-        output$selected_var <- renderText({
+        # output$selected_var <- renderText({
 
           # paste(selectedData()$Code)
 
-        })
+        #})
 
-        # # Plot abundance spectra by species
+        # Plot abundance spectra by species
         output$timeseries <- renderPlotly({
-          # if (is.null(datNRSi()))
-          #     return(NULL)
+          
+         if (is.null(datNRSi$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+             return(NULL)
 
           p1 <- ggplot(selectedData(), aes(x = SampleDateLocal, y = ycol)) +
             geom_line(aes(group = Code, color = Code)) +
@@ -146,7 +148,6 @@ ZooTsNRS <- function(id){
           ggplotly(pmap)
         })
 
-
         # Table of selected dataset ----
         output$table <- renderTable({
           datasetInput()
@@ -161,7 +162,7 @@ ZooTsNRS <- function(id){
           }
         )
 
-        # # Download figure
+       # Download figure
         output$downloadPlot <- downloadHandler(
           filename = function() {paste(input$ycol, '.png', sep='') },
           content = function(file) {

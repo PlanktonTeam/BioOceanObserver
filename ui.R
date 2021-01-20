@@ -25,7 +25,7 @@ navbarPage(title = div(img(src = "logo.png", style="margin-top: -10px; padding-r
                       tabPanel("Section 3"))),
            tabPanel("Zooplankton",
                     tabsetPanel(
-                      tabPanel("Time Series", ZooTsNRS("one")),
+                      tabPanel("Time Series", ZooTsNRSUI("one")),
                       tabPanel("Spatial Analysis", 
                                h3("Some spatial maps can go here - For example CPR data or GAM outputs?")),
                       tabPanel("Climatology",
@@ -39,7 +39,7 @@ navbarPage(title = div(img(src = "logo.png", style="margin-top: -10px; padding-r
                       tabPanel("Section 3"))),
            tabPanel("Environmenal Data",
                     tabsetPanel(
-                      tabPanel("NRS BGC parameters", EnvDataBGCUI("two")),
+                      tabPanel("NRS BGC parameters", EnvDataBGCUI("one")),
                       tabPanel("Section 2"),
                       tabPanel("Section 3"))),
            navbarMenu("", icon = icon("question-circle"),
