@@ -18,14 +18,14 @@ function(input, output, session) {
   theme_set(theme_bw())
   
   ## run the code only if the tab panel is selected
-  observe({
+#  observe({
   ### NRS time series data  
-  if(req(input$navbar) == "Zooplankton")
+#  if(req(input$navbar) == "Zooplankton")
     ZooTsNRS("one")
   
   ## Env Data - NRS BGC
-  if(req(input$navbar) == "Environmental Data")
+#  if(req(input$navbar) == "Environmental Data")
     EnvDataBGC("one")
-  })
+#  })
 }
 
