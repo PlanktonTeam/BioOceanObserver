@@ -18,10 +18,7 @@ EnvDataBGCUI <- function(id){
         selectInput(inputId = nsEnvDataBGC('parameter'), label = 'Select a parameter', choices = unique(NRSBGCEnvData$name), selected = 'Silicate_umol_L', multiple = TRUE),
         selectInput(inputId = nsEnvDataBGC('depth'), label = 'Select a depth', choices = FALSE),
         # Select whether to overlay smooth trend line
-        checkboxInput(inputId = nsEnvDataBGC("smoother"), label = strong("Overlay smooth trend line"), value = FALSE),
-        downloadButton(nsEnvDataBGC("downloadData"), "Data"),
-        downloadButton(nsEnvDataBGC("downloadPlot"), "Plot"),
-        downloadButton(nsEnvDataBGC("downloadNote"), "Notebook")
+        checkboxInput(inputId = nsEnvDataBGC("smoother"), label = strong("Overlay smooth trend line"), value = FALSE)
       ),
       mainPanel(
         tabsetPanel(
@@ -75,20 +72,4 @@ EnvDataBGC <- function(id){
       # # create table output
       output$table <- DT::renderDataTable(
         selected() )
-      
-      #Downloadable csv of selected dataset ----
-      output$downloadData <- downloadHandler(
-        filename = function() {paste("EnvDataBGC.csv", sep = "")},
-        content = function(file) {
-          write.table(selected(), file, row.names = FALSE, sep = ",")
-        }
-      )
-      
-      # Download figure
-      output$downloadPlot <- downloadHandler(
-        filename = function() {paste('EnvDataBGC.png', sep='') },
-        content = function(file) {
-          ggsave(file, plot = plotInput(), device = "png")
-        }
-      )
 })}
