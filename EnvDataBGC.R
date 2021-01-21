@@ -75,5 +75,20 @@ EnvDataBGC <- function(id){
       # # create table output
       output$table <- DT::renderDataTable(
         selected() )
-
-    })}
+      
+      #Downloadable csv of selected dataset ----
+      output$downloadData <- downloadHandler(
+        filename = function() {paste("EnvDataBGC.csv", sep = "")},
+        content = function(file) {
+          write.table(selected(), file, row.names = FALSE, sep = ",")
+        }
+      )
+      
+      # Download figure
+      output$downloadPlot <- downloadHandler(
+        filename = function() {paste('EnvDataBGC.png', sep='') },
+        content = function(file) {
+          ggsave(file, plot = plotInput(), device = "png")
+        }
+      )
+})}
