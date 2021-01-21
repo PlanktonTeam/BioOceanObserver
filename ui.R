@@ -6,10 +6,11 @@ library(plotly)
 source("ZooTsNRS.R")
 source("EnvDataBGC.R")
 
-navbarPage(title = div(img(src = "logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),
+navbarPage(id = "navbar",  
+           title = div(img(src = "logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),
            windowTitle="The Biological Ocean Observatory",
            theme = shinytheme("flatly"), 
-           selected = "Zooplankton", 
+           selected = "Welcome", 
            footer = "© 2021 Jason Everett (UQ, UNSW, CSIRO) and Claire Davies (CSIRO)",
            tabPanel("Welcome",
                     h3("A welcome page. Who we are, what we do, and what you will learn here")),         
@@ -37,7 +38,7 @@ navbarPage(title = div(img(src = "logo.png", style="margin-top: -10px; padding-r
                       tabPanel("Section 1"),
                       tabPanel("Section 2"),
                       tabPanel("Section 3"))),
-           tabPanel("Environmenal Data",
+           tabPanel("Environmental Data",
                     tabsetPanel(
                       tabPanel("NRS BGC parameters", EnvDataBGCUI("one")),
                       tabPanel("Section 2"),

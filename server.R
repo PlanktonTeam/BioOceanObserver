@@ -17,10 +17,16 @@ function(input, output, session) {
   ## global options and themes can go here
   theme_set(theme_bw())
 
-  ### NRS time series data  
-  ZooTsNRS("one")
+  ## only run if selected by tab 
+  observe({
+    ### NRS time series data  
+    if (req(input$navbar) == "Zooplankton")
+      ZooTsNRS("one")
   
   ## Env Data - NRS BGC
-  EnvDataBGC("one")
+    if (req(input$navbar) == "Environmental Data")
+      EnvDataBGC("one")
+  
+  })
 }
 
