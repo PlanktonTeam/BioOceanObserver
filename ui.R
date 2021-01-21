@@ -6,8 +6,7 @@ library(plotly)
 source("ZooTsNRS.R")
 source("EnvDataBGC.R")
 
-navbarPage(id = "navbar",
-           title = div(img(src = "logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),
+navbarPage(title = div(img(src = "logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),
            windowTitle="The Biological Ocean Observatory",
            theme = shinytheme("flatly"), 
            selected = "Zooplankton", 
@@ -38,7 +37,7 @@ navbarPage(id = "navbar",
                       tabPanel("Section 1"),
                       tabPanel("Section 2"),
                       tabPanel("Section 3"))),
-           tabPanel("Environmental Data",
+           tabPanel("Environmenal Data",
                     tabsetPanel(
                       tabPanel("NRS BGC parameters", EnvDataBGCUI("one")),
                       tabPanel("Section 2"),
