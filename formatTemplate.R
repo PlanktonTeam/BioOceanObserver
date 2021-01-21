@@ -8,7 +8,7 @@ HeaderTabUI <- function(id){
   nsHeaderTab <- NS(id)
   
   tagList(
-    
+    # add code from tab panel level in ui
   )
 }
 
@@ -19,6 +19,7 @@ HeaderTab <- function(id){
     id,
     function(input, output, session) {
       
+      # add code to produce graphs etc.
       
     }
   )
