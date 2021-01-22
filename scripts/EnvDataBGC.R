@@ -67,6 +67,7 @@ EnvDataBGC <- function(id){
           p <- p + geom_smooth(aes(SampleDateLocal, value, colour = Station))
         }
         ggplotly(p)
+        
       })
       
       # # create table output

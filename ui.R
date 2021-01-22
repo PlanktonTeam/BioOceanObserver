@@ -3,8 +3,8 @@ library(shiny)
 library(shinythemes)
 library(plotly)
 
-source("ZooTsNRS.R")
-source("EnvDataBGC.R")
+source("Scripts/ZooTsNRS.R")
+source("Scripts/EnvDataBGC.R")
 
 navbarPage(id = "navbar",  
            title = div(img(src = "logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),
