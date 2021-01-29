@@ -128,7 +128,7 @@ ZooTsNRS <- function(id){
           #p1 / p2 / p3 # Use patchwork to arrange plots
         })
 
-        output$plotmap <- renderCachedPlot({ # caching plot so cahced version can be returned if it exists (code only run once per scenario per session) 
+        output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
 
           aust <- ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
 
@@ -145,9 +145,9 @@ ZooTsNRS <- function(id){
             scale_y_continuous(expand = c(0, 0), limits = c(-45, -9)) +
             theme_void() +
             theme(axis.title = element_blank(), panel.background = element_rect(fill = NA, colour = NA))
-          
-        cacheKeyExpr = { input$Site } # use cached version if input reverts to a previous state based on Site selection
-          
+        pmap <- ggplotly(pmap)
+        #cacheKeyExpr = { list(input$Site) } # use cached version if input reverts to a previous state based on Site selection
+
         })
 
         # Table of selected dataset ----

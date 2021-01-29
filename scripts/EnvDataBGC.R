@@ -1,12 +1,16 @@
 ## Environmental variables
 # BGC Parameters
 
+# data download
+NRSBGCEnvData <- read_csv("https://raw.githubusercontent.com/jaseeverett/IMOS_Toolbox/master/Plankton/Output/NRS_CombinedWaterQuality.csv") %>% 
+    pivot_longer(-c(NRScode:IMOSsampleCode)) %>% drop_na()
+
 # function for UI module
 
 EnvDataBGCUI <- function(id){
   
   nsEnvDataBGC <- NS(id)
-  
+
   tagList(
     sidebarLayout(
       sidebarPanel(
@@ -23,7 +27,7 @@ EnvDataBGCUI <- function(id){
       mainPanel(
         tabsetPanel(
           tabPanel("Plot", plotlyOutput(nsEnvDataBGC("plot"))),
-          tabPanel("Data table", DT::DTOutput(nsEnvDataBGC("table")))))  )
+          tabPanel("Data table", DT::DTOutput(nsEnvDataBGC("table"))))))
   )}
 
 # function for server
@@ -32,11 +36,8 @@ EnvDataBGC <- function(id){
   moduleServer(
     id,
     function(input, output, session) {
-    # select depths
-      NRSBGCEnvData <- read_csv("https://raw.githubusercontent.com/jaseeverett/IMOS_Toolbox/master/Plankton/Output/NRS_CombinedWaterQuality.csv") %>% 
-        pivot_longer(-c(NRScode:IMOSsampleCode)) %>% drop_na()
-      
-      observe({
+     # select depths             
+        observe({
         updateSelectInput(session, "depth", "Select a depth", 
                           choices = NRSBGCEnvData[NRSBGCEnvData$Station == input$station & NRSBGCEnvData$name == input$parameter,]$SampleDepth_m)
       })
