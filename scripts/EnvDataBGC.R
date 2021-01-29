@@ -2,6 +2,7 @@
 # BGC Parameters
 
 # data download
+library(tidyverse)
 NRSBGCEnvData <- read_csv("https://raw.githubusercontent.com/jaseeverett/IMOS_Toolbox/master/Plankton/Output/NRS_CombinedWaterQuality.csv") %>% 
     pivot_longer(-c(NRScode:IMOSsampleCode)) %>% drop_na()
 
