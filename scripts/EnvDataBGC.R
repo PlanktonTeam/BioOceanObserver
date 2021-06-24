@@ -2,6 +2,8 @@
 # BGC Parameters
 
 # data download
+library(tidyverse)
+library(memoise)
 
 DataPrepEnvBGC <- memoise(function(){
   NRSBGCEnvData <- read_csv("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plankton/Output/NRS_CombinedWaterQuality.csv",
