@@ -12,8 +12,8 @@ function(input, output, session) {
   library(tidyverse)
   
   # source the R scripts with the HeaderTab code
-  source("Scripts/ZooTsNRS.R")
-  source("Scripts/EnvDataBGC.R")
+  source("scripts/ZooTsNRS.R")
+  source("scripts/EnvDataBGC.R")
   
   ## global options and themes can go here
   theme_set(theme_bw())

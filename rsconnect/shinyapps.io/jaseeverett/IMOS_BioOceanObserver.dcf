@@ -5,8 +5,10 @@ account: jaseeverett
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3482754
-bundleId: 4109926
+bundleId: 4737133
 url: https://jaseeverett.shinyapps.io/IMOS_BioOceanObserver/
-when: 1610930020.92359
+when: 1624230756.56204
+lastSyncTime: 1624230756.56205
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: Rplots.pdf
