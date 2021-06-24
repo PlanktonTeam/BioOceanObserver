@@ -15,7 +15,8 @@ navbarPage(id = "navbar",
            tabPanel("Welcome",
                     titlePanel("Welcome to The Biological Ocean Observatory"),
                     sidebarLayout(
-                      sidebarPanel(),
+                      sidebarPanel(
+                        ),
                       mainPanel(
                         p("The goal of this site is to Integrate, Analyse and Visualise data collected by the Integrated Marince Observing System (IMOS). We aim to enhance the availability and understanding of biological data and make it accessible to broader and non-specialist audiences in order to accelerate the generation of scientific insights."),
                         h3("Code"),

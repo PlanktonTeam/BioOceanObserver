@@ -30,8 +30,8 @@ ZooTsNRS <- function(id){
     function(input, output, session) {
       meta <- read.csv('NRS_Meta.csv') # probably should have this file, and access it from, the same place as the other files
       
-      datNRSi <- read_csv("https://raw.githubusercontent.com/jaseeverett/IMOS_Toolbox/master/Plankton/Output/NRS_Indices.csv") %>% 
-        mutate(Code = str_sub(NRScode, 1, 3),
+      datNRSi <- read_csv("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plankton/Output/NRS_Indices.csv") %>% 
+        mutate(Code = str_sub(TripCode, 1, 3),
                Name = str_c(Station, " (",Code,")"), # Create neat name for plotting
                Month = month(SampleDateLocal, label = TRUE, abbr = TRUE),
                Year = year(SampleDateLocal),

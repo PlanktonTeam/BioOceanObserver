@@ -2,6 +2,7 @@
 function(input, output, session) {
   
   library(lubridate)
+  library(memoise)
   library(rgeos)
   library(rnaturalearth)
   library(rnaturalearthdata)
