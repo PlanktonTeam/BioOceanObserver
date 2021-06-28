@@ -20,7 +20,7 @@ function(input, output, session) {
   theme_set(theme_bw(base_size = 10) + theme(legend.position = "bottom"))
   options(na.action = "na.omit")
 
-  ## only run if selected by tab 
+  ## only run if selected by tab - this should be home page for each Tab level
   observe({
     ### Zooplankton time series data  
     if (req(input$navbar) == "Zooplankton")
@@ -31,7 +31,8 @@ function(input, output, session) {
       EnvDataBGC("one")
   
   })
-  
+
+  ## Run when changing page within tab
   ### Zooplankton Spatial data  
   observeEvent(input$tabs, {
     if(input$tabs == "SA"){

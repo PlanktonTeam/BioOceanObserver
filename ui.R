@@ -2,6 +2,8 @@
 library(shiny)
 library(shinythemes)
 library(plotly)
+library(shinycssloaders)
+
 
 source("scripts/ZooTsNRS.R")
 source("scripts/EnvDataBGC.R")

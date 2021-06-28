@@ -45,7 +45,7 @@ EnvDataBGCUI <- function(id){
       ),
       mainPanel(
         tabsetPanel(
-          tabPanel("Plot", plotlyOutput(nsEnvDataBGC("plot"))),
+          tabPanel("Plot", plotlyOutput(nsEnvDataBGC("plot")) %>% withSpinner(color="#0dc5c1")),
           tabPanel("Data table", DT::DTOutput(nsEnvDataBGC("table"))))))
   )}
 

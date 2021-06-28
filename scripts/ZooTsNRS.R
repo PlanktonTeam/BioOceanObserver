@@ -19,7 +19,7 @@ ZooTsNRSUI <- function(id){
           ),
         mainPanel(
            textOutput(nsZooTsNRS("selected_var")),
-           plotlyOutput(nsZooTsNRS("timeseries"), height = "800px")
+           plotlyOutput(nsZooTsNRS("timeseries"), height = "800px") %>% withSpinner(color="#0dc5c1")
           )))
 }
 

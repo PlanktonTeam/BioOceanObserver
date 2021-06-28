@@ -79,7 +79,7 @@ ZooSpatialUI <- function(id){
                      selected = "Acartia danae")
       ),
     mainPanel(
-      plotOutput(nsZooSpatial("plot2"))
+      plotOutput(nsZooSpatial("plot2")) %>% withSpinner(color="#0dc5c1")
       )
     )
 }
