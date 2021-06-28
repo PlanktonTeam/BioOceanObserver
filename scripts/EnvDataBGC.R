@@ -1,4 +1,4 @@
-## Environmental variables
+## Environmental Data
 # BGC Parameters
 
 # data download

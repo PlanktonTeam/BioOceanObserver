@@ -43,8 +43,7 @@ navbarPage(id = "navbar",
            tabPanel("Zooplankton",
                     tabsetPanel(
                       tabPanel("Time Series", ZooTsNRSUI("one")),
-                      tabPanel("Spatial Analysis", 
-                               h3("Some spatial maps can go here - For example CPR data or GAM outputs?")),
+                      tabPanel("Spatial Analysis", ZooSpatialUI("one")),
                       tabPanel("Climatology",
                                h3("Long term means")),
                       tabPanel("Environmental Drivers")
