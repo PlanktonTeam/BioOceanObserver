@@ -5,6 +5,7 @@ library(plotly)
 
 source("scripts/ZooTsNRS.R")
 source("scripts/EnvDataBGC.R")
+source("scripts/ZooSpatial.R")
 
 navbarPage(id = "navbar",  
            title = div( img(src = "logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),
@@ -41,9 +42,9 @@ navbarPage(id = "navbar",
                       tabPanel("Section 2"),
                       tabPanel("Section 3"))),
            tabPanel("Zooplankton",
-                    tabsetPanel(
+                    tabsetPanel(id = 'tabs',
                       tabPanel("Time Series", ZooTsNRSUI("one")),
-                      tabPanel("Spatial Analysis", ZooSpatialUI("one")),
+                      tabPanel(value = "SA", "Spatial Analysis", ZooSpatialUI("one")),
                       tabPanel("Climatology",
                                h3("Long term means")),
                       tabPanel("Environmental Drivers")

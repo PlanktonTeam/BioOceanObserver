@@ -33,7 +33,7 @@ ZooTsNRS <- function(id){
       datNRSi <- read_csv("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plankton/Output/NRS_Indices.csv") %>% 
         mutate(Code = str_sub(TripCode, 1, 3),
                Name = str_c(Station, " (",Code,")"), # Create neat name for plotting
-               Month = month(SampleDateLocal, label = TRUE, abbr = TRUE),
+               Month = month(SampleDateLocal),
                Year = year(SampleDateLocal),
                Code = factor(Code),
                Name = factor(Name)) %>% 

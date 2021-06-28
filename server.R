@@ -11,8 +11,6 @@ function(input, output, session) {
   library(plotly)
   library(tidyverse)
   
-  # source all the main functions from the IMOS_Toolbox
-  source("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plankton/IMOS_Plankton_functions.R")
   # source the R scripts with the HeaderTab code
   source("scripts/ZooTsNRS.R")
   source("scripts/EnvDataBGC.R")
@@ -28,14 +26,18 @@ function(input, output, session) {
     if (req(input$navbar) == "Zooplankton")
       ZooTsNRS("one")
     
-    ### Zooplankton Spatial data  
-    if (req(input$navbar) == "Zooplankton")
-      ZooSpatial("one")
-    
     ## Env Data - NRS BGC
     if (req(input$navbar) == "Environmental Data")
       EnvDataBGC("one")
   
   })
+  
+  ### Zooplankton Spatial data  
+  observeEvent(input$tabs, {
+    if(input$tabs == "SA"){
+    ZooSpatial("one")
+  }
+  })
+  
 }
 
