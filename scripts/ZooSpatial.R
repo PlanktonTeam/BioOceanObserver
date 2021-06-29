@@ -79,7 +79,8 @@ ZooSpatialUI <- function(id){
                      selected = "Acartia danae")
       ),
     mainPanel(
-      plotOutput(nsZooSpatial("plot2")) %>% withSpinner(color="#0dc5c1")
+      plotOutput(nsZooSpatial("plot2")) %>% withSpinner(color="#0dc5c1"),
+      imageOutput("SDMs")
       )
     )
 }
@@ -133,7 +134,15 @@ ZooSpatial <- function(id){
 
       }) %>% bindCache(input$species)
 
+    # add SDM if it is available
+      output$SDMs <- renderImage ({
 
+        filename <- normalizePath(file.path('./images',
+                                  paste("SDMTweGAM_", input$species, ".png", sep = '')))
+        
+        list(src = filename,
+             alt = paste('Species Distribution Map: ', input$species))
+      }, deleteFile = FALSE)
     }
   )
 }
