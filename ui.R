@@ -44,12 +44,14 @@ navbarPage(id = "navbar",
                       tabPanel("Section 2"),
                       tabPanel("Section 3"))),
            tabPanel("Zooplankton",
-                    tabsetPanel(id = 'tabs',
+                    tabsetPanel(id = 'zoo',
                       tabPanel("Time Series", ZooTsNRSUI("one")),
-                      tabPanel(value = "SA", "Spatial Analysis", ZooSpatialUI("one")),
+                      tabPanel(value = "dist", "Distributions", ZooSpatialUI("one")),
+                      tabPanel(value = "SA", "Spatial Analysis"),
                       tabPanel("Climatology",
                                h3("Long term means")),
-                      tabPanel("Environmental Drivers")
+                      tabPanel("Environmental Drivers",
+                               h3("Good place for SDMs?"))
                     )),
            tabPanel("Larval Fish",
                     tabsetPanel(

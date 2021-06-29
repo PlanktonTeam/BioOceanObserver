@@ -53,14 +53,17 @@ ZooTsNRS <- function(id){
           #selectedData <- complete(selectedData,
 
           selectedData <- reactive({
-          selectedData <- as.data.frame(filter(datNRSi, datNRSi$Code %in% input$sta))
+            req(input$sta)
+            validate(need(!is.na(input$sta), "Error: Please select a station")) # this doesn't appear to be doing anything
+            
+            selectedData <- as.data.frame(filter(datNRSi, datNRSi$Code %in% input$sta))
 
           # Drop unwanted factor levels from whole dataframe
           selectedData[] <- lapply(selectedData, function(x) if(is.factor(x)) factor(x) else x)
           selectedData$ycol <- selectedData[, colnames(selectedData) %in% input$ycol]
 
           return(selectedData)
-        })
+        }) %>% bindCache(input$ycol,input$sta)
 
           output$ycol <- renderUI({
             ns <- session$nsZooTsNRS
@@ -77,7 +80,7 @@ ZooTsNRS <- function(id){
         # Plot abundance spectra by species
         output$timeseries <- renderPlotly({
           
-         if (is.null(datNRSi$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+          if (is.null(datNRSi$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
              return(NULL)
 
           p1 <- ggplot(selectedData(), aes(x = SampleDateLocal, y = ycol)) +
@@ -129,8 +132,7 @@ ZooTsNRS <- function(id){
         })
 
         output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
-
-          aust <- ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
+           aust <- ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
 
           meta_sf <- meta %>%
             st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
@@ -146,9 +148,8 @@ ZooTsNRS <- function(id){
             theme_void() +
             theme(axis.title = element_blank(), panel.background = element_rect(fill = NA, colour = NA))
         pmap <- ggplotly(pmap)
-        #cacheKeyExpr = { list(input$Site) } # use cached version if input reverts to a previous state based on Site selection
-
-        })
+        
+        }) %>% bindCache(input$ycol, selectedData())
 
         # Table of selected dataset ----
         output$table <- renderTable({

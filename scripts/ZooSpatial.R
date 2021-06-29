@@ -92,8 +92,10 @@ ZooSpatial <- function(id){
     function(input, output, session) {
       #      Subset data
       selectedZS <- reactive({
+
         req(input$species)
         validate(need(!is.na(input$species), "Error: Please select a species"))
+        
         obs %>%
           select(Sample, Taxon, Counts) %>%
           filter(Taxon %in% input$species) %>%
@@ -116,7 +118,6 @@ ZooSpatial <- function(id){
       
      # Create plot object the plotOutput function is expecting
       output$plot2 <- renderPlot({
-
           dat <- absences %>% mutate(Taxon = input$species) %>% rbind(selectedZS()) %>%
           mutate(freqfac = factor(freqfac, levels = c("Absent", "Seen in 25%",'50%', '75%', "100 % of Samples")))
 

@@ -34,8 +34,8 @@ function(input, output, session) {
 
   ## Run when changing page within tab
   ### Zooplankton Spatial data  
-  observeEvent(input$tabs, {
-    if(input$tabs == "SA"){
+  observeEvent(input$zoo, {
+    if(input$zoo == "dist"){
     ZooSpatial("one")
   }
   })
