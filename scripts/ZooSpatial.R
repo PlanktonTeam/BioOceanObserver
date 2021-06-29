@@ -13,6 +13,8 @@ source("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plank
 
 ## Prepare data
 
+## This could all be pre-done in the package so the final datasets can be sourced from the package without re-generation.
+
 ZooCountNRS <- getNRSZooCount() %>%
   rename(Sample = TripCode, Counts = TaxonCount) %>%
   filter(Species != "spp." & !is.na(Species) & !grepl("cf.", Species) & !grepl("grp", Species) & Genus != '') %>% 
@@ -80,7 +82,7 @@ ZooSpatialUI <- function(id){
       ),
     mainPanel(
       plotOutput(nsZooSpatial("plot2")) %>% withSpinner(color="#0dc5c1"),
-      imageOutput("SDMs")
+      imageOutput(nsZooSpatial("SDMs"))
       )
     )
 }
@@ -135,17 +137,17 @@ ZooSpatial <- function(id){
       }) %>% bindCache(input$species)
 
     # add SDM if it is available
-      output$SDMs <- renderImage ({
+      output$SDMs <- renderImage({
 
-        filename <- normalizePath(file.path('./images',
-                                  paste("SDMTweGAM_", input$species, ".png", sep = '')))
-        
+        filename <- paste("www/SDMTweGAM_", input$species, ".png", sep = "")
+
         list(src = filename,
-             alt = paste('Species Distribution Map: ', input$species))
-      }, deleteFile = FALSE)
+             height = 400, width = 400,
+             alt = 'Species Distribution Map not available')
+
+       }, deleteFile = FALSE)
     }
   )
 }
-
 
 
