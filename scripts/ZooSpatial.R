@@ -79,12 +79,16 @@ ZooSpatialUI <- function(id){
       # Species selector
       selectizeInput(inputId = nsZooSpatial('species'), label = "Select a species", choices = unique(obs$Taxon), 
                      selected = "Acartia danae")
+      #textInput("DistMapExp"), 
+      #textInput("SDMsMapExp")
       ),
     mainPanel(
+      h6(textOutput(nsZooSpatial("DistMapExp"), container = span)),      
       plotOutput(nsZooSpatial("plot2")) %>% withSpinner(color="#0dc5c1"),
-      imageOutput(nsZooSpatial("SDMs"))
-      )
+      h6(textOutput(nsZooSpatial("SDMsMapExp"), container = span)),      
+      imageOutput(nsZooSpatial("SDMs")) %>% align="center"
     )
+  )
 }
 
 # function for server
@@ -146,6 +150,14 @@ ZooSpatial <- function(id){
              alt = 'Species Distribution Map not available')
 
        }, deleteFile = FALSE)
+      
+    # add text information 
+      output$DistMapExp <- renderText({
+        "This map is a frequency of occurence map based on the NRS and CPR data for each species"
+      }) 
+      output$SDMsMapExp <- renderText({
+        "This map is a modelled output of the relative distribution for a species. This is calculated using NRS and CPR data in a Tweedie model. The environmental variables are SST, Chla, deth, Month"
+      }) 
     }
   )
 }

@@ -24,7 +24,7 @@ function(input, output, session) {
   observe({
     ### Zooplankton time series data  
     if (req(input$navbar) == "Zooplankton")
-      ZooTsNRS("one")
+      ZooTsNRS("one") # these ids could be more explanatory if we are going to reuse UIs, although that might result in more complication
     
     ## Env Data - NRS BGC
     if (req(input$navbar) == "Environmental Data")

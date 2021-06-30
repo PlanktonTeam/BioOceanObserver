@@ -1,3 +1,5 @@
+## file for testing scripts in a small way before making into a module
+
 library(shiny)
 
 ui <- pageWithSidebar(
