@@ -79,14 +79,12 @@ ZooSpatialUI <- function(id){
       # Species selector
       selectizeInput(inputId = nsZooSpatial('species'), label = "Select a species", choices = unique(obs$Taxon), 
                      selected = "Acartia danae")
-      #textInput("DistMapExp"), 
-      #textInput("SDMsMapExp")
       ),
     mainPanel(
       h6(textOutput(nsZooSpatial("DistMapExp"), container = span)),      
       plotOutput(nsZooSpatial("plot2")) %>% withSpinner(color="#0dc5c1"),
       h6(textOutput(nsZooSpatial("SDMsMapExp"), container = span)),      
-      imageOutput(nsZooSpatial("SDMs")) %>% align="center"
+      imageOutput(nsZooSpatial("SDMs")) 
     )
   )
 }
