@@ -13,8 +13,8 @@ ZooTsNRSUI <- function(id){
     sidebarLayout(
       sidebarPanel(
            plotlyOutput(nsZooTsNRS("plotmap"), height = "200px"),
-           uiOutput(nsZooTsNRS("Site")),
-           uiOutput(nsZooTsNRS("ycol")),
+           checkboxGroupInput(inputId = nsZooTsNRS("Site"), label = "Select a station", choices = unique(datNRSi$Station), selected = "Maria Island"),
+           selectInput(inputId = nsZooTsNRS("ycol"), label = 'Select a parameter', choices = unique(datNRSi$parameters), selected = "Biomass_mgm3"),
            downloadButton(nsZooTsNRS("downloadData"), "Data"),
            downloadButton(nsZooTsNRS("downloadPlot"), "Plot"),
            downloadButton(nsZooTsNRS("downloadNote"), "Notebook")
@@ -30,43 +30,19 @@ ZooTsNRS <- function(id){
   moduleServer(
     id,
     function(input, output, session) {
-      
-      output$Site <- renderUI({
-        ns <- session$nsZooTsNRS
-        checkboxGroupInput(session$ns("sta"),
-                           label = h3("Select NRS Code"),
-                           choiceValues = levels(datNRSi$Code),
-                           choiceNames = levels(datNRSi$Name),
-                           selected = "MAI")
-        })
-
-          # I need to figure out a way to pad out the dataframe to include all combinations so that the bars are the same width
-          #selectedData <- complete(selectedData,
-
+        # I need to figure out a way to pad out the dataframe to include all combinations so that the bars are the same width
+          
           selectedData <- reactive({
-            req(input$sta)
-            validate(need(!is.na(input$sta), "Error: Please select a station")) # this doesn't appear to be doing anything
+            req(input$Site)
+            req(input$ycol)
+            validate(need(!is.na(input$Site), "Error: Please select a station."))
+            validate(need(!is.na(input$ycol), "Error: Please select a parameter."))
             
-            selectedData <- as.data.frame(filter(datNRSi, datNRSi$Code %in% input$sta))
+            selectedData <- datNRSi %>% filter(Station %in% input$Site,
+                                               parameters %in% input$ycol) %>%
+              droplevels()
 
-          # Drop unwanted factor levels from whole dataframe
-          selectedData[] <- lapply(selectedData, function(x) if(is.factor(x)) factor(x) else x)
-          selectedData$ycol <- selectedData[, colnames(selectedData) %in% input$ycol]
-
-          return(selectedData)
-        }) %>% bindCache(input$ycol,input$sta)
-
-          output$ycol <- renderUI({
-            ns <- session$nsZooTsNRS
-            selectInput(session$ns("ycol"), 'Variable', names(select(datNRSi,ZoopAbundance_m3:CopepodEvenness)))
-        })
-
-        # Use this code if I want to print out something on the UI
-        # output$selected_var <- renderText({
-
-          # paste(selectedData()$Code)
-
-        #})
+        }) %>% bindCache(input$ycol,input$Site)
 
         # Plot abundance spectra by species
         output$timeseries <- renderPlotly({
@@ -74,19 +50,19 @@ ZooTsNRS <- function(id){
           if (is.null(datNRSi$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
              return(NULL)
 
-          p1 <- ggplot(selectedData(), aes(x = SampleDateLocal, y = ycol)) +
+          p1 <- ggplot(selectedData(), aes(x = SampleDateLocal, y = Values)) +
             geom_line(aes(group = Code, color = Code)) +
             geom_point(aes(group = Code, color = Code)) +
             scale_x_datetime() +
-            labs(y = input$ycol) +
+            #labs(y = input$ycol) +
             theme(legend.position = "none")
           p1 <- ggplotly(p1) %>% layout(showlegend = FALSE)
 
           dat_mth <- selectedData() %>% filter(Month != 'NA') %>% # need to drop NA from month, added to dataset by complete(Year, Code)
             group_by(Month, Code) %>%
-            summarise(mean = mean(ycol, na.rm = TRUE),
-                      N = length(ycol),
-                      sd = sd(ycol, na.rm = TRUE),
+            summarise(mean = mean(Values, na.rm = TRUE),
+                      N = length(Values),
+                      sd = sd(Values, na.rm = TRUE),
                       se = sd / sqrt(N),
                       .groups = "drop")
 
@@ -102,9 +78,9 @@ ZooTsNRS <- function(id){
 
           dat_yr <- selectedData() %>%
             group_by(Year, Code) %>%
-            summarise(mean = mean(ycol, na.rm = TRUE),
-                      N = length(ycol),
-                      sd = sd(ycol, na.rm = TRUE),
+            summarise(mean = mean(Values, na.rm = TRUE),
+                      N = length(Values),
+                      sd = sd(Values, na.rm = TRUE),
                       se = sd / sqrt(N),
                       .groups = "drop")
 
@@ -114,7 +90,7 @@ ZooTsNRS <- function(id){
             geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
                           width = .2,                    # Width of the error bars
                           position = position_dodge(.9)) +
-            labs(y = input$ycol) +
+            #labs(y = input$ycol) +
             theme(legend.position = "bottom",
                   legend.title = element_blank())
           p3 <- ggplotly(p3) %>%

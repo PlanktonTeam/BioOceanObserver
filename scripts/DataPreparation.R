@@ -92,17 +92,19 @@ save(obs, Samples, SampLocs, absences, aus, file = "data/ZooSpatial.RData")
 ## ZooTSNRS.R
 
 datNRSi <- read_csv("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plankton/Output/NRS_Indices.csv") %>% 
-  mutate(Code = str_sub(TripCode, 1, 3),
-         Name = str_c(Station, " (",Code,")"), # Create neat name for plotting
-         Month = month(SampleDateLocal),
+  mutate(Month = month(SampleDateLocal),
          Year = year(SampleDateLocal),
+         Code = str_sub(TripCode, 1, 3),
+         Name = str_c(Station, " (",Code,")"), # Create neat name for plotting
          Code = factor(Code),
-         Name = factor(Name)) %>% 
-  arrange(SampleDateLocal) %>% # Sort in ascending date order
-  complete(Year, Code) # Turns implicit missing values into explicit missing values.
+         Name = factor(Name)) %>%
+  complete(Year, nesting(Station, Code)) %>% # Turns implicit missing values into explicit missing values.
+  select(Year, Month, SampleDateLocal, Latitude, Station, Code, Biomass_mgm3:CopepodEvenness) %>%
+  pivot_longer(-c(Year:Code), values_to = 'Values', names_to = "parameters") %>%
+  arrange(-Latitude)  # Sort in ascending date order
 
 meta_sf <- getNRSTrips() %>% select(Station, StationCode, Longitude, Latitude) %>% unique() %>%
-  rename(Code = STATIONCODE) %>%
+  rename(Code = StationCode) %>%
   filter(Station != 'Port Hacking 4') %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
 
