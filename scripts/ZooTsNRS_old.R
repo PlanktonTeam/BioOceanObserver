@@ -3,8 +3,6 @@
 
 # function for UI module
 
-load("data/ZoOTsNRS.RData")
-
 ZooTsNRSUI <- function(id){
   
   nsZooTsNRS <- NS(id)
@@ -13,8 +11,8 @@ ZooTsNRSUI <- function(id){
     sidebarLayout(
       sidebarPanel(
            plotlyOutput(nsZooTsNRS("plotmap"), height = "200px"),
-           checkboxGroupInput(inputId = nsZooTsNRS("Site"), label = "Select a station", choices = unique(datNRSi$Station), selected = "Maria Island"),
-           selectInput(inputId = nsZooTsNRS("ycol"), label = 'Select a parameter', choices = unique(datNRSi$parameters), selected = "Biomass_mgm3"),
+           uiOutput(nsZooTsNRS("Site")),
+           uiOutput(nsZooTsNRS("ycol")),
            downloadButton(nsZooTsNRS("downloadData"), "Data"),
            downloadButton(nsZooTsNRS("downloadPlot"), "Plot"),
            downloadButton(nsZooTsNRS("downloadNote"), "Notebook")
@@ -30,19 +28,54 @@ ZooTsNRS <- function(id){
   moduleServer(
     id,
     function(input, output, session) {
-        # I need to figure out a way to pad out the dataframe to include all combinations so that the bars are the same width
-          
-          selectedData <- reactive({
-            req(input$Site)
-            req(input$ycol)
-            validate(need(!is.na(input$Site), "Error: Please select a station."))
-            validate(need(!is.na(input$ycol), "Error: Please select a parameter."))
-            
-            selectedData <- datNRSi %>% filter(Station %in% input$Site,
-                                               parameters %in% input$ycol) %>%
-              droplevels()
+      meta <- read.csv('NRS_Meta.csv') # probably should have this file, and access it from, the same place as the other files
+      
+      datNRSi <- read_csv("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plankton/Output/NRS_Indices.csv") %>% 
+        mutate(Code = str_sub(TripCode, 1, 3),
+               Name = str_c(Station, " (",Code,")"), # Create neat name for plotting
+               Month = month(SampleDateLocal),
+               Year = year(SampleDateLocal),
+               Code = factor(Code),
+               Name = factor(Name)) %>% 
+        arrange(SampleDateLocal) %>% # Sort in ascending date order
+        complete(Year, Code) # Turns implicit missing values into explicit missing values.
+      
+      output$Site <- renderUI({
+        ns <- session$nsZooTsNRS
+        checkboxGroupInput(session$ns("sta"),
+                           label = h3("Select NRS Code"),
+                           choiceValues = levels(datNRSi$Code),
+                           choiceNames = levels(datNRSi$Name),
+                           selected = "MAI")
+        })
 
-        }) %>% bindCache(input$ycol,input$Site)
+          # I need to figure out a way to pad out the dataframe to include all combinations so that the bars are the same width
+          #selectedData <- complete(selectedData,
+
+          selectedData <- reactive({
+            req(input$sta)
+            validate(need(!is.na(input$sta), "Error: Please select a station")) # this doesn't appear to be doing anything
+            
+            selectedData <- as.data.frame(filter(datNRSi, datNRSi$Code %in% input$sta))
+
+          # Drop unwanted factor levels from whole dataframe
+          selectedData[] <- lapply(selectedData, function(x) if(is.factor(x)) factor(x) else x)
+          selectedData$ycol <- selectedData[, colnames(selectedData) %in% input$ycol]
+
+          return(selectedData)
+        }) %>% bindCache(input$ycol,input$sta)
+
+          output$ycol <- renderUI({
+            ns <- session$nsZooTsNRS
+            selectInput(session$ns("ycol"), 'Variable', names(select(datNRSi,ZoopAbundance_m3:CopepodEvenness)))
+        })
+
+        # Use this code if I want to print out something on the UI
+        # output$selected_var <- renderText({
+
+          # paste(selectedData()$Code)
+
+        #})
 
         # Plot abundance spectra by species
         output$timeseries <- renderPlotly({
@@ -50,21 +83,19 @@ ZooTsNRS <- function(id){
           if (is.null(datNRSi$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
              return(NULL)
 
-          p1 <- ggplot(selectedData(), aes(x = SampleDateLocal, y = Values)) +
+          p1 <- ggplot(selectedData(), aes(x = SampleDateLocal, y = ycol)) +
             geom_line(aes(group = Code, color = Code)) +
             geom_point(aes(group = Code, color = Code)) +
             scale_x_datetime() +
-            #labs(y = input$ycol) +
-            theme(legend.position = "none")
-          p1 <- ggplotly(p1) %>% layout(showlegend = FALSE)
+            labs(y = input$ycol)
+          p1 <- ggplotly(p1)
 
           dat_mth <- selectedData() %>% filter(Month != 'NA') %>% # need to drop NA from month, added to dataset by complete(Year, Code)
             group_by(Month, Code) %>%
-            summarise(mean = mean(Values, na.rm = TRUE),
-                      N = length(Values),
-                      sd = sd(Values, na.rm = TRUE),
-                      se = sd / sqrt(N),
-                      .groups = "drop")
+            summarise(mean = mean(ycol, na.rm = TRUE),
+                      N = length(ycol),
+                      sd = sd(ycol, na.rm = TRUE),
+                      se = sd / sqrt(N))
 
           # Error bars represent standard error of the mean
           p2 <- ggplot(data = dat_mth, aes(x = Month, y = mean, fill = Code)) +
@@ -73,16 +104,16 @@ ZooTsNRS <- function(id){
                           width = .2,                    # Width of the error bars
                           position = position_dodge(.9)) +
             labs(y = input$ycol) +
-            theme(legend.position = "none")
-          p2 <- ggplotly(p2) %>% layout(showlegend = FALSE)
+            theme(legend.text = element_blank(),
+                  legend.title = element_blank())
+          p2 <- ggplotly(p2)
 
           dat_yr <- selectedData() %>%
             group_by(Year, Code) %>%
-            summarise(mean = mean(Values, na.rm = TRUE),
-                      N = length(Values),
-                      sd = sd(Values, na.rm = TRUE),
-                      se = sd / sqrt(N),
-                      .groups = "drop")
+            summarise(mean = mean(ycol, na.rm = TRUE),
+                      N = length(ycol),
+                      sd = sd(ycol, na.rm = TRUE),
+                      se = sd / sqrt(N))
 
           # Error bars represent standard error of the mean
           p3 <- ggplot(data = dat_yr, aes(x = Year, y = mean, fill = Code)) +
@@ -90,13 +121,12 @@ ZooTsNRS <- function(id){
             geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
                           width = .2,                    # Width of the error bars
                           position = position_dodge(.9)) +
-            #labs(y = input$ycol) +
-            theme(legend.position = "bottom",
+            labs(y = input$ycol) +
+            theme(legend.text = element_blank(),
                   legend.title = element_blank())
-          p3 <- ggplotly(p3) %>%
-            layout(legend = list(orientation = "h", y = -0.1))
+          p3 <- ggplotly(p3)
 
-          subplot(style(p1, showlegend = FALSE), style(p2, showlegend = FALSE), p3, nrows = 3, titleY = TRUE, titleX = TRUE, margin = 0.05) # Use plotly to arrange plots
+          subplot(p1, p2, p3, nrows = 3, titleY = TRUE, titleX = TRUE, margin = 0.05) # Use plotly to arrange plots
           # need to sort out legends, can do this by using plotly to create the graphs rather than converting from ggplot
           #p1 / p2 / p3 # Use patchwork to arrange plots
         })
@@ -104,7 +134,10 @@ ZooTsNRS <- function(id){
         output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
            aust <- ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
 
-          meta2_sf <- subset(meta_sf, meta_sf$Code %in% selectedData()$Code)
+          meta_sf <- meta %>%
+            st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+          meta2_sf <- subset(meta_sf, meta_sf$STATION %in% selectedData()$Code)
 
           pmap <- ggplot() +
             geom_sf(data = aust, size = 0.05, fill = "grey80") +
