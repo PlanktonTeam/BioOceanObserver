@@ -12,9 +12,9 @@ function(input, output, session) {
   library(tidyverse)
   
   # source the R scripts with the HeaderTab code
-  source("scripts/ZooTsNRS.R")
-  source("scripts/EnvDataBGC.R")
-  source("scripts/ZooSpatial.R")
+  source("scripts/zootsnrs.R")
+  source("scripts/envdatabgc.R")
+  source("scripts/zoospatial.R")
   
   ## global options and themes can go here
   theme_set(theme_bw(base_size = 10) + theme(legend.position = "bottom"))

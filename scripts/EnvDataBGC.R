@@ -2,7 +2,7 @@
 # BGC Parameters
 
 # source data required
-load("data/envDataBGC.RData")
+load("data/envdatabgc.RData")
 
 # function for UI module
 

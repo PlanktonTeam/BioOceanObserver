@@ -5,9 +5,9 @@ library(plotly)
 library(shinycssloaders)
 
 
-source("scripts/ZooTsNRS.R")
-source("scripts/EnvDataBGC.R")
-source("scripts/ZooSpatial.R")
+source("scripts/zootsnrs.R")
+source("scripts/envdatabgc.R")
+source("scripts/zoospatial.R")
 
 navbarPage(id = "navbar",  
            title = div( img(src = "logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),

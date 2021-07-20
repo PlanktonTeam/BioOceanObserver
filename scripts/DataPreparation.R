@@ -31,7 +31,7 @@ DataPrepEnvBGC <- memoise(function(){
 } )
 
 NRSBGCEnvData <- DataPrepEnvBGC()
-save(NRSBGCEnvData, file = "data/EnvDataBGC.RData")
+save(NRSBGCEnvData, file = "data/envdatabgc.RData")
 
 
 ## ZooSpatial.R
@@ -87,7 +87,7 @@ aus <- ozmap()
 absences <-  Samples[1:3] %>% mutate(Taxon = "Taxon", freqsamp = 0, freqfac = as.factor("Absent")) %>%
   untibble()
 
-save(obs, Samples, SampLocs, absences, aus, file = "data/ZooSpatial.RData")
+save(obs, Samples, SampLocs, absences, aus, file = "data/zoospatial.RData")
 
 ## ZooTSNRS.R
 
@@ -108,4 +108,4 @@ meta_sf <- getNRSTrips() %>% select(Station, StationCode, Longitude, Latitude) %
   filter(Station != 'Port Hacking 4') %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
 
-save(datNRSi, meta_sf, file = "data/ZooTsNRS.RData")
+save(datNRSi, meta_sf, file = "data/zootsnrs.RData")

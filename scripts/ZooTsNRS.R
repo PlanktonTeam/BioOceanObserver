@@ -3,7 +3,7 @@
 
 # function for UI module
 
-load("data/ZoOTsNRS.RData")
+load("data/zootsnrs.RData")
 
 ZooTsNRSUI <- function(id){
   

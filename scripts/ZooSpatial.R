@@ -2,7 +2,7 @@
 # Spatial
 
 # source data required
-load("data/ZooSpatial.RData")
+load("data/zoospatial.RData")
 
 # function for UI module
 ZooSpatialUI <- function(id){
