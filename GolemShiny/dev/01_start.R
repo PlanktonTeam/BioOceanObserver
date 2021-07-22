@@ -19,9 +19,9 @@
 ## to change the name in the app_sys() function in app_config.R /!\
 ## 
 golem::fill_desc(
-  pkg_name = "IMOS_BOO", # The Name of the package containing the App 
+  pkg_name = "imosboo", # The Name of the package containing the App 
   pkg_title = "Visualisation of IMOS biological data", # The Title of the package containing the App 
-  pkg_description = "This package contains tools to visualise IMOS data", # The Description of the package containing the App 
+  pkg_description = "A visualisation tool for IMOS biologial data.", # The Description of the package containing the App 
   author_first_name = "Claire", # Your First Name
   author_last_name = "Davies", # Your Last Name
   author_email = "claire.davies@csiro.au", # Your Email
@@ -33,11 +33,17 @@ golem::set_golem_options()
 
 ## Create Common Files ----
 ## See ?usethis for more information
-usethis::use_mit_license( "Golem User" )  # You can set another license here
+usethis::use_mit_license( name = "Claire Davies" )  # You can set another license here
 usethis::use_readme_rmd( open = FALSE )
 usethis::use_code_of_conduct()
 usethis::use_lifecycle_badge( "Experimental" )
 usethis::use_news_md( open = FALSE )
+
+## Add a data raw file
+## If you have data in your package
+usethis::use_data_raw(name = "EnvDataBGC_RData", open = FALSE)
+usethis::use_data_raw(name = "ZooSpatial_RData", open = FALSE)
+usethis::use_data_raw(name = "ZooTsNRS_RData", open = FALSE)
 
 ## Use git ----
 usethis::use_git()
@@ -51,7 +57,7 @@ golem::use_recommended_deps()
 
 ## Favicon ----
 # If you want to change the favicon (default is golem's one)
-golem::use_favicon() # path = "path/to/ico". Can be an online file. 
+golem::use_favicon() # path = "path/to/icon". Can be an online file. 
 golem::remove_favicon()
 
 ## Add helper functions ----
