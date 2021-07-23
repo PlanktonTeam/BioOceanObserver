@@ -15,14 +15,15 @@
 
 ## Dependencies ----
 ## Add one line by package you want to add as dependency
-usethis::use_package( "thinkr" )
 usethis::use_package( "dplyr") # using tidyverse as a dependency is discouraged as it is a meta-package
-usethis::use_package( "lubridate")
 usethis::use_package( "ggplot2" )
+usethis::use_package( "lubridate")
+usethis::use_package( "patchwork" )
 usethis::use_package( "plotly" )
 usethis::use_package( "shinycssloaders" )
 usethis::use_package( "shinythemes" )
-usethis::use_package( "patchwork" )
+usethis::use_package( "thinkr" )
+usethis::use_package( "tidyr" )
 usethis::use_pipe()
 
 

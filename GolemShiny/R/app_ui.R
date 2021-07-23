@@ -45,7 +45,7 @@ app_ui <- function(request) {
                tabPanel("Zooplankton",
                         tabsetPanel(id = 'zoo',
                                     tabPanel(value = "zts", "Time Series", mod_ZooTsNRS_ui("ZooTsNRS_ui_1")),
-                                    tabPanel(value = "dist", "Distributions"), #ZooSpatialUI("one")),
+                                    tabPanel(value = "dist", "Distributions", mod_ZooSpatial_ui("ZooSpatial_ui_1")),
                                     tabPanel(value = "SA", "Spatial Analysis"),
                                     tabPanel("Climatology",
                                              h3("Long term means")),
