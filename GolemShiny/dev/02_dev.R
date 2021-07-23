@@ -25,6 +25,7 @@ usethis::use_package( "shinythemes" )
 usethis::use_package( "patchwork" )
 usethis::use_pipe()
 
+
 ## Add modules ----
 ## Create a module infrastructure in R/
 golem::add_module( name = "ZooTsNRS" ) # Name of the module

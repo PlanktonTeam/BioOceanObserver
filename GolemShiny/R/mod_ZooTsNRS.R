@@ -12,7 +12,7 @@ mod_ZooTsNRS_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        plotly::plotlyOutput(nsZooTsNRS("plotmap"), height = "200px"),
+        plotlyOutput(nsZooTsNRS("plotmap"), height = "200px"),
         checkboxGroupInput(inputId = nsZooTsNRS("Site"), label = "Select a station", choices = unique(datNRSi$Station), selected = "Maria Island"),
         selectInput(inputId = nsZooTsNRS("ycol"), label = 'Select a parameter', choices = unique(datNRSi$parameters), selected = "Biomass_mgm3"),
         downloadButton(nsZooTsNRS("downloadData"), "Data"),
@@ -37,7 +37,7 @@ mod_ZooTsNRS_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       validate(need(!is.na(input$ycol), "Error: Please select a parameter."))
       
-      selectedData <- datNRSi %>% filter(Station %in% input$Site,
+      selectedData <- datNRSi %>% dplyr::filter(Station %in% input$Site,
                                          parameters %in% input$ycol) %>%
         droplevels()
       
@@ -49,7 +49,7 @@ mod_ZooTsNRS_server <- function(id){
       if (is.null(datNRSi$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
       
-      p1 <- ggplot2::ggplot(selectedData(), aes(x = SampleDateLocal, y = Values)) +
+      p1 <- ggplot(selectedData(), aes(x = SampleDateLocal, y = Values)) +
         geom_line(aes(group = Code, color = Code)) +
         geom_point(aes(group = Code, color = Code)) +
         scale_x_datetime() +
@@ -66,7 +66,7 @@ mod_ZooTsNRS_server <- function(id){
                   .groups = "drop")
       
       # Error bars represent standard error of the mean
-      p2 <- ggplot2::ggplot(data = dat_mth, aes(x = Month, y = mean, fill = Code)) +
+      p2 <- ggplot(data = dat_mth, aes(x = Month, y = mean, fill = Code)) +
         geom_col(position = position_dodge()) +
         geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
                       width = .2,                    # Width of the error bars
@@ -95,17 +95,17 @@ mod_ZooTsNRS_server <- function(id){
       p3 <- ggplotly(p3) %>%
         layout(legend = list(orientation = "h", y = -0.1))
       
-      subplot(style(p1, showlegend = FALSE), style(p2, showlegend = FALSE), p3, nrows = 3, titleY = TRUE, titleX = TRUE, margin = 0.05) # Use plotly to arrange plots
+      subplot(style(p1, showlegend = FALSE), style(p2, showlegend = FALSE), p3, nrows = 3, titleY = TRUE, titleX = TRUE, margin = 0.05) 
       # need to sort out legends, can do this by using plotly to create the graphs rather than converting from ggplot
       #p1 / p2 / p3 # Use patchwork to arrange plots
     })
     
-    output$plotmap <- plotly::renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
-      aust <- ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
+    output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
+      aust <- rnaturalearth::ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
       
       meta2_sf <- subset(meta_sf, meta_sf$Code %in% selectedData()$Code)
       
-      pmap <- ggplot2::ggplot() +
+      pmap <- ggplot() +
         geom_sf(data = aust, size = 0.05, fill = "grey80") +
         geom_sf(data = meta_sf, colour = "blue", size = 1.5) +
         geom_sf(data = meta2_sf, colour = "red", size = 1.5) +

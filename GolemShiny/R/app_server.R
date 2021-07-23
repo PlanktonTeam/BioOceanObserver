@@ -3,19 +3,14 @@
 #' @param input,output,session Internal parameters for {shiny}. 
 #'     DO NOT REMOVE.
 #' @import shiny
+#' @importFrom ggplot2 ggplot aes geom_line geom_sf geom_point scale_x_datetime theme geom_col geom_errorbar labs scale_x_continuous scale_y_continuous theme_void element_blank element_rect position_dodge
+#' @importFrom plotly ggplotly layout renderPlotly plotlyOutput subplot style
+#' @importFrom dplyr summarise filter select group_by
 #' @noRd
 app_server <- function( input, output, session ) {
   # Your application server logic 
-  library(lubridate)
-  library(memoise)
-  library(rgeos)
-  library(rnaturalearth)
-  library(rnaturalearthdata)
-  library(sf)
-  library(patchwork)
-  library(plotly)
-  library(tidyverse)
-  ## only run if selected by tab - this should be home page for each Tab level
+
+    ## only run if selected by tab - this should be home page for each Tab level
   observe({
     ### Zooplankton time series data  
     if (req(input$navbar) == "Zooplankton")  
