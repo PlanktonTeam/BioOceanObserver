@@ -74,7 +74,7 @@ mod_EnvDataBGC_server <- function(id){
           labs(y = "value")
              }
       if(input$smoother){
-        p <- p + geom_smooth(aes(SampleDateLocal, value, colour = Station))
+        p <- p + geom_smooth(aes(SampleDateLocal, value, colour = Station), method = 'loess', formula = y ~ x)
       }
       if(nlevels(unique(selected()$name)) < 1){
         np  <-  1
