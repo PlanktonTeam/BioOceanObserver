@@ -9,7 +9,7 @@ app_ui <- function(request) {
     # Your application UI logic 
     navbarPage(golem_add_external_resources(), # Leave this function for adding external resources
                id = "navbar",  
-               title = div( img(src = "logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),
+               title = div(img(src = "www/logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),
                windowTitle = "The Biological Ocean Observatory",
                theme = shinythemes::shinytheme("flatly"), # not recommended to use themes anymore as used in bslib package
                selected = "Welcome", 
