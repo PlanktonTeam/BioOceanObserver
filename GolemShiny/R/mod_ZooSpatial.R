@@ -78,7 +78,7 @@ mod_ZooSpatial_server <- function(id){
     # add SDM if it is available
     output$SDMs <- renderImage({
       
-      filename <- paste("www/SDMTweGAM_", input$species, ".png", sep = "")
+      filename <- paste("inst/app/www/SDMTweGAM_", input$species, ".png", sep = "")
       
       list(src = filename,
            height = 400, width = 400,

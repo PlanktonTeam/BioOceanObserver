@@ -62,10 +62,12 @@ aus <- ozmap()
 absences <-  Samples[1:3] %>% mutate(Taxon = "Taxon", freqsamp = 0, freqfac = as.factor("Absent")) %>%
   untibble()
 
+# save data into data file
+usethis::use_data(obs, Samples, SampLocs, absences, aus, internal = FALSE)
 
-usethis::use_data(obs, Samples, SampLocs, absences, aus, internal = TRUE)
+## files for SDMs (this will only work for me at the moment)
+listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
+files <- paste("C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps/", listsdm, sep = "")
+file.copy(from=files, to="inst/app/www")
 
-# Updating sysdata with objects you've created just now
-new_data <- c("obs", "Samples", "SampLocs", "absences", "aus")
-sysdata_filenames <- load("R/sysdata.rda")
-save(list = c(sysdata_filenames, new_data), file = "R/sysdata.rda")
+

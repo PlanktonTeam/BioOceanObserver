@@ -53,7 +53,7 @@ mod_ZooTsNRS_server <- function(id){
         geom_line(aes(group = Code, color = Code)) +
         geom_point(aes(group = Code, color = Code)) +
         scale_x_datetime() +
-        #labs(y = input$ycol) +
+        labs(y = "") +
         theme(legend.position = "none")
       p1 <- ggplotly(p1) %>% layout(showlegend = FALSE)
       
@@ -89,7 +89,7 @@ mod_ZooTsNRS_server <- function(id){
         geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
                       width = .2,                    # Width of the error bars
                       position = position_dodge(.9)) +
-        #labs(y = input$ycol) +
+        labs(y = "") +
         theme(legend.position = "bottom",
               legend.title = element_blank())
       p3 <- ggplotly(p3) %>%
