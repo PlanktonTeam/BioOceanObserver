@@ -44,6 +44,7 @@ usethis::use_news_md( open = FALSE )
 usethis::use_data_raw(name = "EnvDataBGC_RData", open = FALSE)
 usethis::use_data_raw(name = "ZooSpatial_RData", open = FALSE)
 usethis::use_data_raw(name = "ZooTsNRS_RData", open = FALSE)
+usethis::use_data_raw(name = "ZooTsCPR_RData", open = FALSE)
 
 ## Use git ----
 usethis::use_git()
