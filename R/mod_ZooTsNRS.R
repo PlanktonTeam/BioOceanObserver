@@ -20,6 +20,7 @@ mod_ZooTsNRS_ui <- function(id){
         downloadButton(nsZooTsNRS("downloadNote"), "Notebook")
       ),
       mainPanel(
+        h6(textOutput(nsZooTsNRS("PlotExp"), container = span)),  
         textOutput(nsZooTsNRS("selected_var")),
         plotly::plotlyOutput(nsZooTsNRS("timeseries"), height = "800px") %>% shinycssloaders::withSpinner(color="#0dc5c1")
       )))
@@ -116,6 +117,11 @@ mod_ZooTsNRS_server <- function(id){
       pmap <- ggplotly(pmap)
       
     }) %>% bindCache(input$ycol, selectedData())
+    
+    # add text information 
+    output$PlotExp <- renderText({
+      "A plot of selected indicies from the NRS around Australia, as a time series, a monthly climatology and an annual mean"
+    }) 
     
     # Table of selected dataset ----
     output$table <- renderTable({
