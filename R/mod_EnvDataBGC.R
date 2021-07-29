@@ -24,9 +24,11 @@ mod_EnvDataBGC_ui <- function(id){
         # Select whether to overlay smooth trend line
         checkboxInput(inputId = nsEnvDataBGC("smoother"), label = strong("Overlay smooth trend line"), value = FALSE)
       ),
-      mainPanel(
+      mainPanel( 
         tabsetPanel(
-          tabPanel("Plot", plotlyOutput(nsEnvDataBGC("plot")) %>% withSpinner(color="#0dc5c1")),
+          tabPanel("Plot", 
+                   h6(textOutput(nsEnvDataBGC("PlotExp"), container = span)),
+                   plotlyOutput(nsEnvDataBGC("plot")) %>% withSpinner(color="#0dc5c1")),
           tabPanel("Data table", DT::DTOutput(nsEnvDataBGC("table"))))))
   )
 }
@@ -89,6 +91,11 @@ mod_EnvDataBGC_server <- function(id){
                              x = 0.5, yanchor = "bottom")), error = function(e){b})
       
     }) %>% bindCache(input$station, input$parameter, input$date, input$depth, input$smoother)
+    
+    # add text information 
+    output$PlotExp <- renderText({
+      "A plot of selected environmental parameters from the NRS as timeseries at the selected depth"
+    }) 
     
     # create table output
     output$table <- DT::renderDataTable(
