@@ -20,7 +20,7 @@ app_server <- function( input, output, session ) {
   ## global options and themes can go here
   theme_set(theme_bw(base_size = 10) + theme(legend.position = "bottom"))
   options(na.action = "na.omit")
-  
+
     ## only run if selected by tab - this should be home page for each Tab level
   observe({
     ### Zooplankton time series data  
@@ -32,10 +32,18 @@ app_server <- function( input, output, session ) {
   })
   
     ## Run when changing page within tab
+    ### Zooplankton CPR time series data
+    observeEvent(input$zoo, {
+      if(input$zoo == "ztscpr"){
+        mod_ZooTsCPR_server("ZooTsCPR_ui_1")
+      }
+    })
+    
     ### Zooplankton Spatial data  
     observeEvent(input$zoo, {
       if(input$zoo == "dist"){
         mod_ZooSpatial_server("ZooSpatial_ui_1")
       }
+      
     })
 }

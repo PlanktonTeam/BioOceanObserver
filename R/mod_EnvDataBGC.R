@@ -29,7 +29,10 @@ mod_EnvDataBGC_ui <- function(id){
           tabPanel("Plot", 
                    h6(textOutput(nsEnvDataBGC("PlotExp"), container = span)),
                    plotlyOutput(nsEnvDataBGC("plot")) %>% withSpinner(color="#0dc5c1")),
-          tabPanel("Data table", DT::DTOutput(nsEnvDataBGC("table"))))))
+          tabPanel("Data table", DT::DTOutput(nsEnvDataBGC("table")))
+          )
+        )
+      )
   )
 }
     
