@@ -4,10 +4,10 @@
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @importFrom ggplot2 ggplot aes element_blank element_rect element_text facet_grid facet_wrap 
-#' geom_blank geom_col geom_errorbar geom_line geom_point geom_sf geom_smooth
+#' geom_blank geom_col geom_errorbar geom_line geom_point geom_sf geom_smooth geom_text
 #' labs position_dodge 
-#' scale_colour_manual scale_x_continuous scale_x_datetime scale_y_continuous 
-#' theme theme_set theme_bw theme_minimal theme_void 
+#' scale_colour_manual scale_fill_manual scale_x_continuous scale_x_datetime scale_y_continuous 
+#' theme theme_set theme_bw theme_minimal theme_void unit
 #' @importFrom plotly ggplotly layout plotlyOutput renderPlotly style subplot 
 #' @importFrom dplyr filter group_by inner_join left_join mutate n select summarise ungroup
 #' @importFrom tidyr drop_na

@@ -12,7 +12,7 @@ mod_ZooTsCPR_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-#        plotlyOutput(nsZooTsCPR("plotmap"), height = "200px"),
+        plotlyOutput(nsZooTsCPR("plotmap"), height = "200px"),
         checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(datCPRzts$BioRegion), selected = "South-east"),
         selectInput(inputId = nsZooTsCPR("parameter"), label = 'Select a parameter', choices = unique(datCPRzts$parameters), selected = "ZoopAbundance_m3"),
         downloadButton(nsZooTsCPR("downloadData"), "Data"),
@@ -63,7 +63,8 @@ mod_ZooTsCPR_server <- function(id){
         scale_x_datetime() +
         labs(y = input$parameter, x = "Time") +
         theme(legend.position = "bottom",
-              strip.background = element_blank())
+              strip.background = element_blank(),
+              strip.text = element_blank())
       p1 <- ggplotly(p1) %>% layout(showlegend = FALSE)
       
       dat_mth <- selectedAbundData() %>% filter(Month != 'NA') %>% # need to drop NA from month, added to dataset by complete(Year, Code)
@@ -157,10 +158,26 @@ mod_ZooTsCPR_server <- function(id){
       #p1 / p2 / p3 # Use patchwork to arrange plots
     })
 
-    # output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
-    # 
-    # 
-    # }) %>% bindCache(selectedData())
+    output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
+     
+    aust <- rnaturalearth::ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
+    df <- data.frame(Region = unique(bioregion$REGION), x = c(135, 165, 115, 115, 160, 160), y = c(-7, -37, -10, -40, -45, -12))
+    
+    gg <- ggplot() +
+      geom_sf(data = bioregion, colour = 'black', aes(fill = REGION)) +
+      geom_sf(data = aust, size = 0.05, fill = "grey80") + 
+      #geom_text(data = df, aes(x, y, label = Region)) +
+      scale_fill_manual(values = c( "dark green", "white", "white", "blue", "red","yellow")) +
+      labs(x="", y="") +
+      theme_void() +
+      theme(legend.position = "none",
+            plot.background = element_rect(fill = "grey92"),
+            panel.background = element_rect(fill = "grey92"),
+            axis.line = element_blank(),
+            plot.margin = unit(c(0,0,0,0),"cm"))
+    
+     
+    }) %>% bindCache(selectedData())
     
     # add text information 
     output$PlotExp1 <- renderText({
