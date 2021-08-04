@@ -44,6 +44,8 @@ mod_ZooTsNRS_server <- function(id){
       
     }) %>% bindCache(input$ycol,input$Site)
     
+    n <- length(unique(selectedData()$Station))
+    
     # Plot abundance spectra by species
     output$timeseries <- plotly::renderPlotly({
       
@@ -55,6 +57,7 @@ mod_ZooTsNRS_server <- function(id){
         geom_point(aes(group = Code, color = Code)) +
         scale_x_datetime() +
         labs(y = "") +
+        scale_colour_manual(values = cmocean::cmocean('matter')(n)) +
         theme(legend.position = "none")
       p1 <- ggplotly(p1) %>% layout(showlegend = FALSE)
       
@@ -73,6 +76,7 @@ mod_ZooTsNRS_server <- function(id){
                       width = .2,                    # Width of the error bars
                       position = position_dodge(.9)) +
         labs(y = input$ycol) +
+        scale_fill_manual(values = cmocean::cmocean('matter')(n)) +
         theme(legend.position = "none")
       p2 <- ggplotly(p2) %>% layout(showlegend = FALSE)
       
@@ -91,6 +95,7 @@ mod_ZooTsNRS_server <- function(id){
                       width = .2,                    # Width of the error bars
                       position = position_dodge(.9)) +
         labs(y = "") +
+        scale_fill_manual(values = cmocean::cmocean('matter')(n)) +
         theme(legend.position = "bottom",
               legend.title = element_blank())
       p3 <- ggplotly(p3) %>%
@@ -101,7 +106,7 @@ mod_ZooTsNRS_server <- function(id){
       #p1 / p2 / p3 # Use patchwork to arrange plots
     })
     
-    output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
+    output$plotmap <- renderPlotly({ 
       aust <- rnaturalearth::ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
       
       meta2_sf <- subset(meta_sf, meta_sf$Code %in% selectedData()$Code)

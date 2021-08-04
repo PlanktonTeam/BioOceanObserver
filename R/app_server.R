@@ -18,7 +18,7 @@ app_server <- function( input, output, session ) {
   # Your application server logic 
   
   ## global options and themes can go here
-  theme_set(theme_bw(base_size = 10) + theme(legend.position = "bottom"))
+  theme_set(theme_bw(base_size = 10) + theme(legend.position = "bottom")) 
   options(na.action = "na.omit")
 
     ## only run if selected by tab - this should be home page for each Tab level

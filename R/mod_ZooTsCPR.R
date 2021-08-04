@@ -13,14 +13,15 @@ mod_ZooTsCPR_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         plotlyOutput(nsZooTsCPR("plotmap"), height = "200px"),
-        checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(datCPRzts$BioRegion), selected = "South-east"),
+        h6("Note there is very little data in the North and North-west regions"),
+        checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(datCPRzts$BioRegion), selected = unique(datCPRzts$BioRegion)),
         selectInput(inputId = nsZooTsCPR("parameter"), label = 'Select a parameter', choices = unique(datCPRzts$parameters), selected = "ZoopAbundance_m3"),
         downloadButton(nsZooTsCPR("downloadData"), "Data"),
         downloadButton(nsZooTsCPR("downloadPlot"), "Plot"),
         downloadButton(nsZooTsCPR("downloadNote"), "Notebook")
       ),
       mainPanel(
-        tabsetPanel(
+        tabsetPanel(id = "CPRts",
           tabPanel("Abundances",
                    h6(textOutput(nsZooTsCPR("PlotExp1"), container = span)),  
                    plotly::plotlyOutput(nsZooTsCPR("timeseries1"), height = "800px") %>% shinycssloaders::withSpinner(color="#0dc5c1")
@@ -39,16 +40,17 @@ mod_ZooTsCPR_ui <- function(id){
 #'
 #' @noRd 
 mod_ZooTsCPR_server <- function(id){
-  moduleServer( id, function(input, output, session){
+  moduleServer( id, function(input, output, session, CPRts){
     
     # For abundances tab  
     selectedAbundData <- reactive({
       req(input$parameter)
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
-      selectedAbundData <- datCPRzts %>% dplyr::filter(#parameters %in% input$parameter,
-                                                       !BioRegion %in% c('North', 'North-west')) %>%
-        mutate(BioRegion = factor(BioRegion, levels = c("Coral Sea", "South-east", "Temperate East", "South-west"))) %>%
+      selectedAbundData <- datCPRzts %>%
+        mutate(BioRegion = factor(BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
+        dplyr::filter(parameters %in% input$parameter,
+                      BioRegion %in% input$region) %>%
         droplevels()
       
     }) %>% bindCache(input$parameter,input$region)
@@ -97,13 +99,21 @@ mod_ZooTsCPR_server <- function(id){
       validate(need(!is.na(input$region), "Error: Please select a region"))
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
-      selectedData <- datCPRzts %>% dplyr::filter(BioRegion %in% input$region,
-                                                  parameters %in% input$parameter) %>%
-        mutate(BioRegion = factor(BioRegion, levels = c("Coral Sea", "South-east", "Temperate East", "South-west", "North-west", "North"))) %>%
+      selectedData <- datCPRzts %>% 
+        mutate(BioRegion = factor(BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
+        dplyr::filter(BioRegion %in% input$region,
+                      parameters %in% input$parameter) %>%
         droplevels()
       
     }) %>% bindCache(input$parameter,input$region)
 
+    bioregionSelection <- reactive({
+      bioregionSelection <- bioregion %>% dplyr::filter(REGION %in% input$region) %>% 
+        mutate(REGION = factor(REGION, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) 
+    }) %>% bindCache(input$region)
+    
+    n <- length(unique(bioregionSelection()$REGION))
+    
     # Plot timeseries by BioRegion
     output$timeseries2 <- plotly::renderPlotly({
       
@@ -112,6 +122,7 @@ mod_ZooTsCPR_server <- function(id){
         geom_point(aes(group = BioRegion, color = BioRegion)) +
         scale_x_datetime() +
         labs(y = "") +
+        scale_colour_manual(values = cmocean::cmocean('matter')(n)) +
         theme(legend.position = "none")
       p1 <- ggplotly(p1) %>% layout(showlegend = FALSE)
 
@@ -130,6 +141,7 @@ mod_ZooTsCPR_server <- function(id){
                       width = .2,                    # Width of the error bars
                       position = position_dodge(.9)) +
         labs(y = input$parameter) +
+        scale_fill_manual(values = cmocean::cmocean('matter')(n)) +
         theme(legend.position = "none")
       p2 <- ggplotly(p2) %>% layout(showlegend = FALSE)
 
@@ -148,6 +160,7 @@ mod_ZooTsCPR_server <- function(id){
                       width = .2,                    # Width of the error bars
                       position = position_dodge(.9)) +
         labs(y = "") +
+        scale_fill_manual(values = cmocean::cmocean('matter')(n)) +
         theme(legend.position = "bottom",
               legend.title = element_blank())
       p3 <- ggplotly(p3) %>%
@@ -160,28 +173,25 @@ mod_ZooTsCPR_server <- function(id){
 
     output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
      
-    aust <- rnaturalearth::ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
-    df <- data.frame(Region = unique(bioregion$REGION), x = c(135, 165, 115, 115, 160, 160), y = c(-7, -37, -10, -40, -45, -12))
-    
-    gg <- ggplot() +
-      geom_sf(data = bioregion, colour = 'black', aes(fill = REGION)) +
-      geom_sf(data = aust, size = 0.05, fill = "grey80") + 
-      #geom_text(data = df, aes(x, y, label = Region)) +
-      scale_fill_manual(values = c( "dark green", "white", "white", "blue", "red","yellow")) +
-      labs(x="", y="") +
-      theme_void() +
-      theme(legend.position = "none",
-            plot.background = element_rect(fill = "grey92"),
-            panel.background = element_rect(fill = "grey92"),
-            axis.line = element_blank(),
-            plot.margin = unit(c(0,0,0,0),"cm"))
-    
-     
-    }) %>% bindCache(selectedData())
+      aust <- rnaturalearth::ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
+      
+      gg <- ggplot() +
+        geom_sf(data = bioregion, colour = 'black', fill = 'white') + 
+        geom_sf(data = bioregionSelection(), colour = 'black', aes(fill = REGION)) +
+        geom_sf(data = aust, size = 0.05, fill = "grey80") +
+        scale_fill_manual(values = cmocean::cmocean('matter')(n)) +
+        labs(x="", y="") +
+        theme_void() +
+        theme(legend.position = "none",
+              plot.background = element_rect(fill = "grey92"),
+              panel.background = element_rect(fill = "grey92"),
+              axis.line = element_blank(),
+              plot.margin = unit(c(0,0,0,0),"cm"))
+        }) %>% bindCache(selectedData())
     
     # add text information 
     output$PlotExp1 <- renderText({
-      "A plot of selected zooplantkon parameters from the CPR around Australia, as a time series and a monthly climatology across bioregions"
+      "A plot of selected zooplantkon parameters from the CPR around Australia, as a time series and a monthly climatology across bioregions. "
     }) 
     output$PlotExp2 <- renderText({
       "A plot of selected zooplantkon parameters from the CPR around Australia, as a time series, a monthly climatology and an annual mean for each bioregion"
