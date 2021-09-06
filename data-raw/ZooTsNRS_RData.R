@@ -27,6 +27,7 @@ usethis::use_data(datNRSi, meta_sf, internal = FALSE)
 #################################################################################
 # save data into sysdata.rda
 usethis::use_data(datNRSi, meta_sf, internal = TRUE)
+
 # Updating sysdata with objects you've created just now
 new_data <- c("datNRSi", "meta_sf")
 sysdata_filenames <- load("R/sysdata.rda")

@@ -19,9 +19,12 @@ Imports:
     patchwork,
     plotly,
     processx,
+    rlang,
+    rnaturalearth,
     shiny (>= 1.6.0),
     shinycssloaders,
     shinythemes,
+    stringr,
     thinkr,
     tidyr
 Encoding: UTF-8

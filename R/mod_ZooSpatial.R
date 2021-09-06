@@ -38,33 +38,35 @@ mod_ZooSpatial_server <- function(id){
       validate(need(!is.na(input$species), "Error: Please select a species"))
       
       obs %>%
-        select(Sample, Taxon, Counts) %>%
-        filter(Taxon %in% input$species) %>%
-        left_join(SampLocs, by="Sample") %>%
+        select(.data$Sample, .data$Taxon, .data$Counts) %>%
+        filter(.data$Taxon %in% input$species) %>%
+        left_join(.data$SampLocs, by="Sample") %>%
         drop_na() %>%
-        group_by(Season, Taxon, Lat, Long) %>%
+        group_by(.data$Season, .data$Taxon, .data$Lat, .data$Long) %>%
         summarise(freq = n()) %>%
-        left_join(Samples, by=c("Lat", "Long", "Season")) %>%
+        left_join(.data$Samples, by=c("Lat", "Long", "Season")) %>%
         ungroup() %>%
-        mutate(freqsamp = freq/samples,
-               freqfac = as.factor(ifelse(freqsamp<0.375, "Seen in 25%",
-                                          ifelse(freqsamp>0.875, "100 % of Samples",
-                                                 ifelse(freqsamp>0.375 & freqsamp<0.625, '50%', '75%')))),
-               Season = as.factor(Season),
-               Season = factor(Season, levels = c("December - February","March - May","June - August","September - November")),
-               Taxon = as.factor(Taxon)) %>%
-        select(Season, Lat, Long, Taxon, freqsamp, freqfac) 
+        mutate(freqsamp = .data$freq/.data$samples,
+               freqfac = as.factor(ifelse(.data$freqsamp<0.375, "Seen in 25%",
+                                          ifelse(.data$freqsamp>0.875, "100 % of Samples",
+                                                 ifelse(.data$freqsamp>0.375 & .data$freqsamp<0.625, '50%', '75%')))),
+               Season = as.factor(.data$Season),
+               Season = factor(.data$Season, levels = c("December - February","March - May","June - August","September - November")),
+               Taxon = as.factor(.data$Taxon)) %>%
+        select(.data$Season, .data$Lat, .data$Long, .data$Taxon, .data$freqsamp, .data$freqfac) 
     }) %>% bindCache(input$species)
     
     # Create plot object the plotOutput function is expecting
     output$plot2 <- renderPlot({
       dat <- absences %>% mutate(Taxon = input$species) %>% rbind(selectedZS()) %>%
-        mutate(freqfac = factor(freqfac, levels = c("Absent", "Seen in 25%",'50%', '75%', "100 % of Samples")))
+        mutate(freqfac = factor(.data$freqfac, levels = c("Absent", "Seen in 25%",'50%', '75%', "100 % of Samples")))
       cols <- c("lightblue1" ,"skyblue3", "dodgerblue2","blue1", "navyblue")
       colscale <- scale_colour_manual(name = '', values = cols, drop = FALSE)
       
-      ggplot() + geom_sf(data = aus) +
-        geom_point(data=dat, aes(x=Long, y=Lat, colour=freqfac), size = 2) + facet_wrap( ~ Season, dir = "v") +
+      aust <- rnaturalearth::ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
+      
+      ggplot() + geom_sf(data = aust) +
+        geom_point(data=dat, aes(x=.data$Long, y=.data$Lat, colour=.data$freqfac), size = 2) + facet_wrap( ~ .data$Season, dir = "v") +
         labs(title = input$species) + colscale +
         theme(strip.background = element_blank(),
               title = element_text(face = "italic"),
@@ -78,7 +80,8 @@ mod_ZooSpatial_server <- function(id){
     # add SDM if it is available
     output$SDMs <- renderImage({
       
-      filename <- paste("inst/app/www/SDMTweGAM_", input$species, ".png", sep = "")
+      speciesName <- stringr::str_replace_all(input$species, " ", "")
+      filename <- paste("inst/app/www/SDMTweGAM_", speciesName, ".png", sep = "")
       
       list(src = filename,
            height = 400, width = 400,

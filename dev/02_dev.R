@@ -21,8 +21,11 @@ usethis::use_package( "ggplot2" )
 usethis::use_package( "lubridate")
 usethis::use_package( "patchwork" )
 usethis::use_package( "plotly" )
+usethis::use_package( "rlang" )
+usethis::use_package( "rnaturalearth" )
 usethis::use_package( "shinycssloaders" )
 usethis::use_package( "shinythemes" )
+usethis::use_package( "stringr" )
 usethis::use_package( "thinkr" )
 usethis::use_package( "tidyr" )
 usethis::use_pipe()
@@ -48,7 +51,9 @@ golem::add_css_file( "custom" )
 
 ## Add internal datasets ----
 ## If you have data in your package
-usethis::use_data() 
+usethis::use_data(NRSBGCEnvData, obs, Samples, SampLocs, absences,
+                  datCPRzts, bioregion, datNRSi, meta_sf, 
+                  overwrite = TRUE, internal = TRUE)
 
 ## Tests ----
 ## Add one line by test you want to create

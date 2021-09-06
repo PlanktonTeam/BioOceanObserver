@@ -57,19 +57,19 @@ mod_EnvDataBGC_server <- function(id){
       validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       NRSBGCEnvData %>%
-        filter(Station %in% input$station,
-               SampleDateLocal > as.POSIXct(input$date[1]) & SampleDateLocal < as.POSIXct(input$date[2]),
-               name %in% input$parameter,
-               SampleDepth_m == input$depth) %>%
-        mutate(Station = as.factor(Station),
-               name = as.factor(name)) 
+        filter(.data$Station %in% input$station,
+               .data$SampleDateLocal > as.POSIXct(input$date[1]) & .data$SampleDateLocal < as.POSIXct(input$date[2]),
+               .data$name %in% input$parameter,
+               .data$SampleDepth_m == input$depth) %>%
+        mutate(Station = as.factor(.data$Station),
+               name = as.factor(.data$name)) 
     }) %>% bindCache(input$station, input$parameter, input$date, input$depth)
     
     
     # Create timeseries object the plotOutput function is expecting
     output$plot <- renderPlotly({
       
-      p <- ggplot(selected()) + geom_line(aes(SampleDateLocal, value, colour = Station)) +
+      p <- ggplot(selected()) + geom_line(aes(.data$SampleDateLocal, .data$value, colour = .data$Station)) +
         labs(x = "Time", y = input$parameter) +
         theme_bw() + theme(strip.background = element_blank(),
                            legend.position = "bottom", 
@@ -79,7 +79,7 @@ mod_EnvDataBGC_server <- function(id){
           labs(y = "value")
              }
       if(input$smoother){
-        p <- p + geom_smooth(aes(SampleDateLocal, value, colour = Station), method = 'loess', formula = y ~ x)
+        p <- p + geom_smooth(aes(.data$SampleDateLocal, .data$value, colour = .data$Station), method = 'loess', formula = y ~ x)
       }
       if(nlevels(unique(selected()$name)) < 1){
         np  <-  1

@@ -38,8 +38,8 @@ mod_ZooTsNRS_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       validate(need(!is.na(input$ycol), "Error: Please select a parameter."))
       
-      selectedData <- datNRSi %>% dplyr::filter(Station %in% input$Site,
-                                         parameters %in% input$ycol) %>%
+      selectedData <- datNRSi %>% dplyr::filter(.data$Station %in% input$Site,
+                                                .data$parameters %in% input$ycol) %>%
         droplevels()
       
     }) %>% bindCache(input$ycol,input$Site)
@@ -52,7 +52,7 @@ mod_ZooTsNRS_server <- function(id){
       if (is.null(datNRSi$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
       
-      p1 <- ggplot(selectedData(), aes(x = SampleDateLocal, y = Values)) +
+      p1 <- ggplot(selectedData(), aes(x = .data$SampleDateLocal, y = Values)) +
         geom_line(aes(group = Code, color = Code)) +
         geom_point(aes(group = Code, color = Code)) +
         scale_x_datetime() +
@@ -61,18 +61,18 @@ mod_ZooTsNRS_server <- function(id){
         theme(legend.position = "none")
       p1 <- ggplotly(p1) %>% layout(showlegend = FALSE)
       
-      dat_mth <- selectedData() %>% filter(Month != 'NA') %>% # need to drop NA from month, added to dataset by complete(Year, Code)
-        group_by(Month, Code) %>%
-        summarise(mean = mean(Values, na.rm = TRUE),
-                  N = length(Values),
-                  sd = sd(Values, na.rm = TRUE),
-                  se = sd / sqrt(N),
+      dat_mth <- selectedData() %>% filter(.data$Month != 'NA') %>% # need to drop NA from month, added to dataset by complete(Year, Code)
+        group_by(.data$Month, .data$Code) %>%
+        summarise(mean = mean(.data$Values, na.rm = TRUE),
+                  N = length(.data$Values),
+                  sd = sd(.data$Values, na.rm = TRUE),
+                  se = sd / sqrt(.data$N),
                   .groups = "drop")
       
       # Error bars represent standard error of the mean
-      p2 <- ggplot(data = dat_mth, aes(x = Month, y = mean, fill = Code)) +
+      p2 <- ggplot(data = dat_mth, aes(x = .data$Month, y = .data$mean, fill = .data$Code)) +
         geom_col(position = position_dodge()) +
-        geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
+        geom_errorbar(aes(ymin = .data$mean-.data$se, ymax = .data$mean+.data$se),
                       width = .2,                    # Width of the error bars
                       position = position_dodge(.9)) +
         labs(y = input$ycol) +
@@ -82,14 +82,14 @@ mod_ZooTsNRS_server <- function(id){
       
       dat_yr <- selectedData() %>%
         group_by(Year, Code) %>%
-        summarise(mean = mean(Values, na.rm = TRUE),
-                  N = length(Values),
-                  sd = sd(Values, na.rm = TRUE),
-                  se = sd / sqrt(N),
+        summarise(mean = mean(.data$Values, na.rm = TRUE),
+                  N = length(.data$Values),
+                  sd = sd(.data$Values, na.rm = TRUE),
+                  se = .data$sd / sqrt(.data$N),
                   .groups = "drop")
       
       # Error bars represent standard error of the mean
-      p3 <- ggplot2::ggplot(data = dat_yr, aes(x = Year, y = mean, fill = Code)) +
+      p3 <- ggplot2::ggplot(data = dat_yr, aes(x = .data$Year, y = .data$mean, fill = .data$Code)) +
         geom_col(position = position_dodge()) +
         geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
                       width = .2,                    # Width of the error bars

@@ -24,4 +24,4 @@ NRSBGCEnvData <- read_csv("https://raw.githubusercontent.com/PlanktonTeam/IMOS_T
     pivot_longer(-c(TripCode:SampleDateUTC, IMOSsampleCode)) %>% drop_na()
 
 
-usethis::use_data(NRSBGCEnvData, overwrite = TRUE, internal = FALSE)
+#usethis::use_data(NRSBGCEnvData, overwrite = TRUE, internal = FALSE)

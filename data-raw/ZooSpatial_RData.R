@@ -57,13 +57,11 @@ SampLocs <- rbind(CPRSamp %>% filter(grepl("Z", SampleType)), NRSSamp %>% filter
 
 Samples <- SampLocs %>%  group_by(Lat, Long, Season) %>% summarise(samples = n()) %>% untibble()
 
-aus <- ozmap()
-
 absences <-  Samples[1:3] %>% mutate(Taxon = "Taxon", freqsamp = 0, freqfac = as.factor("Absent")) %>%
   untibble()
 
 # save data into data file
-usethis::use_data(obs, Samples, SampLocs, absences, aus, internal = FALSE)
+usethis::use_data(obs, Samples, SampLocs, absences, internal = FALSE)
 
 ## files for SDMs (this will only work for me at the moment)
 listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")

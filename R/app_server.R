@@ -3,8 +3,11 @@
 #' @param input,output,session Internal parameters for {shiny}. 
 #'     DO NOT REMOVE.
 #' @import shiny
+#' @importFrom rlang .data
+#' @importFrom stats sd
+#' @importFrom utils write.table 
 #' @importFrom ggplot2 ggplot aes element_blank element_rect element_text facet_grid facet_wrap 
-#' geom_blank geom_col geom_errorbar geom_line geom_point geom_sf geom_smooth geom_text
+#' geom_blank geom_col geom_errorbar geom_line geom_point geom_sf geom_smooth geom_text ggsave
 #' labs position_dodge 
 #' scale_colour_manual scale_fill_manual scale_x_continuous scale_x_datetime scale_y_continuous 
 #' theme theme_set theme_bw theme_minimal theme_void unit
