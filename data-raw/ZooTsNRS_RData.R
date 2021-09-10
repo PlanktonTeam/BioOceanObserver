@@ -21,6 +21,9 @@ meta_sf <- getNRSTrips() %>% select(Station, StationCode, Longitude, Latitude) %
   filter(Station != 'Port Hacking 4') %>%
   sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
 
+MapOz <- rnaturalearth::ne_countries(scale = "medium", country = "Australia",
+                                     returnclass = "sf")
+
 # save data into data folder
 usethis::use_data(datNRSi, meta_sf, internal = FALSE)
 

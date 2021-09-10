@@ -17,19 +17,21 @@
 ## Add one line by package you want to add as dependency
 usethis::use_package( "cmocean")
 usethis::use_package( "dplyr") # using tidyverse as a dependency is discouraged as it is a meta-package
-usethis::use_package( "ggplot2" )
+usethis::use_package( "ggplot2")
 usethis::use_package( "lubridate")
-usethis::use_package( "patchwork" )
-usethis::use_package( "plotly" )
-usethis::use_package( "rlang" )
-usethis::use_package( "rnaturalearth" )
-usethis::use_package( "shinycssloaders" )
-usethis::use_package( "shinythemes" )
-usethis::use_package( "stringr" )
-usethis::use_package( "thinkr" )
-usethis::use_package( "tidyr" )
+usethis::use_package( "patchwork")
+#usethis::use_package( "planktonr")
+usethis::use_package( "plotly")
+usethis::use_package( "rlang")
+usethis::use_package( "rnaturalearth")
+usethis::use_package( "shinycssloaders")
+usethis::use_package( "shinythemes")
+usethis::use_package( "stringr")
+usethis::use_package( "thinkr")
+usethis::use_package( "tidyr")
 usethis::use_pipe()
 
+usethis::use_dev_package("planktonr", type = "Imports", remote = "PlanktonTeam/planktonr/AddShinyFuncs")
 
 ## Add modules ----
 ## Create a module infrastructure in R/
@@ -54,6 +56,7 @@ golem::add_css_file( "custom" )
 usethis::use_data(NRSBGCEnvData, obs, Samples, SampLocs, absences,
                   datCPRzts, bioregion, datNRSi, meta_sf, 
                   overwrite = TRUE, internal = TRUE)
+usethis::use_data(MapOz, internal = FALSE)
 
 ## Tests ----
 ## Add one line by test you want to create
