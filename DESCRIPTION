@@ -17,6 +17,7 @@ Imports:
     lubridate,
     magrittr,
     patchwork,
+    planktonr,
     plotly,
     processx,
     rlang,
@@ -39,5 +40,5 @@ Config/testthat/edition: 3
 Language: en-US
 Depends: 
     R (>= 2.10)
-Remotes:  
-    PlanktonTeam/planktonr/AddShinyFuncs
+Remotes: 
+    PlanktonTeam/planktonr@AddShinyFuncs

@@ -44,58 +44,16 @@ mod_ZooTsNRS_server <- function(id){
       
     }) %>% bindCache(input$ycol,input$Site)
     
-    n <- length(unique(selectedData()$Station))
-    pal <- 'matter'
-
-    plotCols <- planktonr::pr_get_PlotCols(pal, n)
     aust <- MapOz
 
-    pr_plot_timeseries <- function(df){
-      p1 <- ggplot(df, aes(x = .data$SampleDateLocal, y = Values)) +
-        geom_line(aes(group = Code, color = Code)) +
-        geom_point(aes(group = Code, color = Code)) +
-        scale_x_datetime() +
-        labs(y = "") +
-        scale_colour_manual(values = plotCols) 
-      p1 <- ggplotly(p1) 
-      return(p1)
-    }
-    
-    pr_plot_climate <- function(df, x){
-      x <- dplyr::enquo(arg = x)
-      
-      df_climate <- df %>% dplyr::filter(!!x != 'NA') %>% # need to drop NA from month, added to dataset by complete(Year, Code)
-        dplyr::group_by(!!x, .data$Code) %>%
-        dplyr::summarise(mean = mean(.data$Values, na.rm = TRUE),
-                         N = length(.data$Values),
-                         sd = stats::sd(.data$Values, na.rm = TRUE),
-                         se = sd / sqrt(.data$N),
-                         .groups = "drop")
-      
-      p2 <- ggplot(df_climate, aes(x = !!x, y = .data$mean, fill = .data$Code)) +
-      geom_col(position = position_dodge()) +
-      geom_errorbar(aes(ymin = .data$mean-.data$se, ymax = .data$mean+.data$se), 
-                    width = .2,                    # Width of the error bars
-                    position = position_dodge(.9)) +
-      labs(y = input$ycol) +
-      scale_fill_manual(values = plotCols) 
-      
-      p2 <- ggplotly(p2) 
-      return(p2)
-    }
-
-    p1 <- pr_plot_timeseries(selectedData())
-    p2 <- pr_plot_climate(selectedData(), Month)
-    p3 <- pr_plot_climate(selectedData(), Year) %>%
-      layout(legend = list(orientation = "h", y = -0.1))
-    
-          # Plot abundance spectra by species
+    # Plot abundance spectra by species
     output$timeseries <- plotly::renderPlotly({
       
       if (is.null(datNRSi$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
       
-       subplot(style(p1, showlegend = FALSE), style(p2, showlegend = FALSE), p3, nrows = 3, titleY = TRUE, titleX = TRUE, margin = 0.05) 
+      plots <- planktonr::pr_plot_tsclimate(selectedData(), 'matter')
+        
       })
     
     output$plotmap <- renderPlotly({ 

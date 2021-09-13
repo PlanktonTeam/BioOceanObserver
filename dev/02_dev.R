@@ -31,7 +31,7 @@ usethis::use_package( "thinkr")
 usethis::use_package( "tidyr")
 usethis::use_pipe()
 
-usethis::use_dev_package("planktonr", type = "Imports", remote = "PlanktonTeam/planktonr/AddShinyFuncs")
+usethis::use_dev_package("planktonr", type = "Imports", remote = "PlanktonTeam/planktonr@AddShinyFuncs")
 
 ## Add modules ----
 ## Create a module infrastructure in R/
