@@ -15,8 +15,8 @@ datCPRzts <- readr::read_csv(paste0(planktonr::pr_get_outputs(), "CPR_Indices.cs
                 SampleDateUTC = lubridate::round_date(.data$SampleDateUTC, "month"),
                 YearMon = paste(.data$Year, .data$Month)) %>% # this step can be improved when nesting supports data pronouns
   tidyr::complete(.data$BioRegion, .data$YearMon) %>%
-  dplyr::mutate(Year = stringr::str_sub(.data$YearMon, 1, 4),
-                Month = stringr::str_sub(.data$YearMon, -2, -1)) %>%
+  dplyr::mutate(Year = as.numeric(stringr::str_sub(.data$YearMon, 1, 4)),
+                Month = as.numeric(stringr::str_sub(.data$YearMon, -2, -1))) %>%
   tidyr::pivot_longer(.data$Biomass_mgm3:.data$CopepodEvenness, values_to = "Values", names_to = 'parameters') %>%
   dplyr::group_by(.data$SampleDateUTC, .data$Year, .data$Month, .data$BioRegion, .data$parameters) %>%
   dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE),

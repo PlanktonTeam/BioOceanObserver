@@ -12,53 +12,52 @@ source("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plank
 
 ## ZooSpatial.R
 
-ZooCountNRS <- getNRSZooCount() %>%
+ZooCountNRS <- planktonr::pr_get_NRSZooData() %>%
   rename(Sample = TripCode, Counts = TaxonCount) %>%
-  filter(Species != "spp." & !is.na(Species) & !grepl("cf.", Species) & !grepl("grp", Species) & Genus != '') %>% 
+  filter(!is.na(Species) & !grepl("cf.|ssp.|grp", Species) & Genus != '') %>% 
   mutate(Taxon = paste0(word(Genus,1), " ", word(Species,1)), 
          Survey = 'NRS') %>%
   group_by(Sample, Survey, Taxon, SampVol_m3) %>% summarise(Counts = sum(Counts, na.rm = TRUE), .groups = "drop")
 
-ZooCountCPR <- getCPRZooCount() %>% 
+ZooCountCPR <- planktonr::pr_get_CPRZooData("Count") %>% 
   rename(Counts = TaxonCount) %>%
-  filter(Species != "spp." & !is.na(Species) & !grepl("cf.", Species) & !grepl("grp", Species) & Genus != '') %>% 
+  filter(!is.na(Species) & !grepl("cf.|ssp.|grp", Species) & Genus != '') %>% 
   mutate(Taxon = paste0(word(Genus,1), " ", word(Species,1)), 
          Survey = 'CPR') %>%
   group_by(Sample, Survey, Taxon, SampVol_m3) %>% summarise(Counts = sum(Counts, na.rm = TRUE), .groups = "drop")
 
 obs <- rbind(ZooCountCPR, ZooCountNRS) %>% arrange(Taxon)
 
-NRSSamp <- getNRSTrips() %>%
+NRSSamp <- planktonr::pr_get_NRSTrips("Z") %>%
   rename(Sample = TripCode, Date = SampleDateLocal) %>%
   mutate(DOY = yday(Date),
          Start = as.Date(paste0(min(year(Date))-1, "-12-31")),
          days = difftime(as.Date(Date), Start, units = "days") %>% as.numeric(),
          thetadoy = (days %% 365.25)/365.25 * 2 * base::pi, ## leap years...
          Survey = 'NRS')  %>% 
-  select(Sample, Survey, Date, DOY, Latitude, Longitude, thetadoy, SampleType) 
+  select(Sample, Survey, Date, DOY, Latitude, Longitude, thetadoy) 
 
-CPRSamp <- getCPRSamps() %>% 
+CPRSamp <- planktonr::pr_get_CPRSamps("Z") %>% 
   rename(Date = SampleDateUTC) %>%
   mutate(DOY = yday(Date),
          Start = as.Date(paste0(min(year(Date))-1, "-12-31")),
          days = difftime(as.Date(Date), Start, units = "days") %>% as.numeric(),
          thetadoy = (days %% 365.25)/365.25 * 2 * base::pi, ## leap years...
          Survey = 'CPR')  %>% 
-  select(Sample, Survey, Date, DOY, Latitude, Longitude, thetadoy, SampleType)
+  select(Sample, Survey, Date, DOY, Latitude, Longitude, thetadoy)
 
-SampLocs <- rbind(CPRSamp %>% filter(grepl("Z", SampleType)), NRSSamp %>% filter(grepl("Z", SampleType))) %>%
+SampLocs <- rbind(CPRSamp, NRSSamp) %>%
   mutate(Lat = round(Latitude), #/0.5, 0)*0.5,
          Long = round(Longitude), #/0.5, 0)*0.5,
          Month = month(Date),
          Season = ifelse(Month >2 & Month < 6, "March - May",
                          ifelse(Month >5 & Month < 9, "June - August",
                                 ifelse(Month > 8 & Month < 12, "September - November", "December - February")))) %>% 
-  select(Sample, Survey, Lat, Long, Season) %>% untibble()
+  select(Sample, Survey, Lat, Long, Season) 
 
-Samples <- SampLocs %>%  group_by(Lat, Long, Season) %>% summarise(samples = n()) %>% untibble()
+Samples <- SampLocs %>%  group_by(Lat, Long, Season) %>% summarise(samples = n()) 
 
-absences <-  Samples[1:3] %>% mutate(Taxon = "Taxon", freqsamp = 0, freqfac = as.factor("Absent")) %>%
-  untibble()
+absences <-  Samples[1:3] %>% mutate(Taxon = "Taxon", freqsamp = 0, freqfac = as.factor("Absent")) 
 
 # save data into data file
 usethis::use_data(obs, Samples, SampLocs, absences, internal = FALSE)

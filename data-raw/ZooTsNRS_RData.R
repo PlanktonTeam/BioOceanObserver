@@ -4,7 +4,7 @@
 
 #datNRSi <- planktonr::pr_get_tsdata() # wait until data pronouns work with nesting
 
-datNRSi <- plantonr::pr_get_tsdata()
+datNRSi <- planktonr::pr_get_tsdata()
 
 meta_sf <- planktonr::pr_get_NRSTrips("Z") %>% 
   dplyr::select(StationName, StationCode, Longitude, Latitude) %>% unique() %>%
