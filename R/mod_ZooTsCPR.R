@@ -116,7 +116,7 @@ mod_ZooTsCPR_server <- function(id){
     
     # Plot timeseries by BioRegion
     output$timeseries2 <- plotly::renderPlotly({
-      
+    
       p1 <- ggplot(selectedData(), aes(x = SampleDate, y = values)) +
         geom_line(aes(group = BioRegion, color = BioRegion)) +
         geom_point(aes(group = BioRegion, color = BioRegion)) +

@@ -9,20 +9,23 @@ library(cmocean)
 # source all the main functions from the IMOS_Toolbox, this is the default place for the package functions for now
 source("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plankton/IMOS_Plankton_functions.R", local = FALSE)
 
-datCPRzts <- read_csv("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plankton/Output/CPR_Indices.csv") %>%
-  select(Latitude, SampleDateUTC, Year, Month, Day, BioRegion, Biomass_mgm3, ZoopAbundance_m3:CopepodEvenness) %>%
-  mutate(Biomass_mgm3 = ifelse(Biomass_mgm3 < 0 , 0, Biomass_mgm3),
-         SampleDate = round_date(SampleDateUTC, "month")) %>%
-  complete(BioRegion, nesting(Year, Month)) %>%   
-  pivot_longer(Biomass_mgm3:CopepodEvenness, values_to = "values", names_to = 'parameters') %>%
-  group_by(SampleDate, Year, Month, BioRegion, parameters) %>%
-  summarise(values = mean(values, na.rm = TRUE),
-            Latitude = mean(Latitude, na.rm = TRUE), # so we can arrange by latitude and get the BioRegions in the correct order
-            .groups = "drop") %>%
-  filter(!is.na(BioRegion), 
-         BioRegion != 'North',
-         BioRegion != 'North-west') %>%
-  arrange(-Latitude)
+datCPRzts <- readr::read_csv(paste0(planktonr::pr_get_outputs(), "CPR_Indices.csv"), na = "", show_col_types = FALSE) %>%
+  dplyr::select(.data$Latitude, .data$SampleDateUTC, .data$Year, .data$Month, .data$Day, .data$BioRegion, .data$Biomass_mgm3, .data$ZoopAbundance_m3:.data$CopepodEvenness) %>%
+  dplyr::mutate(Biomass_mgm3 = ifelse(.data$Biomass_mgm3 < 0 , 0, .data$Biomass_mgm3),
+                SampleDateUTC = lubridate::round_date(.data$SampleDateUTC, "month"),
+                YearMon = paste(.data$Year, .data$Month)) %>% # this step can be improved when nesting supports data pronouns
+  tidyr::complete(.data$BioRegion, .data$YearMon) %>%
+  dplyr::mutate(Year = stringr::str_sub(.data$YearMon, 1, 4),
+                Month = stringr::str_sub(.data$YearMon, -2, -1)) %>%
+  tidyr::pivot_longer(.data$Biomass_mgm3:.data$CopepodEvenness, values_to = "Values", names_to = 'parameters') %>%
+  dplyr::group_by(.data$SampleDateUTC, .data$Year, .data$Month, .data$BioRegion, .data$parameters) %>%
+  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE),
+                   Latitude = mean(.data$Latitude, na.rm = TRUE), # so we can arrange by latitude and get the BioRegions in the correct order
+                   .groups = "drop") %>%
+  dplyr::filter(!is.na(.data$BioRegion), 
+                .data$BioRegion != 'North',
+                .data$BioRegion != 'North-west') %>%
+  dplyr::arrange(-.data$Latitude) # this is included to keep the mapping in the right order for the ui
 
 latlonCRS <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 

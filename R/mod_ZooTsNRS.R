@@ -52,8 +52,8 @@ mod_ZooTsNRS_server <- function(id){
       if (is.null(datNRSi$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
       
-      plots <- planktonr::pr_plot_tsclimate(selectedData(), 'matter')
-        
+      plots <- planktonr::pr_plot_tsclimate('NRS', selectedData(), 'matter')
+      
       })
     
     output$plotmap <- renderPlotly({ 
