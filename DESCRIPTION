@@ -1,7 +1,8 @@
 Package: imosboo
 Title: Visualisation of IMOS biological data
 Version: 0.0.0.9000
-Authors@R: person('Claire', 'Davies', email = 'claire.davies@csiro.au', role = c('cre', 'aut'))
+Authors@R: c(person('Claire H.', 'Davies', email = 'claire.davies@csiro.au', role = c('cre', 'aut')),
+             person('Jason D.', 'Everett', email = 'jase.everett@gmail.com', role = 'aut'))
 Description: A visualisation tool for IMOS biologial data.
 License: MIT + file LICENSE
 Imports: 
@@ -17,6 +18,7 @@ Imports:
     lubridate,
     magrittr,
     patchwork,
+    planktonr (>= 0.0.0.9000),
     plotly,
     processx,
     rlang,
@@ -39,3 +41,5 @@ Config/testthat/edition: 3
 Language: en-US
 Depends: 
     R (>= 2.10)
+Remotes: 
+    PlanktonTeam/planktonr@AddShinyFuncs

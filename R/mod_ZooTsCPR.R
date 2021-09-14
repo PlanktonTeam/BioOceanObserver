@@ -58,7 +58,7 @@ mod_ZooTsCPR_server <- function(id){
     # Plot abundances by ts and monthly
 
     output$timeseries1 <- plotly::renderPlotly({
-      p1 <- ggplot(selectedAbundData(), aes(x = SampleDate, y = log10(values+1))) +
+      p1 <- ggplot(selectedAbundData(), aes(x = SampleDateUTC, y = log10(Values+1))) +
         geom_smooth(method = 'lm', formula = y ~ x) +
         geom_point() +
         facet_grid(BioRegion~., scales = 'free') +
@@ -71,9 +71,9 @@ mod_ZooTsCPR_server <- function(id){
       
       dat_mth <- selectedAbundData() %>% filter(Month != 'NA') %>% # need to drop NA from month, added to dataset by complete(Year, Code)
         group_by(Month, BioRegion) %>%
-        summarise(mean = mean(log10(values+1), na.rm = TRUE),
-                  N = length(log10(values+1)),
-                  sd = sd(log10(values+1), na.rm = TRUE),
+        summarise(mean = mean(log10(Values+1), na.rm = TRUE),
+                  N = length(log10(Values+1)),
+                  sd = sd(log10(Values+1), na.rm = TRUE),
                   se = sd / sqrt(N),
                   .groups = "drop")
       
@@ -116,59 +116,9 @@ mod_ZooTsCPR_server <- function(id){
     
     # Plot timeseries by BioRegion
     output$timeseries2 <- plotly::renderPlotly({
+    
+      plots <- planktonr::pr_plot_tsclimate('CPR', selectedData(), 'matter')
       
-      p1 <- ggplot(selectedData(), aes(x = SampleDate, y = values)) +
-        geom_line(aes(group = BioRegion, color = BioRegion)) +
-        geom_point(aes(group = BioRegion, color = BioRegion)) +
-        scale_x_datetime() +
-        labs(y = "") +
-        scale_colour_manual(values = cmocean::cmocean('matter')(n)) +
-        theme(legend.position = "none")
-      p1 <- ggplotly(p1) %>% layout(showlegend = FALSE)
-
-      dat_mth <- selectedData() %>% filter(Month != 'NA') %>% # need to drop NA from month, added to dataset by complete(Year, Code)
-        group_by(Month, BioRegion) %>%
-        summarise(mean = mean(values, na.rm = TRUE),
-                  N = length(values),
-                  sd = sd(values, na.rm = TRUE),
-                  se = sd / sqrt(N),
-                  .groups = "drop")
-
-      # Error bars represent standard error of the mean
-      p2 <- ggplot(data = dat_mth, aes(x = Month, y = mean, fill = BioRegion)) +
-        geom_col(position = position_dodge()) +
-        geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
-                      width = .2,                    # Width of the error bars
-                      position = position_dodge(.9)) +
-        labs(y = input$parameter) +
-        scale_fill_manual(values = cmocean::cmocean('matter')(n)) +
-        theme(legend.position = "none")
-      p2 <- ggplotly(p2) %>% layout(showlegend = FALSE)
-
-      dat_yr <- selectedData() %>%
-        group_by(Year, BioRegion) %>%
-        summarise(mean = mean(values, na.rm = TRUE),
-                  N = length(values),
-                  sd = sd(values, na.rm = TRUE),
-                  se = sd / sqrt(N),
-                  .groups = "drop")
-
-      # Error bars represent standard error of the mean
-      p3 <- ggplot2::ggplot(data = dat_yr, aes(x = Year, y = mean, fill = BioRegion)) +
-        geom_col(position = position_dodge()) +
-        geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
-                      width = .2,                    # Width of the error bars
-                      position = position_dodge(.9)) +
-        labs(y = "") +
-        scale_fill_manual(values = cmocean::cmocean('matter')(n)) +
-        theme(legend.position = "bottom",
-              legend.title = element_blank())
-      p3 <- ggplotly(p3) %>%
-        layout(legend = list(orientation = "h", y = -0.1))
-
-      subplot(style(p1, showlegend = FALSE), style(p2, showlegend = FALSE), p3, nrows = 3, titleY = TRUE, titleX = TRUE, margin = 0.05)
-      # need to sort out legends, can do this by using plotly to create the graphs rather than converting from ggplot
-      #p1 / p2 / p3 # Use patchwork to arrange plots
     })
 
     output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)

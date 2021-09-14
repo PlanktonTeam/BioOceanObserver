@@ -44,70 +44,19 @@ mod_ZooTsNRS_server <- function(id){
       
     }) %>% bindCache(input$ycol,input$Site)
     
-    n <- length(unique(selectedData()$Station))
-    
+    aust <- MapOz
+
     # Plot abundance spectra by species
     output$timeseries <- plotly::renderPlotly({
       
       if (is.null(datNRSi$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
       
-      p1 <- ggplot(selectedData(), aes(x = .data$SampleDateLocal, y = Values)) +
-        geom_line(aes(group = Code, color = Code)) +
-        geom_point(aes(group = Code, color = Code)) +
-        scale_x_datetime() +
-        labs(y = "") +
-        scale_colour_manual(values = cmocean::cmocean('matter')(n)) +
-        theme(legend.position = "none")
-      p1 <- ggplotly(p1) %>% layout(showlegend = FALSE)
+      plots <- planktonr::pr_plot_tsclimate('NRS', selectedData(), 'matter')
       
-      dat_mth <- selectedData() %>% filter(.data$Month != 'NA') %>% # need to drop NA from month, added to dataset by complete(Year, Code)
-        group_by(.data$Month, .data$Code) %>%
-        summarise(mean = mean(.data$Values, na.rm = TRUE),
-                  N = length(.data$Values),
-                  sd = sd(.data$Values, na.rm = TRUE),
-                  se = sd / sqrt(.data$N),
-                  .groups = "drop")
-      
-      # Error bars represent standard error of the mean
-      p2 <- ggplot(data = dat_mth, aes(x = .data$Month, y = .data$mean, fill = .data$Code)) +
-        geom_col(position = position_dodge()) +
-        geom_errorbar(aes(ymin = .data$mean-.data$se, ymax = .data$mean+.data$se),
-                      width = .2,                    # Width of the error bars
-                      position = position_dodge(.9)) +
-        labs(y = input$ycol) +
-        scale_fill_manual(values = cmocean::cmocean('matter')(n)) +
-        theme(legend.position = "none")
-      p2 <- ggplotly(p2) %>% layout(showlegend = FALSE)
-      
-      dat_yr <- selectedData() %>%
-        group_by(Year, Code) %>%
-        summarise(mean = mean(.data$Values, na.rm = TRUE),
-                  N = length(.data$Values),
-                  sd = sd(.data$Values, na.rm = TRUE),
-                  se = .data$sd / sqrt(.data$N),
-                  .groups = "drop")
-      
-      # Error bars represent standard error of the mean
-      p3 <- ggplot2::ggplot(data = dat_yr, aes(x = .data$Year, y = .data$mean, fill = .data$Code)) +
-        geom_col(position = position_dodge()) +
-        geom_errorbar(aes(ymin = mean-se, ymax = mean+se),
-                      width = .2,                    # Width of the error bars
-                      position = position_dodge(.9)) +
-        labs(y = "") +
-        scale_fill_manual(values = cmocean::cmocean('matter')(n)) +
-        theme(legend.position = "bottom",
-              legend.title = element_blank())
-      p3 <- ggplotly(p3) %>%
-        layout(legend = list(orientation = "h", y = -0.1))
-      
-      subplot(style(p1, showlegend = FALSE), style(p2, showlegend = FALSE), p3, nrows = 3, titleY = TRUE, titleX = TRUE, margin = 0.05) 
-      # need to sort out legends, can do this by using plotly to create the graphs rather than converting from ggplot
-      #p1 / p2 / p3 # Use patchwork to arrange plots
-    })
+      })
     
     output$plotmap <- renderPlotly({ 
-      aust <- rnaturalearth::ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
       
       meta2_sf <- subset(meta_sf, meta_sf$Code %in% selectedData()$Code)
       
