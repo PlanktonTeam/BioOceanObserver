@@ -13,8 +13,8 @@ mod_ZooTsNRS_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         plotlyOutput(nsZooTsNRS("plotmap"), height = "200px"),
-        checkboxGroupInput(inputId = nsZooTsNRS("Site"), label = "Select a station", choices = unique(datNRSi$Station), selected = "Maria Island"),
-        selectInput(inputId = nsZooTsNRS("ycol"), label = 'Select a parameter', choices = unique(datNRSi$parameters), selected = "Biomass_mgm3"),
+        checkboxGroupInput(inputId = nsZooTsNRS("Site"), label = "Select a station", choices = unique(datNRSz$Station), selected = "Maria Island"),
+        selectInput(inputId = nsZooTsNRS("ycol"), label = 'Select a parameter', choices = unique(datNRSz$parameters), selected = "Biomass_mgm3"),
         downloadButton(nsZooTsNRS("downloadData"), "Data"),
         downloadButton(nsZooTsNRS("downloadPlot"), "Plot"),
         downloadButton(nsZooTsNRS("downloadNote"), "Notebook")
@@ -38,7 +38,7 @@ mod_ZooTsNRS_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       validate(need(!is.na(input$ycol), "Error: Please select a parameter."))
       
-      selectedData <- datNRSi %>% dplyr::filter(.data$Station %in% input$Site,
+      selectedData <- datNRSz %>% dplyr::filter(.data$Station %in% input$Site,
                                                 .data$parameters %in% input$ycol) %>%
         droplevels()
       
@@ -49,7 +49,7 @@ mod_ZooTsNRS_server <- function(id){
     # Plot abundance spectra by species
     output$timeseries <- plotly::renderPlotly({
       
-      if (is.null(datNRSi$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+      if (is.null(datNRSz$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
       
       plots <- planktonr::pr_plot_tsclimate('NRS', selectedData(), 'matter')
