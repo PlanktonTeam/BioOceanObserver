@@ -16,6 +16,8 @@ mod_ZooTsCPR_ui <- function(id){
         h6("Note there is very little data in the North and North-west regions"),
         checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(datCPRz$BioRegion), selected = unique(datCPRz$BioRegion)),
         selectInput(inputId = nsZooTsCPR("parameter"), label = 'Select a parameter', choices = unique(datCPRz$parameters), selected = "ZoopAbundance_m3"),
+        # Select whether to overlay smooth trend line
+        checkboxInput(inputId = nsZooTsCPR("scaler2"), label = strong("Change the plot scale to log10"), value = FALSE),
         downloadButton(nsZooTsCPR("downloadData"), "Data"),
         downloadButton(nsZooTsCPR("downloadPlot"), "Plot"),
         downloadButton(nsZooTsCPR("downloadNote"), "Notebook")
@@ -58,7 +60,7 @@ mod_ZooTsCPR_server <- function(id){
     # Plot abundances by ts and monthly
 
     output$timeseries1 <- plotly::renderPlotly({
-      p1 <- ggplot(selectedAbundData(), aes(x = SampleDateUTC, y = log10(Values+1))) +
+      p1 <- ggplot(selectedAbundData(), aes(x = SampleDateUTC, y = log10(Values+1))) + # do this logging as in pr_plot_tsclimate
         geom_smooth(method = 'lm', formula = y ~ x) +
         geom_point() +
         facet_grid(BioRegion~., scales = 'free') +
@@ -116,8 +118,14 @@ mod_ZooTsCPR_server <- function(id){
     
     # Plot timeseries by BioRegion
     output$timeseries2 <- plotly::renderPlotly({
-    
-      plots <- planktonr::pr_plot_tsclimate('CPR', selectedData(), 'matter')
+      if(input$scaler2){
+        Scale <- 'log10'
+      } else
+      {
+        Scale <- 'identity'
+      }
+      
+      plots <- planktonr::pr_plot_tsclimate(selectedData(), 'CPR', 'matter', Scale)
       
     })
 

@@ -16,8 +16,3 @@ MapOz <- rnaturalearth::ne_countries(scale = "medium", country = "Australia",
 
 # add the outputs to the use_this::use_data line in 02_dev.R
 
-
-dat <- datNRSz %>% dplyr::filter(.data$parameters == 'Biomass_mgm3', 
-                                 Station %in% "Maria Island")
-ts <- planktonr::pr_plot_timeseries('NRS', dat, 'matter')
-ts

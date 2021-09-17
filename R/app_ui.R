@@ -24,7 +24,7 @@ app_ui <- function(request) {
                             h3("Code"),
                             p("This project is entirely open source, as are all the IMOS data underlying it. All the code for this tool are freely available on GitHub. We welcome collaborators and pull requests are gratefully accepted."),
                             h3("Who we are"),
-                            p("This tool was originally conceived and developed by Dr Jason Everett (UQ/CSIRO/UNSW) and Claire Davies (CSIRO). Jason is biological oceanographer and Claire is a plankton ecologist. Both have a strong interest in open data science and encouraging increased data uptake to solve real world problems.")
+                            p("This tool was originally conceived and developed by Dr Jason Everett (UQ/CSIRO/UNSW) and Claire Davies (CSIRO). Jason is a biological oceanographer and Claire is a plankton ecologist. Both have a strong interest in open data science and encouraging increased data uptake to solve real world problems.")
                           ))),
                tabPanel("Snapshot",
                         tabsetPanel(id = 'snap',
@@ -39,7 +39,7 @@ app_ui <- function(request) {
                                     tabPanel("Section 3"))),
                tabPanel("Phytoplankton",
                         tabsetPanel(id = 'phy',
-                                    tabPanel("Time Series NRS"),
+                                    tabPanel("Time Series NRS", mod_PhytoTsNRS_ui("PhytoTsNRS_ui_1")),
                                     tabPanel("Time Series CPR"),
                                     tabPanel("Section 3"))),
                tabPanel("Zooplankton",
