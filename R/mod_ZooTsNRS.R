@@ -41,7 +41,7 @@ mod_ZooTsNRS_ui <- function(id){
 #'
 #' @noRd 
 mod_ZooTsNRS_server <- function(id){
-  moduleServer(id, function(input, output, session){
+  moduleServer(id, function(input, output, session, NRSzts){
     
     selectedData <- reactive({
       req(input$Site)
