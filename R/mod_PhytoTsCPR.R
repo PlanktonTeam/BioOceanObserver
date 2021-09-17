@@ -1,4 +1,4 @@
-#' ZooTsCPR UI Function
+#' PhytoTsCPR UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,59 +7,59 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
-mod_ZooTsCPR_ui <- function(id){
-  nsZooTsCPR <- NS(id)
+mod_PhytoTsCPR_ui <- function(id){
+  nsPhytoTsCPR <- NS(id)
   tagList(
     sidebarLayout(
       sidebarPanel(
-        plotlyOutput(nsZooTsCPR("plotmap"), height = "200px"),
+        plotlyOutput(nsPhytoTsCPR("plotmap"), height = "200px"),
         h6("Note there is very little data in the North and North-west regions"),
-        checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(datCPRz$BioRegion), selected = unique(datCPRz$BioRegion)),
-        selectInput(inputId = nsZooTsCPR("parameter"), label = 'Select a parameter', choices = unique(datCPRz$parameters), selected = "ZoopAbundance_m3"),
+        checkboxGroupInput(inputId = nsPhytoTsCPR("region"), label = "Select a region", choices = unique(datCPRp$BioRegion), selected = unique(datCPRp$BioRegion)),
+        selectInput(inputId = nsPhytoTsCPR("parameter"), label = 'Select a parameter', choices = unique(datCPRp$parameters), selected = "PhytoAbundance_m3"),
         # Select whether to overlay smooth trend line
-        checkboxInput(inputId = nsZooTsCPR("scaler2"), label = strong("Change the plot scale to log10"), value = FALSE),
-        downloadButton(nsZooTsCPR("downloadData"), "Data"),
-        downloadButton(nsZooTsCPR("downloadPlot"), "Plot"),
-        downloadButton(nsZooTsCPR("downloadNote"), "Notebook")
+        checkboxInput(inputId = nsPhytoTsCPR("scaler3"), label = strong("Change the plot scale to log10"), value = FALSE),
+        downloadButton(nsPhytoTsCPR("downloadData"), "Data"),
+        downloadButton(nsPhytoTsCPR("downloadPlot"), "Plot"),
+        downloadButton(nsPhytoTsCPR("downloadNote"), "Notebook")
       ),
       mainPanel(
-        tabsetPanel(id = "CPRzts",
-          tabPanel("Abundances",
-                   h6(textOutput(nsZooTsCPR("PlotExp1"), container = span)),  
-                   plotly::plotlyOutput(nsZooTsCPR("timeseries1"), height = "800px") %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                   ),
-          tabPanel("Indices",
-                   h6(textOutput(nsZooTsCPR("PlotExp2"), container = span)),  
-                   plotly::plotlyOutput(nsZooTsCPR("timeseries2"), height = "800px") %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                   )
+        tabsetPanel(id = "CPRpts",
+                    tabPanel("Abundances",
+                             h6(textOutput(nsPhytoTsCPR("PlotExp3"), container = span)),  
+                             plotly::plotlyOutput(nsPhytoTsCPR("timeseries3"), height = "800px") %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                    ),
+                    tabPanel("Indices",
+                             h6(textOutput(nsPhytoTsCPR("PlotExp4"), container = span)),  
+                             plotly::plotlyOutput(nsPhytoTsCPR("timeseries4"), height = "800px") %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                    )
         )
       )
     )
   )
 }
-    
-#' ZooTsCPR Server Functions
+
+#' PhytoTsCPR Server Functions
 #'
 #' @noRd 
-mod_ZooTsCPR_server <- function(id){
-  moduleServer( id, function(input, output, session, CPRzts){
+mod_PhytoTsCPR_server <- function(id){
+  moduleServer( id, function(input, output, session, CPRpts){
     
     # For abundances tab  
     selectedAbundData <- reactive({
       req(input$parameter)
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
-      selectedAbundData <- datCPRz %>%
+      selectedAbundData <- datCPRp %>%
         mutate(BioRegion = factor(BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
         dplyr::filter(parameters %in% input$parameter,
                       BioRegion %in% input$region) %>%
         droplevels()
       
     }) %>% bindCache(input$parameter,input$region)
-
+    
     # Plot abundances by ts and monthly
-
-    output$timeseries1 <- plotly::renderPlotly({
+    
+    output$timeseries3 <- plotly::renderPlotly({
       p1 <- ggplot(selectedAbundData(), aes(x = SampleDateUTC, y = log10(Values+1))) + # do this logging as in pr_plot_tsclimate
         geom_smooth(method = 'lm', formula = y ~ x) +
         geom_point() +
@@ -92,8 +92,8 @@ mod_ZooTsCPR_server <- function(id){
       
       subplot(p1, p2, widths = c(0.75,0.25)) 
     })
-      
-   
+    
+    
     # For indices tab
     selectedData <- reactive({
       req(input$region)
@@ -101,14 +101,14 @@ mod_ZooTsCPR_server <- function(id){
       validate(need(!is.na(input$region), "Error: Please select a region"))
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
-      selectedData <- datCPRz %>% 
+      selectedData <- datCPRp %>% 
         mutate(BioRegion = factor(BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
         dplyr::filter(BioRegion %in% input$region,
                       parameters %in% input$parameter) %>%
         droplevels()
       
     }) %>% bindCache(input$parameter,input$region)
-
+    
     bioregionSelection <- reactive({
       bioregionSelection <- bioregion %>% dplyr::filter(REGION %in% input$region) %>% 
         mutate(REGION = factor(REGION, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) 
@@ -117,8 +117,8 @@ mod_ZooTsCPR_server <- function(id){
     n <- length(unique(bioregionSelection()$REGION))
     
     # Plot timeseries by BioRegion
-    output$timeseries2 <- plotly::renderPlotly({
-      if(input$scaler2){
+    output$timeseries4 <- plotly::renderPlotly({
+      if(input$scaler3){
         Scale <- 'log10'
       } else
       {
@@ -128,9 +128,9 @@ mod_ZooTsCPR_server <- function(id){
       plots <- planktonr::pr_plot_tsclimate(selectedData(), 'CPR', 'matter', Scale)
       
     })
-
+    
     output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
-     
+      
       aust <- rnaturalearth::ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
       
       gg <- ggplot() +
@@ -145,14 +145,14 @@ mod_ZooTsCPR_server <- function(id){
               panel.background = element_rect(fill = "grey92"),
               axis.line = element_blank(),
               plot.margin = unit(c(0,0,0,0),"cm"))
-        }) %>% bindCache(selectedData())
+    }) %>% bindCache(selectedData())
     
     # add text information 
-    output$PlotExp1 <- renderText({
-      "A plot of selected zooplantkon parameters from the CPR around Australia, as a time series and a monthly climatology across bioregions. "
+    output$PlotExp3 <- renderText({
+      "A plot of selected Phytoplantkon parameters from the CPR around Australia, as a time series and a monthly climatology across bioregions. "
     }) 
-    output$PlotExp2 <- renderText({
-      "A plot of selected zooplantkon parameters from the CPR around Australia, as a time series, a monthly climatology and an annual mean for each bioregion"
+    output$PlotExp4 <- renderText({
+      "A plot of selected Phytoplantkon parameters from the CPR around Australia, as a time series, a monthly climatology and an annual mean for each bioregion"
     }) 
     
     # Table of selected dataset ----
@@ -177,9 +177,9 @@ mod_ZooTsCPR_server <- function(id){
     )
   })
 }
-    
+
 ## To be copied in the UI
 # 
-    
+
 ## To be copied in the server
 # 
