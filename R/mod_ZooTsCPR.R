@@ -14,8 +14,8 @@ mod_ZooTsCPR_ui <- function(id){
       sidebarPanel(
         plotlyOutput(nsZooTsCPR("plotmap"), height = "200px"),
         h6("Note there is very little data in the North and North-west regions"),
-        checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(datCPRzts$BioRegion), selected = unique(datCPRzts$BioRegion)),
-        selectInput(inputId = nsZooTsCPR("parameter"), label = 'Select a parameter', choices = unique(datCPRzts$parameters), selected = "ZoopAbundance_m3"),
+        checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(datCPRz$BioRegion), selected = unique(datCPRz$BioRegion)),
+        selectInput(inputId = nsZooTsCPR("parameter"), label = 'Select a parameter', choices = unique(datCPRz$parameters), selected = "ZoopAbundance_m3"),
         downloadButton(nsZooTsCPR("downloadData"), "Data"),
         downloadButton(nsZooTsCPR("downloadPlot"), "Plot"),
         downloadButton(nsZooTsCPR("downloadNote"), "Notebook")
@@ -47,7 +47,7 @@ mod_ZooTsCPR_server <- function(id){
       req(input$parameter)
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
-      selectedAbundData <- datCPRzts %>%
+      selectedAbundData <- datCPRz %>%
         mutate(BioRegion = factor(BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
         dplyr::filter(parameters %in% input$parameter,
                       BioRegion %in% input$region) %>%
@@ -99,7 +99,7 @@ mod_ZooTsCPR_server <- function(id){
       validate(need(!is.na(input$region), "Error: Please select a region"))
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
-      selectedData <- datCPRzts %>% 
+      selectedData <- datCPRz %>% 
         mutate(BioRegion = factor(BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
         dplyr::filter(BioRegion %in% input$region,
                       parameters %in% input$parameter) %>%
