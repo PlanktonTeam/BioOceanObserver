@@ -29,6 +29,11 @@ app_server <- function( input, output, session ) {
     ### Zooplankton time series data  
     if (req(input$navbar) == "Zooplankton")  
       mod_ZooTsNRS_server("ZooTsNRS_ui_1")
+    
+    ### Phytoplankton time series data  
+    if (req(input$navbar) == "Phytoplankton")  
+      mod_PhytoTsNRS_server("PhytoTsNRS_ui_1")
+    
     ### Env Data BGC
     if (req(input$navbar) == "Environmental Data")
       mod_EnvDataBGC_server("EnvDataBGC_ui_1")
