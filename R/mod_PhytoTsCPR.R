@@ -12,7 +12,7 @@ mod_PhytoTsCPR_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        plotlyOutput(nsPhytoTsCPR("plotmap"), height = "200px"),
+        plotlyOutput(nsPhytoTsCPR("plotmap")),
         h6("Note there is very little data in the North and North-west regions"),
         checkboxGroupInput(inputId = nsPhytoTsCPR("region"), label = "Select a region", choices = unique(datCPRp$BioRegion), selected = unique(datCPRp$BioRegion)),
         selectInput(inputId = nsPhytoTsCPR("parameter"), label = 'Select a parameter', choices = unique(datCPRp$parameters), selected = "PhytoAbundance_m3"),
@@ -124,10 +124,12 @@ mod_PhytoTsCPR_server <- function(id){
       {
         Scale <- 'identity'
       }
+      if (identical(input$region, "")) return(NULL)
+      if (identical(input$parameters, "")) return(NULL)
       
       plots <- planktonr::pr_plot_tsclimate(selectedData(), 'CPR', 'matter', Scale)
       
-    })
+    }) %>% bindCache(selectedData())
     
     output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
       
@@ -138,13 +140,13 @@ mod_PhytoTsCPR_server <- function(id){
         geom_sf(data = bioregionSelection(), colour = 'black', aes(fill = REGION)) +
         geom_sf(data = aust, size = 0.05, fill = "grey80") +
         scale_fill_manual(values = cmocean::cmocean('matter')(n)) +
-        labs(x="", y="") +
+        scale_x_continuous(expand = c(0, 0)) +
+        scale_y_continuous(expand = c(0, 0)) +
         theme_void() +
         theme(legend.position = "none",
-              plot.background = element_rect(fill = "grey92"),
-              panel.background = element_rect(fill = "grey92"),
-              axis.line = element_blank(),
-              plot.margin = unit(c(0,0,0,0),"cm"))
+              plot.background = element_rect(fill = NA),
+              panel.background = element_rect(fill = NA),
+              axis.line = element_blank())
     }) %>% bindCache(selectedData())
     
     # add text information 
