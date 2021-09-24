@@ -76,20 +76,7 @@ mod_ZooTsNRS_server <- function(id){
     
     output$plotmap <- renderPlotly({ 
       
-      meta2_sf <- subset(meta_sf, meta_sf$Code %in% selectedData()$Code)
-      
-      pmap <- ggplot() +
-        geom_sf(data = aust, size = 0.05, fill = "grey80") +
-        geom_sf(data = meta_sf, colour = "blue", size = 1.5) +
-        geom_sf(data = meta2_sf, colour = "red", size = 1.5) +
-        scale_x_continuous(expand = c(0, 0), limits = c(112, 155)) +
-        scale_y_continuous(expand = c(0, 0), limits = c(-45, -9)) +
-        theme_void() +
-        theme(axis.title = element_blank(), 
-              panel.background = element_rect(fill = NA, colour = NA),
-              plot.background = element_rect(fill = NA),
-              axis.line = element_blank())
-      pmap <- ggplotly(pmap)
+      pmap <- planktonr::pr_plot_NRSmap(selectedData())
       
     }) %>% bindCache(input$ycol, selectedData())
     

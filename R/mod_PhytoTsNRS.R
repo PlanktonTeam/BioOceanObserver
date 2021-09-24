@@ -55,7 +55,6 @@ mod_PhytoTsNRS_server <- function(id){
       
     }) %>% bindCache(input$ycol,input$Site)
     
-    aust <- MapOz
     # Plot abundance spectra by species
     output$timeseriesP <- plotly::renderPlotly({
       
@@ -73,22 +72,9 @@ mod_PhytoTsNRS_server <- function(id){
     
     output$plotmap2 <- renderPlotly({ 
       
-      meta2_sf <- subset(meta_sf, meta_sf$Code %in% selectedData()$Code)
+      pmap <- planktonr::pr_plot_NRSmap(selectedData())
       
-      pmap <- ggplot() +
-        geom_sf(data = aust, size = 0.05, fill = "grey80") +
-        geom_sf(data = meta_sf, colour = "blue", size = 1.5) +
-        geom_sf(data = meta2_sf, colour = "red", size = 1.5) +
-        scale_x_continuous(expand = c(0, 0), limits = c(112, 155)) +
-        scale_y_continuous(expand = c(0, 0), limits = c(-45, -9)) +
-        theme_void() +
-        theme(axis.title = element_blank(), 
-              panel.background = element_rect(fill = NA, colour = NA),
-              plot.background = element_rect(fill = NA),
-              axis.line = element_blank())
-      pmap <- ggplotly(pmap)
-      
-    }) %>% bindCache(input$ycol, selectedData())
+    }) %>% bindCache(input$Site)
     
     # add text information 
     output$PlotExp1 <- renderText({
