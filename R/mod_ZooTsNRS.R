@@ -12,7 +12,7 @@ mod_ZooTsNRS_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        plotlyOutput(nsZooTsNRS("plotmap"), height = "200px"),
+        plotlyOutput(nsZooTsNRS("plotmap")),
         checkboxGroupInput(inputId = nsZooTsNRS("Site"), label = "Select a station", choices = unique(datNRSz$Station), selected = "Maria Island"),
         selectInput(inputId = nsZooTsNRS("ycol"), label = 'Select a parameter', choices = unique(datNRSz$parameters), selected = "Biomass_mgm3"),
         # Select whether to overlay smooth trend line
@@ -72,7 +72,7 @@ mod_ZooTsNRS_server <- function(id){
       
       plots <- planktonr::pr_plot_tsclimate(selectedData(), 'NRS', 'matter', Scale)
       
-      })
+      }) %>% bindCache(selectedData())
     
     output$plotmap <- renderPlotly({ 
       
@@ -85,7 +85,10 @@ mod_ZooTsNRS_server <- function(id){
         scale_x_continuous(expand = c(0, 0), limits = c(112, 155)) +
         scale_y_continuous(expand = c(0, 0), limits = c(-45, -9)) +
         theme_void() +
-        theme(axis.title = element_blank(), panel.background = element_rect(fill = NA, colour = NA))
+        theme(axis.title = element_blank(), 
+              panel.background = element_rect(fill = NA, colour = NA),
+              plot.background = element_rect(fill = NA),
+              axis.line = element_blank())
       pmap <- ggplotly(pmap)
       
     }) %>% bindCache(input$ycol, selectedData())

@@ -12,7 +12,7 @@ mod_PhytoTsNRS_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        plotlyOutput(nsPhytoTsNRS("plotmap2"), height = "200px"),
+        plotlyOutput(nsPhytoTsNRS("plotmap2")),
         checkboxGroupInput(inputId = nsPhytoTsNRS("Site"), label = "Select a station", choices = unique(datNRSp$Station), selected = "Maria Island"),
         selectInput(inputId = nsPhytoTsNRS("ycol"), label = 'Select a parameter', choices = unique(datNRSp$parameters), selected = "PhytoBiomassCarbon_pgL"),
         # Select whether to overlay smooth trend line
@@ -56,7 +56,6 @@ mod_PhytoTsNRS_server <- function(id){
     }) %>% bindCache(input$ycol,input$Site)
     
     aust <- MapOz
-    
     # Plot abundance spectra by species
     output$timeseriesP <- plotly::renderPlotly({
       
@@ -68,10 +67,9 @@ mod_PhytoTsNRS_server <- function(id){
       {
         Scale <- 'identity'
       }
-      
       plots <- planktonr::pr_plot_tsclimate(selectedData(), 'NRS', 'matter', Scale)
       
-    })
+    }) %>% bindCache(selectedData())
     
     output$plotmap2 <- renderPlotly({ 
       
@@ -84,7 +82,10 @@ mod_PhytoTsNRS_server <- function(id){
         scale_x_continuous(expand = c(0, 0), limits = c(112, 155)) +
         scale_y_continuous(expand = c(0, 0), limits = c(-45, -9)) +
         theme_void() +
-        theme(axis.title = element_blank(), panel.background = element_rect(fill = NA, colour = NA))
+        theme(axis.title = element_blank(), 
+              panel.background = element_rect(fill = NA, colour = NA),
+              plot.background = element_rect(fill = NA),
+              axis.line = element_blank())
       pmap <- ggplotly(pmap)
       
     }) %>% bindCache(input$ycol, selectedData())
