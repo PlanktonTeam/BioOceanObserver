@@ -68,7 +68,7 @@ mod_PhytoTsNRS_server <- function(id){
       }
       plots <- planktonr::pr_plot_tsclimate(selectedData(), 'NRS', 'matter', Scale)
       
-    }) %>% bindCache(selectedData())
+    }) %>% bindCache(selectedData(), input$scaler)
     
     output$plotmap2 <- renderPlotly({ 
       

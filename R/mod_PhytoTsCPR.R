@@ -109,13 +109,6 @@ mod_PhytoTsCPR_server <- function(id){
       
     }) %>% bindCache(input$parameter,input$region)
     
-    bioregionSelection <- reactive({
-      bioregionSelection <- bioregion %>% dplyr::filter(REGION %in% input$region) %>% 
-        mutate(REGION = factor(REGION, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) 
-    }) %>% bindCache(input$region)
-    
-    n <- length(unique(bioregionSelection()$REGION))
-    
     # Plot timeseries by BioRegion
     output$timeseries4 <- plotly::renderPlotly({
       if(input$scaler3){
@@ -129,24 +122,12 @@ mod_PhytoTsCPR_server <- function(id){
       
       plots <- planktonr::pr_plot_tsclimate(selectedData(), 'CPR', 'matter', Scale)
       
-    }) %>% bindCache(selectedData())
+    }) %>% bindCache(selectedData(), input$scaler3)
     
     output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
       
-      aust <- rnaturalearth::ne_countries(scale = "medium", country = "Australia", returnclass = "sf")
+      plotmap <- planktonr::pr_plot_CPRmap(selectedData())
       
-      gg <- ggplot() +
-        geom_sf(data = bioregion, colour = 'black', fill = 'white') + 
-        geom_sf(data = bioregionSelection(), colour = 'black', aes(fill = REGION)) +
-        geom_sf(data = aust, size = 0.05, fill = "grey80") +
-        scale_fill_manual(values = cmocean::cmocean('matter')(n)) +
-        scale_x_continuous(expand = c(0, 0)) +
-        scale_y_continuous(expand = c(0, 0)) +
-        theme_void() +
-        theme(legend.position = "none",
-              plot.background = element_rect(fill = NA),
-              panel.background = element_rect(fill = NA),
-              axis.line = element_blank())
     }) %>% bindCache(selectedData())
     
     # add text information 
