@@ -55,24 +55,20 @@ mod_ZooTsNRS_server <- function(id){
       
     }) %>% bindCache(input$ycol,input$Site)
     
-    aust <- MapOz
-
     # Plot abundance spectra by species
     output$timeseries <- plotly::renderPlotly({
       
       if (is.null(datNRSz$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
+      
+      Scale <- 'identity'
       if(input$scaler1){
         Scale <- 'log10'
-      } else
-      {
-        Scale <- 'identity'
-      }
-      
+      } 
       
       plots <- planktonr::pr_plot_tsclimate(selectedData(), 'NRS', 'matter', Scale)
       
-      }) %>% bindCache(selectedData())
+      }) %>% bindCache(selectedData(), input$scaler1)
     
     output$plotmap <- renderPlotly({ 
       
