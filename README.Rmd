@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-The goal of imosboo is to ...
+The goal of imosboo is to increase the availability of IMOS Biological data by allowing users to visualise, interact and download data products and code.
 
 ## Code of Conduct
 

@@ -65,7 +65,7 @@ usethis::use_test( "app" )
 # Documentation
 
 ## Vignette ----
-usethis::use_vignette("GolemShiny")
+usethis::use_vignette("imosboo")
 devtools::build_vignettes()
 
 ## Code Coverage----

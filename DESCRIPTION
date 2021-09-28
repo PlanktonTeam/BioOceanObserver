@@ -35,6 +35,8 @@ RoxygenNote: 7.1.1
 URL: https://github.com/PlanktonTeam/IMOS_BioOceanObserver
 BugReports: https://github.com/PlanktonTeam/IMOS_BioOceanObserver/issues
 Suggests: 
+    rmarkdown,
+    knitr,
     spelling,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
@@ -43,3 +45,4 @@ Depends:
     R (>= 2.10)
 Remotes: 
     PlanktonTeam/planktonr@AddShinyFuncs
+VignetteBuilder: knitr
