@@ -13,7 +13,7 @@ mod_PhytoTsNRS_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         plotlyOutput(nsPhytoTsNRS("plotmap2")),
-        checkboxGroupInput(inputId = nsPhytoTsNRS("Site"), label = "Select a station", choices = unique(datNRSp$Station), selected = "Maria Island"),
+        checkboxGroupInput(inputId = nsPhytoTsNRS("Site"), label = "Select a station", choices = unique(datNRSp$StationName), selected = "Maria Island"),
         selectInput(inputId = nsPhytoTsNRS("ycol"), label = 'Select a parameter', choices = unique(datNRSp$parameters), selected = "PhytoBiomassCarbon_pgL"),
         # Select whether to overlay smooth trend line
         checkboxInput(inputId = nsPhytoTsNRS("scaler"), label = strong("Change the plot scale to log10"), value = FALSE),
@@ -49,7 +49,7 @@ mod_PhytoTsNRS_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       validate(need(!is.na(input$ycol), "Error: Please select a parameter."))
       
-      selectedData <- datNRSp %>% dplyr::filter(.data$Station %in% input$Site,
+      selectedData <- datNRSp %>% dplyr::filter(.data$StationName %in% input$Site,
                                                 .data$parameters %in% input$ycol) %>%
         droplevels()
       
@@ -58,7 +58,7 @@ mod_PhytoTsNRS_server <- function(id){
     # Plot abundance spectra by species
     output$timeseriesP <- plotly::renderPlotly({
       
-      if (is.null(datNRSp$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+      if (is.null(datNRSp$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
       if(input$scaler){
         Scale <- 'log10'

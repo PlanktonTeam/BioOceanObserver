@@ -13,7 +13,7 @@ mod_ZooTsNRS_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         plotlyOutput(nsZooTsNRS("plotmap")),
-        checkboxGroupInput(inputId = nsZooTsNRS("Site"), label = "Select a station", choices = unique(datNRSz$Station), selected = "Maria Island"),
+        checkboxGroupInput(inputId = nsZooTsNRS("Site"), label = "Select a station", choices = unique(datNRSz$StationName), selected = "Maria Island"),
         selectInput(inputId = nsZooTsNRS("ycol"), label = 'Select a parameter', choices = unique(datNRSz$parameters), selected = "Biomass_mgm3"),
         # Select whether to overlay smooth trend line
         checkboxInput(inputId = nsZooTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE),
@@ -49,7 +49,7 @@ mod_ZooTsNRS_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       validate(need(!is.na(input$ycol), "Error: Please select a parameter."))
       
-      selectedData <- datNRSz %>% dplyr::filter(.data$Station %in% input$Site,
+      selectedData <- datNRSz %>% dplyr::filter(.data$StationName %in% input$Site,
                                                 .data$parameters %in% input$ycol) %>%
         droplevels()
       
@@ -58,7 +58,7 @@ mod_ZooTsNRS_server <- function(id){
     # Plot abundance spectra by species
     output$timeseries <- plotly::renderPlotly({
       
-      if (is.null(datNRSz$Code))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+      if (is.null(datNRSz$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
       
       Scale <- 'identity'

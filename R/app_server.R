@@ -58,6 +58,13 @@ app_server <- function( input, output, session ) {
       if(input$zoo == "dist"){
         mod_ZooSpatial_server("ZooSpatial_ui_1")
       }
-      
+    })
+    
+    ### Zooplankton Spatial data  
+    observeEvent(input$env, {
+        if(input$env == "pigs"){
+          mod_PigmentsBGC_server("PigmentsBGC_ui_1")
+        }
+        
     })
 }
