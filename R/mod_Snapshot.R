@@ -15,22 +15,22 @@ mod_Snapshot_ui <- function(id){
     shinyWidgets::useShinydashboard(),
     h1("By the Numbers"),
     fluidRow(
-      shinydashboard::valueBoxOutput(nsSnap("PCount"), width = 4),
-      shinydashboard::valueBoxOutput(nsSnap("PSpNo"), width = 4),
-      shinydashboard::valueBoxOutput(nsSnap("PCommSp"), width = 4)),
+      shinydashboard::valueBoxOutput(nsSnap("PCount"), width = 3),
+      shinydashboard::valueBoxOutput(nsSnap("PSpNo"), width = 3),
+      shinydashboard::valueBoxOutput(nsSnap("PCommSp"), width = 6)),
     fluidRow(
-      shinydashboard::valueBoxOutput(nsSnap("ZCount"), width = 4),
-      shinydashboard::valueBoxOutput(nsSnap("ZSpNo"), width = 4),
-      shinydashboard::valueBoxOutput(nsSnap("ZCommSp"), width = 4)),
+      shinydashboard::valueBoxOutput(nsSnap("ZCount"), width = 3),
+      shinydashboard::valueBoxOutput(nsSnap("ZSpNo"), width = 3),
+      shinydashboard::valueBoxOutput(nsSnap("ZCommSp"), width = 6)),
     fluidRow(
       column(4,
              h1("Photo of the Day"),
              imageOutput(nsSnap("POD"))),
       column(8,
              h1("Graph of the Day"),
-             plotly::plotlyOutput(nsSnap("PlotOD"))
-      )
-    )
+             plotly::plotlyOutput(nsSnap("PlotOD")))),
+    fluidRow(
+      shinydashboard::valueBoxOutput(nsSnap("Facts"), width = 12)),
   )
 }
 
@@ -43,81 +43,79 @@ mod_Snapshot_server <- function(id){
     
     # Dashboard Boxes ---------------------------------------------------------
     
-    output$ZSpNo <- shinydashboard::renderValueBox({
-      shinydashboard::valueBox(
-        length(unique(obs$Taxon)), #input$count,
-        "Zooplankton Species Identified",
-        icon = icon("comment-dots"),
-        color = "purple"
-      )
-    })
-    output$PSpNo <- shinydashboard::renderValueBox({
-      shinydashboard::valueBox(
-        length(unique(obs$Taxon)), #input$count,
-        "Phytoplankton Species Identified",
-        icon = icon("comment-dots"),
-        color = "blue"
-      )
-    })
-    
-    output$ZCommSp <- shinydashboard::renderValueBox({
-      ztax <- (obs %>% 
-                 dplyr::group_by(Taxon) %>% 
-                 dplyr::summarise(n = dplyr::n()) %>% 
-                 dplyr::arrange(desc(n)) %>% 
-                 dplyr::filter(stringr::str_detect(Taxon, 'spp', negate = TRUE))
-      )$Taxon[1]
-      
-      aphiaID <- worrms::wm_name2id(ztax) # Speed this up by including this in a species list
-      zLink <- stringr::str_c("javascript:void(window.open('http://www.marinespecies.org/aphia.php?p=taxdetails&id=", as.character(aphiaID),"', '_blank'))")
-      
-      shinydashboard::valueBox(
-        ztax,
-        "Most Common Zooplankton Species",
-        icon = icon("microscope"),
-        color = "red",
-        href = zLink
-      )
-    })
-    
-    output$PCommSp <- shinydashboard::renderValueBox({
-      
-      ptax <- (obs %>% 
-                 dplyr::group_by(Taxon) %>% 
-                 dplyr::summarise(n = dplyr::n()) %>% 
-                 dplyr::arrange(desc(n)) %>% 
-                 dplyr::filter(stringr::str_detect(Taxon, 'spp', negate = TRUE))
-      )$Taxon[1]
-      
-      aphiaID <- worrms::wm_name2id(ptax) # Speed this up by including this in a species list
-      pLink <- stringr::str_c("javascript:void(window.open('http://www.marinespecies.org/aphia.php?p=taxdetails&id=", as.character(aphiaID),"', '_blank'))")
-      
-      shinydashboard::valueBox(
-        ptax,
-        "Most Common Phytoplankton Species",
-        icon = icon("microscope"),
-        color = "teal",
-        href = pLink
-      )
-    })
-    
     output$PCount <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
-        sum(obs$Counts), #input$count,
-        "Phytoplankton Count",
+        sum(planktonr::pr_get_SppCount("Phytoplankton")$n), #input$count,
+        "Number of Phytoplankton Counted",
         icon = icon("chart-bar"),
-        color = "orange"
+        color = "yellow"
       )
     })
     
     output$ZCount <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
-        sum(obs$Counts), #input$count,
-        "Zooplankton Count",
+        sum(planktonr::pr_get_SppCount("Zooplankton")$n), #input$count,
+        "Number of Zooplankton Counted",
         icon = icon("chart-bar"),
+        color =  "light-blue"
+      )
+    })  
+    
+    output$PSpNo <- shinydashboard::renderValueBox({
+      shinydashboard::valueBox(
+        nrow(unique(planktonr::pr_get_SppCount("Phytoplankton"))), #input$count,
+        "Phytoplankton Species Identified",
+        icon = icon("comment-dots"),
+        color = "orange"
+      )
+    })
+    
+    output$ZSpNo <- shinydashboard::renderValueBox({
+      shinydashboard::valueBox(
+        nrow(unique(planktonr::pr_get_SppCount("Zooplankton"))), #input$count,
+        "Zooplankton Species Identified",
+        icon = icon("comment-dots"),
+        color = "blue"
+      )
+    })
+    
+    output$PCommSp <- shinydashboard::renderValueBox({
+      ptax <- planktonr::pr_get_SppCount("Phytoplankton")[1,]
+      pLink <- stringr::str_c("javascript:void(window.open('http://www.marinespecies.org/aphia.php?p=taxdetails&id=", as.character(ptax$SPCode),"', '_blank'))")
+      shinydashboard::valueBox(
+        ptax$TaxonName,
+        "Most Common Phytoplankton Species",
+        icon = icon("microscope"),
+        color = "red",
+        href = pLink
+      )
+    })
+    
+    output$ZCommSp <- shinydashboard::renderValueBox({
+      ztax <- planktonr::pr_get_SppCount("Zooplankton")[1,]
+      zLink <- stringr::str_c("javascript:void(window.open('http://www.marinespecies.org/aphia.php?p=taxdetails&id=", as.character(ztax$SPCode),"', '_blank'))")
+      shinydashboard::valueBox(
+        ztax$TaxonName,
+        "Most Common Zooplankton Species",
+        icon = icon("microscope"),
+        color = "navy",
+        href = zLink
+      )
+    })
+    
+  
+    
+      
+    
+    output$Facts <- shinydashboard::renderValueBox({
+      shinydashboard::valueBox(
+        "Fun Facts",
+        planktonr::pr_get_facts(),
+        icon = icon("info-circle"),
         color = "green"
       )
-    })    
+    }) 
+    
     
     # Photos ---------------------------------------------------------
     
@@ -142,11 +140,18 @@ mod_Snapshot_server <- function(id){
     
     # Plot of the Day ---------------------------------------------------------
     
-    # In the future I will write some code to choose random sites, and pr_code
+    # In the future I will write some code to choose additional plot types
     
     # Plot abundance spectra by species
     output$PlotOD <- plotly::renderPlotly({
-      plots <- planktonr::pr_plot_tsclimate(datNRSz %>% dplyr::filter(StationCode == "PHB" & parameters == "Biomass_mgm3"), 'NRS', 'matter', 'log10')
+      
+      st <- planktonr::pr_get_NRSStation()
+      r1 <- round(runif(1, min = 1, max = nrow(st)))
+      
+      meth <- unique(datNRSz$parameters)
+      r2 <- round(runif(1, min = 1, max = length(meth)))
+      
+      plots <- planktonr::pr_plot_tsclimate(datNRSz %>% dplyr::filter(StationCode == st$StationCode[r1] & parameters == meth[r2]), 'NRS', 'matter', 'log10')
     })
     
     

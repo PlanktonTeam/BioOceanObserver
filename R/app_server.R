@@ -28,7 +28,8 @@ app_server <- function( input, output, session ) {
   observe({
     
     ### Snapshot page
-    mod_Snapshot_server("Snapshot_ui_1")
+    if (req(input$navbar) == "Snapshot") 
+      mod_Snapshot_server("Snapshot_ui_1")
     
     ### Zooplankton time series data  
     if (req(input$navbar) == "Zooplankton")  
