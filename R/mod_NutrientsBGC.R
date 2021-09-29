@@ -1,4 +1,4 @@
-#' PigmentsBGC UI Function
+#' NutrientsBGC UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,57 +7,56 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
-mod_PigmentsBGC_ui <- function(id){
-  nsPigmentsBGC <- NS(id)
+mod_NutrientsBGC_ui <- function(id){
+  nsNutrientsBGC <- NS(id)
   
   tagList(
     sidebarLayout(
       sidebarPanel(
-        plotlyOutput(nsPigmentsBGC("plotmap")),
+        plotlyOutput(nsNutrientsBGC("plotmap")),
         # station selector
-        checkboxGroupInput(inputId = nsPigmentsBGC('station'), label = "Select a station", choices = unique(sort(Pigs$StationName)), selected = 'Port Hacking'),
+        checkboxGroupInput(inputId = nsNutrientsBGC('station'), label = "Select a station", choices = unique(sort(Nuts$StationName)), selected = 'Port Hacking'),
         # Date selector
-        dateRangeInput(nsPigmentsBGC("date"), "Select a date range", start = "2009-01-01", end = "2020-11-30", min = "2009-01-01", max = Sys.Date()),
+        dateRangeInput(nsNutrientsBGC("date"), "Select a date range", start = "2009-01-01", end = "2020-11-30", min = "2009-01-01", max = Sys.Date()),
         # select parameter
-        selectizeInput(inputId = nsPigmentsBGC('parameter'), label = 'Select a parameter', choices = unique(Pigs$parameters), selected = 'TotalChla', multiple = FALSE),
-        #selectizeInput(inputId = nsPigmentsBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
+        selectizeInput(inputId = nsNutrientsBGC('parameter'), label = 'Select a parameter', choices = unique(Nuts$parameters), selected = 'Silicate_umolL', multiple = FALSE),
+        #selectizeInput(inputId = nsNutrientsBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
         # Select whether to overlay smooth trend line
-        selectizeInput(inputId = nsPigmentsBGC("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
+        selectizeInput(inputId = nsNutrientsBGC("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
       ),
       mainPanel(
-        h6(textOutput(nsPigmentsBGC("PlotExp"), container = span)),
-        plotlyOutput(nsPigmentsBGC("plot")) %>% withSpinner(color="#0dc5c1")
+        h6(textOutput(nsNutrientsBGC("PlotExp"), container = span)),
+        plotlyOutput(nsNutrientsBGC("plot")) %>% withSpinner(color="#0dc5c1")
+          )
+        )
       )
-    )
-  )
 }
-
-#' PigmentsBGC Server Functions
+    
+#' NutrientsBGC Server Functions
 #'
 #' @noRd 
-mod_PigmentsBGC_server <- function(id){
+mod_NutrientsBGC_server <- function(id){
   moduleServer( id, function(input, output, session){
     #     select depths
-    
+
     observe({
       req(input$station)
       req(input$parameter)
       validate(need(!is.na(input$station), "Error: Please select a station."))
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       # updateSelectizeInput(session, "depth", "Select a depth", server = TRUE, 
-      #                      choices = NRSBGCPigments[NRSBGCPigments$Station %in% input$station & NRSBGCPigments$name %in% input$parameter,]$SampleDepth_m)
+      #                      choices = NRSBGCNutrients[NRSBGCNutrients$Station %in% input$station & NRSBGCNutrients$name %in% input$parameter,]$SampleDepth_m)
     })
     
-    selected <- reactive({
+      selected <- reactive({
       req(input$date)
       validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
-      Pigs %>%
+      Nuts %>%
         filter(.data$StationName %in% input$station,
                .data$SampleDateLocal > as.POSIXct(input$date[1]) & .data$SampleDateLocal < as.POSIXct(input$date[2]),
                .data$parameters %in% input$parameter) %>%
-        mutate(Station = as.factor(.data$StationName),
-               name = as.factor(.data$parameters),
+        mutate(name = as.factor(.data$parameters),
                SampleDepth_m = round(SampleDepth_m, -1)) %>%
         tidyr::drop_na() 
     }) %>% bindCache(input$station, input$parameter, input$date)
@@ -69,7 +68,7 @@ mod_PigmentsBGC_server <- function(id){
       trend <-  input$smoother
       
       plot <- planktonr::pr_plot_env_var(selected(), trend = trend)
-      
+
     }) %>% bindCache(selected(), input$smoother)
     
     # add a map in sidebar
@@ -78,7 +77,7 @@ mod_PigmentsBGC_server <- function(id){
       pmap <- planktonr::pr_plot_NRSmap(selected())
       
     }) %>% bindCache(input$station)
-    
+
     # add text information 
     output$PlotExp <- renderText({
       "A plot of selected nutrient parameters from the NRS as timeseries at analysed depths"
@@ -87,12 +86,12 @@ mod_PigmentsBGC_server <- function(id){
     # create table output
     output$table <- DT::renderDataTable(
       selected() ) 
-    
+ 
   })
 }
-
+    
 ## To be copied in the UI
-# mod_PigmentsBGC_ui("PigmentsBGC_ui_1")
-
+# mod_NutrientsBGC_ui("NutrientsBGC_ui_1")
+    
 ## To be copied in the server
-# mod_PigmentsBGC_server("PigmentsBGC_ui_1")
+# mod_NutrientsBGC_server("NutrientsBGC_ui_1")

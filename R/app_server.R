@@ -36,7 +36,7 @@ app_server <- function( input, output, session ) {
     
     ### Env Data BGC
     if (req(input$navbar) == "Environmental Data")
-      mod_EnvDataBGC_server("EnvDataBGC_ui_1")
+      mod_NutrientsBGC_server("NutrientsBGC_ui_1")
   })
   
     ## Run when changing page within tab
