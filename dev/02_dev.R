@@ -33,6 +33,8 @@ usethis::use_pipe()
 
 usethis::use_dev_package("planktonr", type = "Imports", remote = "PlanktonTeam/planktonr@AddShinyFuncs")
 
+remotes::install_github("PlanktonTeam/planktonr@AddShinyFuncs", force = TRUE)
+
 ## Add modules ----
 ## Create a module infrastructure in R/
 golem::add_module( name = "ZooTsNRS" ) # Name of the module
@@ -65,8 +67,12 @@ usethis::use_test( "app" )
 # Documentation
 
 ## Vignette ----
-usethis::use_vignette("GolemShiny")
+usethis::use_vignette("imosboo")
 devtools::build_vignettes()
+
+## Building the website
+usethis::use_pkgdown()
+pkgdown::build_site('https://github.com/PlanktonTeam/IMOS_BioOceanObserver', examples = FALSE)
 
 ## Code Coverage----
 ## Set the code coverage service ("codecov" or "coveralls")

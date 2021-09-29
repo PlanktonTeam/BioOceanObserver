@@ -60,7 +60,7 @@ app_ui <- function(request) {
                                     tabPanel("Section 3"))),
                tabPanel("Environmental Data",
                         tabsetPanel(id = 'env',
-                                    tabPanel(value = "bgc", "NRS BGC Nutrients", mod_EnvDataBGC_ui("EnvDataBGC_ui_1")),
+                                    tabPanel(value = "bgc", "NRS BGC Nutrients", mod_NutrientsBGC_ui("NutrientsBGC_ui_1")),
                                     tabPanel(value = "pigs", "NRS BGC Pigments", mod_PigmentsBGC_ui("PigmentsBGC_ui_1")),
                                     tabPanel("Section 3"))),
                navbarMenu("", icon = icon("question-circle"),
