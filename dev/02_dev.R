@@ -39,6 +39,7 @@ golem::add_module( name = "ZooTsNRS" ) # Name of the module
 golem::add_module( name = "ZooTsCPR" ) # Name of the module
 golem::add_module( name = "ZooSpatial" ) # Name of the module
 golem::add_module( name = "EnvDataBGC" ) # Name of the module
+golem::add_module( name = "Snapshot" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*

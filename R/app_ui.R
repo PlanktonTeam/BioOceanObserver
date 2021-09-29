@@ -27,11 +27,9 @@ app_ui <- function(request) {
                             p("This tool was originally conceived and developed by Dr Jason Everett (UQ/CSIRO/UNSW) and Claire Davies (CSIRO). Jason is a biological oceanographer and Claire is a plankton ecologist. Both have a strong interest in open data science and encouraging increased data uptake to solve real world problems.")
                           ))),
                tabPanel("Snapshot",
-                        tabsetPanel(id = 'snap',
-                                    tabPanel("Section 1"),
-                                    p("A space to put facts, figures, statistics of the current state of the ocean."),
-                                    tabPanel("Section 2"),
-                                    tabPanel("Section 3"))),
+                        fluidPage(
+                          value = "snap", mod_Snapshot_ui("Snapshot_ui_1"))
+                        ),
                tabPanel("Microbes",
                         tabsetPanel(id = 'mic',
                                     tabPanel("Section 1"),

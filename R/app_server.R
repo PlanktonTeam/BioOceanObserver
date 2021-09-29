@@ -26,6 +26,10 @@ app_server <- function( input, output, session ) {
 
     ## only run if selected by tab - this should be home page for each Tab level
   observe({
+    
+    ### Snapshot page
+    mod_Snapshot_server("Snapshot_ui_1")
+    
     ### Zooplankton time series data  
     if (req(input$navbar) == "Zooplankton")  
       mod_ZooTsNRS_server("ZooTsNRS_ui_1")
