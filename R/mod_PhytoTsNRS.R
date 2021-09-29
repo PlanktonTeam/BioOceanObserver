@@ -13,7 +13,7 @@ mod_PhytoTsNRS_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         plotlyOutput(nsPhytoTsNRS("plotmap2")),
-        checkboxGroupInput(inputId = nsPhytoTsNRS("Site"), label = "Select a station", choices = unique(datNRSp$StationName), selected = "Maria Island"),
+        checkboxGroupInput(inputId = nsPhytoTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSp$StationName)), selected = "Maria Island"),
         selectInput(inputId = nsPhytoTsNRS("ycol"), label = 'Select a parameter', choices = unique(datNRSp$parameters), selected = "PhytoBiomassCarbon_pgL"),
         # Select whether to overlay smooth trend line
         checkboxInput(inputId = nsPhytoTsNRS("scaler"), label = strong("Change the plot scale to log10"), value = FALSE),

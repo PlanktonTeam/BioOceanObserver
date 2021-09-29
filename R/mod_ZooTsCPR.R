@@ -14,7 +14,7 @@ mod_ZooTsCPR_ui <- function(id){
       sidebarPanel(
         plotlyOutput(nsZooTsCPR("plotmap")),
         h6("Note there is very little data in the North and North-west regions"),
-        checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(datCPRz$BioRegion), selected = unique(datCPRz$BioRegion)),
+        checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(sort(datCPRz$BioRegion)), selected = unique(datCPRz$BioRegion)),
         selectInput(inputId = nsZooTsCPR("parameter"), label = 'Select a parameter', choices = unique(datCPRz$parameters), selected = "ZoopAbundance_m3"),
         # Select whether to overlay smooth trend line
         checkboxInput(inputId = nsZooTsCPR("scaler2"), label = strong("Change the plot scale to log10"), value = FALSE),
