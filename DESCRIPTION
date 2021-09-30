@@ -25,7 +25,9 @@ Imports:
     rnaturalearth,
     shiny (>= 1.6.0),
     shinycssloaders,
+    shinydashboard,
     shinythemes,
+    shinyWidgets,
     stringr,
     thinkr,
     tidyr
