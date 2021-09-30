@@ -31,6 +31,8 @@ mod_Snapshot_ui <- function(id){
              plotly::plotlyOutput(nsSnap("PlotOD")))),
     fluidRow(
       shinydashboard::valueBoxOutput(nsSnap("Facts"), width = 12)),
+    fluidRow(
+      shinydashboard::valueBoxOutput(nsSnap("Papers"), width = 12)),
   )
 }
 
@@ -116,6 +118,15 @@ mod_Snapshot_server <- function(id){
       )
     }) 
     
+    output$Papers <- shinydashboard::renderValueBox({
+      shinydashboard::valueBox(
+        "Scientific Paper using this data",
+        planktonr::pr_get_papers(),
+        # tags$p(tags$b("Test "), tags$i("string")),
+        icon = icon("newspaper"),
+        color = "teal"
+      )
+    }) 
     
     # Photos ---------------------------------------------------------
     
