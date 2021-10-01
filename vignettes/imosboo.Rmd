@@ -14,10 +14,13 @@ knitr::opts_chunk$set(
 )
 ```
 
+## Accessing IMOS Biological Ocean Observer
+
+You can access the APP here [links](https://jaseeverett.shinyapps.io/IMOS_BioOceanObserver/)
+
+
 ```{r setup}
 library(imosboo)
 ```
 
-## Accessing IMOS Biological Ocean Observer
 
-You can access the APP here [links](https://jaseeverett.shinyapps.io/IMOS_BioOceanObserver/)
