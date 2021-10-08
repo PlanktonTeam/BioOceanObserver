@@ -19,7 +19,7 @@ mod_NutrientsBGC_ui <- function(id){
         # Date selector
         dateRangeInput(nsNutrientsBGC("date"), "Select a date range", start = "2009-01-01", end = "2020-11-30", min = "2009-01-01", max = Sys.Date()),
         # select parameter
-        selectizeInput(inputId = nsNutrientsBGC('parameter'), label = 'Select a parameter', choices = unique(Nuts$parameters), selected = 'Silicate_umolL', multiple = FALSE),
+        selectizeInput(inputId = nsNutrientsBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(Nuts$parameters), style = "simple"), selected = 'Silicate_umolL', multiple = FALSE),
         #selectizeInput(inputId = nsNutrientsBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
         # Select whether to overlay smooth trend line
         selectizeInput(inputId = nsNutrientsBGC("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
