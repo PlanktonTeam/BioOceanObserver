@@ -15,7 +15,7 @@ mod_PhytoTsCPR_ui <- function(id){
         plotlyOutput(nsPhytoTsCPR("plotmap")),
         h6("Note there is very little data in the North and North-west regions"),
         checkboxGroupInput(inputId = nsPhytoTsCPR("region"), label = "Select a region", choices = unique(sort(datCPRp$BioRegion)), selected = unique(datCPRp$BioRegion)),
-        selectInput(inputId = nsPhytoTsCPR("parameter"), label = 'Select a parameter', choices = unique(datCPRp$parameters), selected = "PhytoAbundance_m3"),
+        selectInput(inputId = nsPhytoTsCPR("parameter"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datCPRp$parameters), style = "simple"), selected = "PhytoAbundance_m3"),
         # Select whether to overlay smooth trend line
         checkboxInput(inputId = nsPhytoTsCPR("scaler3"), label = strong("Change the plot scale to log10"), value = FALSE),
         downloadButton(nsPhytoTsCPR("downloadData"), "Data"),
