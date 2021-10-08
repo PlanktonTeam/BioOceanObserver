@@ -20,7 +20,7 @@ app_ui <- function(request) {
                           sidebarPanel(
                           ),
                           mainPanel(
-                            p("The goal of this site is to Integrate, Analyse and Visualise data collected by the Integrated Marince Observing System (IMOS). We aim to enhance the availability and understanding of biological data and make it accessible to broader and non-specialist audiences in order to accelerate the generation of scientific insights."),
+                            p("The goal of this site is to Integrate, Analyse and Visualise data collected by the", tags$a(href="https://imos.org.au","Integrated Marince Observing System (IMOS)"),". We aim to enhance the availability and understanding of biological data and make it accessible to broader and non-specialist audiences in order to accelerate the generation of scientific insights."),
                             h3("Code"),
                             p("This project is entirely open source, as are all the IMOS data underlying it. All the code for this tool are freely available on GitHub. We welcome collaborators and pull requests are gratefully accepted."),
                             h3("Who we are"),
