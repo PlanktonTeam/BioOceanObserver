@@ -89,7 +89,6 @@ mod_ZooTsCPR_server <- function(id){
       
       # df <- read.csv("~/Test.csv")
       # df$SampleDateUTC <- as.POSIXct(df$SampleDateUTC)
-      
       # p1 <- planktonr::pr_plot_trends(df, trend = "Raw", survey = "CPR", method = "lm", pal = "matter", y_trans = Scale, output = "ggplot")
       # p2 <- planktonr::pr_plot_trends(df, trend = "Month", survey = "CPR", method = "lm", pal = "matter", y_trans = Scale, output = "ggplot")
       
