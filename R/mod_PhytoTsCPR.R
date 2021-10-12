@@ -113,11 +113,12 @@ mod_PhytoTsCPR_server <- function(id){
     
     #Downloadable csv of selected dataset ----
     output$downloadData <- downloadHandler(
-      filename = function() {paste(input$parameter, ".csv", sep = "")},
+      filename = function() {
+        paste0(tools::file_path_sans_ext(input$ycol),"_", format(Sys.time(), "%Y%m%dT%H%M%S"), ".csv")
+      },
       content = function(file) {
-        write.table(selectedData(), file, row.names = FALSE, col.names = c("SampleDateUTC", "Month", "Region", input$parameter), sep = ",")
-      }
-    )
+        vroom::vroom_write(selectedData(), file, delim = ",")
+      })
     
     # Download figure
     # output$downloadPlot <- downloadHandler(

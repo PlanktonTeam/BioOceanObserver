@@ -123,14 +123,16 @@ mod_ZooTsNRS_server <- function(id){
       # datasetInput()
     })
     
+    # Download -------------------------------------------------------
     #Downloadable csv of selected dataset ----
     output$downloadData <- downloadHandler(
-      filename = function() {paste(input$ycol, ".csv", sep = "")},
-      # colnames(selectedData)[colnames(selectedData)=="ycol"] <- paste(input$ycol),
+      filename = function() {
+        paste0(tools::file_path_sans_ext(input$ycol),"_", format(Sys.time(), "%Y%m%dT%H%M%S"), ".csv")
+      },
       content = function(file) {
-        write.table(selectedData(), file, row.names = FALSE, col.names = c("SampleDateLocal", "Month", "Code", input$ycol), sep = ",")
-      }
-    )
+        vroom::vroom_write(selectedData(), file, delim = ",")
+      })
+  
     
     # Download figure
     # output$downloadPlot <- downloadHandler(
