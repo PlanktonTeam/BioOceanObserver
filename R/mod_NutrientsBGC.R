@@ -57,7 +57,7 @@ mod_NutrientsBGC_server <- function(id){
                .data$SampleDateLocal > as.POSIXct(input$date[1]) & .data$SampleDateLocal < as.POSIXct(input$date[2]),
                .data$parameters %in% input$parameter) %>%
         mutate(name = as.factor(.data$parameters),
-               SampleDepth_m = round(SampleDepth_m, -1)) %>%
+               SampleDepth_m = round(.data$SampleDepth_m, -1)) %>%
         tidyr::drop_na() 
     }) %>% bindCache(input$station, input$parameter, input$date)
     
@@ -89,9 +89,3 @@ mod_NutrientsBGC_server <- function(id){
  
   })
 }
-    
-## To be copied in the UI
-# mod_NutrientsBGC_ui("NutrientsBGC_ui_1")
-    
-## To be copied in the server
-# mod_NutrientsBGC_server("NutrientsBGC_ui_1")

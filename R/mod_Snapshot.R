@@ -7,6 +7,7 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
+#' @importFrom stats runif
 mod_Snapshot_ui <- function(id){
   nsSnap <- NS(id)
   tagList(
@@ -105,9 +106,9 @@ mod_Snapshot_server <- function(id){
       )
     })
     
-  
     
-      
+    
+    
     
     output$Facts <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
@@ -162,7 +163,9 @@ mod_Snapshot_server <- function(id){
       meth <- unique(datNRSz$parameters)
       r2 <- round(runif(1, min = 1, max = length(meth)))
       
-      plots <- planktonr::pr_plot_tsclimate(datNRSz %>% dplyr::filter(StationCode == st$StationCode[r1] & parameters == meth[r2]), 'NRS', 'matter', 'log10')
+      plots <- planktonr::pr_plot_tsclimate(datNRSz %>% 
+                                              dplyr::filter(.data$StationCode == st$StationCode[r1] & 
+                                                              .data$parameters == meth[r2]), 'NRS', 'matter', 'log10')
     })
     
     
@@ -170,9 +173,3 @@ mod_Snapshot_server <- function(id){
     
   })
 }
-
-## To be copied in the UI
-# 
-
-## To be copied in the server
-# 

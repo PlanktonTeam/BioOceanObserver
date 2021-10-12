@@ -17,7 +17,7 @@ mod_PhytoTsCPR_ui <- function(id){
         checkboxGroupInput(inputId = nsPhytoTsCPR("region"), label = "Select a region", choices = unique(sort(datCPRp$BioRegion)), selected = unique(datCPRp$BioRegion)),
         selectInput(inputId = nsPhytoTsCPR("parameter"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datCPRp$parameters), style = "simple"), selected = "PhytoAbundance_m3"),
         # Select whether to overlay smooth trend line
-        checkboxInput(inputId = nsPhytoTsCPR("scaler3"), label = strong("Change the plot scale to log10"), value = FALSE),
+        checkboxInput(inputId = nsPhytoTsCPR("scaler"), label = strong("Change the plot scale to log10"), value = FALSE),
         downloadButton(nsPhytoTsCPR("downloadData"), "Data"),
         downloadButton(nsPhytoTsCPR("downloadPlot"), "Plot"),
         downloadButton(nsPhytoTsCPR("downloadNote"), "Notebook")
@@ -52,9 +52,9 @@ mod_PhytoTsCPR_server <- function(id){
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       selectedData <- datCPRp %>% 
-        mutate(BioRegion = factor(BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
-        dplyr::filter(BioRegion %in% input$region,
-                      parameters %in% input$parameter) %>%
+        mutate(BioRegion = factor(.data$BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
+        dplyr::filter(.data$BioRegion %in% input$region,
+                      .data$parameters %in% input$parameter) %>%
         droplevels()
       
     }) %>% bindCache(input$parameter,input$region)
@@ -75,7 +75,7 @@ mod_PhytoTsCPR_server <- function(id){
     # Plot Trends -------------------------------------------------------------
 
     output$timeseries1 <- plotly::renderPlotly({
-      if(input$scaler3){
+      if(input$scaler){
         Scale <- 'log10'
       } else {
         Scale <- 'identity'
@@ -84,13 +84,13 @@ mod_PhytoTsCPR_server <- function(id){
       p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "CPR", method = "lm", pal = "matter", y_trans = Scale, output = "plotly")
       p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "CPR", method = "loess", pal = "matter", y_trans = Scale, output = "plotly")
       p <- plotly::subplot(p1,p2, titleY = TRUE, widths = c(0.7,0.3))
-    })
+    }) %>% bindCache(selectedData(), input$scaler)
     
     
     # Climatologies -----------------------------------------------------------
     
     output$timeseries2 <- plotly::renderPlotly({
-      if(input$scaler3){
+      if(input$scaler){
         Scale <- 'log10'
       } else {
         Scale <- 'identity'
@@ -100,7 +100,7 @@ mod_PhytoTsCPR_server <- function(id){
       
       plots <- planktonr::pr_plot_tsclimate(selectedData(), 'CPR', 'matter', Scale)
       
-    }) %>% bindCache(selectedData(), input$scaler3)
+    }) %>% bindCache(selectedData(), input$scaler)
     
    
     
@@ -108,7 +108,7 @@ mod_PhytoTsCPR_server <- function(id){
     # Downloads ---------------------------------------------------------------
     # Table of selected dataset ----
     output$table <- renderTable({
-      datasetInput()
+      # datasetInput()
     })
     
     #Downloadable csv of selected dataset ----
@@ -120,17 +120,11 @@ mod_PhytoTsCPR_server <- function(id){
     )
     
     # Download figure
-    output$downloadPlot <- downloadHandler(
-      filename = function() {paste(input$parameter, '.png', sep='') },
-      content = function(file) {
-        ggsave(file, plot = plotInput(), device = "png")
-      }
-    )
+    # output$downloadPlot <- downloadHandler(
+    #   filename = function() {paste(input$parameter, '.png', sep='') },
+    #   content = function(file) {
+    #     ggsave(file, plot = plotInput(), device = "png")
+    #   }
+    # )
   })
 }
-
-## To be copied in the UI
-# 
-
-## To be copied in the server
-# 

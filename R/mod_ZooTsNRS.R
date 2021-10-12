@@ -120,7 +120,7 @@ mod_ZooTsNRS_server <- function(id){
     
     # Table of selected dataset ----
     output$table <- renderTable({
-      datasetInput()
+      # datasetInput()
     })
     
     #Downloadable csv of selected dataset ----
@@ -133,11 +133,10 @@ mod_ZooTsNRS_server <- function(id){
     )
     
     # Download figure
-    output$downloadPlot <- downloadHandler(
-      filename = function() {paste(input$ycol, '.png', sep='') },
-      content = function(file) {
-        ggsave(file, plot = plotInput(), device = "png")
-      }
-    )
+    # output$downloadPlot <- downloadHandler(
+    #   filename = function() {paste(input$ycol, '.png', sep='') },
+    #   content = function(file) {
+    #     ggsave(file, plot = plotInput(), device = "png")
+    #   })
   })
 }
