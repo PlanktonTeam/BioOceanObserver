@@ -58,7 +58,7 @@ mod_PigmentsBGC_server <- function(id){
                .data$parameters %in% input$parameter) %>%
         mutate(Station = as.factor(.data$StationName),
                name = as.factor(.data$parameters),
-               SampleDepth_m = round(SampleDepth_m, -1)) %>%
+               SampleDepth_m = round(.data$SampleDepth_m, -1)) %>%
         tidyr::drop_na() 
     }) %>% bindCache(input$station, input$parameter, input$date)
     
@@ -90,9 +90,3 @@ mod_PigmentsBGC_server <- function(id){
     
   })
 }
-
-## To be copied in the UI
-# mod_PigmentsBGC_ui("PigmentsBGC_ui_1")
-
-## To be copied in the server
-# mod_PigmentsBGC_server("PigmentsBGC_ui_1")

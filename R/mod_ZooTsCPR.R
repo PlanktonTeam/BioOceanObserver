@@ -17,7 +17,7 @@ mod_ZooTsCPR_ui <- function(id){
         checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(sort(datCPRz$BioRegion)), selected = unique(datCPRz$BioRegion)),
         selectInput(inputId = nsZooTsCPR("parameter"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datCPRz$parameters), style = "simple"), selected = "ZoopAbundance_m3"),
         # Select whether to overlay smooth trend line
-        checkboxInput(inputId = nsZooTsCPR("scaler2"), label = strong("Change the plot scale to log10"), value = FALSE),
+        checkboxInput(inputId = nsZooTsCPR("scaler"), label = strong("Change the plot scale to log10"), value = FALSE),
         downloadButton(nsZooTsCPR("downloadData"), "Data"),
         downloadButton(nsZooTsCPR("downloadPlot"), "Plot"),
         downloadButton(nsZooTsCPR("downloadNote"), "Notebook")
@@ -56,9 +56,9 @@ mod_ZooTsCPR_server <- function(id){
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       selectedData <- datCPRz %>% 
-        mutate(BioRegion = factor(BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
-        dplyr::filter(BioRegion %in% input$region,
-                      parameters %in% input$parameter) %>%
+        mutate(BioRegion = factor(.data$BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
+        dplyr::filter(.data$BioRegion %in% input$region,
+                      .data$parameters %in% input$parameter) %>%
         droplevels()
       
     }) %>% bindCache(input$parameter,input$region)
@@ -81,33 +81,21 @@ mod_ZooTsCPR_server <- function(id){
     
     # Plot Trends -------------------------------------------------------------
     output$timeseries1 <- plotly::renderPlotly({
-      if(input$scaler2){
+      if(input$scaler){
         Scale <- 'log10'
       } else {
         Scale <- 'identity'
       }
       
-      # df <- read.csv("~/Test.csv")
-      # df$SampleDateUTC <- as.POSIXct(df$SampleDateUTC)
-      
-      # p1 <- planktonr::pr_plot_trends(df, trend = "Raw", survey = "CPR", method = "lm", pal = "matter", y_trans = Scale, output = "ggplot")
-      # p2 <- planktonr::pr_plot_trends(df, trend = "Month", survey = "CPR", method = "lm", pal = "matter", y_trans = Scale, output = "ggplot")
-      
-      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "CPR", method = "lm", pal = "matter", y_trans = Scale, output = "plotly") # %>%
-        # plotly::layout(yaxis = list(title = planktonr::pr_relabel(unique(selectedData()$parameters), style = "plotly"), y = 0, x = 0, yanchor = "left"))
-      
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "CPR", method = "loess", pal = "matter", y_trans = Scale, output = "plotly") # %>% 
-        # plotly::layout(yaxis = list(side = "right"))
-      
-      p <- plotly::subplot(p1,p2, 
-                           titleY = TRUE,
-                           widths = c(0.7,0.3))
-    })
+      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "CPR", method = "lm", pal = "matter", y_trans = Scale, output = "plotly")
+      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "CPR", method = "loess", pal = "matter", y_trans = Scale, output = "plotly")
+      p <- plotly::subplot(p1,p2, titleY = TRUE, widths = c(0.7,0.3))
+    }) %>% bindCache(selectedData(), input$scaler)
     
     
     # Climatologies -----------------------------------------------------------
     output$timeseries2 <- plotly::renderPlotly({
-      if(input$scaler2){
+      if(input$scaler1){
         Scale <- 'log10'
       } else {
         Scale <- 'identity'
@@ -115,7 +103,7 @@ mod_ZooTsCPR_server <- function(id){
       
       plots <- planktonr::pr_plot_tsclimate(selectedData(), 'CPR', 'matter', Scale) 
       
-    }) %>% bindCache(selectedData(), input$scaler2)
+    }) %>% bindCache(selectedData(), input$scaler)
     
     
     
@@ -123,21 +111,23 @@ mod_ZooTsCPR_server <- function(id){
     
     ## Table of selected dataset ----
     output$table <- renderTable({
-      datasetInput()
+      # datasetInput()
     })
     
-    ## Downloadable csv of selected dataset ----
+    #Downloadable csv of selected dataset ----
     output$downloadData <- downloadHandler(
-      filename = function() {paste(input$parameter, ".csv", sep = "")},
+      filename = function() {
+        paste0(tools::file_path_sans_ext(input$ycol),"_", format(Sys.time(), "%Y%m%dT%H%M%S"), ".csv")
+      },
       content = function(file) {
-        write.table(selectedData(), file, row.names = FALSE, col.names = c("SampleDateUTC", "Month", "Region", input$parameter), sep = ",")
+        vroom::vroom_write(selectedData(), file, delim = ",")
       })
     
     ## Download figure
-    output$downloadPlot <- downloadHandler(
-      filename = function() {paste(input$parameter, '.png', sep='') },
-      content = function(file) {
-        ggsave(file, plot = plotInput(), device = "png")
-      })
+    # output$downloadPlot <- downloadHandler(
+    #   filename = function() {paste(input$parameter, '.png', sep='') },
+    #   content = function(file) {
+    #     ggsave(file, plot = plotInput(), device = "png")
+    #   })
   })
 }
