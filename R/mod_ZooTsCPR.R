@@ -95,13 +95,13 @@ mod_ZooTsCPR_server <- function(id){
     
     # Climatologies -----------------------------------------------------------
     output$timeseries2 <- plotly::renderPlotly({
-      if(input$scaler1){
+      if(input$scaler){
         Scale <- 'log10'
       } else {
         Scale <- 'identity'
       }
       
-      plots <- planktonr::pr_plot_tsclimate(selectedData(), 'CPR', 'matter', Scale) 
+      plots <- planktonr::pr_plot_tsclimate(selectedData(), Survey = 'CPR', pal = 'matter', Scale) 
       
     }) %>% bindCache(selectedData(), input$scaler)
     
