@@ -63,7 +63,7 @@ app_ui <- function(request) {
                                     tabPanel("Section 3"))),
                navbarMenu("", icon = icon("question-circle"),
                           tabPanel("Help", icon = icon("question")),
-                          tabPanel(actionLink("help_keyboard", "Keyboard shortcuts", icon = icon("keyboard-o"))),
+                          tabPanel(actionLink("help_keyboard", "Keyboard shortcuts", icon = icon("keyboard"))),
                           tabPanel("About", uiOutput("help_about"), icon = icon("info")),
                           tabPanel(tags$a("", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki", target = "_blank",
                                           list(icon("globe"), "Documentation"))),
