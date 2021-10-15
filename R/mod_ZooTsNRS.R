@@ -25,12 +25,12 @@ mod_ZooTsNRS_ui <- function(id){
       ),
       mainPanel(
         tabsetPanel(id = "NRSzts",
-                    tabPanel("Abundances",
+                    tabPanel("Trend Analysis",
                              h6(textOutput(nsZooTsNRS("PlotExp1"), container = span)),
                              # textOutput(nsZooTsNRS("selected_var")),
                              plotly::plotlyOutput(nsZooTsNRS("timeseries1"), height = "800px") %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
-                    tabPanel("Indices",
+                    tabPanel("Climatologies",
                              h6(textOutput(nsZooTsNRS("PlotExp2"), container = span)),  
                              textOutput(nsZooTsNRS("selected_var")),
                              plotly::plotlyOutput(nsZooTsNRS("timeseries2"), height = "800px") %>% shinycssloaders::withSpinner(color="#0dc5c1")

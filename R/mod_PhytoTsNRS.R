@@ -23,11 +23,11 @@ mod_PhytoTsNRS_ui <- function(id){
       ),
       mainPanel(
         tabsetPanel(id = "NRSpts",
-                    tabPanel("Abundances",
+                    tabPanel("Trend Analysis",
                              h6(textOutput(nsPhytoTsNRS("PlotExp1"), container = span)),
                              plotly::plotlyOutput(nsPhytoTsNRS("timeseries1"), height = "800px") %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
-                    tabPanel("Indices",
+                    tabPanel("Climatologies",
                              h6(textOutput(nsPhytoTsNRS("PlotExp2"), container = span)),  
                              plotly::plotlyOutput(nsPhytoTsNRS("timeseries2"), height = "800px") %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     )

@@ -24,11 +24,11 @@ mod_PhytoTsCPR_ui <- function(id){
       ),
       mainPanel(
         tabsetPanel(id = "CPRpts",
-                    tabPanel("Abundances",
+                    tabPanel("Trend Analysis",
                              h6(textOutput(nsPhytoTsCPR("PlotExp1"), container = span)),  
                              plotly::plotlyOutput(nsPhytoTsCPR("timeseries1"), height = "800px") %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
-                    tabPanel("Indices",
+                    tabPanel("Climatologies",
                              h6(textOutput(nsPhytoTsCPR("PlotExp2"), container = span)),  
                              plotly::plotlyOutput(nsPhytoTsCPR("timeseries2"), height = "800px") %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     )
