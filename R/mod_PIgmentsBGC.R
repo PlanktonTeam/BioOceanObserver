@@ -19,7 +19,7 @@ mod_PigmentsBGC_ui <- function(id){
         # Date selector
         dateRangeInput(nsPigmentsBGC("date"), "Select a date range", start = "2009-01-01", end = "2020-11-30", min = "2009-01-01", max = Sys.Date()),
         # select parameter
-        selectizeInput(inputId = nsPigmentsBGC('parameter'), label = 'Select a parameter', choices = unique(Pigs$parameters), selected = 'TotalChla', multiple = FALSE),
+        selectizeInput(inputId = nsPigmentsBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(Pigs$parameters), style = "simple"), selected = 'TotalChla', multiple = FALSE),
         #selectizeInput(inputId = nsPigmentsBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
         # Select whether to overlay smooth trend line
         selectizeInput(inputId = nsPigmentsBGC("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
@@ -58,7 +58,7 @@ mod_PigmentsBGC_server <- function(id){
                .data$parameters %in% input$parameter) %>%
         mutate(Station = as.factor(.data$StationName),
                name = as.factor(.data$parameters),
-               SampleDepth_m = round(SampleDepth_m, -1)) %>%
+               SampleDepth_m = round(.data$SampleDepth_m, -1)) %>%
         tidyr::drop_na() 
     }) %>% bindCache(input$station, input$parameter, input$date)
     
@@ -90,9 +90,3 @@ mod_PigmentsBGC_server <- function(id){
     
   })
 }
-
-## To be copied in the UI
-# mod_PigmentsBGC_ui("PigmentsBGC_ui_1")
-
-## To be copied in the server
-# mod_PigmentsBGC_server("PigmentsBGC_ui_1")
