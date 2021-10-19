@@ -51,10 +51,18 @@ app_server <- function( input, output, session ) {
         mod_ZooTsCPR_server("ZooTsCPR_ui_1")
       }
     })
+    
     ### Phytoplankton CPR time series data
     observeEvent(input$phyto, {
       if(input$phyto == "ptscpr"){
         mod_PhytoTsCPR_server("PhytoTsCPR_ui_1")
+      }
+    })
+    
+    ### Phytoplankton NRS FG time series data
+    observeEvent(input$phyto, {
+      if(input$phyto == "fgnrs"){
+        mod_PhytoNRSfg_server("PhytoNRSfg_ui_1")
       }
     })
     
