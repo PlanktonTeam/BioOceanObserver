@@ -34,6 +34,7 @@ usethis::use_pipe()
 usethis::use_dev_package("planktonr", type = "Imports", remote = "PlanktonTeam/planktonr@AddShinyFuncs")
 
 remotes::install_github("PlanktonTeam/planktonr@AddShinyFuncs", force = TRUE)
+devtools::install_local("C:/Users/dav649/Documents/GitHub/planktonr", force = TRUE)
 
 ## Add modules ----
 ## Create a module infrastructure in R/
@@ -42,6 +43,7 @@ golem::add_module( name = "ZooTsCPR" ) # Name of the module
 golem::add_module( name = "ZooSpatial" ) # Name of the module
 golem::add_module( name = "EnvDataBGC" ) # Name of the module
 golem::add_module( name = "Snapshot" ) # Name of the module
+golem::add_module( name = "PhytoFG" ) # Name of the module
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*
