@@ -18,8 +18,21 @@ mod_ZooSpatial_ui <- function(id){
                      selected = "Acartia danae")
     ),
     mainPanel(
-      splitLayout(cellWidths = c("50%", "50%"), h6(textOutput(nsZooSpatial("DistMapExp"), container = span)), h6(htmlOutput(nsZooSpatial("SDMsMapExp")))),     
-      plotOutput(nsZooSpatial("plot2"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+      tabsetPanel(id = "NRSspat",
+        tabPanel("Observation maps",
+                 h6(textOutput(nsZooSpatial("DistMapExp"), container = span))
+                 ),
+        tabPanel("Species Distribution maps",
+                 h6(textOutput(nsZooSpatial("SDMsMapExp"), container = span)),
+                 plotOutput(nsZooSpatial("plot2"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+        ),
+        tabPanel("Species Temperature Index graphs",
+                 h6(textOutput(nsZooSpatial("STIsExp"), container = span))
+        ),
+        tabPanel("Species Diurnal Behviour",
+                 h6(textOutput(nsZooSpatial("SDBsExp"), container = span))
+        )
+      )
     )
   )
 }
@@ -28,9 +41,29 @@ mod_ZooSpatial_ui <- function(id){
 #'
 #' @noRd 
 mod_ZooSpatial_server <- function(id){
-  moduleServer( id, function(input, output, session){
+    moduleServer( id, function(input, output, session){
     #      Subset data
-    selectedZS <- reactive({
+      
+      # add text information ------------------------------------------------------------------------------
+      output$DistMapExp <- renderText({
+        "This map is a frequency of occurence map based on the NRS and CPR data for each species"
+      }) 
+      output$SDMsMapExp <- renderText({
+        paste("This map is a modelled output of the relative distribution for a species.",
+              "This is calculated using NRS and CPR data in a Tweedie model.",
+              "The environmental variables are SST, Chla, deth, Month", sep =  "<br/>")
+      }) 
+      output$STIsExp <- renderText({
+        paste("Figure of the species STI")
+      }) 
+      output$SDBsExp <- renderText({
+        paste("Figure of the diunral abundances from CPR data")
+      }) 
+      
+      
+      # select initial map  ------------------------------------------------------------------------------
+      
+      selectedZS <- reactive({
       
       req(input$species)
       validate(need(!is.na(input$species), "Error: Please select a species"))
@@ -63,22 +96,7 @@ mod_ZooSpatial_server <- function(id){
     # }, deleteFile = FALSE)
     # 
     
-    # add text information 
-    output$DistMapExp <- renderText({
-      "This map is a frequency of occurence map based on the NRS and CPR data for each species"
-    }) 
-    output$SDMsMapExp <- renderText({
-      paste("This map is a modelled output of the relative distribution for a species.",
-      "This is calculated using NRS and CPR data in a Tweedie model.",
-      "The environmental variables are SST, Chla, deth, Month", sep =  "<br/>")
-    }) 
-    
  
   })
 }
     
-## To be copied in the UI
-# 
-    
-## To be copied in the server
-# 
