@@ -51,10 +51,10 @@ mod_ZooSpatial_server <- function(id){
         validate(need(!is.na(input$species), "Error: Please select a species"))
         
         selectedZS <- fMapData %>% 
-          dplyr::mutate(Taxon = ifelse(Taxon == "Taxon", input$species, Taxon)) %>%
+          dplyr::mutate(Taxon = ifelse(Taxon == "Taxon", input$species, .data$Taxon)) %>%
           dplyr::filter(.data$Taxon %in% input$species) %>%
           dplyr::mutate(freqfac = factor(.data$freqfac, levels = c("Absent", "Seen in 25%",'50%', '75%', "100 % of Samples"))) %>%
-          dplyr::arrange(freqfac)
+          dplyr::arrange(.data$freqfac)
         
       }) %>% bindCache(input$species)
       
