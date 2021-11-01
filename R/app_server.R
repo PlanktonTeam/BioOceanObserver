@@ -59,13 +59,6 @@ app_server <- function( input, output, session ) {
       }
     })
     
-    ### Phytoplankton NRS FG time series data
-    observeEvent(input$phyto, {
-      if(input$phyto == "fgnrs"){
-        mod_PhytoNRSfg_server("PhytoNRSfg_ui_1")
-      }
-    })
-    
     ### Zooplankton Spatial data  
     observeEvent(input$zoo, {
       if(input$zoo == "dist"){
@@ -73,11 +66,10 @@ app_server <- function( input, output, session ) {
       }
     })
     
-    ### Zooplankton Spatial data  
+    ### Zooplankton Env data  
     observeEvent(input$env, {
         if(input$env == "pigs"){
           mod_PigmentsBGC_server("PigmentsBGC_ui_1")
         }
-        
     })
 }

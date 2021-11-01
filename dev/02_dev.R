@@ -34,7 +34,7 @@ usethis::use_pipe()
 usethis::use_dev_package("planktonr", type = "Imports", remote = "PlanktonTeam/planktonr@AddShinyFuncs")
 
 remotes::install_github("PlanktonTeam/planktonr@AddShinyFuncs", force = TRUE)
-devtools::install_local("C:/Users/dav649/Documents/GitHub/planktonr", force = TRUE)
+#devtools::install_local("C:/Users/dav649/Documents/GitHub/planktonr", force = TRUE)
 
 ## Add modules ----
 ## Create a module infrastructure in R/
