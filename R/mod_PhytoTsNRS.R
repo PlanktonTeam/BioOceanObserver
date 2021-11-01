@@ -103,9 +103,14 @@ mod_PhytoTsNRS_server <- function(id){
         Scale <- 'identity'
       }
       
-      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", pal = "matter", y_trans = Scale, output = "plotly")
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale, output = "plotly")
-      p <- plotly::subplot(p1,p2, titleY = TRUE, widths = c(0.7,0.3))
+      np <- length(unique(selectedData()$StationName))
+      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", pal = "matter", y_trans = Scale, output = "ggplot")
+      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale, output = "ggplot")
+      p1 <- plotly::ggplotly(p1, height = 200 * np) 
+      p2 <- plotly::ggplotly(p2, height = 200 * np)
+      p <- plotly::subplot(p1,p2, 
+                           titleY = TRUE,
+                           widths = c(0.7,0.3))
       
     }) %>% bindCache(selectedData(), input$scaler)
 
