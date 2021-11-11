@@ -150,7 +150,7 @@ mod_ZooSpatial_server <- function(id){
     output$DNs <- renderPlot({
 
       validate(
-        need(length(unique(selecteddn()$daynight)) == 2 | nrow(selecteddn()) > 20, "Not enough data for this copepod species")
+        need(length(unique(selecteddn()$daynight)) == 2 | nrow(selecteddn()) > 20, "Not enough data for this copepod species to plot")
       )
       
       plotdn <- planktonr::pr_plot_daynight(selecteddn())

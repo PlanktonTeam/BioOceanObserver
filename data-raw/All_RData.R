@@ -28,7 +28,7 @@ fMapData <- planktonr::pr_get_fMap_data()
 # STI data
 sti <- planktonr::pr_get_sti()
 
-# daynight data
+# daynight data (from CPR only)
 daynight <- planktonr::pr_get_daynight()
 
 # add data to sysdata.rda
