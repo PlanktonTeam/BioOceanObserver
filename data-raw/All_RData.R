@@ -25,13 +25,18 @@ Pico <- planktonr::pr_get_pico()
 # Species distribution data
 fMapData <- planktonr::pr_get_fMap_data()
 
+# STI data
+sti <- planktonr::pr_get_sti()
+
+# daynight data
+daynight <- planktonr::pr_get_daynight()
+
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, fMapData, Pico,
                   datCPRz, datCPRp, datNRSz, datNRSp, 
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp,
+                  sti, daynight,
                   overwrite = TRUE, internal = TRUE)
-
-
 
 ## files for SDMs (this will only work for Claire at the moment)
 listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
