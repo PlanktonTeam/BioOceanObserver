@@ -23,19 +23,22 @@ Pigs <- planktonr::pr_get_pigs()
 Pico <- planktonr::pr_get_pico()
 
 # Species distribution data
-fMapData <- planktonr::pr_get_fMap_data()
+fMapDataz <- planktonr::pr_get_fMap_data("Z")
+fMapDatap <- planktonr::pr_get_fMap_data("P")
 
 # STI data
-sti <- planktonr::pr_get_sti()
+stiz <- planktonr::pr_get_sti("Z")
+stip <- planktonr::pr_get_sti("P")
 
 # daynight data (from CPR only)
-daynight <- planktonr::pr_get_daynight()
+daynightz <- planktonr::pr_get_daynight("Z")
+daynightp <- planktonr::pr_get_daynight("P")
 
 # add data to sysdata.rda
-usethis::use_data(Nuts, Pigs, fMapData, Pico,
+usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico,
                   datCPRz, datCPRp, datNRSz, datNRSp, 
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp,
-                  sti, daynight,
+                  stiz, stip, daynightz, daynightp,
                   overwrite = TRUE, internal = TRUE)
 
 ## files for SDMs (this will only work for Claire at the moment)
