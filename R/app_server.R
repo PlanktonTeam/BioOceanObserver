@@ -66,6 +66,14 @@ app_server <- function( input, output, session ) {
       }
     })
     
+    ### Phytoplankton Spatial data  
+    observeEvent(input$phyto, {
+      if(input$phyto == "distp"){
+        mod_PhytoSpatial_server("PhytoSpatial_ui_1")
+      }
+    })
+    
+    
     ### Zooplankton Env data  
     observeEvent(input$env, {
         if(input$env == "pigs"){

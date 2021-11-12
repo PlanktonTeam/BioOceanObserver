@@ -40,7 +40,8 @@ app_ui <- function(request) {
              tabPanel("Phytoplankton",
                       tabsetPanel(id = 'phyto',
                                   tabPanel(value = "pts", "Time Series NRS", mod_PhytoTsNRS_ui("PhytoTsNRS_ui_1")),
-                                  tabPanel(value = "ptscpr", "Time Series CPR", mod_PhytoTsCPR_ui("PhytoTsCPR_ui_1"))
+                                  tabPanel(value = "ptscpr", "Time Series CPR", mod_PhytoTsCPR_ui("PhytoTsCPR_ui_1")),
+                                  tabPanel(value = "distp", "Distributions", mod_PhytoSpatial_ui("PhytoSpatial_ui_1"))
                       )),
              tabPanel("Zooplankton",
                       tabsetPanel(id = 'zoo',

@@ -1,4 +1,4 @@
-#' ZooSpatial UI Function
+#' PhytoSpatial UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,53 +7,53 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
-mod_ZooSpatial_ui <- function(id){
+mod_PhytoSpatial_ui <- function(id){
   
-  nsZooSpatial <- NS(id)
+  nsPhytoSpatial <- NS(id)
   
   tagList(
     sidebarPanel(
       conditionalPanel(
-        condition="input.NRSspat == 1",  
-        # Species selector
-      selectizeInput(inputId = nsZooSpatial('species'), label = "Select a zooplankton species", choices = unique(fMapDataz$Taxon), 
-                     selected = "Acartia danae")
+        condition="input.NRSspatp == 1",  
+      #Species selector
+      selectizeInput(inputId = nsPhytoSpatial('species'), label = "Select a phytoplankton species", choices = unique(stip$Species),
+                     selected = "Tripos furca")
       ),
       conditionalPanel(
-        condition="input.NRSspat == 2",  
+        condition="input.NRSspatp == 2",  
         # Species selector
-        selectizeInput(inputId = nsZooSpatial('species1'), label = "Select a copepod species", choices = unique(stiz$Species), 
-                       selected = "Acartia danae")
+        selectizeInput(inputId = nsPhytoSpatial('species1'), label = "Select a phytoplankton species", choices = unique(stip$Species), 
+                       selected = "Tripos furca")
       )
     ),
     mainPanel(
-      tabsetPanel(id = "NRSspat",
+      tabsetPanel(id = "NRSspatp",
         tabPanel("Observation maps", value = 1, 
-                 h6(textOutput(nsZooSpatial("DistMapExp"), container = span)),
-                 plotOutput(nsZooSpatial("plot2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                 h6(textOutput(nsPhytoSpatial("DistMapExp"), container = span)),
+                 plotOutput(nsPhytoSpatial("plot2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                  ),
         tabPanel("Species Distribution maps", value = 2, 
-                 h6(textOutput(nsZooSpatial("SDMsMapExp"), container = span)),
-                 plotOutput(nsZooSpatial("SDMs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                 h6(textOutput(nsPhytoSpatial("SDMsMapExp"), container = span))#,
+ #                plotOutput(nsPhytoSpatial("SDMs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
         ),
         tabPanel("Species Temperature Index graphs", value = 2, 
-                 h6(textOutput(nsZooSpatial("STIsExp"), container = span)),
-                 plotOutput(nsZooSpatial("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                 h6(textOutput(nsPhytoSpatial("STIsExp"), container = span)),
+                 plotOutput(nsPhytoSpatial("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
         ),
         tabPanel("Species Diurnal Behviour", value = 2, 
-                 h6(textOutput(nsZooSpatial("SDBsExp"), container = span)),
-                 plotOutput(nsZooSpatial("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                 h6(textOutput(nsPhytoSpatial("SDBsExp"), container = span)),
+                 plotOutput(nsPhytoSpatial("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
         )
       )
     )
   )
 }
     
-#' ZooSpatial Server Functions
+#' PhytoSpatial Server Functions
 #'
 #' @noRd 
-mod_ZooSpatial_server <- function(id){
-    moduleServer( id, function(input, output, session, NRSspat){
+mod_PhytoSpatial_server <- function(id){
+    moduleServer( id, function(input, output, session, NRSspatp){
     # Subset data
       
       selectedZS <- reactive({
@@ -61,12 +61,12 @@ mod_ZooSpatial_server <- function(id){
         req(input$species)
         validate(need(!is.na(input$species), "Error: Please select a species"))
         
-        selectedZS <- fMapDataz %>% 
+        selectedZS <- fMapDatap %>%
           dplyr::mutate(Taxon = ifelse(Taxon == "Taxon", input$species, .data$Taxon)) %>%
           dplyr::filter(.data$Taxon %in% input$species) %>%
           dplyr::mutate(freqfac = factor(.data$freqfac, levels = c("Absent", "Seen in 25%",'50%', '75%', "100 % of Samples"))) %>%
           dplyr::arrange(.data$freqfac)
-        
+
       }) %>% bindCache(input$species)
       
       # add text information ------------------------------------------------------------------------------
@@ -93,7 +93,7 @@ mod_ZooSpatial_server <- function(id){
     
               plot2 <- planktonr::pr_plot_fmap(selectedZS())
               plot2
-        
+
     }) %>% bindCache(input$species)
     
     # add SDM if it is available
@@ -116,7 +116,7 @@ mod_ZooSpatial_server <- function(id){
       req(input$species1)
       validate(need(!is.na(input$species1), "Error: Please select a species"))
       
-      selectedSTI <- stiz %>% 
+      selectedSTI <- stip %>% 
         dplyr::filter(.data$Species %in% input$species1) 
       
     }) %>% bindCache(input$species1)
@@ -141,7 +141,7 @@ mod_ZooSpatial_server <- function(id){
       req(input$species1)
       validate(need(!is.na(input$species1), "Error: Please select a species"))
       
-      selecteddn <- daynightz %>% 
+      selecteddn <- daynightp %>% 
         dplyr::filter(.data$Species %in% input$species1) 
       
     }) %>% bindCache(input$species1)
