@@ -13,7 +13,7 @@ app_ui <- function(request) {
              windowTitle = "The Biological Ocean Observatory",
              theme = shinythemes::shinytheme("flatly"), # not recommended to use themes anymore as used in bslib package
              selected = "Welcome", 
-             footer = column(12, "\u00A9 2021 Jason Everett (UQ, UNSW, CSIRO) and Claire Davies (CSIRO)"), # \u00A9 is equivalent to © 
+             # footer = column(12, "\u00A9 2021 Jason Everett (UQ, UNSW, CSIRO) and Claire Davies (CSIRO)"), # \u00A9 is equivalent to © 
              tabPanel("Welcome",
                       # titlePanel("Welcome to The Biological Ocean Observatory"),
                       sidebarLayout(
