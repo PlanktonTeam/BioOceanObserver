@@ -1,0 +1,13 @@
+name: imos_biooceanobserver
+title: IMOS_BioOceanObserver
+username:
+account: imos-plankton
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3482754
+bundleId: 5343151
+url: https://jaseeverett.shinyapps.io/IMOS_BioOceanObserver/
+when: 1638923016.44417
+lastSyncTime: 1638923016.44418
+asMultiple: FALSE
+asStatic: FALSE
