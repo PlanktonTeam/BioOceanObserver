@@ -34,9 +34,15 @@ stip <- planktonr::pr_get_sti("P")
 daynightz <- planktonr::pr_get_daynight("Z")
 daynightp <- planktonr::pr_get_daynight("P")
 
+## microbial data
+library(tidyverse)
+datNRSm <- readr::read_csv("data/datNRSm.csv") %>%
+  select(StationName, StationCode, SampleDateLocal, Year, Month, Prochlorococcus_cells_ml:Eukaryote_Chlorophyll_Index) %>%
+  pivot_longer(-c(StationName:Month), values_to = "Values", names_to = "parameters")
+
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico,
-                  datCPRz, datCPRp, datNRSz, datNRSp, 
+                  datCPRz, datCPRp, datNRSz, datNRSp, datNRSm,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp,
                   stiz, stip, daynightz, daynightp,
                   overwrite = TRUE, internal = TRUE)

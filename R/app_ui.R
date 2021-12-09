@@ -34,7 +34,7 @@ app_ui <- function(request) {
              ),
              tabPanel("Microbes",
                       tabsetPanel(id = 'mic',
-                                  tabPanel("Section 1"),
+                                  tabPanel(value = "mts", "Time Series NRS", mod_MicroTsNRS_ui("MicroTsNRS_ui_1")),
                                   tabPanel("Section 2"),
                                   tabPanel("Section 3"))),
              tabPanel("Phytoplankton",

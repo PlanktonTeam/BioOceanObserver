@@ -31,6 +31,10 @@ app_server <- function( input, output, session ) {
     if (req(input$navbar) == "Snapshot") 
       mod_Snapshot_server("Snapshot_ui_1")
     
+    ### Microbial time series data  
+    if (req(input$navbar) == "Microbes")  
+      mod_MicroTsNRS_server("MicroTsNRS_ui_1")
+    
     ### Zooplankton time series data  
     if (req(input$navbar) == "Zooplankton")  
       mod_ZooTsNRS_server("ZooTsNRS_ui_1")
