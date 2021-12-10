@@ -121,7 +121,7 @@ mod_Snapshot_server <- function(id){
     
     output$Papers <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
-        "Scientific Paper using this data",
+        "Scientific Paper using the data in the Biological Ocean Observer",
         planktonr::pr_get_papers(),
         # tags$p(tags$b("Test "), tags$i("string")),
         icon = icon("newspaper"),
