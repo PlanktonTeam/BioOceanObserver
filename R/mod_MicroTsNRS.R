@@ -15,19 +15,28 @@ mod_MicroTsNRS_ui <- function(id){
         conditionalPanel(
           condition="input.NRSmts == 1",  
           # Select whether to overlay smooth trend line 
-          checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE),
-          selectInput(inputId = nsMicroTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSm$parameters), style = "simple"), selected = "Bacterial_Richness")
+          checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE)
         ),
         conditionalPanel(
           condition="input.NRSmts == 2", 
-          # Select whether to overlay smooth trend line
-          checkboxInput(inputId = nsMicroTsNRS("scaler3"), label = strong("Change the plot scale to percent"), value = FALSE)
+          selectizeInput(inputId = nsMicroTsNRS("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
+        ),
+        conditionalPanel(
+          condition="input.NRSmts == 2 | input.NRSmts == 1", 
+          sliderInput(nsMicroTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd_hms(20090101000000), max = Sys.time(), 
+                      value = c(lubridate::ymd_hms(20090101000000),Sys.time()), timeFormat="%Y-%m-%d"),
+          selectInput(inputId = nsMicroTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSm$parameters), style = "simple"), selected = "Bacterial_Richness"),
+        ),
+        conditionalPanel(
+          condition="input.NRSmts == 3", 
+          selectInput(inputId = nsMicroTsNRS("p1"), label = 'Select an x parameter', choices = planktonr::pr_relabel(unique(datNRSm$parameters), style = "simple"), selected = "Eukaryote_Chlorophyll_Index"),
+          selectInput(inputId = nsMicroTsNRS("p2"), label = 'Select a y parameter', 
+                      choices = planktonr::pr_relabel(c("Prochlorococcus_Cellsml", "Synecochoccus_Cellsml", "Picoeukaryotes_Cellsml"), 
+                                                      style = "simple"), selected = "Prochlorococcus_Cellsml")
         ),
         absolutePanel(
           plotlyOutput(nsMicroTsNRS("plotmap")),
           checkboxGroupInput(inputId = nsMicroTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSm$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala")),
-          sliderInput(nsMicroTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd_hms(20090101000000), max = Sys.time(), 
-                      value = c(lubridate::ymd_hms(20090101000000),Sys.time()), timeFormat="%Y-%m-%d"),
           downloadButton(nsMicroTsNRS("downloadData"), "Data"),
           downloadButton(nsMicroTsNRS("downloadPlot"), "Plot"),
           downloadButton(nsMicroTsNRS("downloadNote"), "Notebook")
@@ -43,9 +52,13 @@ mod_MicroTsNRS_ui <- function(id){
                              h6(textOutput(nsMicroTsNRS("PlotExp2"), container = span)),
                              plotly::plotlyOutput(nsMicroTsNRS("timeseries2")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
-                    tabPanel("Functional groups", value=2#,
-                             #h6(textOutput(nsMicroTsNRS("PlotExp3"), container = span)),  
-                             #plotly::plotlyOutput(nsMicroTsNRS("timeseries3")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                    tabPanel("Trend analysis by depth", value=2,
+                             h6(textOutput(nsMicroTsNRS("PlotExp3"), container = span)),  
+                             plotly::plotlyOutput(nsMicroTsNRS("timeseries3")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                    ),
+                    tabPanel("Cell counts vs Indices", value=3,
+                             h6(textOutput(nsMicroTsNRS("PlotExp4"), container = span)),  
+                             plotly::plotlyOutput(nsMicroTsNRS("timeseries4")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     )
         )
       )
@@ -62,18 +75,15 @@ mod_MicroTsNRS_server <- function(id){
     
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
-      req(input$Site)
-      req(input$ycol)
-      validate(need(!is.na(input$Site), "Error: Please select a station."))
-      validate(need(!is.na(input$ycol), "Error: Please select a parameter."))
-      
-      selectedData <- datNRSm %>% 
-        dplyr::filter(.data$StationName %in% input$Site,
-                      .data$parameters %in% input$ycol,
-                      dplyr::between(.data$SampleDateLocal, input$DatesSlide[1], input$DatesSlide[2])) %>%
-        droplevels()
-      
-    }) %>% bindCache(input$ycol,input$Site, input$DatesSlide[1], input$DatesSlide[2])
+        selectedData <- datNRSm %>% 
+          dplyr::filter(.data$StationName %in% input$Site,
+                        .data$parameters %in% input$ycol,
+                        dplyr::between(.data$SampleDateLocal, input$DatesSlide[1], input$DatesSlide[2])) %>%
+          mutate(name = as.factor(.data$parameters),
+                 SampleDepth_m = round(.data$SampleDepth_m/5,0)*5) %>%
+          droplevels()
+
+    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
     # Sidebar Map
     output$plotmap <- renderPlotly({ 
@@ -82,16 +92,18 @@ mod_MicroTsNRS_server <- function(id){
     
     # Add text information 
     output$PlotExp1 <- renderText({
-      "A plot of selected microbial parameters from the NRS around Australia, as a time series and a monthly climatology by station."
+      "A plot of selected microbial indices from the NRS around Australia, as a time series and a monthly climatology by station averaged across all depths."
     }) 
-    
     output$PlotExp2 <- renderText({
-      "A plot of selected indices from the NRS around Australia, as a time series, a monthly climatology and an annual mean"
+      "A plot of selected indices from the NRS around Australia, as a time series, a monthly climatology and an annual mean averaged across all depths."
+    }) 
+    output$PlotExp3 <- renderText({
+      "A plot of microbial indices from the NRS around Australia, as a time series and a monthly climatology by depth"
+    }) 
+    output$PlotExp4 <- renderText({
+      "A plot of microbial indices against abundance measure from the NRS around Australia"
     }) 
     
-    output$PlotExp3 <- renderText({
-      "A plot of microbial functional groups from the NRS around Australia, as a time series and a monthly climatology by station"
-    }) 
     
     
     # Plot Trends -------------------------------------------------------------
@@ -155,9 +167,52 @@ mod_MicroTsNRS_server <- function(id){
 
     }) %>% bindCache(selectedData(), input$scaler1)
 
-    # Functional groups -------------------------------------------------------
+    # Plots by depths ---------------------------------------------------------
     
+    output$timeseries3 <- renderPlotly({
+      
+      trend <-  input$smoother
+      
+      plot <- planktonr::pr_plot_env_var(selectedData(), trend = trend)
+      
+    }) %>% bindCache(selectedData(), input$smoother)
+    
+    # Plots by depths ---------------------------------------------------------
+    
+    selectedData1 <- reactive({
+      req(input$Site)
+      req(input$p1)
+      validate(need(!is.na(input$Site), "Error: Please select a station."))
+      validate(need(!is.na(input$p1), "Error: Please select a parameter."))
+      
+      selectedData1 <- datNRSm %>% 
+        dplyr::filter(.data$StationName %in% input$Site,
+                      .data$parameters %in% c(input$p1, input$p2)) %>%
+        tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleDateLocal), names_from = parameters, values_from = Values, values_fn = mean)
 
+      # selectedData1 <- datNRSm %>% 
+      #   dplyr::filter(.data$StationName %in% 'Yongala',
+      #                 .data$parameters %in% c('Bacterial_Richness', 'Prochlorococcus_Cellsml')) %>%
+      #   tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleDateLocal), names_from = parameters, values_from = Values, values_fn = mean)
+      # 
+      #       
+    }) %>% bindCache(input$p1, input$p2, input$Site)
+    
+    output$timeseries4 <- renderPlotly({
+      x <- rlang::sym(colnames(selectedData1()[, 5]))
+      y <- rlang::sym(colnames(selectedData1()[, 4]))
+      
+      titlex <- planktonr::pr_relabel(rlang::as_string(x), style = "plotly")
+      titley <- planktonr::pr_relabel(rlang::as_string(y), style = "plotly")
+
+      plot <- ggplot2::ggplot(data = selectedData1()) +
+        ggplot2::geom_point(ggplot2::aes(!!x, !!y, colour = .data$StationName)) +
+        ggplot2::xlab(titlex) + ggplot2::ylab(titley) 
+      plot <- plotly::ggplotly(plot) %>% plotly::layout(legend = list(orientation = "h", xanchor = "center",  # use center of legend as anchor
+                                                                      title = '',  x = 0.5, y = -0.2))
+      
+    }) %>% bindCache(selectedData1())
+    
     # Downloads ---------------------------------------------------------------
     
     # Table of selected dataset ----
