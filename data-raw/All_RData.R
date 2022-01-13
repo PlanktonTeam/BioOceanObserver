@@ -34,6 +34,26 @@ stip <- planktonr::pr_get_sti("P")
 daynightz <- planktonr::pr_get_daynight("Z")
 daynightp <- planktonr::pr_get_daynight("P")
 
+# Policy data set
+Pol <- readr::read_csv("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plankton/Output/NRS_Indices.csv", na = "NA", show_col_types = FALSE) %>%
+  dplyr::select(SampleDateLocal, Month, StationName, StationCode, Biomass_mgm3, PhytoBiomassCarbon_pgL, Temperature_degC, ShannonCopepodDiversity, 
+                ShannonPhytoDiversity, Salinity_psu.x, Chla_mgm3) %>%
+  dplyr::rename(Salinity_psu = Salinity_psu.x) %>%
+  tidyr::pivot_longer(-c(SampleDateLocal:StationCode), values_to = 'Values', names_to = "parameters")
+
+means <- readr::read_csv("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plankton/Output/NRS_Indices.csv", na = "NA", show_col_types = FALSE) %>%
+  dplyr::select(StationName, Biomass_mgm3, PhytoBiomassCarbon_pgL, Temperature_degC, ShannonCopepodDiversity, 
+                ShannonPhytoDiversity, Salinity_psu.x, Chla_mgm3) %>%
+  dplyr::rename(Salinity_psu = Salinity_psu.x) %>%
+  tidyr::pivot_longer(-c(StationName), values_to = 'Values', names_to = "parameters") %>%
+  dplyr::group_by(StationName, parameters) %>%
+  dplyr::summarise(means = mean(Values, na.rm = TRUE), 
+                  sd = stats::sd(Values, na.rm = TRUE),
+                  .groups = 'drop')
+
+Pol <- Pol %>% dplyr::left_join(means, by = c("StationName", "parameters")) %>%
+  dplyr::mutate(anomaly = (Values - means)/sd)
+
 ## microbial data
 library(tidyverse)
 datNRSm <- readr::read_csv("data/datNRSm.csv") %>%
@@ -46,7 +66,7 @@ datNRSm <- readr::read_csv("data/datNRSm.csv") %>%
   tidyr::pivot_longer(-c(StationName:Month), values_to = "Values", names_to = "parameters")
 
 # add data to sysdata.rda
-usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico,
+usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, Pol,
                   datCPRz, datCPRp, datNRSz, datNRSp, datNRSm,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp,
                   stiz, stip, daynightz, daynightp,
