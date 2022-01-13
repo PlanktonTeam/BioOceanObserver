@@ -31,6 +31,10 @@ app_server <- function( input, output, session ) {
     if (req(input$navbar) == "Snapshot") 
       mod_Snapshot_server("Snapshot_ui_1")
     
+    ### Policy page
+    if (req(input$navbar) == "Policy") 
+      mod_Policy_server("Policy_ui_1")
+    
     ### Microbial time series data  
     if (req(input$navbar) == "Microbes")  
       mod_MicroTsNRS_server("MicroTsNRS_ui_1")

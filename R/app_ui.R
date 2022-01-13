@@ -41,6 +41,11 @@ app_ui <- function(request) {
                       fluidPage(
                         value = "snap", mod_Snapshot_ui("Snapshot_ui_1"))
              ),
+             tabPanel("Policy",
+                      tabsetPanel(id = 'pol',
+                                  tabPanel(value = "nrs", "National Reference Stations", mod_Policy_ui("Policy_ui_1")),
+                                  tabPanel("CPR - bioregions")
+                      )),
              tabPanel("Microbes",
                       tabsetPanel(id = 'mic',
                                   tabPanel(value = "mts", "Time Series NRS", mod_MicroTsNRS_ui("MicroTsNRS_ui_1")),
