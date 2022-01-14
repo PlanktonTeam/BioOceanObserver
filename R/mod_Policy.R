@@ -14,6 +14,7 @@ mod_Policy_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         shinydashboard::menuSubItem(text = "Find out more about the NRS stations here", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki/National-Reference-Stations"),
+        shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
         plotlyOutput(nsPol("plotmap")),
         radioButtons(inputId = nsPol("Site"), label = "Select a station", choices = unique(sort(datNRSz$StationName)), selected = "Port Hacking"),
         downloadButton(nsPol("downloadData"), "Data"),
@@ -90,10 +91,16 @@ mod_Policy_server <- function(id){
     
     # Add text information 
     output$PlotExp1 <- renderText({
-      "Biomass is an Essential Ocean Variables (EOVs) for plankton"
+      "Biomass is an Essential Ocean Variables (EOVs) for plankton. 
+      These are the important variables that scientists have identified to monitor our oceans.
+      They are chosen based on impact of the measurement and the feasiblity to take consistent measurements.
+      They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment"
     }) 
     output$PlotExp2 <- renderText({
-      "Diversity is an Essential Ocean Variables (EOVs) for plankton"
+      "Diversity is an Essential Ocean Variables (EOVs) for plankton, 
+      These are the important variables that scientists have identified to monitor our oceans.
+      They are chosen based on impact of the measurement and the feasiblity to take consistent measurements.
+      They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment"
     }) 
     output$PlotExp3 <- renderText({
       paste(" Zooplankton biomass at", input$Site, "is", outputs()[1,1], outputs()[1,2],  "\n",
@@ -117,11 +124,12 @@ mod_Policy_server <- function(id){
                                       trend = "Raw", survey = "NRS", method = "lm", pal = "phase", y_trans = "log10", output = "ggplot") +
         ggplot2::geom_point(color = "dark blue") +
         ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "dark blue", fill = "light blue") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank())
+        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
+                       strip.text = element_text(size = 16))
       p1a <- ggplot2::ggplot(selectedData() %>% dplyr::filter(parameters == "Biomass_mgm3") %>%
                                dplyr::select(-Values) %>%
                                dplyr::rename(Values = anomaly), ggplot2::aes(SampleDateLocal, Values)) +
-        ggplot2::geom_col(color = "dark blue") +
+        ggplot2::geom_col(fill = "dark blue", color = "dark blue") +
         ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y") +
         ggplot2::labs(y = "Anomaly") +
         ggplot2::theme(axis.title.x = ggplot2::element_blank())
@@ -137,11 +145,12 @@ mod_Policy_server <- function(id){
                                       trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "log10", output = "ggplot") +
         ggplot2::geom_point(color = "dark green") +
         ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "dark green", fill = "light green") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank())
+        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
+                       strip.text = ggplot2::element_blank())
       p3a <- ggplot2::ggplot(selectedData() %>% dplyr::filter(parameters == "PhytoBiomassCarbon_pgL") %>%
                                dplyr::select(-Values) %>%
                                dplyr::rename(Values = anomaly), ggplot2::aes(SampleDateLocal, Values)) +
-        ggplot2::geom_col(color = "dark green") +
+        ggplot2::geom_col(fill = "dark green", color = "dark green") +
         ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y") +
         ggplot2::labs(y = "Anomaly") +
         ggplot2::theme(axis.title.x = ggplot2::element_blank())
@@ -157,11 +166,12 @@ mod_Policy_server <- function(id){
                                       trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "identity", output = "ggplot") +
         ggplot2::geom_point(color = "violetred4") +
         ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "violetred4", fill = "violet") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank())
+        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
+                       strip.text = ggplot2::element_blank())
       p5a <- ggplot2::ggplot(selectedData() %>% dplyr::filter(parameters == "Temperature_degC") %>%
                                dplyr::select(-Values) %>%
                                dplyr::rename(Values = anomaly), ggplot2::aes(SampleDateLocal, Values)) +
-        ggplot2::geom_col(color = "violetred4") +
+        ggplot2::geom_col(fill = "violetred4", color = "violetred4") +
         ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y") +
         ggplot2::labs(y = "Anomaly") +
         ggplot2::theme(axis.title.x = ggplot2::element_blank())
@@ -177,11 +187,12 @@ mod_Policy_server <- function(id){
                                       trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "log10", output = "ggplot") +
         ggplot2::geom_point(color = "darkseagreen") +
         ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "darkseagreen", fill = "darkseagreen1") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank())
+        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
+                       strip.text = ggplot2::element_blank())
       p7a <- ggplot2::ggplot(selectedData() %>% dplyr::filter(parameters == "Chla_mgm3") %>%
                                dplyr::select(-Values) %>%
                                dplyr::rename(Values = anomaly), ggplot2::aes(SampleDateLocal, Values)) +
-        ggplot2::geom_col(color = "darkseagreen") +
+        ggplot2::geom_col(fill = "darkseagreen", color = "darkseagreen") +
         ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y") +
         ggplot2::labs(y = "Anomaly") +
         ggplot2::theme(axis.title.x = ggplot2::element_blank())
@@ -197,11 +208,11 @@ mod_Policy_server <- function(id){
                                       trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "identity", output = "ggplot") +
         ggplot2::geom_point(color = "darkgoldenrod2") +
         ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "darkgoldenrod2", fill = "gold")  +
-        ggplot2::theme()
+        ggplot2::theme(strip.text = ggplot2::element_blank())
       p9a <- ggplot2::ggplot(selectedData() %>% dplyr::filter(parameters == "Salinity_psu") %>%
                                dplyr::select(-Values) %>%
                                dplyr::rename(Values = anomaly), ggplot2::aes(SampleDateLocal, Values)) +
-        ggplot2::geom_col(color = "darkgoldenrod2") +
+        ggplot2::geom_col(fill = "darkgoldenrod2", color = "darkgoldenrod2") +
         ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y") +
         ggplot2::labs(y = "Anomaly", x = "Year") +
         ggplot2::theme(axis.title.x = ggplot2::element_blank())
@@ -224,7 +235,8 @@ mod_Policy_server <- function(id){
                                       trend = "Raw", survey = "NRS", method = "lm", pal = "phase", y_trans = "identity", output = "ggplot") +
         ggplot2::geom_point(color = "dark blue") +
         ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "dark blue", fill = "light blue") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank())
+        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
+                       strip.text = element_text(size = 16))
       p2 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "ShannonCopepodDiversity"), 
                                       trend = "Month", survey = "NRS", method = "loess", pal = "phase", y_trans = "identity", output = "ggplot") +
         ggplot2::geom_point(color = "dark blue") +
@@ -237,7 +249,8 @@ mod_Policy_server <- function(id){
                                       trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "identity", output = "ggplot") +
         ggplot2::geom_point(color = "dark green") +
         ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "dark green", fill = "light green") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank())
+        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
+                       strip.text = ggplot2::element_blank())
       p4 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "ShannonPhytoDiversity"), 
                                       trend = "Month", survey = "NRS", method = "loess", pal = "algae", y_trans = "identity", output = "ggplot") +
         ggplot2::geom_point(color = "dark green") + 
@@ -250,7 +263,8 @@ mod_Policy_server <- function(id){
                                       trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "identity", output = "ggplot") +
         ggplot2::geom_point(color = "violetred4") +
         ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "violetred4", fill = "violet") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank())
+        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
+                       strip.text = ggplot2::element_blank())
       p6 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Temperature_degC"), 
                                       trend = "Month", survey = "NRS", method = "loess", pal = "algae", y_trans = "identity", output = "ggplot") +
         ggplot2::geom_point(color = "violetred4") +
@@ -263,7 +277,8 @@ mod_Policy_server <- function(id){
                                       trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "log10", output = "ggplot") +
         ggplot2::geom_point(color = "darkseagreen") +
         ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "darkseagreen", fill = "darkseagreen1") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank())
+        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
+                       strip.text = ggplot2::element_blank())
       p8 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Chla_mgm3"), 
                                       trend = "Month", survey = "NRS", method = "loess", pal = "algae", y_trans = "log10", output = "ggplot") +
         ggplot2::geom_point(color = "darkseagreen") +
@@ -276,7 +291,7 @@ mod_Policy_server <- function(id){
                                       trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "identity", output = "ggplot") +
         ggplot2::geom_point(color = "darkgoldenrod2") +
         ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "darkgoldenrod2", fill = "gold")  +
-        ggplot2::theme()
+        ggplot2::theme(strip.text = ggplot2::element_blank())
       p10 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Salinity_psu"), 
                                        trend = "Month", survey = "NRS", method = "loess", pal = "algae", y_trans = "identity", output = "ggplot") +
         ggplot2::geom_point(color = "darkgoldenrod2") +
