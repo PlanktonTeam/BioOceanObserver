@@ -27,7 +27,7 @@ mod_ZooTsNRS_ui <- function(id){
           plotlyOutput(nsZooTsNRS("plotmap")),
           checkboxGroupInput(inputId = nsZooTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSz$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala")),
           sliderInput(nsZooTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd_hms(20090101000000), max = Sys.time(), 
-                      value = c(lubridate::ymd_hms(20090101000000),Sys.time()), timeFormat="%Y-%m-%d"),
+                      value = c(lubridate::ymd_hms(20090101000000),Sys.time()-1), timeFormat="%Y-%m-%d"),
           downloadButton(nsZooTsNRS("downloadData"), "Data"),
           downloadButton(nsZooTsNRS("downloadPlot"), "Plot"),
           downloadButton(nsZooTsNRS("downloadNote"), "Notebook")

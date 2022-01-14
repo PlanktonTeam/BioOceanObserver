@@ -52,23 +52,6 @@ means <- readr::read_csv(paste0(planktonr::pr_get_outputs(), "NRS_Indices.csv"),
 Pol <- Pol %>% dplyr::left_join(means, by = c("StationName", "parameters")) %>%
   dplyr::mutate(anomaly = (Values - means)/sd)
 
-
-params <- Pol %>% dplyr::select(parameters) %>% unique()
-params <- params$parameters
-
-coeffs <- function(params){
-  lmdat <-  Pol %>% dplyr::filter(StationCode == "NSI") %>% dplyr::filter(parameters == params) %>% tidyr::drop_na()
-  m <- lm(Values ~ Year + Harm(Month, k = 1), data = lmdat) 
-  ms <- summary(m)
-  slope <- ifelse(ms$coefficients[2,1] < 0, 'decreasing', 'increasing')
-  p <-  ifelse(ms$coefficients[2,4] < 0.005, 'significantly', 'but not significantly')
-  df <-  data.frame(slope = slope, p = p, params = params)
-}
-
-output <- purrr::map_dfr(params, coeffs)
-
-output[2,1]
-
 ## microbial data
 library(tidyverse)
 datNRSm <- readr::read_csv("data/datNRSm.csv") %>%

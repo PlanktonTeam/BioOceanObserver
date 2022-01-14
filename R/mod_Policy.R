@@ -13,11 +13,12 @@ mod_Policy_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-          plotlyOutput(nsPol("plotmap")),
-          radioButtons(inputId = nsPol("Site"), label = "Select a station", choices = unique(sort(datNRSz$StationName)), selected = "Port Hacking"),
-          downloadButton(nsPol("downloadData"), "Data"),
-          downloadButton(nsPol("downloadPlot"), "Plot"),
-          downloadButton(nsPol("downloadNote"), "Notebook")
+        shinydashboard::menuSubItem(text = "Find out more about the NRS stations here", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki/National-Reference-Stations"),
+        plotlyOutput(nsPol("plotmap")),
+        radioButtons(inputId = nsPol("Site"), label = "Select a station", choices = unique(sort(datNRSz$StationName)), selected = "Port Hacking"),
+        downloadButton(nsPol("downloadData"), "Data"),
+        downloadButton(nsPol("downloadPlot"), "Plot"),
+        downloadButton(nsPol("downloadNote"), "Notebook")
           ),
       mainPanel(
         tabsetPanel(id = "PolNRS",

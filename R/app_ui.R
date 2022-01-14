@@ -35,8 +35,10 @@ app_ui <- function(request) {
                           p("This tool was originally conceived and developed by Dr Jason Everett (UQ/CSIRO/UNSW) 
                             and Claire Davies (CSIRO). Jason is a biological oceanographer and Claire is a plankton 
                             ecologist. Both have a strong interest in open data science and encouraging increased 
-                            data uptake to solve real world problems.")
-                        ))),
+                            data uptake to solve real world problems."),
+                          h3("The IMOS plankton team is on facebook"),
+                          p("Like or follow us @", tags$a(href="https://www.facebook.com/imosaustralianplanktonsurvey", "IMOS plankton team on facebook")
+                        )))),
              tabPanel("Snapshot",
                       fluidPage(
                         value = "snap", mod_Snapshot_ui("Snapshot_ui_1"))

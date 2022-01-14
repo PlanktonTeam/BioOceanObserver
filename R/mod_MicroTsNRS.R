@@ -25,7 +25,7 @@ mod_MicroTsNRS_ui <- function(id){
           condition="input.NRSmts == 2 | input.NRSmts == 1", 
           checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE),
           sliderInput(nsMicroTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd_hms(20090101000000), max = Sys.time(), 
-                      value = c(lubridate::ymd_hms(20090101000000),Sys.time()), timeFormat="%Y-%m-%d"),
+                      value = c(lubridate::ymd_hms(20090101000000),Sys.time()-1), timeFormat="%Y-%m-%d"),
           selectInput(inputId = nsMicroTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSm$parameters), style = "simple"), selected = "Bacterial_Richness"),
         ),
         conditionalPanel(
