@@ -24,12 +24,12 @@ mod_Policy_ui <- function(id){
                     tabPanel("EOV Biomass by NRS", 
                              h6(textOutput(nsPol("PlotExp1"), container = span)),
                              plotOutput(nsPol("timeseries1"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
-                             h6(textOutput(nsPol("PlotExp3"), container = span))
+                             h6(verbatimTextOutput(nsPol("PlotExp3")))
                     ),
                     tabPanel("EOV Diversity by NRS", 
                              h6(textOutput(nsPol("PlotExp2"), container = span)),
                              plotOutput(nsPol("timeseries2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
-                             h6(textOutput(nsPol("PlotExp4"), container = span))
+                             h6(verbatimTextOutput(nsPol("PlotExp4")))
                     )
         )
       )
@@ -54,7 +54,35 @@ mod_Policy_server <- function(id){
         droplevels()
     }) %>% bindCache(input$Site)
       
-      # Sidebar Map
+    params <- Pol %>% dplyr::select(parameters) %>% unique()
+    params <- params$parameters
+    
+    Harm <- function (theta, k = 4) {
+      X <- matrix(0, length(theta), 2 * k)
+      nam <- as.vector(outer(c("c", "s"), 1:k, paste, sep = ""))
+      dimnames(X) <- list(names(theta), nam)
+      m <- 0
+      for (j in 1:k) {
+        X[, (m <- m + 1)] <- cos(j * theta)
+        X[, (m <- m + 1)] <- sin(j * theta)
+      }
+      X
+    }
+    
+    coeffs <- function(params){
+      lmdat <-  selectedData() %>% dplyr::filter(parameters == params) %>% tidyr::drop_na()
+      m <- lm(Values ~ Year + Harm(Month, k = 1), data = lmdat) 
+      ms <- summary(m)
+      slope <- ifelse(ms$coefficients[2,1] < 0, 'decreasing', 'increasing')
+      p <-  ifelse(ms$coefficients[2,4] < 0.005, 'significantly', 'but not significantly')
+      df <-  data.frame(slope = slope, p = p, params = params)
+    }
+    
+    outputs <- reactive({
+      output <- purrr::map_dfr(params, coeffs)
+    }) %>% bindCache(input$Site)
+      
+    # Sidebar Map
     output$plotmap <- renderPlotly({ 
       pmap <- planktonr::pr_plot_NRSmap(selectedData())
     }) %>% bindCache(selectedData())
@@ -67,10 +95,18 @@ mod_Policy_server <- function(id){
       "Diversity is an Essential Ocean Variables (EOVs) for plankton"
     }) 
     output$PlotExp3 <- renderText({
-      "Then we can have something saying which of the trends are significant"
+      paste(" Zooplankton biomass at", input$Site, "is", outputs()[1,1], outputs()[1,2],  "\n",
+            "Phytoplankton carbon biomass at", input$Site, "is", outputs()[2,1], outputs()[2,2],  "\n",
+            "Surface temperature at", input$Site, "is", outputs()[3,1], outputs()[3,2],  "\n",
+            "Surface chlorophyll at", input$Site, "is", outputs()[7,1], outputs()[7,2],  "\n",
+            "Surface salinity at", input$Site, "is", outputs()[6,1], outputs()[6,2])
     }) 
     output$PlotExp4 <- renderText({
-      "Then we can have something saying which of the trends are significant"
+      paste(" Copepod diversity at", input$Site, "is", outputs()[4,1], outputs()[4,2],  "\n",
+            "Phytoplankton diveristy at", input$Site, "is", outputs()[5,1], outputs()[5,2],  "\n",
+            "Surface temperature at", input$Site, "is", outputs()[3,1], outputs()[3,2],  "\n",
+            "Surface chlorophyll at", input$Site, "is", outputs()[7,1], outputs()[7,2],  "\n",
+            "Surface salinity at", input$Site, "is", outputs()[6,1], outputs()[6,2])
     }) 
     
     # Plot Trends -------------------------------------------------------------
@@ -252,5 +288,8 @@ mod_Policy_server <- function(id){
         patchwork::plot_layout(widths = c(3, 1))
       
     }) %>% bindCache(selectedData())
+
+
     
+        
 })}
