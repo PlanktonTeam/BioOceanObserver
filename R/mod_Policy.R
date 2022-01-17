@@ -16,7 +16,7 @@ mod_Policy_ui <- function(id){
         shinydashboard::menuSubItem(text = "Find out more about the NRS stations here", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki/National-Reference-Stations"),
         shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
         plotlyOutput(nsPol("plotmap")),
-        radioButtons(inputId = nsPol("Site"), label = "Select a station", choices = unique(sort(datNRSz$StationName)), selected = "Port Hacking"),
+        radioButtons(inputId = nsPol("Site"), label = "Select a station", choices = unique(sort(Pol$StationName)), selected = "Port Hacking"),
         downloadButton(nsPol("downloadData"), "Data"),
         downloadButton(nsPol("downloadPlot"), "Plot"),
         downloadButton(nsPol("downloadNote"), "Notebook")
@@ -50,12 +50,12 @@ mod_Policy_server <- function(id){
     selectedData <- reactive({
       req(input$Site)
       validate(need(!is.na(input$Site), "Error: Please select a station."))
-
+      
       selectedData <- Pol %>% 
         dplyr::filter(.data$StationName %in% input$Site) %>%
         droplevels()
     }) %>% bindCache(input$Site)
-      
+    
     params <- Pol %>% dplyr::select(parameters) %>% unique()
     params <- params$parameters
     
@@ -74,16 +74,60 @@ mod_Policy_server <- function(id){
     coeffs <- function(params){
       lmdat <-  selectedData() %>% dplyr::filter(parameters == params) %>% tidyr::drop_na()
       m <- lm(Values ~ Year + Harm(Month, k = 1), data = lmdat) 
+      lmdat <- data.frame(lmdat %>% dplyr::bind_cols(fv = m$fitted.values))
       ms <- summary(m)
       slope <- ifelse(ms$coefficients[2,1] < 0, 'decreasing', 'increasing')
       p <-  ifelse(ms$coefficients[2,4] < 0.005, 'significantly', 'but not significantly')
-      df <-  data.frame(slope = slope, p = p, params = params)
+      df <-  data.frame(slope = slope, p = p, parameters = params)
+      df <- lmdat %>% dplyr::inner_join(df, by = 'parameters')
+    }
+    
+    pr_plot_EOV <- function(df, EOV = "Biomass_mgm3", trans = 'identity', pal = 'matter') {
+      
+      titley <- planktonr::pr_relabel(EOV, style = "ggplot")
+      df <-  df %>% dplyr::filter(parameters == EOV)
+      
+      pals <- planktonr::pr_get_PlotCols(pal = pal, n = 20)
+      col <- pals[15]
+      colin <- pals[5]
+      lims <- as.POSIXct(strptime(c("2010-01-01","2020-31-31"), format = "%Y-%m-%d"))
+      
+      p1 <- ggplot2::ggplot(df) + 
+        ggplot2::geom_point(ggplot2::aes(x = SampleDateLocal, y = Values), colour = col) +
+        ggplot2::geom_smooth(ggplot2::aes(x = SampleDateLocal, y = fv), method = "lm", formula = 'y ~ x', colour = col, fill = colin) +
+        ggplot2::ylab(rlang::enexpr(titley)) +
+        ggplot2::scale_y_continuous(trans = trans) +
+        ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y", limits = lims) +
+        ggplot2::xlab("Year") +
+        ggplot2::theme(legend.position = "none")
+      
+      p2 <- ggplot2::ggplot(df, ggplot2::aes(SampleDateLocal, anomaly)) +
+        ggplot2::geom_col(fill = colin, colour = col) +
+        ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y", limits = lims) +
+        ggplot2::xlab("Year") +
+        ggplot2::labs(y = "Anomaly") 
+      
+      p3 <- ggplot2::ggplot(df) +
+        ggplot2::geom_point(ggplot2::aes(x = Month, y = Values), colour = col) +
+        ggplot2::geom_smooth(ggplot2::aes(x = Month, y = fv), method = "loess", formula = 'y ~ x', colour = col, fill = colin) +
+        ggplot2::scale_y_continuous(trans = trans) +
+        ggplot2::scale_x_continuous(breaks = seq(1, 12, length.out = 12), labels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")) +
+        ggplot2::xlab("Month") +
+        ggplot2::theme(legend.position = "none",
+                       axis.title.y = ggplot2::element_blank())
+      
+      #plot <- gridExtra::grid.arrange(p1, p2, p3, nrow = 1, widths = c(3,3,1))
+      p1 + p2 + p3 + patchwork::plot_layout(widths = c(3,3,2))
     }
     
     outputs <- reactive({
       output <- purrr::map_dfr(params, coeffs)
     }) %>% bindCache(input$Site)
-      
+    
+    info <- reactive({
+      info <- outputs() %>% dplyr::select(slope, p, parameters) %>% unique()
+    }) %>% bindCache(input$Site)
+    
     # Sidebar Map
     output$plotmap <- renderPlotly({ 
       pmap <- planktonr::pr_plot_NRSmap(selectedData())
@@ -103,209 +147,62 @@ mod_Policy_server <- function(id){
       They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment"
     }) 
     output$PlotExp3 <- renderText({
-      paste(" Zooplankton biomass at", input$Site, "is", outputs()[1,1], outputs()[1,2],  "\n",
-            "Phytoplankton carbon biomass at", input$Site, "is", outputs()[2,1], outputs()[2,2],  "\n",
-            "Surface temperature at", input$Site, "is", outputs()[3,1], outputs()[3,2],  "\n",
-            "Surface chlorophyll at", input$Site, "is", outputs()[7,1], outputs()[7,2],  "\n",
-            "Surface salinity at", input$Site, "is", outputs()[6,1], outputs()[6,2])
+      paste(" Zooplankton biomass at", input$Site, "is", info()[1,1], info()[1,2],  "\n",
+            "Phytoplankton carbon biomass at", input$Site, "is", info()[2,1], info()[2,2],  "\n",
+            "Surface temperature at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
+            "Surface chlorophyll at", input$Site, "is", info()[7,1], info()[7,2],  "\n",
+            "Surface salinity at", input$Site, "is", info()[6,1], info()[6,2])
     }) 
     output$PlotExp4 <- renderText({
-      paste(" Copepod diversity at", input$Site, "is", outputs()[4,1], outputs()[4,2],  "\n",
-            "Phytoplankton diveristy at", input$Site, "is", outputs()[5,1], outputs()[5,2],  "\n",
-            "Surface temperature at", input$Site, "is", outputs()[3,1], outputs()[3,2],  "\n",
-            "Surface chlorophyll at", input$Site, "is", outputs()[7,1], outputs()[7,2],  "\n",
-            "Surface salinity at", input$Site, "is", outputs()[6,1], outputs()[6,2])
+      paste(" Copepod diversity at", input$Site, "is", info()[4,1], info()[4,2],  "\n",
+            "Phytoplankton diveristy at", input$Site, "is", info()[5,1], info()[5,2],  "\n",
+            "Surface temperature at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
+            "Surface chlorophyll at", input$Site, "is", info()[7,1], info()[7,2],  "\n",
+            "Surface salinity at", input$Site, "is", info()[6,1], info()[6,2])
     }) 
     
     # Plot Trends -------------------------------------------------------------
-    output$timeseries1 <- renderPlot({
+    layout <- c(
+      patchwork::area(1,1,1,1),
+      patchwork::area(1,2,1,2),
+      patchwork::area(1,3,1,3),
+      patchwork::area(2,1,2,3),
+      patchwork::area(3,1,3,3),
+      patchwork::area(4,1,4,3),
+      patchwork::area(5,1,5,3)
+    )
+    
+    p3 <-pr_plot_EOV(outputs(), "Temperature_degC", "identity", pal = "solar") 
+    p4 <-pr_plot_EOV(outputs(), "Chla_mgm3", "log10", pal = "haline") 
+    p5 <-pr_plot_EOV(outputs(), "Salinity_psu", "identity", pal = "dense")
 
-      p1 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Biomass_mgm3"), 
-                                      trend = "Raw", survey = "NRS", method = "lm", pal = "phase", y_trans = "log10", output = "ggplot") +
-        ggplot2::geom_point(color = "dark blue") +
-        ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "dark blue", fill = "light blue") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
-                       strip.text = element_text(size = 16))
-      p1a <- ggplot2::ggplot(selectedData() %>% dplyr::filter(parameters == "Biomass_mgm3") %>%
-                               dplyr::select(-Values) %>%
-                               dplyr::rename(Values = anomaly), ggplot2::aes(SampleDateLocal, Values)) +
-        ggplot2::geom_col(fill = "dark blue", color = "dark blue") +
-        ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y") +
-        ggplot2::labs(y = "Anomaly") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank())
-      p2 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Biomass_mgm3"), 
-                                      trend = "Month", survey = "NRS", method = "loess", pal = "phase", y_trans = "log10", output = "ggplot") +
-        ggplot2::geom_point(color = "dark blue") +
-        ggplot2::geom_smooth(formula = y ~ x, color = "dark blue", fill = "light blue") +
-        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
+        output$timeseries1 <- renderPlot({
+
+      p1 <-pr_plot_EOV(outputs(), "Biomass_mgm3", "log10", pal = "matter") 
+      p2 <-pr_plot_EOV(outputs(), "PhytoBiomassCarbon_pgL", "log10", pal = "algae") 
+      p3 <-pr_plot_EOV(outputs(), "Temperature_degC", "identity", pal = "solar") 
+      p4 <-pr_plot_EOV(outputs(), "Chla_mgm3", "log10", pal = "haline") 
+      p5 <-pr_plot_EOV(outputs(), "Salinity_psu", "identity", pal = "dense")
       
-      p3 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "PhytoBiomassCarbon_pgL"), 
-                                      trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "log10", output = "ggplot") +
-        ggplot2::geom_point(color = "dark green") +
-        ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "dark green", fill = "light green") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      p3a <- ggplot2::ggplot(selectedData() %>% dplyr::filter(parameters == "PhytoBiomassCarbon_pgL") %>%
-                               dplyr::select(-Values) %>%
-                               dplyr::rename(Values = anomaly), ggplot2::aes(SampleDateLocal, Values)) +
-        ggplot2::geom_col(fill = "dark green", color = "dark green") +
-        ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y") +
-        ggplot2::labs(y = "Anomaly") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank())
-      p4 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "PhytoBiomassCarbon_pgL"), 
-                                      trend = "Month", survey = "NRS", method = "loess", pal = "algae", y_trans = "log10", output = "ggplot") +
-        ggplot2::geom_point(color = "dark green") + 
-        ggplot2::geom_smooth(color = "dark green", fill = "light green") +
-        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
+      #gridExtra::grid.arrange(p1, p2, p3, p4, p5, nrow = 5)
       
-      p5 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Temperature_degC"), 
-                                      trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "identity", output = "ggplot") +
-        ggplot2::geom_point(color = "violetred4") +
-        ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "violetred4", fill = "violet") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      p5a <- ggplot2::ggplot(selectedData() %>% dplyr::filter(parameters == "Temperature_degC") %>%
-                               dplyr::select(-Values) %>%
-                               dplyr::rename(Values = anomaly), ggplot2::aes(SampleDateLocal, Values)) +
-        ggplot2::geom_col(fill = "violetred4", color = "violetred4") +
-        ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y") +
-        ggplot2::labs(y = "Anomaly") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank())
-      p6 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Temperature_degC"), 
-                                      trend = "Month", survey = "NRS", method = "loess", pal = "algae", y_trans = "identity", output = "ggplot") +
-        ggplot2::geom_point(color = "violetred4") +
-        ggplot2::geom_smooth(color = "violetred4", fill = "violet") +
-        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      
-      p7 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Chla_mgm3"), 
-                                      trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "log10", output = "ggplot") +
-        ggplot2::geom_point(color = "darkseagreen") +
-        ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "darkseagreen", fill = "darkseagreen1") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      p7a <- ggplot2::ggplot(selectedData() %>% dplyr::filter(parameters == "Chla_mgm3") %>%
-                               dplyr::select(-Values) %>%
-                               dplyr::rename(Values = anomaly), ggplot2::aes(SampleDateLocal, Values)) +
-        ggplot2::geom_col(fill = "darkseagreen", color = "darkseagreen") +
-        ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y") +
-        ggplot2::labs(y = "Anomaly") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank())
-      p8 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Chla_mgm3"), 
-                                      trend = "Month", survey = "NRS", method = "loess", pal = "algae", y_trans = "log10", output = "ggplot") +
-        ggplot2::geom_point(color = "darkseagreen") +
-        ggplot2::geom_smooth(color = "darkseagreen", fill = "darkseagreen1") +
-        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      
-      p9 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Salinity_psu"), 
-                                      trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "identity", output = "ggplot") +
-        ggplot2::geom_point(color = "darkgoldenrod2") +
-        ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "darkgoldenrod2", fill = "gold")  +
-        ggplot2::theme(strip.text = ggplot2::element_blank())
-      p9a <- ggplot2::ggplot(selectedData() %>% dplyr::filter(parameters == "Salinity_psu") %>%
-                               dplyr::select(-Values) %>%
-                               dplyr::rename(Values = anomaly), ggplot2::aes(SampleDateLocal, Values)) +
-        ggplot2::geom_col(fill = "darkgoldenrod2", color = "darkgoldenrod2") +
-        ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y") +
-        ggplot2::labs(y = "Anomaly", x = "Year") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank())
-      p10 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Salinity_psu"), 
-                                       trend = "Month", survey = "NRS", method = "loess", pal = "algae", y_trans = "identity", output = "ggplot") +
-        ggplot2::geom_point(color = "darkgoldenrod2") +
-        ggplot2::geom_smooth(color = "darkgoldenrod2", fill = "gold") +
-        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      
-      
-     p1 + p1a + p2 + p3 + p3a + p4 + p5 + p5a + p6 + p7 + p7a + p8 + p9 + p9a + p10 +
-        patchwork::plot_layout(widths = c(3, 3, 1))
-      
+      title <- input$Site
+      p1 + p2 + p3 + p4 + p5 + patchwork::plot_layout(design = layout) +
+        patchwork::plot_annotation(title = title)
+
     }) %>% bindCache(selectedData())
     
     output$timeseries2 <- renderPlot({
       
-      p1 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "ShannonCopepodDiversity"), 
-                                      trend = "Raw", survey = "NRS", method = "lm", pal = "phase", y_trans = "identity", output = "ggplot") +
-        ggplot2::geom_point(color = "dark blue") +
-        ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "dark blue", fill = "light blue") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
-                       strip.text = element_text(size = 16))
-      p2 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "ShannonCopepodDiversity"), 
-                                      trend = "Month", survey = "NRS", method = "loess", pal = "phase", y_trans = "identity", output = "ggplot") +
-        ggplot2::geom_point(color = "dark blue") +
-        ggplot2::geom_smooth(formula = y ~ x, color = "dark blue", fill = "light blue") +
-        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      
-      p3 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "ShannonPhytoDiversity"), 
-                                      trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "identity", output = "ggplot") +
-        ggplot2::geom_point(color = "dark green") +
-        ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "dark green", fill = "light green") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      p4 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "ShannonPhytoDiversity"), 
-                                      trend = "Month", survey = "NRS", method = "loess", pal = "algae", y_trans = "identity", output = "ggplot") +
-        ggplot2::geom_point(color = "dark green") + 
-        ggplot2::geom_smooth(color = "dark green", fill = "light green") +
-        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      
-      p5 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Temperature_degC"), 
-                                      trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "identity", output = "ggplot") +
-        ggplot2::geom_point(color = "violetred4") +
-        ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "violetred4", fill = "violet") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      p6 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Temperature_degC"), 
-                                      trend = "Month", survey = "NRS", method = "loess", pal = "algae", y_trans = "identity", output = "ggplot") +
-        ggplot2::geom_point(color = "violetred4") +
-        ggplot2::geom_smooth(color = "violetred4", fill = "violet") +
-        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      
-      p7 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Chla_mgm3"), 
-                                      trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "log10", output = "ggplot") +
-        ggplot2::geom_point(color = "darkseagreen") +
-        ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "darkseagreen", fill = "darkseagreen1") +
-        ggplot2::theme(axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      p8 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Chla_mgm3"), 
-                                      trend = "Month", survey = "NRS", method = "loess", pal = "algae", y_trans = "log10", output = "ggplot") +
-        ggplot2::geom_point(color = "darkseagreen") +
-        ggplot2::geom_smooth(color = "darkseagreen", fill = "darkseagreen1") +
-        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       axis.title.x = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      
-      p9 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Salinity_psu"), 
-                                      trend = "Raw", survey = "NRS", method = "lm", pal = "algae", y_trans = "identity", output = "ggplot") +
-        ggplot2::geom_point(color = "darkgoldenrod2") +
-        ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = "darkgoldenrod2", fill = "gold")  +
-        ggplot2::theme(strip.text = ggplot2::element_blank())
-      p10 <- planktonr::pr_plot_trends(selectedData() %>% dplyr::filter(parameters == "Salinity_psu"), 
-                                       trend = "Month", survey = "NRS", method = "loess", pal = "algae", y_trans = "identity", output = "ggplot") +
-        ggplot2::geom_point(color = "darkgoldenrod2") +
-        ggplot2::geom_smooth(color = "darkgoldenrod2", fill = "gold") +
-        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       strip.text = ggplot2::element_blank())
-      
-      
-      p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9 + p10 +
-        patchwork::plot_layout(widths = c(3, 1))
+      p1 <-pr_plot_EOV(outputs(), "ShannonCopepodDiversity", "log10", pal = "matter")
+      p2 <-pr_plot_EOV(outputs(), "ShannonPhytoDiversity", "log10", pal = "algae")
+
+     # gridExtra::grid.arrange(p1, p2, p3, p4, p5, nrow = 5)
+      title <- input$Site
+      p1 + p2 + p3 + p4 + p5 + patchwork::plot_layout(design = layout) +
+        patchwork::plot_annotation(title = title)
       
     }) %>% bindCache(selectedData())
 
 
-    
-        
 })}

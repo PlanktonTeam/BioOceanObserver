@@ -54,7 +54,7 @@ Pol <- Pol %>% dplyr::left_join(means, by = c("StationName", "parameters")) %>%
 
 params <- Pol %>% dplyr::select(parameters) %>% unique()
 params <- params$parameters
-dfc <- Pol %>% dplyr::filter(StationCode == 'NSI')
+selectedData <- Pol %>% dplyr::filter(StationCode == 'NSI') # equiv of selected data
 
 Harm <- function (theta, k = 4) {
   X <- matrix(0, length(theta), 2 * k)
@@ -69,47 +69,60 @@ Harm <- function (theta, k = 4) {
 }
 
 coeffs <- function(params){
-  lmdat <-  dfc %>% dplyr::filter(parameters == "Biomass_mgm3") %>% tidyr::drop_na()
+  lmdat <-  selectedData %>% dplyr::filter(parameters == params) %>% tidyr::drop_na()
   m <- lm(Values ~ Year + Harm(Month, k = 1), data = lmdat) 
   lmdat <- lmdat %>% dplyr::bind_cols(fv = m$fitted.values)
+  ms <- summary(m)
+  slope <- ifelse(ms$coefficients[2,1] < 0, 'decreasing', 'increasing')
+  p <-  ifelse(ms$coefficients[2,4] < 0.005, 'significantly', 'but not significantly')
+  df <-  data.frame(slope = slope, p = p, params = params)
+  
+  return(c(lmdat, df))
 }
 
-output <- purrr::map_dfr(params, coeffs)
-
 #titley <- planktonr::pr_relabel(unique(df$parameters), style = "ggplot")
-titley <- planktonr::pr_relabel("Biomass_mgm3", style = "ggplot")
-p1 <- ggplot2::ggplot(lmdat ) + # do this logging as in pr_plot_tsclimate
-  ggplot2::geom_point(ggplot2::aes(x = SampleDateLocal, y = Values)) +
-  ggplot2::geom_smooth(ggplot2::aes(x = SampleDateLocal, y = fv), method = "lm") +
-  ggplot2::ylab(rlang::enexpr(titley)) +
-  ggplot2::scale_y_continuous(trans = "log10") +
-  ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y") +
-  ggplot2::xlab("Year") +
-  ggplot2::theme(legend.position = "none",
-                 axis.title.x = ggplot2::element_blank(),
-                 strip.background = ggplot2::element_blank(),
-                 strip.text = ggplot2::element_text(hjust = 0, size = 16))
-p1
+pr_plot_EOV <- function(df, EOV = "Biomass_mgm3", trans = 'identity') {
+  
+  titley <- planktonr::pr_relabel(EOV, style = "ggplot")
+  df <-  df %>% dplyr::filter(parameters == EOV)
+  
+  p1 <- ggplot2::ggplot(df) + 
+    ggplot2::geom_point(ggplot2::aes(x = SampleDateLocal, y = Values)) +
+    ggplot2::geom_smooth(ggplot2::aes(x = SampleDateLocal, y = fv), method = "lm", formula = 'y ~ x') +
+    ggplot2::ylab(rlang::enexpr(titley)) +
+    ggplot2::scale_y_continuous(trans = trans) +
+    ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y") +
+    ggplot2::xlab("Year") +
+    ggplot2::theme(legend.position = "none",
+                   axis.title.x = ggplot2::element_blank(),
+                   strip.background = ggplot2::element_blank(),
+                   strip.text = ggplot2::element_text(hjust = 0, size = 16))
 
-p2 <- ggplot2::ggplot(lmdat ) + # do this logging as in pr_plot_tsclimate
-  ggplot2::geom_point(ggplot2::aes(x = Month, y = Values)) +
-  ggplot2::geom_smooth(ggplot2::aes(x = Month, y = fv), method = "loess") +
-  ggplot2::scale_y_continuous(trans = "log10") +
-  ggplot2::scale_x_continuous(breaks = seq(1, 12, length.out = 12), labels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")) +
-  ggplot2::xlab("Month") +
-  ggplot2::theme(legend.position = "none",
-                 axis.title.y = ggplot2::element_blank(),
-                 axis.title.x = ggplot2::element_blank(),
-                 strip.background = ggplot2::element_blank(),
-                 strip.text = ggplot2::element_text(hjust = 0, size = 16))
-p2
+    p2 <- ggplot2::ggplot(df, ggplot2::aes(SampleDateLocal, anomaly)) +
+      ggplot2::geom_col(fill = "dark blue", color = "dark blue") +
+      ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y") +
+      ggplot2::labs(y = "Anomaly") +
+      ggplot2::theme(axis.title.x = ggplot2::element_blank())
+    
+    p3 <- ggplot2::ggplot(df) +
+      ggplot2::geom_point(ggplot2::aes(x = Month, y = Values)) +
+      ggplot2::geom_smooth(ggplot2::aes(x = Month, y = fv), method = "loess", formula = 'y ~ x') +
+      ggplot2::scale_y_continuous(trans = trans) +
+      ggplot2::scale_x_continuous(breaks = seq(1, 12, length.out = 12), labels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")) +
+      ggplot2::xlab("Month") +
+      ggplot2::theme(legend.position = "none",
+                     axis.title.y = ggplot2::element_blank(),
+                     axis.title.x = ggplot2::element_blank(),
+                     strip.background = ggplot2::element_blank(),
+                     strip.text = ggplot2::element_text(hjust = 0, size = 16))
+    
+    p1 + p2 + p3  +
+      patchwork::plot_layout(widths = c(3, 3, 1))
 
-lmdatm <- lmdat %>%
-  dplyr::group_by(Month) %>%
-  dplyr::summarise(value = mean(.data$fv, na.rm = TRUE),
-                   .groups = "drop")
+}
 
-lmdatm <- lmdat
+plot <- pr_plot_EOV(selectedData, "Biomass_mgm3", "log10")
+plot
 
 ## microbial data
 library(tidyverse)
