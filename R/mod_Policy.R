@@ -26,7 +26,8 @@ mod_Policy_ui <- function(id){
                     tabPanel("EOV Biomass by NRS", 
                              h6(textOutput(nsPol("PlotExp1"), container = span)),
                              plotOutput(nsPol("timeseries1"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
-                             h6(verbatimTextOutput(nsPol("PlotExp3")))
+                             h6(verbatimTextOutput(nsPol("PlotExp3"))),
+                             h6(textOutput(nsPol("plotExp5")))
                     ),
                     tabPanel("EOV Diversity by NRS", 
                              h6(textOutput(nsPol("PlotExp2"), container = span)),
@@ -128,6 +129,11 @@ mod_Policy_server <- function(id){
       info <- outputs() %>% dplyr::select(slope, p, parameters) %>% unique()
     }) %>% bindCache(input$Site)
     
+    stationData <- reactive({
+      stationData <- planktonr::pr_get_StationName() %>%
+        dplyr::filter(StationName == input$Site)
+    }) %>% bindCache(input$Site)
+    
     # Sidebar Map
     output$plotmap <- renderPlotly({ 
       pmap <- planktonr::pr_plot_NRSmap(selectedData())
@@ -160,6 +166,9 @@ mod_Policy_server <- function(id){
             "Surface chlorophyll at", input$Site, "is", info()[7,1], info()[7,2],  "\n",
             "Surface salinity at", input$Site, "is", info()[6,1], info()[6,2])
     }) 
+    output$PlotExp5 <- renderText({
+      "Why isn't this working"
+    })
     
     # Plot Trends -------------------------------------------------------------
     layout <- c(
