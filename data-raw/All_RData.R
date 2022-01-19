@@ -52,7 +52,22 @@ means <- readr::read_csv(paste0(planktonr::pr_get_outputs(), "NRS_Indices.csv"),
 Pol <- Pol %>% dplyr::left_join(means, by = c("StationName", "parameters")) %>%
   dplyr::mutate(anomaly = (Values - means)/sd)
 
-NRSinfo <- planktonr::pr_get_NRSStation()
+NRSinfo <- planktonr::pr_get_NRSStation() %>%   
+  dplyr::mutate(Region = dplyr::case_when(StationCode %in% c("DAR") ~ "Tropical North",
+                                           StationCode %in% c("YON") ~ "GBR Lagoon",
+                                           StationCode %in% c("NSI", "PHB", "MAI") ~ "South East",
+                                           StationCode %in% c("KAI") ~ "South Central",
+                                           StationCode %in% c("ROT", "ESP", "NIN") ~ "South West"),
+                Features = dplyr::case_when(StationCode %in% c("DAR") ~ "broad, shallow shelf seas with strong tidal influence and tropical neritic communities.",
+                                          StationCode %in% c("YON") ~ "shallow water influenced by the EAC and Hiri currents and is floristically distinct.",
+                                          StationCode %in% c("NSI", "PHB", "MAI") ~ "very narrow shelf influenced by the EAC and its eddies with temperate neritic communities", 
+                                          StationCode %in% c("KAI") ~ "upwelling systems and the Leeuwin and Flinders currents and covers the GAB and SA Gulf.",
+                                          StationCode %in% c("ROT", "ESP", "NIN") ~ "narrow shelf influenced by the Leeuwin Current with tropical oeanic communities"),
+                now = dplyr::case_when(StationCode %in% c("DAR", "YON", "NSI", "PHB", "MAI", "KAI", 'ROT') ~ "and is ongoing",
+                                            StationCode %in% c("ESP", "NIN") ~ "and concluded in March 2013")) %>%
+  dplyr::select(-c(ProjectName, StationCode, IMCRA)) 
+  
+
 
 ## microbial data
 library(tidyverse)
@@ -66,9 +81,9 @@ datNRSm <- readr::read_csv("data/datNRSm.csv") %>%
   tidyr::pivot_longer(-c(StationName:Month), values_to = "Values", names_to = "parameters")
 
 # add data to sysdata.rda
-usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, Pol,
+usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, Pol, NRSinfo,
                   datCPRz, datCPRp, datNRSz, datNRSp, datNRSm,
-                  NRSfgz, NRSfgp, CPRfgz, CPRfgp,
+                  NRSfgz, NRSfgp, CPRfgz, CPRfgp, 
                   stiz, stip, daynightz, daynightp,
                   overwrite = TRUE, internal = TRUE)
 

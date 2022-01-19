@@ -25,9 +25,9 @@ mod_Policy_ui <- function(id){
         tabsetPanel(id = "PolNRS",
                     tabPanel("EOV Biomass by NRS", 
                              h6(textOutput(nsPol("PlotExp1"), container = span)),
+                             h6(verbatimTextOutput(nsPol("PlotExp5"))),
                              plotOutput(nsPol("timeseries1"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
-                             h6(verbatimTextOutput(nsPol("PlotExp3"))),
-                             h6(textOutput(nsPol("plotExp5")))
+                             h6(verbatimTextOutput(nsPol("PlotExp3")))
                     ),
                     tabPanel("EOV Diversity by NRS", 
                              h6(textOutput(nsPol("PlotExp2"), container = span)),
@@ -130,8 +130,7 @@ mod_Policy_server <- function(id){
     }) %>% bindCache(input$Site)
     
     stationData <- reactive({
-      stationData <- planktonr::pr_get_StationName() %>%
-        dplyr::filter(StationName == input$Site)
+      stationData <- NRSinfo %>% dplyr::filter(StationName == input$Site) 
     }) %>% bindCache(input$Site)
     
     # Sidebar Map
@@ -167,7 +166,12 @@ mod_Policy_server <- function(id){
             "Surface salinity at", input$Site, "is", info()[6,1], info()[6,2])
     }) 
     output$PlotExp5 <- renderText({
-      "Why isn't this working"
+      paste("STation Name:", input$Site, "\n",
+            input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ".", "\n",  
+            "The water depth at the station is ", round(stationData()$STATIONDEPTH_M,0), "m and is currently sampled ", stationData()$SAMPLINGEFFORT, ".", "\n", 
+            "The station has been sampled since ", stationData()$STATIONSTARTDATE, " ", stationData()$now, ".", "\n", 
+            input$Site, " is part of ", stationData()$NODE, " and is in the ", stationData()$MANAGEMENTREGION, " management bioregion.",  "\n", 
+            "The station is characterised by ", stationData()$Features, sep = "")
     })
     
     # Plot Trends -------------------------------------------------------------
