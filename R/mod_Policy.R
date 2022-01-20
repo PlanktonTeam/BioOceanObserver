@@ -21,23 +21,14 @@ mod_Policy_ui <- function(id){
         downloadButton(nsPol("downloadPlot"), "Plot"),
         downloadButton(nsPol("downloadNote"), "Notebook")
           ),
-      mainPanel(
-        tabsetPanel(id = "PolNRS",
-                    tabPanel("EOV Biomass by NRS", 
-                             h6(textOutput(nsPol("PlotExp1"), container = span)),
-                             h6(verbatimTextOutput(nsPol("PlotExp5"))),
-                             plotOutput(nsPol("timeseries1"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
-                             h6(verbatimTextOutput(nsPol("PlotExp3")))
-                    ),
-                    tabPanel("EOV Diversity by NRS", 
-                             h6(textOutput(nsPol("PlotExp2"), container = span)),
-                             plotOutput(nsPol("timeseries2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
-                             h6(verbatimTextOutput(nsPol("PlotExp4")))
-                    )
-        )
+      mainPanel(id = "EOV Biomass by NRS", 
+                h6(textOutput(nsPol("PlotExp1"), container = span)),
+                h6(verbatimTextOutput(nsPol("PlotExp5"))),
+                plotOutput(nsPol("timeseries1"), height = 1600) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
+                h6(verbatimTextOutput(nsPol("PlotExp3")))
+             )
       )
     )
-  )
 }
 
 #' Policy Server Functions
@@ -83,30 +74,38 @@ mod_Policy_server <- function(id){
       df <- lmdat %>% dplyr::inner_join(df, by = 'parameters')
     }
     
-    pr_plot_EOV <- function(df, EOV = "Biomass_mgm3", trans = 'identity', pal = 'matter') {
+    pr_plot_EOV <- function(df, EOV = "Biomass_mgm3", Survey = 'NRS', trans = 'identity', pal = 'matter', labels = "yes") {
       
       titley <- planktonr::pr_relabel(EOV, style = "ggplot")
       df <-  df %>% dplyr::filter(parameters == EOV)
-      
+
       pals <- planktonr::pr_get_PlotCols(pal = pal, n = 20)
       col <- pals[15]
       colin <- pals[5]
       lims <- as.POSIXct(strptime(c("2010-01-01","2020-31-31"), format = "%Y-%m-%d"))
       
+      
       p1 <- ggplot2::ggplot(df) + 
         ggplot2::geom_point(ggplot2::aes(x = SampleDateLocal, y = Values), colour = col) +
         ggplot2::geom_smooth(ggplot2::aes(x = SampleDateLocal, y = fv), method = "lm", formula = 'y ~ x', colour = col, fill = colin) +
-        ggplot2::ylab(rlang::enexpr(titley)) +
+        ggplot2::labs(x = "Year", y = rlang::enexpr(titley)) +
         ggplot2::scale_y_continuous(trans = trans) +
         ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y", limits = lims) +
-        ggplot2::xlab("Year") +
         ggplot2::theme(legend.position = "none")
+      
+      if(labels == "no"){
+        p1 <- p1 + ggplot2::theme(axis.title.x = ggplot2::element_blank())
+      } 
       
       p2 <- ggplot2::ggplot(df, ggplot2::aes(SampleDateLocal, anomaly)) +
         ggplot2::geom_col(fill = colin, colour = col) +
         ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y", limits = lims) +
         ggplot2::xlab("Year") +
         ggplot2::labs(y = "Anomaly") 
+      
+      if(labels == "no"){
+        p2 <- p2 + ggplot2::theme(axis.title.x = ggplot2::element_blank())
+      } 
       
       p3 <- ggplot2::ggplot(df) +
         ggplot2::geom_point(ggplot2::aes(x = Month, y = Values), colour = col) +
@@ -117,12 +116,16 @@ mod_Policy_server <- function(id){
         ggplot2::theme(legend.position = "none",
                        axis.title.y = ggplot2::element_blank())
       
+      if(labels == "no"){
+        p3 <- p3 + ggplot2::theme(axis.title.x = ggplot2::element_blank())
+      } 
+      
       #plot <- gridExtra::grid.arrange(p1, p2, p3, nrow = 1, widths = c(3,3,1))
       p1 + p2 + p3 + patchwork::plot_layout(widths = c(3,3,2))
     }
     
     outputs <- reactive({
-      output <- purrr::map_dfr(params, coeffs)
+      outputs <- purrr::map_dfr(params, coeffs)
     }) %>% bindCache(input$Site)
     
     info <- reactive({
@@ -175,47 +178,41 @@ mod_Policy_server <- function(id){
     })
     
     # Plot Trends -------------------------------------------------------------
-    layout <- c(
+    layout1 <- c(
       patchwork::area(1,1,1,1),
-      patchwork::area(1,2,1,2),
-      patchwork::area(1,3,1,3),
       patchwork::area(2,1,2,3),
       patchwork::area(3,1,3,3),
-      patchwork::area(4,1,4,3),
-      patchwork::area(5,1,5,3)
+      patchwork::area(4,1,4,1),
+      patchwork::area(5,1,5,3),
+      patchwork::area(6,1,6,3),
+      patchwork::area(7,1,7,1),
+      patchwork::area(8,1,8,3),
+      patchwork::area(9,1,9,3),
+      patchwork::area(10,1,10,3)
     )
     
-    p3 <-pr_plot_EOV(outputs(), "Temperature_degC", "identity", pal = "solar") 
-    p4 <-pr_plot_EOV(outputs(), "Chla_mgm3", "log10", pal = "haline") 
-    p5 <-pr_plot_EOV(outputs(), "Salinity_psu", "identity", pal = "dense")
+    output$timeseries1 <- renderPlot({
 
-        output$timeseries1 <- renderPlot({
-
-      p1 <-pr_plot_EOV(outputs(), "Biomass_mgm3", "log10", pal = "matter") 
+      p1 <-pr_plot_EOV(outputs(), "Biomass_mgm3", "log10", pal = "matter", labels = "no")
       p2 <-pr_plot_EOV(outputs(), "PhytoBiomassCarbon_pgL", "log10", pal = "algae") 
-      p3 <-pr_plot_EOV(outputs(), "Temperature_degC", "identity", pal = "solar") 
-      p4 <-pr_plot_EOV(outputs(), "Chla_mgm3", "log10", pal = "haline") 
+      
+      p6 <-pr_plot_EOV(outputs(), "ShannonCopepodDiversity", "log10", pal = "matter", labels = "no") 
+      p7 <-pr_plot_EOV(outputs(), "ShannonPhytoDiversity", "log10", pal = "algae")
+      
+      p3 <-pr_plot_EOV(outputs(), "Temperature_degC", "identity", pal = "solar", labels = "no")
+      p4 <-pr_plot_EOV(outputs(), "Chla_mgm3", "log10", pal = "haline", labels = "no") 
       p5 <-pr_plot_EOV(outputs(), "Salinity_psu", "identity", pal = "dense")
       
-      #gridExtra::grid.arrange(p1, p2, p3, p4, p5, nrow = 5)
+      patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
+        p1 + p2 + 
+        grid::textGrob("Diversity EOVs", gp = grid::gpar(fontsize=20)) + 
+        p6 + p7 + 
+        grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20)) + 
+        p3 + p4 + p5 + patchwork::plot_layout(design = layout1) +
+        patchwork::plot_annotation(title = input$Site) & 
+        ggplot2::theme(title = element_text(size = 20, face = "bold"),
+                       plot.title = element_text(hjust = 0.5))
       
-      title <- input$Site
-      p1 + p2 + p3 + p4 + p5 + patchwork::plot_layout(design = layout) +
-        patchwork::plot_annotation(title = title)
-
-    }) %>% bindCache(selectedData())
+      }) %>% bindCache(selectedData())
     
-    output$timeseries2 <- renderPlot({
-      
-      p1 <-pr_plot_EOV(outputs(), "ShannonCopepodDiversity", "log10", pal = "matter")
-      p2 <-pr_plot_EOV(outputs(), "ShannonPhytoDiversity", "log10", pal = "algae")
-
-     # gridExtra::grid.arrange(p1, p2, p3, p4, p5, nrow = 5)
-      title <- input$Site
-      p1 + p2 + p3 + p4 + p5 + patchwork::plot_layout(design = layout) +
-        patchwork::plot_annotation(title = title)
-      
-    }) %>% bindCache(selectedData())
-
-
 })}

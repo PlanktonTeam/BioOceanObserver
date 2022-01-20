@@ -35,23 +35,56 @@ daynightz <- planktonr::pr_get_daynight("Z")
 daynightp <- planktonr::pr_get_daynight("P")
 
 # Policy data set
-Pol <- readr::read_csv(paste0(planktonr::pr_get_outputs(), "NRS_Indices.csv"), na = "NA", show_col_types = FALSE) %>%
-  dplyr::select(SampleDateLocal, Year, Month, StationName, StationCode, Biomass_mgm3, PhytoBiomassCarbon_pgL, Temperature_degC, ShannonCopepodDiversity, 
-                ShannonPhytoDiversity, Salinity_psu, Chla_mgm3) %>%
-  tidyr::pivot_longer(-c(SampleDateLocal:StationCode), values_to = 'Values', names_to = "parameters")
+pr_get_pol <- function(Survey = 'NRS'){
+  if(Survey == 'NRS'){
+    file <- 'NRS_Indices.csv'
+  } else {
+    file <- 'CPR_Indices.csv'
+  }
+  Polr <- readr::read_csv(paste0(planktonr::pr_get_outputs(), file), na = "NA", show_col_types = FALSE) 
+  
+  if(Survey == 'NRS'){
+    Pol <-  Polr %>% 
+      dplyr::select(SampleDateLocal, Year, Month, StationName, StationCode, Biomass_mgm3, PhytoBiomassCarbon_pgL, Temperature_degC, ShannonCopepodDiversity, 
+                  ShannonPhytoDiversity, Salinity_psu, Chla_mgm3) %>%
+      dplyr::rename(SampleDate = SampleDateLocal) %>%
+      tidyr::pivot_longer(-c(SampleDate:StationCode), values_to = 'Values', names_to = "parameters")
+ 
+    means <- Polr %>%
+      dplyr::select(StationName, Biomass_mgm3, PhytoBiomassCarbon_pgL, Temperature_degC, ShannonCopepodDiversity, 
+                    ShannonPhytoDiversity, Salinity_psu, Chla_mgm3) %>%
+      tidyr::pivot_longer(-c(StationName), values_to = 'Values', names_to = "parameters") %>%
+      dplyr::group_by(StationName, parameters) %>%
+      dplyr::summarise(means = mean(Values, na.rm = TRUE), 
+                       sd = stats::sd(Values, na.rm = TRUE),
+                       .groups = 'drop')
+    
+    Pol <- Pol %>% dplyr::left_join(means, by = c("StationName", "parameters")) %>%
+      dplyr::mutate(anomaly = (Values - means)/sd)  
+    
+    } else {
+    
+      Pol <-  Polr %>% 
+        dplyr::select(SampleDateUTC, Year, Month, BioRegion, Biomass_mgm3, PhytoBiomassCarbon_pgm3, ShannonCopepodDiversity, 
+                      ShannonPhytoDiversity) %>%
+        dplyr::rename(SampleDate = SampleDateUTC) %>%
+        tidyr::pivot_longer(-c(SampleDate:BioRegion), values_to = 'Values', names_to = "parameters")
 
-means <- readr::read_csv(paste0(planktonr::pr_get_outputs(), "NRS_Indices.csv"), na = "NA", show_col_types = FALSE) %>%
-  dplyr::select(StationName, Biomass_mgm3, PhytoBiomassCarbon_pgL, Temperature_degC, ShannonCopepodDiversity, 
-                ShannonPhytoDiversity, Salinity_psu, Chla_mgm3) %>%
-  tidyr::pivot_longer(-c(StationName), values_to = 'Values', names_to = "parameters") %>%
-  dplyr::group_by(StationName, parameters) %>%
-  dplyr::summarise(means = mean(Values, na.rm = TRUE), 
-                  sd = stats::sd(Values, na.rm = TRUE),
-                  .groups = 'drop')
-
-Pol <- Pol %>% dplyr::left_join(means, by = c("StationName", "parameters")) %>%
-  dplyr::mutate(anomaly = (Values - means)/sd)
-
+      means <- Polr %>%
+        dplyr::select(BioRegion, Biomass_mgm3, PhytoBiomassCarbon_pgm3, ShannonCopepodDiversity, 
+                      ShannonPhytoDiversity) %>%
+        tidyr::pivot_longer(-c(BioRegion), values_to = 'Values', names_to = "parameters") %>%
+        dplyr::group_by(BioRegion, parameters) %>%
+        dplyr::summarise(means = mean(Values, na.rm = TRUE), 
+                         sd = stats::sd(Values, na.rm = TRUE),
+                         .groups = 'drop')
+      
+      Pol <- Pol %>% dplyr::left_join(means, by = c("BioRegion", "parameters")) %>%
+        dplyr::mutate(anomaly = (Values - means)/sd)  
+      
+    }
+  }
+  
 NRSinfo <- planktonr::pr_get_NRSStation() %>%   
   dplyr::mutate(Region = dplyr::case_when(StationCode %in% c("DAR") ~ "Tropical North",
                                            StationCode %in% c("YON") ~ "GBR Lagoon",
