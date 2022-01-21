@@ -47,8 +47,7 @@ pr_get_pol <- function(Survey = 'NRS'){
     Pol <-  Polr %>% 
       dplyr::select(SampleDateLocal, Year, Month, StationName, StationCode, Biomass_mgm3, PhytoBiomassCarbon_pgL, Temperature_degC, ShannonCopepodDiversity, 
                   ShannonPhytoDiversity, Salinity_psu, Chla_mgm3) %>%
-      dplyr::rename(SampleDate = SampleDateLocal) %>%
-      tidyr::pivot_longer(-c(SampleDate:StationCode), values_to = 'Values', names_to = "parameters")
+      tidyr::pivot_longer(-c(SampleDateLocal:StationCode), values_to = 'Values', names_to = "parameters")
  
     means <- Polr %>%
       dplyr::select(StationName, Biomass_mgm3, PhytoBiomassCarbon_pgL, Temperature_degC, ShannonCopepodDiversity, 
@@ -67,8 +66,8 @@ pr_get_pol <- function(Survey = 'NRS'){
       Pol <-  Polr %>% 
         dplyr::select(SampleDateUTC, Year, Month, BioRegion, Biomass_mgm3, PhytoBiomassCarbon_pgm3, ShannonCopepodDiversity, 
                       ShannonPhytoDiversity) %>%
-        dplyr::rename(SampleDate = SampleDateUTC) %>%
-        tidyr::pivot_longer(-c(SampleDate:BioRegion), values_to = 'Values', names_to = "parameters")
+        dplyr::filter(!BioRegion %in% c("North", "North-west")) %>%
+        tidyr::pivot_longer(-c(SampleDateUTC:BioRegion), values_to = 'Values', names_to = "parameters")
 
       means <- Polr %>%
         dplyr::select(BioRegion, Biomass_mgm3, PhytoBiomassCarbon_pgm3, ShannonCopepodDiversity, 
@@ -85,22 +84,45 @@ pr_get_pol <- function(Survey = 'NRS'){
     }
   }
   
-NRSinfo <- planktonr::pr_get_NRSStation() %>%   
-  dplyr::mutate(Region = dplyr::case_when(StationCode %in% c("DAR") ~ "Tropical North",
-                                           StationCode %in% c("YON") ~ "GBR Lagoon",
-                                           StationCode %in% c("NSI", "PHB", "MAI") ~ "South East",
-                                           StationCode %in% c("KAI") ~ "South Central",
-                                           StationCode %in% c("ROT", "ESP", "NIN") ~ "South West"),
-                Features = dplyr::case_when(StationCode %in% c("DAR") ~ "broad, shallow shelf seas with strong tidal influence and tropical neritic communities.",
-                                          StationCode %in% c("YON") ~ "shallow water influenced by the EAC and Hiri currents and is floristically distinct.",
-                                          StationCode %in% c("NSI", "PHB", "MAI") ~ "very narrow shelf influenced by the EAC and its eddies with temperate neritic communities", 
-                                          StationCode %in% c("KAI") ~ "upwelling systems and the Leeuwin and Flinders currents and covers the GAB and SA Gulf.",
-                                          StationCode %in% c("ROT", "ESP", "NIN") ~ "narrow shelf influenced by the Leeuwin Current with tropical oeanic communities"),
-                now = dplyr::case_when(StationCode %in% c("DAR", "YON", "NSI", "PHB", "MAI", "KAI", 'ROT') ~ "and is ongoing",
-                                            StationCode %in% c("ESP", "NIN") ~ "and concluded in March 2013")) %>%
-  dplyr::select(-c(ProjectName, StationCode, IMCRA)) 
+pr_get_polInfo <- function(Survey = 'NRS'){
   
+  if(Survey == 'NRS'){
+    
+    NRSinfo <- planktonr::pr_get_NRSStation() %>%   
+      dplyr::mutate(Region = dplyr::case_when(StationCode %in% c("DAR") ~ "Tropical North",
+                                              StationCode %in% c("YON") ~ "GBR Lagoon",
+                                              StationCode %in% c("NSI", "PHB", "MAI") ~ "South East",
+                                              StationCode %in% c("KAI") ~ "South Central",
+                                              StationCode %in% c("ROT", "ESP", "NIN") ~ "South West"),
+                    Features = dplyr::case_when(StationCode %in% c("DAR") ~ "broad, shallow shelf seas with strong tidal influence and tropical neritic communities.",
+                                                StationCode %in% c("YON") ~ "shallow water influenced by the EAC and Hiri currents and is floristically distinct.",
+                                                StationCode %in% c("NSI", "PHB", "MAI") ~ "very narrow shelf influenced by the EAC and its eddies with temperate neritic communities", 
+                                                StationCode %in% c("KAI") ~ "upwelling systems and the Leeuwin and Flinders currents and covers the GAB and SA Gulf.",
+                                                StationCode %in% c("ROT", "ESP", "NIN") ~ "narrow shelf influenced by the Leeuwin Current with tropical oeanic communities"),
+                    now = dplyr::case_when(StationCode %in% c("DAR", "YON", "NSI", "PHB", "MAI", "KAI", 'ROT') ~ "and is ongoing",
+                                           StationCode %in% c("ESP", "NIN") ~ "and concluded in March 2013")) %>%
+      dplyr::select(-c(ProjectName, StationCode, IMCRA)) 
+  
+    } else {
+    
+      CPRinfo <- planktonr::pr_get_CPRTrips() %>%
+        dplyr::mutate(Latitude = STARTLATITUDE, 
+                      Longitude = ENDLONGITUDE) %>%
+        dplyr::rename(Region = REGION) %>%
+        planktonr::pr_add_bioregions() %>%
+        dplyr::select(BioRegion, STARTSAMPLEDATEUTC, MILES) %>%
+        dplyr::mutate(Features = dplyr::case_when(BioRegion %in% c("South-east") ~ "narrow shelf intensifying currents, eddies and upwellings with low nutrient and primary productivity",
+                                                  BioRegion %in% c("South-west") ~ "temperate and subtropical habitats influenced by the nutrient deplete Leeuwin Current.",
+                                                  BioRegion %in% c("Temperate East") ~ "temperate and subtropical habitats influenced by the East Australian Current and its eddies.",
+                                                  BioRegion %in% c("Temperate East") ~ "Western Pacific Warm Pool water mass with low surface nutrient levels"))
+  }
+ 
+}
 
+PolNRS <- pr_get_pol("NRS")
+PolCPR <- pr_get_pol("CPR")
+NRSinfo <- pr_get_polInfo("NRS")
+CPRinfo <- pr_get_polInfo("CPR")
 
 ## microbial data
 library(tidyverse)
@@ -114,7 +136,8 @@ datNRSm <- readr::read_csv("data/datNRSm.csv") %>%
   tidyr::pivot_longer(-c(StationName:Month), values_to = "Values", names_to = "parameters")
 
 # add data to sysdata.rda
-usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, Pol, NRSinfo,
+usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, 
+                  PolNRS, PolCPR, NRSinfo, CPRinfo, 
                   datCPRz, datCPRp, datNRSz, datNRSp, datNRSm,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, 
                   stiz, stip, daynightz, daynightp,
