@@ -45,28 +45,18 @@ mod_PolCPR_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedData <- PolCPR %>% 
-        dplyr::filter(.data$BioRegion %in% input$Site) %>%
+        dplyr::filter(.data$BioRegion %in% input$Site) %>% 
+        dplyr::mutate(Month = Month * 2 * 3.142 / 12) %>%
         droplevels()
     }) %>% bindCache(input$Site)
     
     params <- PolCPR %>% dplyr::select(parameters) %>% unique()
     params <- params$parameters
     
-    Harm <- function (theta, k = 4) {
-      X <- matrix(0, length(theta), 2 * k)
-      nam <- as.vector(outer(c("c", "s"), 1:k, paste, sep = ""))
-      dimnames(X) <- list(names(theta), nam)
-      m <- 0
-      for (j in 1:k) {
-        X[, (m <- m + 1)] <- cos(j * theta)
-        X[, (m <- m + 1)] <- sin(j * theta)
-      }
-      X
-    }
-    
     coeffs <- function(params){
-      lmdat <-  selectedData() %>% dplyr::filter(parameters == params) %>% tidyr::drop_na()
-      m <- lm(Values ~ Year + Harm(Month, k = 1), data = lmdat) 
+      lmdat <-  selectedData() %>% dplyr::filter(parameters == params) %>%
+        tidyr::drop_na()
+      m <- lm(Values ~ Year + planktonr::pr_harmonic(Month, k = 1), data = lmdat) 
       lmdat <- data.frame(lmdat %>% dplyr::bind_cols(fv = m$fitted.values))
       ms <- summary(m)
       slope <- ifelse(ms$coefficients[2,1] < 0, 'decreasing', 'increasing')
@@ -75,56 +65,7 @@ mod_PolCPR_server <- function(id){
       df <- lmdat %>% dplyr::inner_join(df, by = 'parameters')
     }
     
-    pr_plot_EOV <- function(df, EOV = "Biomass_mgm3", Survey = 'NRS', trans = 'identity', pal = 'matter', labels = "yes") {
-      
-      titley <- planktonr::pr_relabel(EOV, style = "ggplot")
-      df <-  df %>% dplyr::filter(parameters == EOV) %>%
-        dplyr::rename(SampleDate = 1)
-      
-      pals <- planktonr::pr_get_PlotCols(pal = pal, n = 20)
-      col <- pals[15]
-      colin <- pals[5]
-      lims <- as.POSIXct(strptime(c("2010-01-01","2020-31-31"), format = "%Y-%m-%d"))
-      
-      p1 <- ggplot2::ggplot(df) + 
-        ggplot2::geom_point(ggplot2::aes(x = SampleDate, y = Values), colour = col) +
-        ggplot2::geom_smooth(ggplot2::aes(x = SampleDate, y = fv), method = "lm", formula = 'y ~ x', colour = col, fill = colin) +
-        ggplot2::labs(x = "Year", y = rlang::enexpr(titley)) +
-        ggplot2::scale_y_continuous(trans = trans) +
-        ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y", limits = lims) +
-        ggplot2::theme(legend.position = "none")
-      
-      if(labels == "no"){
-        p1 <- p1 + ggplot2::theme(axis.title.x = ggplot2::element_blank())
-      } 
-      
-      p2 <- ggplot2::ggplot(df, ggplot2::aes(SampleDate, anomaly)) +
-        ggplot2::geom_col(fill = colin, colour = col) +
-        ggplot2::scale_x_datetime(date_breaks = "2 years", date_labels = "%Y", limits = lims) +
-        ggplot2::xlab("Year") +
-        ggplot2::labs(y = "Anomaly") 
-      
-      if(labels == "no"){
-        p2 <- p2 + ggplot2::theme(axis.title.x = ggplot2::element_blank())
-      } 
-      
-      p3 <- ggplot2::ggplot(df) +
-        ggplot2::geom_point(ggplot2::aes(x = Month, y = Values), colour = col) +
-        ggplot2::geom_smooth(ggplot2::aes(x = Month, y = fv), method = "loess", formula = 'y ~ x', colour = col, fill = colin) +
-        ggplot2::scale_y_continuous(trans = trans) +
-        ggplot2::scale_x_continuous(breaks = seq(1, 12, length.out = 12), labels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")) +
-        ggplot2::xlab("Month") +
-        ggplot2::theme(legend.position = "none",
-                       axis.title.y = ggplot2::element_blank())
-      
-      if(labels == "no"){
-        p3 <- p3 + ggplot2::theme(axis.title.x = ggplot2::element_blank())
-      } 
-      
-      #plot <- gridExtra::grid.arrange(p1, p2, p3, nrow = 1, widths = c(3,3,1))
-      p1 + p2 + p3 + patchwork::plot_layout(widths = c(3,3,2))
-    }
-    
+
     outputs <- reactive({
       outputs <- purrr::map_dfr(params, coeffs)
     }) %>% bindCache(input$Site)
@@ -181,11 +122,11 @@ mod_PolCPR_server <- function(id){
     
     output$timeseries1 <- renderPlot({
       
-      p1 <-pr_plot_EOV(outputs(), "Biomass_mgm3", Survey = 'CPR', "log10", pal = "matter", labels = "no")
-      p2 <-pr_plot_EOV(outputs(), "PhytoBiomassCarbon_pgm3", Survey = 'CPR', "log10", pal = "algae") 
+      p1 <-planktonr::pr_plot_EOV(outputs(), "Biomass_mgm3", Survey = 'CPR', "log10", pal = "matter", labels = "no")
+      p2 <-planktonr::pr_plot_EOV(outputs(), "PhytoBiomassCarbon_pgm3", Survey = 'CPR', "log10", pal = "algae") 
       
-      p6 <-pr_plot_EOV(outputs(), "ShannonCopepodDiversity", Survey = 'CPR', "log10", pal = "matter", labels = "no") 
-      p7 <-pr_plot_EOV(outputs(), "ShannonPhytoDiversity", Survey = 'CPR', "log10", pal = "algae")
+      p6 <-planktonr::pr_plot_EOV(outputs(), "ShannonCopepodDiversity", Survey = 'CPR', "log10", pal = "matter", labels = "no") 
+      p7 <-planktonr::pr_plot_EOV(outputs(), "ShannonPhytoDiversity", Survey = 'CPR', "log10", pal = "algae")
       
       # p3 <-pr_plot_EOV(outputs(), "Temperature_degC", Survey = 'CPR', "identity", pal = "solar", labels = "no")
       # p4 <-pr_plot_EOV(outputs(), "Chla_mgm3", Survey = 'CPR', "log10", pal = "haline", labels = "no") 

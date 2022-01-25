@@ -46,7 +46,8 @@ app_ui <- function(request) {
              tabPanel("Policy",
                       tabsetPanel(id = 'pol',
                                   tabPanel(value = "nrs", "National Reference Stations", mod_PolNRS_ui("PolNRS_ui_1")),
-                                  tabPanel(value = "cpr", "CPR - bioregions", mod_PolCPR_ui("PolCPR_ui_1"))
+                                  tabPanel(value = "cpr", "CPR - bioregions", mod_PolCPR_ui("PolCPR_ui_1")),
+                                  tabPanel(value = 'LTM', "Long term monitoring", mod_PolLTM_ui("PolLTM_ui_1"))
                       )),
              tabPanel("Microbes",
                       tabsetPanel(id = 'mic',

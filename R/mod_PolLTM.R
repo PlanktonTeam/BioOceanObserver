@@ -1,0 +1,151 @@
+#' Policy UI Function
+#'
+#' @description A shiny Module.
+#'
+#' @param id,input,output,session Internal parameters for {shiny}.
+#'
+#' @noRd 
+#'
+#' @importFrom shiny NS tagList 
+#' @importFrom stats runif
+mod_PolLTM_ui <- function(id){
+  nsPolLTM <- NS(id)
+  tagList(
+    sidebarLayout(
+      sidebarPanel(
+        shinydashboard::menuSubItem(text = "Find out more about the NRS stations here", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki/National-Reference-Stations"),
+        shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
+        plotlyOutput(nsPolLTM("plotmap")),
+        radioButtons(inputId = nsPolLTM("Site"), label = "Select a station", choices = unique(sort(LTnuts$StationName)), selected = "Maria Island"),
+        downloadButton(nsPolLTM("downloadData"), "Data"),
+        downloadButton(nsPolLTM("downloadPlot"), "Plot"),
+        downloadButton(nsPolLTM("downloadNote"), "Notebook")
+          ),
+      mainPanel(id = "EOV paramters from Long Term Monitoring", 
+                h6(textOutput(nsPolLTM("PlotExp1"), container = span)),
+                h6(verbatimTextOutput(nsPolLTM("PlotExp5"))),
+                plotOutput(nsPolLTM("timeseries1"), height = 1600) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
+                h6(verbatimTextOutput(nsPolLTM("PlotExp3")))
+             )
+      )
+    )
+}
+
+#' Policy Server Functions
+#'
+#' @noRd 
+mod_PolLTM_server <- function(id){
+  moduleServer(id, function(input, output, session){
+    ns <- session$ns
+    
+    # Sidebar ----------------------------------------------------------
+    selectedData <- reactive({
+      req(input$Site)
+      validate(need(!is.na(input$Site), "Error: Please select a station."))
+      
+      selectedData <- LTnuts %>% 
+        dplyr::filter(.data$StationName %in% input$Site,
+                      .data$SampleDepth_m < 15,
+                      !.data$parameters %in% c( "SOI", "Ammonium_umolL","Nitrite_umolL","DIC_umolkg", "TAlkalinity_umolkg", "Oxygen_umolL")) %>%
+        dplyr::group_by(.data$StationCode, .data$StationName, .data$SampleDateLocal, .data$anomaly, .data$Year, .data$Month, parameters) %>%
+        dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE),
+                                      .groups = 'drop') %>%
+        dplyr::rename(SampleDate = .data$SampleDateLocal) %>% 
+        dplyr::mutate(Month = .data$Month * 2 * 3.142 / 12) %>%
+        droplevels()
+    }) %>% bindCache(input$Site)
+    
+  params <- selectedData() %>% dplyr::select(.data$parameters) %>% unique()
+  params <- params$parameters
+
+  coeffs <- function(params){
+    lmdat <-  selectedData() %>% dplyr::filter(parameters == params) %>%
+      tidyr::drop_na()
+    m <- lm(Values ~ Year + planktonr::pr_harmonic(Month, k = 1), data = lmdat) 
+    lmdat <- data.frame(lmdat %>% dplyr::bind_cols(fv = m$fitted.values))
+    ms <- summary(m)
+    slope <- ifelse(ms$coefficients[2,1] < 0, 'decreasing', 'increasing')
+    p <-  ifelse(ms$coefficients[2,4] < 0.005, 'significantly', 'but not significantly')
+    df <-  data.frame(slope = slope, p = p, parameters = params)
+    df <- lmdat %>% dplyr::inner_join(df, by = 'parameters')
+  }
+  
+    outputs <- reactive({
+      outputs <- purrr::map_dfr(params, coeffs)
+    }) %>% bindCache(input$Site)
+    
+    info <- reactive({
+      info <- outputs() %>% dplyr::select(slope, p, parameters) %>% unique()
+    }) %>% bindCache(input$Site)
+    
+    stationData <- reactive({
+       stationData <- NRSinfo %>% dplyr::filter(StationName == input$Site) 
+    }) %>% bindCache(input$Site)
+    
+    # Sidebar Map
+    output$plotmap <- renderPlotly({ 
+      pmap <- planktonr::pr_plot_NRSmap(selectedData())
+    }) %>% bindCache(selectedData())
+    
+    # Add text information 
+    output$PlotExp1 <- renderText({
+      "Biomass and diversity are the Essential Ocean Variables (EOVs) for plankton. 
+      These are the important variables that scientists have identified to monitor our oceans.
+      They are chosen based on impact of the measurement and the feasiblity to take consistent measurements.
+      They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment"
+    }) 
+    output$PlotExp3 <- renderText({
+      if(input$Site == 'Port Hacking'){
+        paste(" Nitrate concentration at", input$Site, "is", info()[2,1], info()[2,2],  "\n",
+            "Phosphate concentration at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
+            "Temperature at", input$Site, "is", info()[4,1], info()[4,2],  "\n",
+            "Salinity at", input$Site, "is", info()[1,1], info()[1,2],  "\n")
+      } else {
+        paste(" Nitrate concentration at", input$Site, "is", info()[2,1], info()[2,2],  "\n",
+            "Phosphate concentration at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
+            "Silicate concentration", input$Site, "is", info()[5,1], info()[5,2],  "\n",
+            "Temperature at", input$Site, "is", info()[4,1], info()[4,2],  "\n",
+            "Salinity at", input$Site, "is", info()[1,1], info()[1,2],  "\n")
+      }
+    }) 
+    output$PlotExp5 <- renderText({
+      paste("STation Name:", input$Site, "\n",
+            input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ".", "\n",
+            "The water depth at the station is ", round(stationData()$STATIONDEPTH_M,0), "m and is currently sampled ", stationData()$SAMPLINGEFFORT, ".", "\n",
+            "The station has been sampled since ", stationData()$STATIONSTARTDATE, " ", stationData()$now, ".", "\n",
+            input$Site, " is part of ", stationData()$NODE, " and is in the ", stationData()$MANAGEMENTREGION, " management bioregion.",  "\n",
+            "The station is characterised by ", stationData()$Features, sep = "")
+    })
+    
+    # Plot Trends -------------------------------------------------------------
+    layout1 <- c(
+      patchwork::area(1,1,1,1),
+      patchwork::area(2,1,2,3),
+      patchwork::area(3,1,3,3),
+      patchwork::area(4,1,4,3),
+      patchwork::area(5,1,5,3),
+      patchwork::area(6,1,6,3)#,
+      # patchwork::area(7,1,7,1),
+      # patchwork::area(8,1,8,3),
+      # patchwork::area(9,1,9,3),
+      # patchwork::area(10,1,10,3)
+    )
+    
+    output$timeseries1 <- renderPlot({
+
+          p1 <-planktonr::pr_plot_EOV(outputs(), "Nitrate_umolL", Survey = 'LTM', trans = "identity", pal = "matter", labels = "no")
+          p2 <-planktonr::pr_plot_EOV(outputs(), "Phosphate_umolL", Survey = 'LTM', "identity", pal = "algae", labels = "no") 
+          p4 <-planktonr::pr_plot_EOV(outputs(), "Silicate_umolL", Survey = 'LTM', "identity", pal = "algae", labels = "no") 
+          p7 <-planktonr::pr_plot_EOV(outputs(), "Temperature_degC", Survey = 'LTM', "identity", pal = "solar", labels = "no")
+          p3 <-planktonr::pr_plot_EOV(outputs(), "Salinity_psu", Survey = 'LTM', "identity", pal = "dense")
+          
+          patchwork::wrap_elements(grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20))) + 
+            p1 + p2 + p4 + p7 + p3 +
+            patchwork::plot_layout(design = layout1) &
+            patchwork::plot_annotation(title = input$Site) & 
+            ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
+                           plot.title = ggplot2::element_text(hjust = 0.5)) 
+          
+        }) %>% bindCache(selectedData())
+    
+})}

@@ -60,7 +60,13 @@ app_server <- function( input, output, session ) {
       }
     })
     
-    ### Zooplankton CPR time series data
+    observeEvent(input$pol, {
+      if(input$pol == "LTM"){
+        mod_PolLTM_server("PolLTM_ui_1")
+      }
+    })
+
+        ### Zooplankton CPR time series data
     observeEvent(input$zoo, {
       if(input$zoo == "ztscpr"){
         mod_ZooTsCPR_server("ZooTsCPR_ui_1")
