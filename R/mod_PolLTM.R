@@ -24,7 +24,7 @@ mod_PolLTM_ui <- function(id){
       mainPanel(id = "EOV paramters from Long Term Monitoring", 
                 h6(textOutput(nsPolLTM("PlotExp1"), container = span)),
                 h6(verbatimTextOutput(nsPolLTM("PlotExp5"))),
-                plotOutput(nsPolLTM("timeseries1"), height = 1600) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
+                plotOutput(nsPolLTM("timeseries1"), height = 1000) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
                 h6(verbatimTextOutput(nsPolLTM("PlotExp3")))
              )
       )
@@ -55,27 +55,13 @@ mod_PolLTM_server <- function(id){
         droplevels()
     }) %>% bindCache(input$Site)
     
-  params <- selectedData() %>% dplyr::select(.data$parameters) %>% unique()
-  params <- params$parameters
-
-  coeffs <- function(params){
-    lmdat <-  selectedData() %>% dplyr::filter(parameters == params) %>%
-      tidyr::drop_na()
-    m <- lm(Values ~ Year + planktonr::pr_harmonic(Month, k = 1), data = lmdat) 
-    lmdat <- data.frame(lmdat %>% dplyr::bind_cols(fv = m$fitted.values))
-    ms <- summary(m)
-    slope <- ifelse(ms$coefficients[2,1] < 0, 'decreasing', 'increasing')
-    p <-  ifelse(ms$coefficients[2,4] < 0.005, 'significantly', 'but not significantly')
-    df <-  data.frame(slope = slope, p = p, parameters = params)
-    df <- lmdat %>% dplyr::inner_join(df, by = 'parameters')
-  }
-  
     outputs <- reactive({
-      outputs <- purrr::map_dfr(params, coeffs)
+      outputs <- planktonr::pr_get_coeffs(selectedData())
     }) %>% bindCache(input$Site)
     
     info <- reactive({
-      info <- outputs() %>% dplyr::select(slope, p, parameters) %>% unique()
+      info <- outputs() %>% dplyr::select(slope, p, parameters) %>% unique() %>%
+        dplyr::arrange(parameters)
     }) %>% bindCache(input$Site)
     
     stationData <- reactive({
@@ -95,18 +81,11 @@ mod_PolLTM_server <- function(id){
       They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment"
     }) 
     output$PlotExp3 <- renderText({
-      if(input$Site == 'Port Hacking'){
-        paste(" Nitrate concentration at", input$Site, "is", info()[2,1], info()[2,2],  "\n",
-            "Phosphate concentration at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
-            "Temperature at", input$Site, "is", info()[4,1], info()[4,2],  "\n",
-            "Salinity at", input$Site, "is", info()[1,1], info()[1,2],  "\n")
-      } else {
-        paste(" Nitrate concentration at", input$Site, "is", info()[2,1], info()[2,2],  "\n",
-            "Phosphate concentration at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
-            "Silicate concentration", input$Site, "is", info()[5,1], info()[5,2],  "\n",
-            "Temperature at", input$Site, "is", info()[4,1], info()[4,2],  "\n",
-            "Salinity at", input$Site, "is", info()[1,1], info()[1,2],  "\n")
-      }
+        paste(" Nitrate concentration at", input$Site, "is", info()[1,1], info()[1,2],  "\n",
+            "Phosphate concentration at", input$Site, "is", info()[2,1], info()[2,2],  "\n",
+            "Silicate concentration", input$Site, "is", info()[4,1], info()[4,2],  "\n",
+            "Temperature at", input$Site, "is", info()[5,1], info()[5,2],  "\n",
+            "Salinity at", input$Site, "is", info()[3,1], info()[3,2],  "\n")
     }) 
     output$PlotExp5 <- renderText({
       paste("STation Name:", input$Site, "\n",
@@ -124,18 +103,14 @@ mod_PolLTM_server <- function(id){
       patchwork::area(3,1,3,3),
       patchwork::area(4,1,4,3),
       patchwork::area(5,1,5,3),
-      patchwork::area(6,1,6,3)#,
-      # patchwork::area(7,1,7,1),
-      # patchwork::area(8,1,8,3),
-      # patchwork::area(9,1,9,3),
-      # patchwork::area(10,1,10,3)
+      patchwork::area(6,1,6,3)
     )
     
     output$timeseries1 <- renderPlot({
 
           p1 <-planktonr::pr_plot_EOV(outputs(), "Nitrate_umolL", Survey = 'LTM', trans = "identity", pal = "matter", labels = "no")
           p2 <-planktonr::pr_plot_EOV(outputs(), "Phosphate_umolL", Survey = 'LTM', "identity", pal = "algae", labels = "no") 
-          p4 <-planktonr::pr_plot_EOV(outputs(), "Silicate_umolL", Survey = 'LTM', "identity", pal = "algae", labels = "no") 
+          p4 <-planktonr::pr_plot_EOV(outputs(), "Silicate_umolL", Survey = 'LTM', "identity", pal = "haline", labels = "no") 
           p7 <-planktonr::pr_plot_EOV(outputs(), "Temperature_degC", Survey = 'LTM', "identity", pal = "solar", labels = "no")
           p3 <-planktonr::pr_plot_EOV(outputs(), "Salinity_psu", Survey = 'LTM', "identity", pal = "dense")
           

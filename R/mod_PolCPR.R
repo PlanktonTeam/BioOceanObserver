@@ -50,28 +50,13 @@ mod_PolCPR_server <- function(id){
         droplevels()
     }) %>% bindCache(input$Site)
     
-    params <- PolCPR %>% dplyr::select(parameters) %>% unique()
-    params <- params$parameters
-    
-    coeffs <- function(params){
-      lmdat <-  selectedData() %>% dplyr::filter(parameters == params) %>%
-        tidyr::drop_na()
-      m <- lm(Values ~ Year + planktonr::pr_harmonic(Month, k = 1), data = lmdat) 
-      lmdat <- data.frame(lmdat %>% dplyr::bind_cols(fv = m$fitted.values))
-      ms <- summary(m)
-      slope <- ifelse(ms$coefficients[2,1] < 0, 'decreasing', 'increasing')
-      p <-  ifelse(ms$coefficients[2,4] < 0.005, 'significantly', 'but not significantly')
-      df <-  data.frame(slope = slope, p = p, parameters = params)
-      df <- lmdat %>% dplyr::inner_join(df, by = 'parameters')
-    }
-    
-
     outputs <- reactive({
-      outputs <- purrr::map_dfr(params, coeffs)
+      outputs <- planktonr::pr_get_coeffs(selectedData())
     }) %>% bindCache(input$Site)
     
     info <- reactive({
-      info <- outputs() %>% dplyr::select(slope, p, parameters) %>% unique()
+      info <- outputs() %>% dplyr::select(slope, p, parameters) %>% unique %>%
+        dplyr::arrange(parameters)
     }) %>% bindCache(input$Site)
     
     stationData <- reactive({
@@ -93,11 +78,8 @@ mod_PolCPR_server <- function(id){
     output$PlotExp3 <- renderText({
       paste(" Zooplankton biomass at", input$Site, "is", info()[1,1], info()[1,2],  "\n",
             "Phytoplankton carbon biomass at", input$Site, "is", info()[2,1], info()[2,2], "\n",
-            "Copepod diversity at", input$Site, "is", info()[4,1], info()[4,2],  "\n",
-            "Phytoplankton diveristy at", input$Site, "is", info()[5,1], info()[5,2])
-            # "Surface temperature at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
-            # "Surface chlorophyll at", input$Site, "is", info()[7,1], info()[7,2],  "\n",
-            # "Surface salinity at", input$Site, "is", info()[6,1], info()[6,2])) 
+            "Copepod diversity at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
+            "Phytoplankton diveristy at", input$Site, "is", info()[4,1], info()[4,2])
     }) 
     output$PlotExp5 <- renderText({
       paste("BioRegion:", input$Site, "\n", 
@@ -113,11 +95,7 @@ mod_PolCPR_server <- function(id){
       patchwork::area(3,1,3,3),
       patchwork::area(4,1,4,1),
       patchwork::area(5,1,5,3),
-      patchwork::area(6,1,6,3)#,
-      #patchwork::area(7,1,7,1) ,
-      # patchwork::area(8,1,8,3),
-      # patchwork::area(9,1,9,3),
-      # patchwork::area(10,1,10,3)
+      patchwork::area(6,1,6,3)
     )
     
     output$timeseries1 <- renderPlot({
@@ -128,16 +106,10 @@ mod_PolCPR_server <- function(id){
       p6 <-planktonr::pr_plot_EOV(outputs(), "ShannonCopepodDiversity", Survey = 'CPR', "log10", pal = "matter", labels = "no") 
       p7 <-planktonr::pr_plot_EOV(outputs(), "ShannonPhytoDiversity", Survey = 'CPR', "log10", pal = "algae")
       
-      # p3 <-pr_plot_EOV(outputs(), "Temperature_degC", Survey = 'CPR', "identity", pal = "solar", labels = "no")
-      # p4 <-pr_plot_EOV(outputs(), "Chla_mgm3", Survey = 'CPR', "log10", pal = "haline", labels = "no") 
-      # p5 <-pr_plot_EOV(outputs(), "Salinity_psu", Survey = 'CPR', "identity", pal = "dense")
-      
-      patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
+     patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
         p1 + p2 + 
         grid::textGrob("Diversity EOVs", gp = grid::gpar(fontsize=20)) + 
         p6 + p7 + 
-        #grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20)) + 
-        # p3 + p4 + p5 + 
         patchwork::plot_layout(design = layout1) +
         patchwork::plot_annotation(title = input$Site) & 
         ggplot2::theme(title = element_text(size = 20, face = "bold"),

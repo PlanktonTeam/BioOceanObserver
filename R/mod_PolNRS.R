@@ -49,23 +49,8 @@ mod_PolNRS_server <- function(id){
         droplevels()
     }) %>% bindCache(input$Site)
     
-    params <- PolNRS %>% dplyr::select(parameters) %>% unique()
-    params <- params$parameters
-    
-    coeffs <- function(params){
-      lmdat <-  selectedData() %>% dplyr::filter(parameters == params) %>% 
-        tidyr::drop_na()
-      m <- lm(Values ~ Year + planktonr::pr_harmonic(Month, k = 1), data = lmdat) 
-      lmdat <- data.frame(lmdat %>% dplyr::bind_cols(fv = m$fitted.values))
-      ms <- summary(m)
-      slope <- ifelse(ms$coefficients[2,1] < 0, 'decreasing', 'increasing')
-      p <-  ifelse(ms$coefficients[2,4] < 0.005, 'significantly', 'but not significantly')
-      df <-  data.frame(slope = slope, p = p, parameters = params)
-      df <- lmdat %>% dplyr::inner_join(df, by = 'parameters')
-    }
-    
     outputs <- reactive({
-      outputs <- purrr::map_dfr(params, coeffs)
+      outputs <- planktonr::pr_get_coeffs(selectedData())
     }) %>% bindCache(input$Site)
     
     info <- reactive({
