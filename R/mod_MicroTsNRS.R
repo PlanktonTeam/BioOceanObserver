@@ -12,19 +12,20 @@ mod_MicroTsNRS_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        conditionalPanel(
-          condition="input.NRSmts == 1",  
-          # Select whether to overlay smooth trend line 
-          checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE)
-        ),
+        # conditionalPanel(
+        #   condition="input.NRSmts == 1",  
+        #   # Select whether to overlay smooth trend line 
+        #   checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE)
+        # ),
         conditionalPanel(
           condition="input.NRSmts == 2", 
           selectizeInput(inputId = nsMicroTsNRS("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
         ),
         conditionalPanel(
           condition="input.NRSmts == 2 | input.NRSmts == 1", 
+          checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE),
           sliderInput(nsMicroTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd_hms(20090101000000), max = Sys.time(), 
-                      value = c(lubridate::ymd_hms(20090101000000),Sys.time()), timeFormat="%Y-%m-%d"),
+                      value = c(lubridate::ymd_hms(20090101000000),Sys.time()-1), timeFormat="%Y-%m-%d"),
           selectInput(inputId = nsMicroTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSm$parameters), style = "simple"), selected = "Bacterial_Richness"),
         ),
         conditionalPanel(
@@ -173,9 +174,15 @@ mod_MicroTsNRS_server <- function(id){
       
       trend <-  input$smoother
       
-      plot <- planktonr::pr_plot_env_var(selectedData(), trend = trend)
+      if(input$scaler1){
+        Scale <- 'log10'
+      } else {
+        Scale <- 'identity'
+      }
       
-    }) %>% bindCache(selectedData(), input$smoother)
+      plot <- planktonr::pr_plot_env_var(selectedData(), trend = trend, Scale = Scale)
+      
+    }) %>% bindCache(selectedData(), input$smoother, input$scaler1)
     
     # Plots by depths ---------------------------------------------------------
     

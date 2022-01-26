@@ -35,12 +35,20 @@ app_ui <- function(request) {
                           p("This tool was originally conceived and developed by Dr Jason Everett (UQ/CSIRO/UNSW) 
                             and Claire Davies (CSIRO). Jason is a biological oceanographer and Claire is a plankton 
                             ecologist. Both have a strong interest in open data science and encouraging increased 
-                            data uptake to solve real world problems.")
-                        ))),
+                            data uptake to solve real world problems."),
+                          h3("The IMOS plankton team is on facebook"),
+                          p("Like or follow us @", tags$a(href="https://www.facebook.com/imosaustralianplanktonsurvey", "IMOS plankton team on facebook")
+                        )))),
              tabPanel("Snapshot",
                       fluidPage(
                         value = "snap", mod_Snapshot_ui("Snapshot_ui_1"))
              ),
+             tabPanel("Policy",
+                      tabsetPanel(id = 'pol',
+                                  tabPanel(value = "nrs", "National Reference Stations", mod_PolNRS_ui("PolNRS_ui_1")),
+                                  tabPanel(value = "cpr", "CPR - bioregions", mod_PolCPR_ui("PolCPR_ui_1")),
+                                  tabPanel(value = 'LTM', "Long term monitoring", mod_PolLTM_ui("PolLTM_ui_1"))
+                      )),
              tabPanel("Microbes",
                       tabsetPanel(id = 'mic',
                                   tabPanel(value = "mts", "Time Series NRS", mod_MicroTsNRS_ui("MicroTsNRS_ui_1")),

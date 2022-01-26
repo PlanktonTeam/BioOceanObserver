@@ -27,7 +27,7 @@ mod_ZooTsCPR_ui <- function(id){
         h6("Note there is very little data in the North and North-west regions"),
         checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(sort(datCPRz$BioRegion)), selected = unique(datCPRz$BioRegion)),
         sliderInput(nsZooTsCPR("DatesSlide"), "Dates:", min = lubridate::ymd_hms(20090101000000), max = Sys.time(), 
-                    value = c(lubridate::ymd_hms(20090101000000), Sys.time()), timeFormat="%Y-%m-%d"),
+                    value = c(lubridate::ymd_hms(20090101000000), Sys.time()-1), timeFormat="%Y-%m-%d"),
         downloadButton(nsZooTsCPR("downloadData"), "Data"),
         downloadButton(nsZooTsCPR("downloadPlot"), "Plot"),
         downloadButton(nsZooTsCPR("downloadNote"), "Notebook")

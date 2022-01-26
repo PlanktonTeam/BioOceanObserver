@@ -14,6 +14,9 @@ mod_Snapshot_ui <- function(id){
     # use this in non shinydashboard app
     # setBackgroundColor(color = "ghostwhite"),
     shinyWidgets::useShinydashboard(),
+    fluidRow(
+      h1("Plankton sampling progress"),
+      HTML('<center><img src="www/progress_map_150dpi.png"></center>')),
     h1("By the Numbers"),
     fluidRow(
       shinydashboard::valueBoxOutput(nsSnap("PCount"), width = 3),

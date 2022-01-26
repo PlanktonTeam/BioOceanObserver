@@ -31,6 +31,10 @@ app_server <- function( input, output, session ) {
     if (req(input$navbar) == "Snapshot") 
       mod_Snapshot_server("Snapshot_ui_1")
     
+    ### Policy page
+    if (req(input$navbar) == "Policy") 
+      mod_PolNRS_server("PolNRS_ui_1")
+    
     ### Microbial time series data  
     if (req(input$navbar) == "Microbes")  
       mod_MicroTsNRS_server("MicroTsNRS_ui_1")
@@ -49,7 +53,20 @@ app_server <- function( input, output, session ) {
   })
   
     ## Run when changing page within tab
-    ### Zooplankton CPR time series data
+    ### Policy CPR time series data
+    observeEvent(input$pol, {
+      if(input$pol == "cpr"){
+        mod_PolCPR_server("PolCPR_ui_1")
+      }
+    })
+    
+    observeEvent(input$pol, {
+      if(input$pol == "LTM"){
+        mod_PolLTM_server("PolLTM_ui_1")
+      }
+    })
+
+        ### Zooplankton CPR time series data
     observeEvent(input$zoo, {
       if(input$zoo == "ztscpr"){
         mod_ZooTsCPR_server("ZooTsCPR_ui_1")
