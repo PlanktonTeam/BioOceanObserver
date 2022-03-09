@@ -81,7 +81,8 @@ pr_get_pol <- function(Survey = 'NRS'){
                          sd = stats::sd(Values, na.rm = TRUE),
                          .groups = 'drop')
       
-      Pol <- Pol %>% dplyr::left_join(means, by = c("StationName", "parameters")) %>%
+      Pol <- Pol %>% 
+        dplyr::left_join(means, by = c("StationName", "parameters")) %>%
         dplyr::mutate(anomaly = (Values - means)/sd)  
       
     }
