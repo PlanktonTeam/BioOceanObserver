@@ -70,11 +70,12 @@ pr_get_pol <- function(Survey = 'NRS'){
       Pol <-  Polr %>% 
         dplyr::select(SampleDateLocal, Year, Month, StationName, StationCode, Biomass_mgm3, PhytoBiomassCarbon_pgL, CTDTemperature_degC, ShannonCopepodDiversity, 
                       ShannonPhytoDiversity, CTDSalinity_psu, PigmentChla_mgm3) %>%
-        tidyr::pivot_longer(-c(SampleDateLocal:StationCode), values_to = 'Values', names_to = "parameters")
+        tidyr::pivot_longer(-c(SampleDateLocal:StationCode), values_to = 'Values', names_to = "parameters") %>%
+        dplyr::mutate(SampleDateLocal = strptime(as.POSIXct(.data$SampleDateLocal), "%Y-%m-%d"))
       
       means <- Polr %>%
         dplyr::select(StationName, Biomass_mgm3, PhytoBiomassCarbon_pgL, CTDTemperature_degC, ShannonCopepodDiversity, 
-                      ShannonPhytoDiversity, Salinity_psu, PigmentChla_mgm3) %>%
+                      ShannonPhytoDiversity, CTDSalinity_psu, PigmentChla_mgm3) %>%
         tidyr::pivot_longer(-c(StationName), values_to = 'Values', names_to = "parameters") %>%
         dplyr::group_by(StationName, parameters) %>%
         dplyr::summarise(means = mean(Values, na.rm = TRUE), 
