@@ -79,9 +79,11 @@ mod_MicroTsNRS_server <- function(id){
         selectedData <- datNRSm %>% 
           dplyr::filter(.data$StationName %in% input$Site,
                         .data$parameters %in% input$ycol,
-                        dplyr::between(.data$SampleDateLocal, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                        dplyr::between(.data$SampleDate_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
           mutate(name = as.factor(.data$parameters),
-                 SampleDepth_m = round(.data$SampleDepth_m/5,0)*5) %>%
+                 SampleDepth_m = dplyr::if_else(stringr::str_detect("WC", SampleDepth_m),
+                                                "WC",
+                                                as.character(round(as.numeric(.data$SampleDepth_m)/5,0)*5))) %>%
           droplevels()
 
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
@@ -143,17 +145,20 @@ mod_MicroTsNRS_server <- function(id){
       if(input$scaler1){
         Scale <- 'log10'
       }
-
+      
       np <- length(unique(selectedData()$StationName))
-      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', 'matter', Scale) + ggplot2::theme(legend.position = 'none',
-                                                                        axis.title.y = ggplot2::element_blank())
-
-      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Month, 'matter', Scale) + ggplot2::theme(legend.position = 'none',
-                                                                                            axis.title.y = ggplot2::element_blank())
-
-      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Year, 'matter', Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                                                                                 legend.title = ggplot2::element_blank())
-
+      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', 'matter', Scale) + 
+        ggplot2::theme(legend.position = 'none',
+                       axis.title.y = ggplot2::element_blank())
+      
+      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Month, 'matter', Scale) + 
+        ggplot2::theme(legend.position = 'none',
+                       axis.title.y = ggplot2::element_blank())
+      
+      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Year, 'matter', Scale) + 
+        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+                       legend.title = ggplot2::element_blank())
+      
       titley <- planktonr::pr_relabel(unique(selectedData()$parameters), style = "plotly")
       p1 <- plotly::ggplotly(p1, height = 200 * np)
       p2 <- plotly::ggplotly(p2, height = 200 * np)
@@ -195,12 +200,12 @@ mod_MicroTsNRS_server <- function(id){
       selectedData1 <- datNRSm %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$parameters %in% c(input$p1, input$p2)) %>%
-        tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleDateLocal), names_from = parameters, values_from = Values, values_fn = mean)
+        tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleDate_Local), names_from = parameters, values_from = Values, values_fn = mean)
 
       # selectedData1 <- datNRSm %>% 
       #   dplyr::filter(.data$StationName %in% 'Yongala',
       #                 .data$parameters %in% c('Bacterial_Richness', 'Prochlorococcus_Cellsml')) %>%
-      #   tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleDateLocal), names_from = parameters, values_from = Values, values_fn = mean)
+      #   tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleDate_Local), names_from = parameters, values_from = Values, values_fn = mean)
       # 
       #       
     }) %>% bindCache(input$p1, input$p2, input$Site)

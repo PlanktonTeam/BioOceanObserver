@@ -72,7 +72,7 @@ mod_ZooTsCPR_server <- function(id){
         mutate(BioRegion = factor(.data$BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
         dplyr::filter(.data$BioRegion %in% input$region,
                       .data$parameters %in% input$parameter,
-                      dplyr::between(.data$SampleDateUTC, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleDate_UTC, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
     }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2])
@@ -157,7 +157,7 @@ mod_ZooTsCPR_server <- function(id){
       
       selectedDataFG <- CPRfgz %>% 
         dplyr::filter(.data$BioRegion %in% input$region,
-                      dplyr::between(.data$SampleDateUTC, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleDate_UTC, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
     }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2])
     

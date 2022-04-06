@@ -70,7 +70,7 @@ mod_ZooTsNRS_server <- function(id){
       selectedData <- datNRSz %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$parameters %in% input$ycol,
-                      dplyr::between(.data$SampleDateLocal, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleDate_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
     }) %>% bindCache(input$ycol,input$Site, input$DatesSlide[1], input$DatesSlide[2])
@@ -163,7 +163,7 @@ mod_ZooTsNRS_server <- function(id){
       
       selectedDataFG <- NRSfgz %>% 
         dplyr::filter(.data$StationName %in% input$Site,
-                      dplyr::between(.data$SampleDateLocal, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
     }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
     

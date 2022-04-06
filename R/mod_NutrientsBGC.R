@@ -28,18 +28,18 @@ mod_NutrientsBGC_ui <- function(id){
       mainPanel(
         h6(textOutput(nsNutrientsBGC("PlotExp"), container = span)),
         plotlyOutput(nsNutrientsBGC("plot")) %>% withSpinner(color="#0dc5c1")
-          )
-        )
       )
+    )
+  )
 }
-    
+
 #' NutrientsBGC Server Functions
 #'
 #' @noRd 
 mod_NutrientsBGC_server <- function(id){
   moduleServer( id, function(input, output, session){
     #     select depths
-
+    
     observe({
       req(input$station)
       req(input$parameter)
@@ -49,13 +49,13 @@ mod_NutrientsBGC_server <- function(id){
       #                      choices = NRSBGCNutrients[NRSBGCNutrients$Station %in% input$station & NRSBGCNutrients$name %in% input$parameter,]$SampleDepth_m)
     })
     
-      selected <- reactive({
+    selected <- reactive({
       req(input$date)
       validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       Nuts %>%
         filter(.data$StationName %in% input$station,
-               .data$SampleDateLocal > as.POSIXct(input$date[1]) & .data$SampleDateLocal < as.POSIXct(input$date[2]),
+               .data$SampleDate_Local > as.POSIXct(input$date[1]) & .data$SampleDate_Local < as.POSIXct(input$date[2]),
                .data$parameters %in% input$parameter) %>%
         mutate(name = as.factor(.data$parameters),
                SampleDepth_m = round(.data$SampleDepth_m, -1)) %>%
@@ -69,7 +69,7 @@ mod_NutrientsBGC_server <- function(id){
       trend <-  input$smoother
       
       plot <- planktonr::pr_plot_env_var(selected(), trend = trend)
-
+      
     }) %>% bindCache(selected(), input$smoother)
     
     # add a map in sidebar
@@ -78,7 +78,7 @@ mod_NutrientsBGC_server <- function(id){
       pmap <- planktonr::pr_plot_NRSmap(selected())
       
     }) %>% bindCache(input$station)
-
+    
     # add text information 
     output$PlotExp <- renderText({
       "A plot of selected nutrient parameters from the NRS as timeseries at analysed depths"
@@ -87,6 +87,6 @@ mod_NutrientsBGC_server <- function(id){
     # create table output
     output$table <- DT::renderDataTable(
       selected() ) 
- 
+    
   })
 }
