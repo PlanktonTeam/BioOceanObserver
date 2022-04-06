@@ -47,10 +47,10 @@ mod_PolLTM_server <- function(id){
         dplyr::filter(.data$StationName %in% input$SiteLTM,
                       .data$SampleDepth_m < 15,
                       !.data$parameters %in% c( "SOI", "Ammonium_umolL","Nitrite_umolL","DIC_umolkg", "TAlkalinity_umolkg", "Oxygen_umolL")) %>%
-        dplyr::group_by(.data$StationCode, .data$StationName, .data$SampleDateLocal, .data$anomaly, .data$Year, .data$Month, parameters) %>%
+        dplyr::group_by(.data$StationCode, .data$StationName, .data$SampleDate_Local, .data$anomaly, .data$Year, .data$Month, parameters) %>%
         dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE),
                                       .groups = 'drop') %>%
-        dplyr::rename(SampleDate = .data$SampleDateLocal) %>% 
+        dplyr::rename(SampleDate = .data$SampleDate_Local) %>% 
         dplyr::mutate(Month = .data$Month * 2 * 3.142 / 12) %>%
         droplevels()
       
