@@ -17,8 +17,8 @@ mod_NutrientsBGC_ui <- function(id){
         # station selector
         checkboxGroupInput(inputId = nsNutrientsBGC('station'), label = "Select a station", choices = unique(sort(Nuts$StationName)), selected = 'Port Hacking'),
         # Date selector
-        sliderInput(nsNutrientsBGC("date"), "Dates:", min = lubridate::ymd_hms(20090101000000), max = Sys.time(), 
-                    value = c(lubridate::ymd_hms(20090101000000), Sys.time()-1), timeFormat="%Y-%m-%d"),
+        sliderInput(nsNutrientsBGC("date"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
+                    value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
         # select parameter
         selectizeInput(inputId = nsNutrientsBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(Nuts$parameters), style = "simple"), selected = 'Silicate_umolL', multiple = FALSE),
         #selectizeInput(inputId = nsNutrientsBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
