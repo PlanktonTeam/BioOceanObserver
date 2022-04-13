@@ -25,8 +25,8 @@ mod_PhytoTsNRS_ui <- function(id){
         absolutePanel(  
           plotlyOutput(nsPhytoTsNRS("plotmap")),
           checkboxGroupInput(inputId = nsPhytoTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSp$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala")),
-          sliderInput(nsPhytoTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd_hms(20090101000000), max = Sys.time(), 
-                      value = c(lubridate::ymd_hms(20090101000000),Sys.time()-1), timeFormat="%Y-%m-%d"),
+          sliderInput(nsPhytoTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
+                      value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
           downloadButton(nsPhytoTsNRS("downloadData"), "Data"),
           downloadButton(nsPhytoTsNRS("downloadPlot"), "Plot"),
           downloadButton(nsPhytoTsNRS("downloadNote"), "Notebook")

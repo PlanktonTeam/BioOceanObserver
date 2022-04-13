@@ -24,8 +24,8 @@ mod_MicroTsNRS_ui <- function(id){
         conditionalPanel(
           condition="input.NRSmts == 2 | input.NRSmts == 1", 
           checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE),
-          sliderInput(nsMicroTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd_hms(20090101000000), max = Sys.time(), 
-                      value = c(lubridate::ymd_hms(20090101000000),Sys.time()-1), timeFormat="%Y-%m-%d"),
+          sliderInput(nsMicroTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
+                      value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
           selectInput(inputId = nsMicroTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSm$parameters), style = "simple"), selected = "Bacterial_Richness"),
         ),
         conditionalPanel(
@@ -47,19 +47,23 @@ mod_MicroTsNRS_ui <- function(id){
         tabsetPanel(id = "NRSmts",
                     tabPanel("Trend Analysis", value=1,
                              h6(textOutput(nsMicroTsNRS("PlotExp1"), container = span)),
-                             plotly::plotlyOutput(nsMicroTsNRS("timeseries1")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotly::plotlyOutput(nsMicroTsNRS("timeseries1")) %>% 
+                               shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Climatologies", value=1,
                              h6(textOutput(nsMicroTsNRS("PlotExp2"), container = span)),
-                             plotly::plotlyOutput(nsMicroTsNRS("timeseries2")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotly::plotlyOutput(nsMicroTsNRS("timeseries2")) %>% 
+                               shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Trend analysis by depth", value=2,
                              h6(textOutput(nsMicroTsNRS("PlotExp3"), container = span)),  
-                             plotly::plotlyOutput(nsMicroTsNRS("timeseries3")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotly::plotlyOutput(nsMicroTsNRS("timeseries3")) %>% 
+                               shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Cell counts vs Indices", value=3,
                              h6(textOutput(nsMicroTsNRS("PlotExp4"), container = span)),  
-                             plotly::plotlyOutput(nsMicroTsNRS("timeseries4")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotly::plotlyOutput(nsMicroTsNRS("timeseries4")) %>% 
+                               shinycssloaders::withSpinner(color="#0dc5c1")
                     )
         )
       )
@@ -76,22 +80,25 @@ mod_MicroTsNRS_server <- function(id){
     
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
-        selectedData <- datNRSm %>% 
-          dplyr::filter(.data$StationName %in% input$Site,
-                        .data$parameters %in% input$ycol,
-                        dplyr::between(.data$SampleDate_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-          mutate(name = as.factor(.data$parameters),
-                 SampleDepth_m = dplyr::if_else(stringr::str_detect("WC", SampleDepth_m),
-                                                "WC",
-                                                as.character(round(as.numeric(.data$SampleDepth_m)/5,0)*5))) %>%
-          droplevels()
-
-    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+      selectedData <- datNRSm %>% 
+        dplyr::filter(.data$StationName %in% input$Site,
+                      .data$parameters %in% input$ycol,
+                      dplyr::between(.data$SampleDate_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+        mutate(name = as.factor(.data$parameters),
+               # SampleDepth_m = dplyr::if_else(stringr::str_detect("WC", SampleDepth_m),
+               #                                "WC",
+               #                                as.character(round(as.numeric(.data$SampleDepth_m)/5,0)*5))
+               ) %>%
+        droplevels()
+      
+    }) %>% 
+      bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
     # Sidebar Map
     output$plotmap <- renderPlotly({ 
       pmap <- planktonr::pr_plot_NRSmap(selectedData())
-    }) %>% bindCache(input$ycol, selectedData())
+    }) %>% 
+      bindCache(input$ycol, selectedData())
     
     # Add text information 
     output$PlotExp1 <- renderText({
@@ -111,16 +118,16 @@ mod_MicroTsNRS_server <- function(id){
     
     # Plot Trends -------------------------------------------------------------
     output$timeseries1 <- plotly::renderPlotly({
-
+      
       if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
-
+      
       if(input$scaler1){
         Scale <- 'log10'
       } else {
         Scale <- 'identity'
       }
-
+      
       np <- length(unique(selectedData()$StationName))
       p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", pal = "matter", y_trans = Scale, output = "ggplot")
       p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale, output = "ggplot")
@@ -129,9 +136,9 @@ mod_MicroTsNRS_server <- function(id){
       p <- plotly::subplot(p1,p2,
                            titleY = TRUE,
                            widths = c(0.7,0.3))
-
+      
     }) %>% bindCache(selectedData(), input$scaler1)
-
+    
     
     # Climatologies -----------------------------------------------------------
     
@@ -140,7 +147,7 @@ mod_MicroTsNRS_server <- function(id){
       
       if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
-
+      
       Scale <- 'identity'
       if(input$scaler1){
         Scale <- 'log10'
@@ -169,10 +176,10 @@ mod_MicroTsNRS_server <- function(id){
                                                                title = '',  x = 0.5, y = -0.2)),
                            nrows = 3,
                            titleY = TRUE)
-
-
+      
+      
     }) %>% bindCache(selectedData(), input$scaler1)
-
+    
     # Plots by depths ---------------------------------------------------------
     
     output$timeseries3 <- renderPlotly({
@@ -201,7 +208,7 @@ mod_MicroTsNRS_server <- function(id){
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$parameters %in% c(input$p1, input$p2)) %>%
         tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleDate_Local), names_from = parameters, values_from = Values, values_fn = mean)
-
+      
       # selectedData1 <- datNRSm %>% 
       #   dplyr::filter(.data$StationName %in% 'Yongala',
       #                 .data$parameters %in% c('Bacterial_Richness', 'Prochlorococcus_Cellsml')) %>%
@@ -216,7 +223,7 @@ mod_MicroTsNRS_server <- function(id){
       
       titlex <- planktonr::pr_relabel(rlang::as_string(x), style = "plotly")
       titley <- planktonr::pr_relabel(rlang::as_string(y), style = "plotly")
-
+      
       plot <- ggplot2::ggplot(data = selectedData1()) +
         ggplot2::geom_point(ggplot2::aes(!!x, !!y, colour = .data$StationName)) +
         ggplot2::xlab(titlex) + ggplot2::ylab(titley) 
@@ -241,7 +248,7 @@ mod_MicroTsNRS_server <- function(id){
       content = function(file) {
         vroom::vroom_write(selectedData(), file, delim = ",")
       })
-  
+    
     
     # Download figure
     # output$downloadPlot <- downloadHandler(
