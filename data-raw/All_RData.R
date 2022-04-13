@@ -1,22 +1,23 @@
 ## script for all RData 
 ## Aim to change all source calls to planktonr functions
-
 # library(planktonr)
+
 
 # load("~/GitHub/IMOS_BioOceanObserver/R/sysdata.rda")
 
 # rm("CPRfgp", "CPRfgz", "CPRinfo", "datCPRp", "datCPRz",
-#    "datNRSm", "datNRSp", "datNRSz", "daynightp", "daynightz",
-#    "LTnuts", "NRSfgp", "NRSfgz", "NRSinfo", "Nuts", "Pico", "Pigs",
-#    "PolCPR", "PolNRS", "stip", "stiz")
+   # "datNRSm", "datNRSp", "datNRSz", "daynightp", "daynightz",
+   # "LTnuts", "NRSfgp", "NRSfgz", "NRSinfo", "Nuts", "Pico", "Pigs",
+   # "PolCPR", "PolNRS", "stip", "stiz")
 
-# NRS time series data
-datNRSz <- planktonr::pr_get_tsdata("NRS", "Z")
-datNRSp <- planktonr::pr_get_tsdata("NRS", "P")
+# NRS indices data
+datNRSz <- planktonr::pr_get_indices("NRS", "Z")
+datNRSp <- planktonr::pr_get_indices("NRS", "P")
+datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
 
 # CPR time series data
-datCPRz <- planktonr::pr_get_tsdata("CPR", "Z")
-datCPRp <- planktonr::pr_get_tsdata("CPR", "P")
+datCPRz <- planktonr::pr_get_indices("CPR", "Z")
+datCPRp <- planktonr::pr_get_indices("CPR", "P")
 
 # FG time series data
 NRSfgz <- planktonr::pr_get_fg("NRS", "Z")
@@ -30,9 +31,6 @@ Pigs <- planktonr::pr_get_NRSPigments()
 Pico <- planktonr::pr_get_NRSPico()
 LTnuts <- planktonr::pr_get_LTnuts()
 
-# Species distribution data
-fMapDataz <- planktonr::pr_get_fMap_data("Z")
-fMapDatap <- planktonr::pr_get_fMap_data("P")
 
 # STI data
 stiz <- planktonr::pr_get_sti("Z")
@@ -48,8 +46,11 @@ PolCPR <- planktonr::pr_get_pol("CPR")
 NRSinfo <- planktonr::pr_get_polInfo("NRS")
 CPRinfo <- planktonr::pr_get_polInfo("CPR")
 
-## microbial data
-datNRSm <- planktonr::pr_get_NRSPico()
+
+# Species distribution data
+fMapDataz <- planktonr::pr_get_fMap_data("Z")
+fMapDatap <- planktonr::pr_get_fMap_data("P")
+
 
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts, 
