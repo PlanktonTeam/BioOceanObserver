@@ -115,7 +115,7 @@ mod_PhytoTsNRS_server <- function(id){
                            titleY = TRUE,
                            widths = c(0.7,0.3))
       
-    }) %>% bindCache(selectedData(), input$scaler)
+    }) %>% bindCache(input$ycol,input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
     
     
     # Climatologies -----------------------------------------------------------
@@ -157,7 +157,7 @@ mod_PhytoTsNRS_server <- function(id){
                            nrows = 3,
                            titleY = TRUE)
       
-    }) %>% bindCache(selectedData(), input$scaler)
+    }) %>% bindCache(input$ycol,input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
     
     # Functional groups -------------------------------------------------------
     
@@ -196,7 +196,7 @@ mod_PhytoTsNRS_server <- function(id){
                             titleY = TRUE, 
                             widths = c(0.7, 0.3))
       
-    }) %>% bindCache(selectedDataFG(), input$scaler1, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$Site, input$scaler1, input$DatesSlide[1], input$DatesSlide[2])
     
     
     

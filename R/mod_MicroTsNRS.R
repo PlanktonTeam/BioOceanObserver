@@ -91,7 +91,7 @@ mod_MicroTsNRS_server <- function(id){
     # Sidebar Map
     output$plotmap <- renderPlotly({ 
       pmap <- planktonr::pr_plot_NRSmap(selectedData())
-    }) %>% bindCache(input$ycol, selectedData())
+    }) %>% bindCache(input$Site)
     
     # Add text information 
     output$PlotExp1 <- renderText({
@@ -130,7 +130,7 @@ mod_MicroTsNRS_server <- function(id){
                            titleY = TRUE,
                            widths = c(0.7,0.3))
 
-    }) %>% bindCache(selectedData(), input$scaler1)
+    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
 
     
     # Climatologies -----------------------------------------------------------
@@ -171,7 +171,7 @@ mod_MicroTsNRS_server <- function(id){
                            titleY = TRUE)
 
 
-    }) %>% bindCache(selectedData(), input$scaler1)
+    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
 
     # Plots by depths ---------------------------------------------------------
     
@@ -187,7 +187,7 @@ mod_MicroTsNRS_server <- function(id){
       
       plot <- planktonr::pr_plot_env_var(selectedData(), trend = trend, Scale = Scale)
       
-    }) %>% bindCache(selectedData(), input$smoother, input$scaler1)
+    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$smoother, input$scaler1)
     
     # Plots by depths ---------------------------------------------------------
     
@@ -223,7 +223,7 @@ mod_MicroTsNRS_server <- function(id){
       plot <- plotly::ggplotly(plot) %>% plotly::layout(legend = list(orientation = "h", xanchor = "center",  # use center of legend as anchor
                                                                       title = '',  x = 0.5, y = -0.2))
       
-    }) %>% bindCache(selectedData1())
+    }) %>% bindCache(input$p1, input$p2, input$Site)
     
     # Downloads ---------------------------------------------------------------
     

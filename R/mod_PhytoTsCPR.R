@@ -77,7 +77,7 @@ mod_PhytoTsCPR_server <- function(id){
     
     output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
       plotmap <- planktonr::pr_plot_CPRmap(selectedData())
-    }) %>% bindCache(selectedData())
+    }) %>% bindCache(input$region)
     
     # add text information 
     output$PlotExp1 <- renderText({
@@ -109,7 +109,7 @@ mod_PhytoTsCPR_server <- function(id){
                            titleY = TRUE,
                            widths = c(0.7,0.3))
       
-    }) %>% bindCache(selectedData(), input$scaler)
+    }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
     
     
     # Climatologies -----------------------------------------------------------
@@ -145,7 +145,7 @@ mod_PhytoTsCPR_server <- function(id){
                            titleY = TRUE)
       
       
-    }) %>% bindCache(selectedData(), input$scaler)
+    }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
     
     # Functional groups -------------------------------------------------------
     
@@ -183,7 +183,7 @@ mod_PhytoTsCPR_server <- function(id){
                              titleY = TRUE, 
                              widths = c(0.7, 0.3))
       
-    }) %>% bindCache(selectedDataFG(), input$scaler1, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$parameter,input$region, input$scaler1, input$DatesSlide[1], input$DatesSlide[2])
     
     
     

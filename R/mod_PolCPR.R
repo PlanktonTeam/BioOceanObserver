@@ -66,7 +66,7 @@ mod_PolCPR_server <- function(id){
     # Sidebar Map
     output$plotmap <- renderPlotly({ 
       pmap <- planktonr::pr_plot_CPRmap(selectedData())
-    }) %>% bindCache(selectedData())
+    }) %>% bindCache(input$Site)
     
     # Add text information 
     output$PlotExp1 <- renderText({
@@ -115,6 +115,6 @@ mod_PolCPR_server <- function(id){
         ggplot2::theme(title = element_text(size = 20, face = "bold"),
                        plot.title = element_text(hjust = 0.5))
       
-    }) %>% bindCache(selectedData())
+    }) %>% bindCache(input$Site)
     
   })}

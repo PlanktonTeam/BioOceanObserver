@@ -73,12 +73,16 @@ mod_ZooTsNRS_server <- function(id){
                       dplyr::between(.data$SampleDate_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
-    }) %>% bindCache(input$ycol,input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    
+    # statCode <- reactive(({
+    #   statCode <- selectedData() %>% dplyr::select(.data$StationCode) %>% unique()
+    # })) %>% bindCache(input$Site)
     
     # Sidebar Map
     output$plotmap <- renderPlotly({ 
       pmap <- planktonr::pr_plot_NRSmap(selectedData())
-    }) %>% bindCache(input$ycol, selectedData())
+    }) %>% bindCache(input$Site)
     
     # Add text information 
     output$PlotExp1 <- renderText({
@@ -115,7 +119,7 @@ mod_ZooTsNRS_server <- function(id){
                            titleY = TRUE,
                            widths = c(0.7,0.3))
       
-    }) %>% bindCache(selectedData(), input$scaler1)
+    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     
     # Climatologies -----------------------------------------------------------
@@ -153,7 +157,7 @@ mod_ZooTsNRS_server <- function(id){
                            titleY = TRUE)
 
       
-    }) %>% bindCache(selectedData(), input$scaler1)
+    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
 
     # Functional groups -------------------------------------------------------
     
@@ -191,7 +195,7 @@ mod_ZooTsNRS_server <- function(id){
                              titleY = TRUE, 
                              widths = c(0.7, 0.3))
       
-    }) %>% bindCache(selectedDataFG(), input$scaler3, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3, input$DatesSlide[1], input$DatesSlide[2])
 
     # Downloads ---------------------------------------------------------------
     

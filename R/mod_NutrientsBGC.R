@@ -70,7 +70,7 @@ mod_NutrientsBGC_server <- function(id){
       
       plot <- planktonr::pr_plot_env_var(selected(), trend = trend)
       
-    }) %>% bindCache(selected(), input$smoother)
+    }) %>% bindCache(input$station, input$parameter, input$date, input$smoother)
     
     # add a map in sidebar
     output$plotmap <- renderPlotly({ 
