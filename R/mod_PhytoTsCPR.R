@@ -26,8 +26,8 @@ mod_PhytoTsCPR_ui <- function(id){
           plotlyOutput(nsPhytoTsCPR("plotmap")),
           h6("Note there is very little data in the North and North-west regions"),
           checkboxGroupInput(inputId = nsPhytoTsCPR("region"), label = "Select a region", choices = unique(sort(datCPRp$BioRegion)), selected = unique(datCPRp$BioRegion)),
-          sliderInput(nsPhytoTsCPR("DatesSlide"), "Dates:", min = lubridate::ymd_hms(20090101000000), max = Sys.time(), 
-                      value = c(lubridate::ymd_hms(20090101000000), Sys.time()-1), timeFormat="%Y-%m-%d"),
+          sliderInput(nsPhytoTsCPR("DatesSlide"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
+                      value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
           downloadButton(nsPhytoTsCPR("downloadData"), "Data"),
           downloadButton(nsPhytoTsCPR("downloadPlot"), "Plot"),
           downloadButton(nsPhytoTsCPR("downloadNote"), "Notebook")
