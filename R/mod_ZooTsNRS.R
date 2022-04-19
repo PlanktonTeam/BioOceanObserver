@@ -167,7 +167,7 @@ mod_ZooTsNRS_server <- function(id){
       
       selectedDataFG <- NRSfgz %>% 
         dplyr::filter(.data$StationName %in% input$Site,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleDate_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
     }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
     

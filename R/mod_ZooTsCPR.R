@@ -37,15 +37,18 @@ mod_ZooTsCPR_ui <- function(id){
         tabsetPanel(id = "CPRzts",
                     tabPanel("Trend Analysis", value = 1,
                              h6(textOutput(nsZooTsCPR("PlotExp1"), container = span)),  
-                             plotly::plotlyOutput(nsZooTsCPR("timeseries1")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotly::plotlyOutput(nsZooTsCPR("timeseries1")) %>% 
+                               shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Climatologies", value = 1,
                              h6(textOutput(nsZooTsCPR("PlotExp2"), container = span)),  
-                             plotly::plotlyOutput(nsZooTsCPR("timeseries2")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotly::plotlyOutput(nsZooTsCPR("timeseries2")) %>% 
+                               shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Functional groups", value = 2,
                              h6(textOutput(nsZooTsCPR("PlotExp3"), container = span)),  
-                             plotly::plotlyOutput(nsZooTsCPR("timeseries3")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotly::plotlyOutput(nsZooTsCPR("timeseries3")) %>% 
+                               shinycssloaders::withSpinner(color="#0dc5c1")
                     )
         )
       )
@@ -155,10 +158,21 @@ mod_ZooTsCPR_server <- function(id){
       req(input$region)
       validate(need(!is.na(input$region), "Error: Please select a bioregion"))
       
+      print(summary(CPRfgp))
+      
+      # print(input)
+      print(input$region)
+      print(input$DatesSlide[1])
+      print(input$DatesSlide[2])
+      
       selectedDataFG <- CPRfgz %>% 
         dplyr::filter(.data$BioRegion %in% input$region,
                       dplyr::between(.data$SampleDate_UTC, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
+      
+      print(selectedDataFG)
+      
+      
     }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2])
     
     output$timeseries3 <- plotly::renderPlotly({
@@ -179,7 +193,7 @@ mod_ZooTsCPR_server <- function(id){
       p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, "Month")
       p1 <- plotly::ggplotly(p1, height = 200 * np)
       p2 <- plotly::ggplotly(p2, height = 200 * np)
-      s1  <- plotly::subplot((p1 %>% plotly::layout(yaxis = list(title = titley))), 
+      s1 <- plotly::subplot((p1 %>% plotly::layout(yaxis = list(title = titley))), 
                              p2 %>% plotly::layout(legend = list(orientation = "h", xanchor = "center",  # use center of legend as anchor
                                                                  title = '',  x = 0.5, y = -0.2)),
                              titleY = TRUE, 

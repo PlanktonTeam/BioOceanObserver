@@ -31,7 +31,6 @@ Pigs <- planktonr::pr_get_NRSPigments()
 Pico <- planktonr::pr_get_NRSPico()
 LTnuts <- planktonr::pr_get_LTnuts()
 
-
 # STI data
 stiz <- planktonr::pr_get_sti("Z")
 stip <- planktonr::pr_get_sti("P")
@@ -49,6 +48,7 @@ CPRinfo <- planktonr::pr_get_polInfo("CPR")
 
 # Species distribution data
 fMapDataz <- planktonr::pr_get_fMap_data("Z")
+
 fMapDatap <- planktonr::pr_get_fMap_data("P")
 
 
