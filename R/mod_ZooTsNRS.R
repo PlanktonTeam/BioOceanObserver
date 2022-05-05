@@ -26,8 +26,8 @@ mod_ZooTsNRS_ui <- function(id){
         absolutePanel(
           plotlyOutput(nsZooTsNRS("plotmap")),
           checkboxGroupInput(inputId = nsZooTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSz$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala")),
-          sliderInput(nsZooTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd_hms(20090101000000), max = Sys.time(), 
-                      value = c(lubridate::ymd_hms(20090101000000),Sys.time()-1), timeFormat="%Y-%m-%d"),
+          sliderInput(nsZooTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
+                      value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
           downloadButton(nsZooTsNRS("downloadData"), "Data"),
           downloadButton(nsZooTsNRS("downloadPlot"), "Plot"),
           downloadButton(nsZooTsNRS("downloadNote"), "Notebook")
@@ -70,15 +70,19 @@ mod_ZooTsNRS_server <- function(id){
       selectedData <- datNRSz %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$parameters %in% input$ycol,
-                      dplyr::between(.data$SampleDateLocal, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleDate_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
-    }) %>% bindCache(input$ycol,input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    
+    # statCode <- reactive(({
+    #   statCode <- selectedData() %>% dplyr::select(.data$StationCode) %>% unique()
+    # })) %>% bindCache(input$Site)
     
     # Sidebar Map
     output$plotmap <- renderPlotly({ 
       pmap <- planktonr::pr_plot_NRSmap(selectedData())
-    }) %>% bindCache(input$ycol, selectedData())
+    }) %>% bindCache(input$Site)
     
     # Add text information 
     output$PlotExp1 <- renderText({
@@ -115,7 +119,7 @@ mod_ZooTsNRS_server <- function(id){
                            titleY = TRUE,
                            widths = c(0.7,0.3))
       
-    }) %>% bindCache(selectedData(), input$scaler1)
+    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     
     # Climatologies -----------------------------------------------------------
@@ -153,7 +157,7 @@ mod_ZooTsNRS_server <- function(id){
                            titleY = TRUE)
 
       
-    }) %>% bindCache(selectedData(), input$scaler1)
+    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
 
     # Functional groups -------------------------------------------------------
     
@@ -163,7 +167,7 @@ mod_ZooTsNRS_server <- function(id){
       
       selectedDataFG <- NRSfgz %>% 
         dplyr::filter(.data$StationName %in% input$Site,
-                      dplyr::between(.data$SampleDateLocal, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
     }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
@@ -191,7 +195,7 @@ mod_ZooTsNRS_server <- function(id){
                              titleY = TRUE, 
                              widths = c(0.7, 0.3))
       
-    }) %>% bindCache(selectedDataFG(), input$scaler3, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3, input$DatesSlide[1], input$DatesSlide[2])
 
     # Downloads ---------------------------------------------------------------
     

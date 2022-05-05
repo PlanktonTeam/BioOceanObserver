@@ -24,35 +24,31 @@ app_server <- function( input, output, session ) {
   theme_set(theme_bw(base_size = 12) + theme(legend.position = "bottom")) 
   options(na.action = "na.omit")
 
-    ## only run if selected by tab - this should be home page for each Tab level
-  observe({
-    
+## only run if selected by tab - this should be home page for each Tab level
     ### Snapshot page
-    if (req(input$navbar) == "Snapshot") 
-      mod_Snapshot_server("Snapshot_ui_1")
-    
-    ### Policy page
-    if (req(input$navbar) == "Policy") 
-      mod_PolNRS_server("PolNRS_ui_1")
-    
-    ### Microbial time series data  
-    if (req(input$navbar) == "Microbes")  
-      mod_MicroTsNRS_server("MicroTsNRS_ui_1")
-    
-    ### Zooplankton time series data  
-    if (req(input$navbar) == "Zooplankton")  
-      mod_ZooTsNRS_server("ZooTsNRS_ui_1")
-    
-    ### Phytoplankton time series data  
-    if (req(input$navbar) == "Phytoplankton")  
-      mod_PhytoTsNRS_server("PhytoTsNRS_ui_1")
-    
-    ### Env Data BGC
-    if (req(input$navbar) == "Environmental Data")
-      mod_NutrientsBGC_server("NutrientsBGC_ui_1")
-  })
-  
-    ## Run when changing page within tab
+    observeEvent(input$navbar, {
+      if(input$navbar == "Snapshot") {
+        mod_Snapshot_server("Snapshot_ui_1") 
+      }
+      if(input$navbar == "Policy") {
+        mod_PolNRS_server("PolNRS_ui_1")
+      }
+      if(input$navbar == "Microbes") {
+        mod_MicroTsNRS_server("MicroTsNRS_ui_1")
+      }
+      if(input$navbar == "Zooplankton") {
+        mod_ZooTsNRS_server("ZooTsNRS_ui_1")
+      }
+      if(input$navbar == "Phytoplankton") {
+        mod_PhytoTsNRS_server("PhytoTsNRS_ui_1")
+      }
+      if(input$navbar == "Environmental Data") {
+        mod_NutrientsBGC_server("NutrientsBGC_ui_1")
+      }
+    })
+      
+
+## Run when changing page within tab
     ### Policy CPR time series data
     observeEvent(input$pol, {
       if(input$pol == "cpr"){

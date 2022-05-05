@@ -26,8 +26,8 @@ mod_ZooTsCPR_ui <- function(id){
         plotlyOutput(nsZooTsCPR("plotmap")),
         h6("Note there is very little data in the North and North-west regions"),
         checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(sort(datCPRz$BioRegion)), selected = unique(datCPRz$BioRegion)),
-        sliderInput(nsZooTsCPR("DatesSlide"), "Dates:", min = lubridate::ymd_hms(20090101000000), max = Sys.time(), 
-                    value = c(lubridate::ymd_hms(20090101000000), Sys.time()-1), timeFormat="%Y-%m-%d"),
+        sliderInput(nsZooTsCPR("DatesSlide"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
+                    value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
         downloadButton(nsZooTsCPR("downloadData"), "Data"),
         downloadButton(nsZooTsCPR("downloadPlot"), "Plot"),
         downloadButton(nsZooTsCPR("downloadNote"), "Notebook")
@@ -72,7 +72,7 @@ mod_ZooTsCPR_server <- function(id){
         mutate(BioRegion = factor(.data$BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
         dplyr::filter(.data$BioRegion %in% input$region,
                       .data$parameters %in% input$parameter,
-                      dplyr::between(.data$SampleDateUTC, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleDate_UTC, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
     }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2])
@@ -82,7 +82,7 @@ mod_ZooTsCPR_server <- function(id){
       
       plotmap <- planktonr::pr_plot_CPRmap(selectedData())
       
-    }) %>% bindCache(selectedData())
+    }) %>% bindCache(input$region)
     
     # add text information 
     output$PlotExp1 <- renderText({
@@ -112,7 +112,7 @@ mod_ZooTsCPR_server <- function(id){
                            titleY = TRUE,
                            widths = c(0.7,0.3))
       
-          }) %>% bindCache(selectedData(), input$scaler)
+          }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
     
     
     # Climatologies -----------------------------------------------------------
@@ -147,7 +147,7 @@ mod_ZooTsCPR_server <- function(id){
                            nrows = 3,
                            titleY = TRUE)
       
-    }) %>% bindCache(selectedData(), input$scaler)
+    }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
     
     # Functional groups -------------------------------------------------------
     
@@ -157,7 +157,7 @@ mod_ZooTsCPR_server <- function(id){
       
       selectedDataFG <- CPRfgz %>% 
         dplyr::filter(.data$BioRegion %in% input$region,
-                      dplyr::between(.data$SampleDateUTC, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleDate_UTC, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
     }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2])
     
@@ -185,7 +185,7 @@ mod_ZooTsCPR_server <- function(id){
                              titleY = TRUE, 
                              widths = c(0.7, 0.3))
       
-    }) %>% bindCache(selectedDataFG(), input$scaler1, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$region, input$scaler1, input$DatesSlide[1], input$DatesSlide[2])
     
 
     # Downloads ---------------------------------------------------------------

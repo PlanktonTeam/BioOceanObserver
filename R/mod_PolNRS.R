@@ -64,7 +64,7 @@ mod_PolNRS_server <- function(id){
     # Sidebar Map
     output$plotmap <- renderPlotly({ 
       pmap <- planktonr::pr_plot_NRSmap(selectedData())
-    }) %>% bindCache(selectedData())
+    }) %>% bindCache(input$Site)
     
     # Add text information 
     output$PlotExp1 <- renderText({
@@ -113,9 +113,9 @@ mod_PolNRS_server <- function(id){
       p6 <-planktonr::pr_plot_EOV(outputs(), "ShannonCopepodDiversity", "log10", pal = "matter", labels = "no") 
       p7 <-planktonr::pr_plot_EOV(outputs(), "ShannonPhytoDiversity", "log10", pal = "algae")
       
-      p3 <-planktonr::pr_plot_EOV(outputs(), "Temperature_degC", "identity", pal = "solar", labels = "no")
-      p4 <-planktonr::pr_plot_EOV(outputs(), "Chla_mgm3", "log10", pal = "haline", labels = "no") 
-      p5 <-planktonr::pr_plot_EOV(outputs(), "Salinity_psu", "identity", pal = "dense")
+      p3 <-planktonr::pr_plot_EOV(outputs(), "CTDTemperature_degC", "identity", pal = "solar", labels = "no")
+      p4 <-planktonr::pr_plot_EOV(outputs(), "PigmentChla_mgm3", "log10", pal = "haline", labels = "no") 
+      p5 <-planktonr::pr_plot_EOV(outputs(), "CTDSalinity_psu", "identity", pal = "dense")
       
       patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
         p1 + p2 + 
@@ -127,6 +127,6 @@ mod_PolNRS_server <- function(id){
         ggplot2::theme(title = element_text(size = 20, face = "bold"),
                        plot.title = element_text(hjust = 0.5))
       
-      }) %>% bindCache(selectedData())
+      }) %>% bindCache(input$Site)
     
 })}

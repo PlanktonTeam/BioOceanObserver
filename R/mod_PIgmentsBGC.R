@@ -17,8 +17,8 @@ mod_PigmentsBGC_ui <- function(id){
         # station selector
         checkboxGroupInput(inputId = nsPigmentsBGC('station'), label = "Select a station", choices = unique(sort(Pigs$StationName)), selected = 'Port Hacking'),
         # Date selector
-        sliderInput(nsPigmentsBGC("date"), "Dates:", min = lubridate::ymd_hms(20090101000000), max = Sys.time(), 
-                    value = c(lubridate::ymd_hms(20090101000000),Sys.time()-1), timeFormat="%Y-%m-%d"),
+        sliderInput(nsPigmentsBGC("date"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
+                    value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
         # select parameter
         selectizeInput(inputId = nsPigmentsBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(Pigs$parameters), style = "simple"), selected = 'TotalChla', multiple = FALSE),
         #selectizeInput(inputId = nsPigmentsBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
@@ -55,7 +55,7 @@ mod_PigmentsBGC_server <- function(id){
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       Pigs %>%
         filter(.data$StationName %in% input$station,
-               .data$SampleDateLocal > as.POSIXct(input$date[1]) & .data$SampleDateLocal < as.POSIXct(input$date[2]),
+               .data$SampleDate_Local > as.POSIXct(input$date[1]) & .data$SampleDate_Local < as.POSIXct(input$date[2]),
                .data$parameters %in% input$parameter) %>%
         mutate(Station = as.factor(.data$StationName),
                name = as.factor(.data$parameters),
@@ -71,7 +71,7 @@ mod_PigmentsBGC_server <- function(id){
       
       plot <- planktonr::pr_plot_env_var(selected(), trend = trend)
       
-    }) %>% bindCache(selected(), input$smoother)
+    }) %>% bindCache(input$station, input$parameter, input$date, input$smoother)
     
     # add a map in sidebar
     output$plotmap <- renderPlotly({ 
