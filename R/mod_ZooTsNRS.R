@@ -183,7 +183,7 @@ mod_ZooTsNRS_server <- function(id){
         scale <- 'Actual'
       }
       
-      titley <- planktonr::pr_relabel("FunctionalGroup_CellsL", style = "plotly")
+      titley <- planktonr::pr_relabel("FunctionalGroup", style = "plotly")
       np <- length(unique(selectedDataFG()$StationName))
       p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
       p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, "Month")
@@ -195,7 +195,7 @@ mod_ZooTsNRS_server <- function(id){
                              titleY = TRUE, 
                              widths = c(0.7, 0.3))
       
-    }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
 
     # Downloads ---------------------------------------------------------------
     

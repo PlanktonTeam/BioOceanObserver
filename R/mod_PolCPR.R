@@ -100,11 +100,11 @@ mod_PolCPR_server <- function(id){
     
     output$timeseries1 <- renderPlot({
       
-      p1 <-planktonr::pr_plot_EOV(outputs(), "Biomass_mgm3", Survey = 'CPR', "log10", pal = "matter", labels = "no")
+      p1 <-planktonr::pr_plot_EOV(outputs(), "BiomassIndex_mgm3", Survey = 'CPR', "log10", pal = "matter", labels = "no")
       p2 <-planktonr::pr_plot_EOV(outputs(), "PhytoBiomassCarbon_pgm3", Survey = 'CPR', "log10", pal = "algae") 
       
-      p6 <-planktonr::pr_plot_EOV(outputs(), "ShannonCopepodDiversityCPR", Survey = 'CPR', "log10", pal = "matter", labels = "no") #check these col names with new indicies data from AODN
-      p7 <-planktonr::pr_plot_EOV(outputs(), "ShannonPhytoDiversitycpr", Survey = 'CPR', "log10", pal = "algae")
+      p6 <-planktonr::pr_plot_EOV(outputs(), "ShannonCopepodDiversity", Survey = 'CPR', "log10", pal = "matter", labels = "no") #check these col names with new indicies data from AODN
+      p7 <-planktonr::pr_plot_EOV(outputs(), "ShannonPhytoDiversity", Survey = 'CPR', "log10", pal = "algae")
       
      patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
         p1 + p2 + 

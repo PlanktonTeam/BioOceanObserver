@@ -115,7 +115,7 @@ mod_PolNRS_server <- function(id){
       
       p3 <-planktonr::pr_plot_EOV(outputs(), "CTDTemperature_degC", "identity", pal = "solar", labels = "no")
       p4 <-planktonr::pr_plot_EOV(outputs(), "PigmentChla_mgm3", "log10", pal = "haline", labels = "no") 
-      p5 <-planktonr::pr_plot_EOV(outputs(), "CTDSalinity_psu", "identity", pal = "dense")
+      p5 <-planktonr::pr_plot_EOV(outputs(), "CTDSalinity_PSU", "identity", pal = "dense")
       
       patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
         p1 + p2 + 
