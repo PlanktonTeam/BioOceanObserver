@@ -62,6 +62,18 @@ mod_NutrientsBGC_server <- function(id){
         tidyr::drop_na() 
     }) %>% bindCache(input$station, input$parameter, input$date)
     
+    shiny::exportTestValues(
+      NutrientsBGC = {ncol(selected())},
+      NutrientsBGCRows = {nrow(selected()) > 0},
+      NutrientsBGCProjectisChr = {class(selected()$Project)},
+      NutrientsBGCMonthisNumeric = {class(selected()$Month)},
+      NutrientsBGCDepthisNumeric = {class(selected()$SampleDepth_m)},
+      NutrientsBGCDateisDate = {class(selected()$SampleDate_Local)},
+      NutrientsBGCStationisFactor = {class(selected()$StationName)},
+      NutrientsBGCCodeisChr = {class(selected()$StationCode)},
+      NutrientsBGCparametersisChr = {class(selected()$parameters)},
+      NutrientsBGCValuesisNumeric = {class(selected()$Values)}
+    )
     
     # Create timeseries object the plotOutput function is expecting
     output$plot <- renderPlotly({

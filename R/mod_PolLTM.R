@@ -56,7 +56,24 @@ mod_PolLTM_server <- function(id){
       
     }) %>% bindCache(input$SiteLTM)
     
-    outputs <- reactive({
+    shiny::exportTestValues(
+      PolLTM = {ncol(selectedDataLTM())},
+      PolLTMRows = {nrow(selectedDataLTM()) > 0},
+      PolLTMYearisNumeric = {class(selectedDataLTM()$Year)},
+      PolLTMMonthisNumeric = {class(selectedDataLTM()$Month)},
+      PolLTMMeansisNumeric = {class(selectedDataLTM()$means)},
+      PolLTMsdisNumeric = {class(selectedDataLTM()$sd)},
+      PolLTMAnomalyisNumeric = {class(selectedDataLTM()$anomaly)},
+      PolLTMDepthisNumeric = {class(selectedDataLTM()$SampleDepth_m)},
+      PolLTMDateisDate = {class(selectedDataLTM()$SampleDate_Local)},
+      PolLTMProjectisChr = {class(selectedDataLTM()$Project)},
+      PolLTMStationisChr = {class(selectedDataLTM()$StationName)},
+      PolLTMCodeisChr = {class(selectedDataLTM()$StationCode)},
+      PolLTMparametersisChr = {class(selectedDataLTM()$parameters)},
+      PolLTMValuesisNumeric = {class(selectedDataLTM()$Values)}
+    )
+
+        outputs <- reactive({
       outputs <- planktonr::pr_get_coeffs(selectedDataLTM())
     }) %>% bindCache(input$SiteLTM)
     

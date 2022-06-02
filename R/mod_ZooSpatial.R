@@ -69,6 +69,17 @@ mod_ZooSpatial_server <- function(id){
         
       }) %>% bindCache(input$species)
       
+      shiny::exportTestValues(
+        ZooSpatial = {ncol(selectedZS())},
+        ZooSpatialRows = {nrow(selectedZS()) > 0},
+        ZooSpatialLatisNumeric = {class(selectedZS()$Lat)},
+        ZooSpatialLongisNumeric = {class(selectedZS()$Long)},
+        ZooSpatialFreqisFactor = {class(selectedZS()$Freqfac)},
+        ZooSpatialSeasonisChr = {class(selectedZS()$Season)},
+        ZooSpatialTaxonisChr = {class(selectedZS()$Taxon)},
+        ZooSpatialfreqsampisNumeric = {class(selectedZS()$freqsamp)}
+      )
+      
       # add text information ------------------------------------------------------------------------------
       output$DistMapExp <- renderText({
         "This map is a frequency of occurence map based on the NRS and CPR data for each species"

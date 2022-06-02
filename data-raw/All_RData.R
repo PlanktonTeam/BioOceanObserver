@@ -15,6 +15,12 @@ datNRSz <- planktonr::pr_get_indices("NRS", "Z")
 datNRSp <- planktonr::pr_get_indices("NRS", "P")
 datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
 
+shiny::exportTestValues(
+  expect_equal(ncol(datNRSz), 7),
+  expect_is(datNRSz,'data.frame')
+  expect_is(datNRSz$Year, 'number')
+)
+
 # CPR time series data
 datCPRz <- planktonr::pr_get_indices("CPR", "Z")
 datCPRp <- planktonr::pr_get_indices("CPR", "P")

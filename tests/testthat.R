@@ -1,4 +1,1 @@
-library(testthat)
-library(imosboo)
-
-test_check("imosboo")
+shinytest2::test_app()

@@ -1,0 +1,29 @@
+{
+  "export": {
+    "ZooSpatial_ui_1-ZooSpatial": 6,
+    "ZooSpatial_ui_1-ZooSpatialFreqisFactor": "NULL",
+    "ZooSpatial_ui_1-ZooSpatialLatisNumeric": "numeric",
+    "ZooSpatial_ui_1-ZooSpatialLongisNumeric": "numeric",
+    "ZooSpatial_ui_1-ZooSpatialRows": true,
+    "ZooSpatial_ui_1-ZooSpatialSeasonisChr": "character",
+    "ZooSpatial_ui_1-ZooSpatialTaxonisChr": "character",
+    "ZooSpatial_ui_1-ZooSpatialfreqsampisNumeric": "numeric",
+    "ZooTsCPR_ui_1-ZtsCPR": 6,
+    "ZooTsCPR_ui_1-ZtsCPRDateisDate": "Date",
+    "ZooTsCPR_ui_1-ZtsCPRMonthisNumeric": "numeric",
+    "ZooTsCPR_ui_1-ZtsCPRRegionisFactor": "factor",
+    "ZooTsCPR_ui_1-ZtsCPRRows": true,
+    "ZooTsCPR_ui_1-ZtsCPRValuesisNumeric": "numeric",
+    "ZooTsCPR_ui_1-ZtsCPRYearisNumeric": "numeric",
+    "ZooTsCPR_ui_1-ZtsCPRparametersisChr": "character",
+    "ZooTsNRS_ui_1-ZtsNRS": 7,
+    "ZooTsNRS_ui_1-ZtsNRSCodeisChr": "character",
+    "ZooTsNRS_ui_1-ZtsNRSDateisDate": "Date",
+    "ZooTsNRS_ui_1-ZtsNRSMonthisNumeric": "numeric",
+    "ZooTsNRS_ui_1-ZtsNRSRows": true,
+    "ZooTsNRS_ui_1-ZtsNRSStationisFactor": "factor",
+    "ZooTsNRS_ui_1-ZtsNRSValuesisNumeric": "numeric",
+    "ZooTsNRS_ui_1-ZtsNRSYearisNumeric": "numeric",
+    "ZooTsNRS_ui_1-ZtsNRSparametersisChr": "character"
+  }
+}
