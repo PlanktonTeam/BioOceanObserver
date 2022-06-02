@@ -69,6 +69,17 @@ mod_PhytoSpatial_server <- function(id){
 
       }) %>% bindCache(input$species)
       
+      shiny::exportTestValues(
+        PhytoSpatial = {ncol(selectedZS())},
+        PhytoSpatialRows = {nrow(selectedZS()) > 0},
+        PhytoSpatialLatisNumeric = {class(selectedZS()$Lat)},
+        PhytoSpatialLongisNumeric = {class(selectedZS()$Long)},
+        PhytoSpatialFreqisFactor = {class(selectedZS()$Freqfac)},
+        PhytoSpatialSeasonisChr = {class(selectedZS()$Season)},
+        PhytoSpatialTaxonisChr = {class(selectedZS()$Taxon)},
+        PhytoSpatialfreqsampisNumeric = {class(selectedZS()$freqsamp)}
+      )
+      
       # add text information ------------------------------------------------------------------------------
       output$DistMapExp <- renderText({
         "This map is a frequency of occurence map based on the NRS and CPR data for each species"

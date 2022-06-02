@@ -75,9 +75,17 @@ mod_ZooTsNRS_server <- function(id){
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
-    # statCode <- reactive(({
-    #   statCode <- selectedData() %>% dplyr::select(.data$StationCode) %>% unique()
-    # })) %>% bindCache(input$Site)
+    shiny::exportTestValues(
+      ZtsNRS = {ncol(selectedData())},
+      ZtsNRSRows = {nrow(selectedData()) > 0},
+      ZtsNRSYearisNumeric = {class(selectedData()$Year)},
+      ZtsNRSMonthisNumeric = {class(selectedData()$Month)},
+      ZtsNRSDateisDate = {class(selectedData()$SampleDate_Local)},
+      ZtsNRSStationisFactor = {class(selectedData()$StationName)},
+      ZtsNRSCodeisChr = {class(selectedData()$StationCode)},
+      ZtsNRSparametersisChr = {class(selectedData()$parameters)},
+      ZtsNRSValuesisNumeric = {class(selectedData()$Values)}
+    )
     
     # Sidebar Map
     output$plotmap <- renderPlotly({ 
@@ -223,3 +231,5 @@ mod_ZooTsNRS_server <- function(id){
     #   })
   })
 }
+
+

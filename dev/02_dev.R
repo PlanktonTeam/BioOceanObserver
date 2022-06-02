@@ -69,6 +69,7 @@ usethis::use_data(Nuts, Pigs, obs, Samples, SampLocs, absences,
 ## Tests ----
 ## Add one line by test you want to create
 usethis::use_test( "app" )
+golem::add_rstudioconnect_file()
 
 # Documentation
 

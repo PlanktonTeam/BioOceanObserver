@@ -50,6 +50,20 @@ mod_PolCPR_server <- function(id){
         droplevels()
     }) %>% bindCache(input$Site)
     
+    shiny::exportTestValues(
+      Polcpr = {ncol(selectedData())},
+      PolcprRows = {nrow(selectedData()) > 0},
+      PolcprYearisNumeric = {class(selectedData()$Year)},
+      PolcprMonthisNumeric = {class(selectedData()$Month)},
+      PolcprMeansisNumeric = {class(selectedData()$means)},
+      PolcprsdisNumeric = {class(selectedData()$sd)},
+      PolcprAnomalyisNumeric = {class(selectedData()$anomaly)},
+      PolcprDateisDate = {class(selectedData()$SampleDate_UTC)},
+      PolcprRegionisChr = {class(selectedData()$BioRegion)},
+      PolcprparametersisChr = {class(selectedData()$parameters)},
+      PolcprValuesisNumeric = {class(selectedData()$Values)}
+    )
+
     outputs <- reactive({
       outputs <- planktonr::pr_get_coeffs(selectedData())
     }) %>% bindCache(input$Site)

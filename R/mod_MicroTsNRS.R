@@ -94,6 +94,19 @@ mod_MicroTsNRS_server <- function(id){
     }) %>% 
       bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
+    shiny::exportTestValues(
+      MicroTs = {ncol(selectedData())},
+      MicroTsRows = {nrow(selectedData()) > 0},
+      MicroTsYearisNumeric = {class(selectedData()$Year)},
+      MicroTsMonthisNumeric = {class(selectedData()$Month)},
+      MicroTsDepthisNumeric = {class(selectedData()$SampleDepth_m)},
+      MicroTsDateisDate = {class(selectedData()$SampleDate_Local)},
+      MicroTsStationisFactor = {class(selectedData()$StationName)},
+      MicroTsCodeisChr = {class(selectedData()$StationCode)},
+      MicroTsparametersisChr = {class(selectedData()$parameters)},
+      MicroTsValuesisNumeric = {class(selectedData()$Values)}
+    )
+    
     # Sidebar Map
     output$plotmap <- renderPlotly({ 
       pmap <- planktonr::pr_plot_NRSmap(selectedData())

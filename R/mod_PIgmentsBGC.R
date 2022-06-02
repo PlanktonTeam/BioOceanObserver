@@ -63,7 +63,20 @@ mod_PigmentsBGC_server <- function(id){
         tidyr::drop_na() 
     }) %>% bindCache(input$station, input$parameter, input$date)
     
+    shiny::exportTestValues(
+      PigsBGC = {ncol(selected())},
+      PigsBGCRows = {nrow(selected()) > 0},
+      PigsBGCProjectisChr = {class(selected()$Project)},
+      PigsBGCMonthisNumeric = {class(selected()$Month)},
+      PigsBGCDepthisNumeric = {class(selected()$SampleDepth_m)},
+      PigsBGCDateisDate = {class(selected()$SampleDate_Local)},
+      PigsBGCStationisFactor = {class(selected()$StationName)},
+      PigsBGCCodeisChr = {class(selected()$StationCode)},
+      PigsBGCparametersisChr = {class(selected()$parameters)},
+      PigsBGCValuesisNumeric = {class(selected()$Values)}
+    )
     
+  
     # Create timeseries object the plotOutput function is expecting
     output$plot <- renderPlotly({
       

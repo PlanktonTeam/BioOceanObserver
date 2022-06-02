@@ -77,7 +77,17 @@ mod_ZooTsCPR_server <- function(id){
       
     }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2])
     
-    
+    shiny::exportTestValues(
+      ZtsCPR = {ncol(selectedData())},
+      ZtsCPRRows = {nrow(selectedData()) > 0},
+      ZtsCPRYearisNumeric = {class(selectedData()$Year)},
+      ZtsCPRMonthisNumeric = {class(selectedData()$Month)},
+      ZtsCPRDateisDate = {class(selectedData()$SampleDate_UTC)},
+      ZtsCPRRegionisFactor = {class(selectedData()$BioRegion)},
+      ZtsCPRparametersisChr = {class(selectedData()$parameters)},
+      ZtsCPRValuesisNumeric = {class(selectedData()$Values)}
+    )
+
     output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
       
       plotmap <- planktonr::pr_plot_CPRmap(selectedData())

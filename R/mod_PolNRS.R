@@ -49,6 +49,20 @@ mod_PolNRS_server <- function(id){
         droplevels()
     }) %>% bindCache(input$Site)
     
+    shiny::exportTestValues(
+      PolNRS = {ncol(selectedData())},
+      PolNRSRows = {nrow(selectedData()) > 0},
+      PolNRSYearisNumeric = {class(selectedData()$Year)},
+      PolNRSMonthisNumeric = {class(selectedData()$Month)},
+      PolNRSMMeansisNumeric = {class(selectedData()$means)},
+      PolNRSsdisNumeric = {class(selectedData()$sd)},
+      PolNRSAnomalyisNumeric = {class(selectedData()$anomaly)},
+      PolNRSDateisDate = {class(selectedData()$SampleDate_Local)},
+      PolNRSStationisChr = {class(selectedData()$StationName)},
+      PolNRSCodeisChr = {class(selectedData()$StationCode)},
+      PolNRSparametersisChr = {class(selectedData()$parameters)},
+      PolNRSValuesisNumeric = {class(selectedData()$Values)}
+    )
     outputs <- reactive({
       outputs <- planktonr::pr_get_coeffs(selectedData())
     }) %>% bindCache(input$Site)

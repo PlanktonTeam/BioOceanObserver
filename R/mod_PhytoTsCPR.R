@@ -75,6 +75,17 @@ mod_PhytoTsCPR_server <- function(id){
       
     }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2])
     
+    shiny::exportTestValues(
+      PhytoTsCPR = {ncol(selectedData())},
+      PhytoTsCPRRows = {nrow(selectedData()) > 0},
+      PhytoTsCPRYearisNumeric = {class(selectedData()$Year)},
+      PhytoTsCPRMonthisNumeric = {class(selectedData()$Month)},
+      PhytoTsCPRDateisDate = {class(selectedData()$SampleDate_UTC)},
+      PhytoTsCPRRegionisFactor = {class(selectedData()$BioRegion)},
+      PhytoTsCPRparametersisChr = {class(selectedData()$parameters)},
+      PhytoTsCPRValuesisNumeric = {class(selectedData()$Values)}
+    )
+    
     output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
       plotmap <- planktonr::pr_plot_CPRmap(selectedData())
     }) %>% bindCache(input$region)
@@ -158,6 +169,17 @@ mod_PhytoTsCPR_server <- function(id){
                       dplyr::between(.data$SampleDate_UTC, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
     }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2])
+    
+    shiny::exportTestValues(
+      PhytoFGCPR = {ncol(selectedDataFG())},
+      PhytoFGCPRRows = {nrow(selectedDataFG()) > 0},
+      PhytoFGCPRYearisNumeric = {class(selectedDataFG()$Year)},
+      PhytoFGCPRMonthisNumeric = {class(selectedDataFG()$Month)},
+      PhytoFGCPRDateisDate = {class(selectedDataFG()$SampleDate_UTC)},
+      PhytoFGCPRRegionisFactor = {class(selectedDataFG()$BioRegion)},
+      PhytoFGCPRparametersisChr = {class(selectedDataFG()$parameters)},
+      PhytoFGCPRValuesisNumeric = {class(selectedDataFG()$Values)}
+    )
     
     output$timeseries3 <- plotly::renderPlotly({
       
