@@ -13,7 +13,7 @@ mod_NutrientsBGC_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        plotlyOutput(nsNutrientsBGC("plotmap")),
+        plotOutput(nsNutrientsBGC("plotmap")),
         # station selector
         checkboxGroupInput(inputId = nsNutrientsBGC('station'), label = "Select a station", choices = unique(sort(Nuts$StationName)), selected = 'Port Hacking'),
         # Date selector
@@ -27,7 +27,7 @@ mod_NutrientsBGC_ui <- function(id){
       ),
       mainPanel(
         h6(textOutput(nsNutrientsBGC("PlotExp"), container = span)),
-        plotlyOutput(nsNutrientsBGC("plot")) %>% withSpinner(color="#0dc5c1")
+        plotOutput(nsNutrientsBGC("plot"), height = 1000) %>% withSpinner(color="#0dc5c1")
       )
     )
   )
@@ -76,18 +76,18 @@ mod_NutrientsBGC_server <- function(id){
     )
     
     # Create timeseries object the plotOutput function is expecting
-    output$plot <- renderPlotly({
+    output$plot <- renderPlot({
       
       trend <-  input$smoother
       
-      plot <- planktonr::pr_plot_env_var(selected(), trend = trend)
+      planktonr::pr_plot_env_var(selected(), trend = trend)
       
     }) %>% bindCache(input$station, input$parameter, input$date, input$smoother)
     
     # add a map in sidebar
-    output$plotmap <- renderPlotly({ 
+    output$plotmap <- renderPlot({ 
       
-      pmap <- planktonr::pr_plot_NRSmap(selected())
+      planktonr::pr_plot_NRSmap(selected())
       
     }) %>% bindCache(input$station)
     

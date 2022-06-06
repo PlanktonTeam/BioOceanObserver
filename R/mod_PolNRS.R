@@ -15,7 +15,7 @@ mod_PolNRS_ui <- function(id){
       sidebarPanel(
         shinydashboard::menuSubItem(text = "Find out more about the NRS stations here", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki/National-Reference-Stations"),
         shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
-        plotlyOutput(nsPolNRS("plotmap")),
+        plotOutput(nsPolNRS("plotmap")),
         radioButtons(inputId = nsPolNRS("Site"), label = "Select a station", choices = unique(sort(PolNRS$StationName)), selected = "Maria Island"),
         downloadButton(nsPolNRS("downloadData"), "Data"),
         downloadButton(nsPolNRS("downloadPlot"), "Plot"),
@@ -76,8 +76,8 @@ mod_PolNRS_server <- function(id){
     }) %>% bindCache(input$Site)
     
     # Sidebar Map
-    output$plotmap <- renderPlotly({ 
-      pmap <- planktonr::pr_plot_NRSmap(selectedData())
+    output$plotmap <- renderPlot({ 
+      planktonr::pr_plot_NRSmap(selectedData())
     }) %>% bindCache(input$Site)
     
     # Add text information 

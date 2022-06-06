@@ -24,7 +24,7 @@ mod_ZooTsNRS_ui <- function(id){
           checkboxInput(inputId = nsZooTsNRS("scaler3"), label = strong("Change the plot scale to percent"), value = FALSE)
         ),
         absolutePanel(
-          plotlyOutput(nsZooTsNRS("plotmap")),
+          plotOutput(nsZooTsNRS("plotmap")),
           checkboxGroupInput(inputId = nsZooTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSz$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala")),
           sliderInput(nsZooTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
                       value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
@@ -37,16 +37,16 @@ mod_ZooTsNRS_ui <- function(id){
         tabsetPanel(id = "NRSzts",
                     tabPanel("Trend Analysis", value=1,
                              h6(textOutput(nsZooTsNRS("PlotExp1"), container = span)),
-                             plotly::plotlyOutput(nsZooTsNRS("timeseries1")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsZooTsNRS("timeseries1"), height = 'auto') %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Climatologies", value=1,
                              h6(textOutput(nsZooTsNRS("PlotExp2"), container = span)),  
                              textOutput(nsZooTsNRS("selected_var")),
-                             plotly::plotlyOutput(nsZooTsNRS("timeseries2")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsZooTsNRS("timeseries2"), height = 400) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Functional groups", value=2,
                              h6(textOutput(nsZooTsNRS("PlotExp3"), container = span)),  
-                             plotly::plotlyOutput(nsZooTsNRS("timeseries3")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsZooTsNRS("timeseries3"), height = 'auto') %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     )
         )
       )
@@ -88,8 +88,8 @@ mod_ZooTsNRS_server <- function(id){
     )
     
     # Sidebar Map
-    output$plotmap <- renderPlotly({ 
-      pmap <- planktonr::pr_plot_NRSmap(selectedData())
+    output$plotmap <- renderPlot({ 
+      planktonr::pr_plot_NRSmap(selectedData())
     }) %>% bindCache(input$Site)
     
     # Add text information 
@@ -107,7 +107,7 @@ mod_ZooTsNRS_server <- function(id){
     
     
     # Plot Trends -------------------------------------------------------------
-    output$timeseries1 <- plotly::renderPlotly({
+    ts1 <- reactive({
       
       if (is.null(datNRSz$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
@@ -118,22 +118,21 @@ mod_ZooTsNRS_server <- function(id){
         Scale <- 'identity'
       }
       
-      np <- length(unique(selectedData()$StationName))
       p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", pal = "matter", y_trans = Scale, output = "ggplot")
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale, output = "ggplot")
-      p1 <- plotly::ggplotly(p1, height = 200 * np)
-      p2 <- plotly::ggplotly(p2, height = 200 * np)
-      p <- plotly::subplot(p1,p2, 
-                           titleY = TRUE,
-                           widths = c(0.7,0.3))
+      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale, output = "ggplot") +
+        ggplot2::theme(axis.title.y = ggplot2::element_blank())
+      p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
+    output$timeseries1 <- renderPlot({
+      ts1()
+    }, height = function() {length(unique(selectedData()$StationName)) * 200}) 
     
     # Climatologies -----------------------------------------------------------
     
     # Plot abundance spectra by species
-    output$timeseries2 <- plotly::renderPlotly({
+    output$timeseries2 <- renderPlot({
       
       if (is.null(datNRSz$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
@@ -143,47 +142,34 @@ mod_ZooTsNRS_server <- function(id){
         Scale <- 'log10'
       } 
       
-      np <- length(unique(selectedData()$StationName))
-      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', 'matter', Scale) + ggplot2::theme(legend.position = 'none',
-                                                                        axis.title.y = ggplot2::element_blank())
+      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', 'matter', Scale) + ggplot2::theme(legend.position = 'none')
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Month, 'matter', Scale) + ggplot2::theme(legend.position = 'none',
+      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Month, 'matter', Scale) + ggplot2::theme(legend.position = 'bottom',
                                                                                             axis.title.y = ggplot2::element_blank())
 
       p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Year, 'matter', Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                                                                                 legend.title = ggplot2::element_blank())
+                                                                                                      legend.position = 'bottom')
       
-      titley <- planktonr::pr_relabel(unique(selectedData()$parameters), style = "plotly")
-      p1 <- plotly::ggplotly(p1, height = 200 * np) 
-      p2 <- plotly::ggplotly(p2, height = 200 * np)
-      p3 <- plotly::ggplotly(p3, height = 200 * np)
-      p <- plotly::subplot(p1 %>% plotly::layout(showlegend = FALSE),
-                           p2 %>% plotly::layout(yaxis = list(title = titley)), 
-                           p3 %>% plotly::layout(legend = list(orientation = "h", xanchor = "center",  # use center of legend as anchor
-                                                               title = '',  x = 0.5, y = -0.2)), 
-                           nrows = 3,
-                           titleY = TRUE)
-
+      p1 / (p2 | p3) + patchwork::plot_layout(guides = 'collect')
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    
 
     # Functional groups -------------------------------------------------------
     
-   selectedDataFG <- reactive({
+    selectedDataFG <- reactive({
       req(input$Site)
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedDataFG <- NRSfgz %>% 
+        dplyr::mutate(SampleTime_Local = as.Date(SampleTime_Local)) %>%
         dplyr::filter(.data$StationName %in% input$Site,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
-    }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
-    output$timeseries3 <- plotly::renderPlotly({
-      
-      if (is.null(NRSfgz$StationCode)) {  ## was reading datNRSi() as function so had to change to this, there should always be a code
-        return(NULL)
-      }
+      }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    
+    ts3 <- reactive({
       
       if(input$scaler3){
         scale <- 'Percent'
@@ -191,20 +177,18 @@ mod_ZooTsNRS_server <- function(id){
         scale <- 'Actual'
       }
       
-      titley <- planktonr::pr_relabel("FunctionalGroup", style = "plotly")
-      np <- length(unique(selectedDataFG()$StationName))
       p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
-      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, "Month")
-      p1 <- plotly::ggplotly(p1, height = 200 * np)
-      p2 <- plotly::ggplotly(p2, height = 200 * np)
-      s1  <- plotly::subplot((p1 %>% plotly::layout(yaxis = list(title = titley))), 
-                             p2 %>% plotly::layout(legend = list(orientation = "h", xanchor = "center",  # use center of legend as anchor
-                                                                 title = '',  x = 0.5, y = -0.2)),
-                             titleY = TRUE, 
-                             widths = c(0.7, 0.3))
-      
+      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, "Month") + 
+        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+                       legend.position = 'none')
+      p1 + p2 + patchwork::plot_layout(widths = c(3,1))
+        
     }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
 
+    output$timeseries3 <- renderPlot({
+      ts3()
+    }, height = function() {length(unique(selectedDataFG()$StationName)) * 200}) 
+  
     # Downloads ---------------------------------------------------------------
     
     # Table of selected dataset ----

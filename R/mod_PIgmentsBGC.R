@@ -13,7 +13,7 @@ mod_PigmentsBGC_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        plotlyOutput(nsPigmentsBGC("plotmap")),
+        plotOutput(nsPigmentsBGC("plotmap")),
         # station selector
         checkboxGroupInput(inputId = nsPigmentsBGC('station'), label = "Select a station", choices = unique(sort(Pigs$StationName)), selected = 'Port Hacking'),
         # Date selector
@@ -87,9 +87,9 @@ mod_PigmentsBGC_server <- function(id){
     }) %>% bindCache(input$station, input$parameter, input$date, input$smoother)
     
     # add a map in sidebar
-    output$plotmap <- renderPlotly({ 
+    output$plotmap <- renderPlot({ 
       
-      pmap <- planktonr::pr_plot_NRSmap(selected())
+      planktonr::pr_plot_NRSmap(selected())
       
     }) %>% bindCache(input$station)
     

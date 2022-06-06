@@ -23,7 +23,7 @@ mod_PhytoTsNRS_ui <- function(id){
           checkboxInput(inputId = nsPhytoTsNRS("scaler1"), label = strong("Change the plot scale to percent"), value = FALSE)
         ),
         absolutePanel(  
-          plotlyOutput(nsPhytoTsNRS("plotmap")),
+          plotOutput(nsPhytoTsNRS("plotmap")),
           checkboxGroupInput(inputId = nsPhytoTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSp$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala")),
           sliderInput(nsPhytoTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
                       value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
@@ -76,8 +76,8 @@ mod_PhytoTsNRS_server <- function(id){
       
     }) %>% bindCache(input$ycol,input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
-    output$plotmap <- renderPlotly({ 
-      pmap <- planktonr::pr_plot_NRSmap(selectedData())
+    output$plotmap <- renderPlot({ 
+      planktonr::pr_plot_NRSmap(selectedData())
     }) %>% bindCache(input$Site)
     
     # add text information 

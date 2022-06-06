@@ -23,7 +23,7 @@ mod_PhytoTsCPR_ui <- function(id){
           checkboxInput(inputId = nsPhytoTsCPR("scaler1"), label = strong("Change the plot scale to percent"), value = FALSE)
         ),
         absolutePanel(
-          plotlyOutput(nsPhytoTsCPR("plotmap")),
+          plotOutput(nsPhytoTsCPR("plotmap")),
           h6("Note there is very little data in the North and North-west regions"),
           checkboxGroupInput(inputId = nsPhytoTsCPR("region"), label = "Select a region", choices = unique(sort(datCPRp$BioRegion)), selected = unique(datCPRp$BioRegion)),
           sliderInput(nsPhytoTsCPR("DatesSlide"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
@@ -86,8 +86,8 @@ mod_PhytoTsCPR_server <- function(id){
       PhytoTsCPRValuesisNumeric = {class(selectedData()$Values)}
     )
     
-    output$plotmap <- renderPlotly({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
-      plotmap <- planktonr::pr_plot_CPRmap(selectedData())
+    output$plotmap <- renderPlot({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
+      planktonr::pr_plot_CPRmap(selectedData())
     }) %>% bindCache(input$region)
     
     # add text information 

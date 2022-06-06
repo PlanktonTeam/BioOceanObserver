@@ -15,7 +15,7 @@ mod_PolCPR_ui <- function(id){
       sidebarPanel(
         shinydashboard::menuSubItem(text = "Find out more about the BioRegions here", href = "https://soe.environment.gov.au/theme/marine-environment/topic/2016/marine-regions"),
         shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
-        plotlyOutput(nsPolCPR("plotmap")),
+        plotOutput(nsPolCPR("plotmap")),
         h6("Note there is very little data in the North and North-west regions"),
         radioButtons(inputId = nsPolCPR("Site"), label = "Select a bioregion", choices = unique(sort(PolCPR$BioRegion)), selected = "Temperate East"),
         downloadButton(nsPolCPR("downloadData"), "Data"),
@@ -78,8 +78,8 @@ mod_PolCPR_server <- function(id){
     }) %>% bindCache(input$Site)
     
     # Sidebar Map
-    output$plotmap <- renderPlotly({ 
-      pmap <- planktonr::pr_plot_CPRmap(selectedData())
+    output$plotmap <- renderPlot({ 
+      planktonr::pr_plot_CPRmap(selectedData())
     }) %>% bindCache(input$Site)
     
     # Add text information 
