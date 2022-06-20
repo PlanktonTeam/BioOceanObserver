@@ -36,18 +36,15 @@ mod_PhytoTsNRS_ui <- function(id){
         tabsetPanel(id = "NRSpts",
                     tabPanel("Trend Analysis", value=1,
                              h6(textOutput(nsPhytoTsNRS("PlotExp1"), container = span)),
-                             plotly::plotlyOutput(nsPhytoTsNRS("timeseries1")) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsPhytoTsNRS("timeseries1"), height = 'auto') %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Climatologies", value=1,
                              h6(textOutput(nsPhytoTsNRS("PlotExp2"), container = span)),  
-                             plotly::plotlyOutput(nsPhytoTsNRS("timeseries2")) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsPhytoTsNRS("timeseries2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Functional groups", value=2,
                              h6(textOutput(nsPhytoTsNRS("PlotExp3"), container = span)),  
-                             plotly::plotlyOutput(nsPhytoTsNRS("timeseries3")) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsPhytoTsNRS("timeseries3"), height = 'auto') %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     )
         )
       )
@@ -94,7 +91,7 @@ mod_PhytoTsNRS_server <- function(id){
     
     # Plot Trends -------------------------------------------------------------
     
-    output$timeseries1 <- plotly::renderPlotly({
+    ts1 <- reactive({
       
       if (is.null(datNRSp$StationCode)) {  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
@@ -106,22 +103,23 @@ mod_PhytoTsNRS_server <- function(id){
         Scale <- 'identity'
       }
       
-      np <- length(unique(selectedData()$StationName))
       p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", pal = "matter", y_trans = Scale, output = "ggplot")
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale, output = "ggplot")
-      p1 <- plotly::ggplotly(p1, height = 200 * np) 
-      p2 <- plotly::ggplotly(p2, height = 200 * np)
-      p <- plotly::subplot(p1,p2, 
-                           titleY = TRUE,
-                           widths = c(0.7,0.3))
+      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale, output = "ggplot") +
+        ggplot2::theme(axis.title.y = ggplot2::element_blank())
+      
+      p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
       
     }) %>% bindCache(input$ycol,input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
     
-    
+    output$timeseries1 <- renderPlot({
+      ts1()
+    }, height = function() {length(unique(selectedData()$StationName)) * 200}) 
+      
+      
     # Climatologies -----------------------------------------------------------
     
     # Plot abundance spectra by species
-    output$timeseries2 <- plotly::renderPlotly({
+    output$timeseries2 <- renderPlot({
       
       if (is.null(datNRSp$StationCode)) {  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
@@ -133,10 +131,8 @@ mod_PhytoTsNRS_server <- function(id){
         Scale <- 'identity'
       }
       
-      np <- length(unique(selectedData()$StationName))
       p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', 'matter', Scale) + 
-        ggplot2::theme(legend.position = 'none',
-                       axis.title.y = ggplot2::element_blank())
+        ggplot2::theme(legend.position = 'none')
       
       p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Month, 'matter', Scale) + 
         ggplot2::theme(legend.position = 'none',
@@ -144,18 +140,12 @@ mod_PhytoTsNRS_server <- function(id){
       
       p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Year, 'matter', Scale) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       legend.title = ggplot2::element_blank())
+                       legend.position = 'bottom')
       
-      titley <- planktonr::pr_relabel(unique(selectedData()$parameters), style = "plotly")
-      p1 <- plotly::ggplotly(p1, height = 200 * np) 
-      p2 <- plotly::ggplotly(p2, height = 200 * np)
-      p3 <- plotly::ggplotly(p3, height = 200 * np)
-      p <- plotly::subplot(p1 %>% plotly::layout(showlegend = FALSE),
-                           p2 %>% plotly::layout(yaxis = list(title = titley)), 
-                           p3 %>% plotly::layout(legend = list(orientation = "h", xanchor = "center",  # use center of legend as anchor
-                                                               title = '',  x = 0.5, y = -0.2)), 
-                           nrows = 3,
-                           titleY = TRUE)
+      titleplot <- names(planktonr::pr_relabel(input$ycol, style = 'simple'))
+      
+      p1 / (p2 | p3) + patchwork::plot_layout(guides = 'collect') + patchwork::plot_annotation(
+        title = titleplot)
       
     }) %>% bindCache(input$ycol,input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
     
@@ -166,15 +156,16 @@ mod_PhytoTsNRS_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedDataFG <- NRSfgp %>% 
+        dplyr::mutate(SampleTime_Local = as.Date(SampleTime_Local)) %>%
         dplyr::filter(.data$StationName %in% input$Site,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
     }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
-    output$timeseries3 <- plotly::renderPlotly({
-      
-      if (is.null(NRSfgp$StationCode)) {
+     ts3 <- reactive({
+       
+       if (is.null(NRSfgp$StationCode)) {
         return(NULL)
       }
       
@@ -184,21 +175,19 @@ mod_PhytoTsNRS_server <- function(id){
         scale <- 'Actual'
       }
       
-      titley <- planktonr::pr_relabel("FunctionalGroup_CellsL", style = "plotly")
-      np <- length(unique(selectedDataFG()$StationName))
       p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
-      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, "Month")
-      p1 <- plotly::ggplotly(p1, height = 200 * np)
-      p2 <- plotly::ggplotly(p2, height = 200 * np)
-      s1 <- plotly::subplot((p1 %>% plotly::layout(yaxis = list(title = titley))), 
-                            p2 %>% plotly::layout(legend = list(orientation = "h", xanchor = "center",  # use center of legend as anchor
-                                                                title = '',  x = 0.5, y = -0.2)),
-                            titleY = TRUE, 
-                            widths = c(0.7, 0.3))
+      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, "Month") + 
+        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+                       legend.position = 'none')
       
+      p1 + p2 + patchwork::plot_layout(widths = c(3,1))
+
     }) %>% bindCache(input$Site, input$scaler1, input$DatesSlide[1], input$DatesSlide[2])
     
-    
+     output$timeseries3 <- renderPlot({
+       ts3()
+     }, height = function() {length(unique(selectedDataFG()$StationName)) * 200}) 
+     
     
     # Downloads ---------------------------------------------------------------
     

@@ -127,7 +127,7 @@ mod_ZooSpatial_server <- function(id){
       req(input$species1)
       validate(need(!is.na(input$species1), "Error: Please select a species"))
       
-      selectedSTI <- stiz %>% 
+      selectedSTI <- stiz %>% dplyr::rename(sst = SST) %>% 
         dplyr::filter(.data$Species %in% input$species1) 
       
     }) %>% bindCache(input$species1)

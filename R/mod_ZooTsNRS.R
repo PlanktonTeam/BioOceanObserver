@@ -42,7 +42,7 @@ mod_ZooTsNRS_ui <- function(id){
                     tabPanel("Climatologies", value=1,
                              h6(textOutput(nsZooTsNRS("PlotExp2"), container = span)),  
                              textOutput(nsZooTsNRS("selected_var")),
-                             plotOutput(nsZooTsNRS("timeseries2"), height = 400) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsZooTsNRS("timeseries2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Functional groups", value=2,
                              h6(textOutput(nsZooTsNRS("PlotExp3"), container = span)),  
@@ -89,7 +89,32 @@ mod_ZooTsNRS_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(selectedData())
+      ##planktonr::pr_plot_NRSmap(selectedData()) ## restore this after 16-06-22
+      
+      MapOz <- rnaturalearth::ne_countries(scale = "medium", country = "Australia",
+                                           returnclass = "sf")
+      
+      meta_sf <- planktonr::pr_get_NRSTrips("Z") %>%
+        dplyr::select(StationName, StationCode, Longitude, Latitude) %>%
+        dplyr::distinct() %>%
+        dplyr::rename(Code = StationCode, Station = StationName) %>%
+        dplyr::filter(Station != 'Port Hacking 4') %>%
+        sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+      
+      meta2_sf <- meta_sf %>%
+        sf::st_as_sf() %>% # This seems to strip away some of the tibble stuff that makes the filter not work...
+        dplyr::filter(.data$Code %in% selectedData()$StationCode)
+      
+      ggplot2::ggplot() +
+        ggplot2::geom_sf(data = MapOz, size = 0.05, fill = "grey80") +
+        ggplot2::geom_sf(data = meta_sf, colour = "blue", size = 5) +
+        ggplot2::geom_sf(data = meta2_sf, colour = "red", size = 5) +
+        ggplot2::scale_x_continuous(expand = c(0, 0), limits = c(112, 155)) +
+        ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(-45, -9)) +
+        ggplot2::theme_void() +
+        ggplot2::theme(axis.title = ggplot2::element_blank(),
+                       axis.line = ggplot2::element_blank())
+      
     }) %>% bindCache(input$Site)
     
     # Add text information 
@@ -142,7 +167,8 @@ mod_ZooTsNRS_server <- function(id){
         Scale <- 'log10'
       } 
       
-      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', 'matter', Scale) + ggplot2::theme(legend.position = 'none')
+      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', 'matter', Scale) + ggplot2::theme(legend.position = 'none',
+                                                                                                   axis.title.y = ggplot2::element_blank())
       
       p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Month, 'matter', Scale) + ggplot2::theme(legend.position = 'bottom',
                                                                                             axis.title.y = ggplot2::element_blank())
@@ -150,7 +176,10 @@ mod_ZooTsNRS_server <- function(id){
       p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Year, 'matter', Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                                                                                                       legend.position = 'bottom')
       
-      p1 / (p2 | p3) + patchwork::plot_layout(guides = 'collect')
+      titleplot <- names(planktonr::pr_relabel(input$ycol, style = 'simple'))
+      
+      p1 / (p2 | p3) + patchwork::plot_layout(guides = 'collect') + patchwork::plot_annotation(title = titleplot)
+      
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     

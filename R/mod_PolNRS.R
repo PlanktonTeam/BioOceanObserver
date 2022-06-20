@@ -77,7 +77,32 @@ mod_PolNRS_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(selectedData())
+      ##planktonr::pr_plot_NRSmap(selectedData()) ## restore this after 16-06-22
+      
+      MapOz <- rnaturalearth::ne_countries(scale = "medium", country = "Australia",
+                                           returnclass = "sf")
+      
+      meta_sf <- planktonr::pr_get_NRSTrips("Z") %>%
+        dplyr::select(StationName, StationCode, Longitude, Latitude) %>%
+        dplyr::distinct() %>%
+        dplyr::rename(Code = StationCode, Station = StationName) %>%
+        dplyr::filter(Station != 'Port Hacking 4') %>%
+        sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+      
+      meta2_sf <- meta_sf %>%
+        sf::st_as_sf() %>% # This seems to strip away some of the tibble stuff that makes the filter not work...
+        dplyr::filter(.data$Code %in% selectedData()$StationCode)
+      
+      ggplot2::ggplot() +
+        ggplot2::geom_sf(data = MapOz, size = 0.05, fill = "grey80") +
+        ggplot2::geom_sf(data = meta_sf, colour = "blue", size = 5) +
+        ggplot2::geom_sf(data = meta2_sf, colour = "red", size = 5) +
+        ggplot2::scale_x_continuous(expand = c(0, 0), limits = c(112, 155)) +
+        ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(-45, -9)) +
+        ggplot2::theme_void() +
+        ggplot2::theme(axis.title = ggplot2::element_blank(),
+                       axis.line = ggplot2::element_blank())
+      
     }) %>% bindCache(input$Site)
     
     # Add text information 

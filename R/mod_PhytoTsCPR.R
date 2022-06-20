@@ -37,15 +37,15 @@ mod_PhytoTsCPR_ui <- function(id){
         tabsetPanel(id = "CPRpts",
                     tabPanel("Trend Analysis", value = 1,
                              h6(textOutput(nsPhytoTsCPR("PlotExp1"), container = span)),  
-                             plotly::plotlyOutput(nsPhytoTsCPR("timeseries1")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsPhytoTsCPR("timeseries1")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Climatologies", value = 1,
                              h6(textOutput(nsPhytoTsCPR("PlotExp2"), container = span)),  
-                             plotly::plotlyOutput(nsPhytoTsCPR("timeseries2")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsPhytoTsCPR("timeseries2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Functional groups", value = 2,
                              h6(textOutput(nsPhytoTsCPR("PlotExp3"), container = span)),  
-                             plotly::plotlyOutput(nsPhytoTsCPR("timeseries3")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsPhytoTsCPR("timeseries3")) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     )
         )
       )
@@ -104,56 +104,50 @@ mod_PhytoTsCPR_server <- function(id){
     
     # Plot Trends -------------------------------------------------------------
 
-    output$timeseries1 <- plotly::renderPlotly({
-      if(input$scaler){
+      ts1 <- reactive({
+        if(input$scaler){
         Scale <- 'log10'
       } else {
         Scale <- 'identity'
       }
       
-      np <- length(unique(selectedData()$BioRegion))
       p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "CPR", method = "lm", pal = "matter", y_trans = Scale, output = "ggplot")
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "CPR", method = "loess", pal = "matter", y_trans = Scale, output = "ggplot")
-      p1 <- plotly::ggplotly(p1, height = 200 * np)
-      p2 <- plotly::ggplotly(p2, height = 200 * np)
-      p <- plotly::subplot(p1,p2, 
-                           titleY = TRUE,
-                           widths = c(0.7,0.3))
+      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "CPR", method = "loess", pal = "matter", y_trans = Scale, output = "ggplot") + 
+        ggplot2::theme(axis.title.y = ggplot2::element_blank())
+      
+      p1 + p2 + patchwork::plot_layout(widths = c(3,1))
       
     }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
     
+    output$timeseries1 <- renderPlot({
+      ts1()
+    }, height = function() {length(unique(selectedData()$BioRegion)) * 200}) 
     
+      
     # Climatologies -----------------------------------------------------------
     
-    output$timeseries2 <- plotly::renderPlotly({
+    output$timeseries2 <- renderPlot({
       if(input$scaler){
         Scale <- 'log10'
       } else {
         Scale <- 'identity'
       }
       if (identical(input$region, "")) return(NULL)
-      if (identical(input$parameters, "")) return(NULL)
+      if (identical(input$parameter, "")) return(NULL)
       
-      np <- length(unique(selectedData()$BioRegion))
       p1 <- planktonr::pr_plot_timeseries(selectedData(), 'CPR', 'matter', Scale) + ggplot2::theme(legend.position = 'none',
                                                                                                    axis.title.y = ggplot2::element_blank())
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), 'CPR', Month, 'matter', Scale) + ggplot2::theme(legend.position = 'none',
+      p2 <- planktonr::pr_plot_climate(selectedData(), 'CPR', Month, 'matter', Scale) + ggplot2::theme(legend.position = 'bottom',
                                                                                                        axis.title.y = ggplot2::element_blank())
       
       p3 <- planktonr::pr_plot_climate(selectedData(), 'CPR', Year, 'matter', Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                                                                                                      legend.title = ggplot2::element_blank())
+                                                                                                      legend.position = 'bottom')
       
-      titley <- planktonr::pr_relabel(unique(selectedData()$parameters), style = "plotly")
-      p1 <- plotly::ggplotly(p1, height = 200 * np) 
-      p2 <- plotly::ggplotly(p2, height = 200 * np)
-      p3 <- plotly::ggplotly(p3, height = 200 * np)
-      p <- plotly::subplot(p1 %>% plotly::layout(showlegend = FALSE),
-                           p2 %>% plotly::layout(yaxis = list(title = titley)), 
-                           p3 %>% plotly::layout(legend = list(orientation = "h", xanchor = "center",  # use center of legend as anchor
-                                                               title = '',  x = 0.5, y = -0.2)), 
-                           nrows = 3,
-                           titleY = TRUE)
+      titleplot <- names(planktonr::pr_relabel(input$parameter, style = 'simple'))
+      
+      p1 / (p2 | p3) + patchwork::plot_layout(guides = 'collect') + patchwork::plot_annotation(
+        title = titleplot)
       
       
     }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
@@ -165,6 +159,7 @@ mod_PhytoTsCPR_server <- function(id){
       validate(need(!is.na(input$region), "Error: Please select a bioregion"))
       
       selectedDataFG <- CPRfgp %>% 
+        dplyr::mutate(SampleDate_UTC = as.Date(SampleDate_UTC)) %>%
         dplyr::filter(.data$BioRegion %in% input$region,
                       dplyr::between(.data$SampleDate_UTC, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
@@ -181,7 +176,7 @@ mod_PhytoTsCPR_server <- function(id){
       PhytoFGCPRValuesisNumeric = {class(selectedDataFG()$Values)}
     )
     
-    output$timeseries3 <- plotly::renderPlotly({
+    ts3 <- reactive({
       
       if (is.null(CPRfgp$BioRegion)) {  
         return(NULL)
@@ -193,20 +188,16 @@ mod_PhytoTsCPR_server <- function(id){
         scale <- 'Actual'
       }
       
-      titley <- planktonr::pr_relabel("FunctionalGroup_CellsL", style = "plotly")
-      np <- length(unique(selectedDataFG()$BioRegion))
       p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
       p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, "Month")
-      p1 <- plotly::ggplotly(p1, height = 200 * np)
-      p2 <- plotly::ggplotly(p2, height = 200 * np)
-      s1  <- plotly::subplot((p1 %>% plotly::layout(yaxis = list(title = titley))), 
-                             p2 %>% plotly::layout(legend = list(orientation = "h", xanchor = "center",  # use center of legend as anchor
-                                                                 title = '',  x = 0.5, y = -0.2)),
-                             titleY = TRUE, 
-                             widths = c(0.7, 0.3))
       
-    }) %>% bindCache(input$parameter,input$region, input$scaler1, input$DatesSlide[1], input$DatesSlide[2])
+      p1 + p2 + patchwork::plot_layout(widths = c(3,1))
+      
+    }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
+    output$timeseries3 <- renderPlot({
+      ts3()
+    }, height = function() {length(unique(selectedDataFG()$BioRegion)) * 200})     
     
     
     # Downloads ---------------------------------------------------------------

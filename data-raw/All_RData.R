@@ -15,12 +15,6 @@ datNRSz <- planktonr::pr_get_indices("NRS", "Z")
 datNRSp <- planktonr::pr_get_indices("NRS", "P")
 datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
 
-shiny::exportTestValues(
-  expect_equal(ncol(datNRSz), 7),
-  expect_is(datNRSz,'data.frame')
-  expect_is(datNRSz$Year, 'number')
-)
-
 # CPR time series data
 datCPRz <- planktonr::pr_get_indices("CPR", "Z")
 datCPRp <- planktonr::pr_get_indices("CPR", "P")
@@ -52,17 +46,25 @@ PolCPR <- planktonr::pr_get_pol("CPR")
 NRSinfo <- planktonr::pr_get_polInfo("NRS")
 CPRinfo <- planktonr::pr_get_polInfo("CPR")
 
-
 # Species distribution data
 fMapDataz <- planktonr::pr_get_fMap_data("Z")
 fMapDatap <- planktonr::pr_get_fMap_data("P")
 
+# Progress Map
+PMapData <- dplyr::bind_rows(planktonr::pr_get_NRSTrips(Type = c("P", "Z")) %>%
+  dplyr::select(.data$StationCode, .data$Longitude, .data$Latitude) %>%
+  dplyr::rename(Region = .data$StationCode) %>%
+  dplyr::mutate(Survey = 'NRS'), 
+  readr::read_csv("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plankton/deprecated/CPR_Samp.csv")  %>%
+  dplyr::select(.data$REGION, .data$LONGITUDE, .data$LATITUDE) %>%
+  dplyr::rename(Region = .data$REGION, Longitude = .data$LONGITUDE, Latitude = .data$LATITUDE) %>%
+  dplyr::mutate(Survey = 'CPR'))
 
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts, 
                   PolNRS, PolCPR, NRSinfo, CPRinfo, 
                   datCPRz, datCPRp, datNRSz, datNRSp, datNRSm,
-                  NRSfgz, NRSfgp, CPRfgz, CPRfgp, 
+                  NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
                   stiz, stip, daynightz, daynightp,
                   overwrite = TRUE, internal = TRUE)
 
@@ -70,3 +72,4 @@ usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts,
 listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
 files <- paste("C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps/", listsdm, sep = "")
 file.copy(from=files, to="inst/app/www")
+

@@ -41,7 +41,7 @@ mod_ZooTsCPR_ui <- function(id){
                     ),
                     tabPanel("Climatologies", value = 1,
                              h6(textOutput(nsZooTsCPR("PlotExp2"), container = span)),  
-                             plotOutput(nsZooTsCPR("timeseries2"), height = 400) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsZooTsCPR("timeseries2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Functional groups", value = 2,
                              h6(textOutput(nsZooTsCPR("PlotExp3"), container = span)),  
@@ -90,7 +90,9 @@ mod_ZooTsCPR_server <- function(id){
 
     output$plotmap <- renderPlot({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
       
-      planktonr::pr_plot_CPRmap(selectedData())
+      planktonr::pr_plot_CPRmap(selectedData()) +
+        ggplot2::theme(plot.background = ggplot2::element_blank(),
+                       panel.background = ggplot2::element_blank())
       
     }) %>% bindCache(input$region)
     
@@ -134,7 +136,7 @@ mod_ZooTsCPR_server <- function(id){
       }
       
       if (identical(input$region, "")) return(NULL)
-      if (identical(input$parameters, "")) return(NULL)
+      if (identical(input$parameter, "")) return(NULL)
       
       p1 <- planktonr::pr_plot_timeseries(selectedData(), 'CPR', 'matter', Scale) + ggplot2::theme(legend.position = 'none',
                                                                                                    axis.title.y = ggplot2::element_blank())
@@ -145,7 +147,10 @@ mod_ZooTsCPR_server <- function(id){
       p3 <- planktonr::pr_plot_climate(selectedData(), 'CPR', Year, 'matter', Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                                                                                                       legend.position = 'bottom')
       
-      p1 / (p2 | p3) + patchwork::plot_layout(guides = 'collect')
+      titleplot <- names(planktonr::pr_relabel(input$parameter, style = 'simple'))
+      
+      p1 / (p2 | p3) + patchwork::plot_layout(guides = 'collect') + patchwork::plot_annotation(
+        title = titleplot)
       
     }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
     

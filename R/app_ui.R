@@ -124,8 +124,8 @@ golem_add_external_resources <- function(){
     # for example, you can add shinyalert::useShinyalert() 
     
     # Script for CSIRO branding tab ----
-    # tags$script(type="text/javascript",
-    #             src="https://www.csiro.au/themes/default/js/csirotab.min.js"),
+     tags$script(type="text/javascript",
+                 src="https://www.csiro.au/themes/default/js/csirotab.min.js"),
     # Google fonts ----
     tags$link(href="https://fonts.googleapis.com/css?family=Open+Sans",
               rel="stylesheet"),
