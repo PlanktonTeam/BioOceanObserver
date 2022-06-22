@@ -45,19 +45,19 @@ mod_PolNRS_server <- function(id){
       
       selectedData <- PolNRS %>% 
         dplyr::filter(.data$StationName %in% input$Site) %>%
-        dplyr::mutate(Month = Month * 2 * 3.142 / 12) %>%
+        dplyr::mutate(Month = Month_Local * 2 * 3.142 / 12) %>%
         droplevels()
     }) %>% bindCache(input$Site)
     
     shiny::exportTestValues(
       PolNRS = {ncol(selectedData())},
       PolNRSRows = {nrow(selectedData()) > 0},
-      PolNRSYearisNumeric = {class(selectedData()$Year)},
-      PolNRSMonthisNumeric = {class(selectedData()$Month)},
+      PolNRSYearisNumeric = {class(selectedData()$Year_Local)},
+      PolNRSMonthisNumeric = {class(selectedData()$Month_Local)},
       PolNRSMMeansisNumeric = {class(selectedData()$means)},
       PolNRSsdisNumeric = {class(selectedData()$sd)},
       PolNRSAnomalyisNumeric = {class(selectedData()$anomaly)},
-      PolNRSDateisDate = {class(selectedData()$SampleDate_Local)},
+      PolNRSDateisDate = {class(selectedData()$SampleTime_Local)},
       PolNRSStationisChr = {class(selectedData()$StationName)},
       PolNRSCodeisChr = {class(selectedData()$StationCode)},
       PolNRSparametersisChr = {class(selectedData()$parameters)},
@@ -77,31 +77,8 @@ mod_PolNRS_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({ 
-      ##planktonr::pr_plot_NRSmap(selectedData()) ## restore this after 16-06-22
+      planktonr::pr_plot_NRSmap(selectedData()) 
       
-      MapOz <- rnaturalearth::ne_countries(scale = "medium", country = "Australia",
-                                           returnclass = "sf")
-      
-      meta_sf <- planktonr::pr_get_NRSTrips("Z") %>%
-        dplyr::select(StationName, StationCode, Longitude, Latitude) %>%
-        dplyr::distinct() %>%
-        dplyr::rename(Code = StationCode, Station = StationName) %>%
-        dplyr::filter(Station != 'Port Hacking 4') %>%
-        sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-      
-      meta2_sf <- meta_sf %>%
-        sf::st_as_sf() %>% # This seems to strip away some of the tibble stuff that makes the filter not work...
-        dplyr::filter(.data$Code %in% selectedData()$StationCode)
-      
-      ggplot2::ggplot() +
-        ggplot2::geom_sf(data = MapOz, size = 0.05, fill = "grey80") +
-        ggplot2::geom_sf(data = meta_sf, colour = "blue", size = 5) +
-        ggplot2::geom_sf(data = meta2_sf, colour = "red", size = 5) +
-        ggplot2::scale_x_continuous(expand = c(0, 0), limits = c(112, 155)) +
-        ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(-45, -9)) +
-        ggplot2::theme_void() +
-        ggplot2::theme(axis.title = ggplot2::element_blank(),
-                       axis.line = ggplot2::element_blank())
       
     }) %>% bindCache(input$Site)
     
@@ -146,7 +123,7 @@ mod_PolNRS_server <- function(id){
     
     output$timeseries1 <- renderPlot({
 
-      p1 <-planktonr::pr_plot_EOV(outputs(), "Biomass_mgm3", "log10", pal = "matter", labels = "no")
+      p1 <-planktonr::pr_plot_EOV(outputs(), "Biomass_mgm3", "log10", pal = "matter", labels = "no") 
       p2 <-planktonr::pr_plot_EOV(outputs(), "PhytoBiomassCarbon_pgL", "log10", pal = "algae") 
       
       p6 <-planktonr::pr_plot_EOV(outputs(), "ShannonCopepodDiversity", "log10", pal = "matter", labels = "no") 

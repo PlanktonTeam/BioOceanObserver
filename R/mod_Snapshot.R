@@ -16,7 +16,6 @@ mod_Snapshot_ui <- function(id){
     shinyWidgets::useShinydashboard(),
     fluidRow(
       h1("Plankton sampling progress"),
-      #HTML('<center><img src="www/progress_map_150dpi.png"></center>')),
       plotOutput(nsSnap("progplot"), height = 800)),
     h1("By the Numbers"),
     fluidRow(

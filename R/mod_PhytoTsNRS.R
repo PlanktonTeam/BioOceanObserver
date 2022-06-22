@@ -25,8 +25,12 @@ mod_PhytoTsNRS_ui <- function(id){
         absolutePanel(  
           plotOutput(nsPhytoTsNRS("plotmap")),
           checkboxGroupInput(inputId = nsPhytoTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSp$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala")),
-          sliderInput(nsPhytoTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
-                      value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
+          sliderInput(nsPhytoTsNRS("DatesSlide"), "Dates:", min = as.POSIXct('2009-01-01 00:00',
+                                                                             format = "%Y-%m-%d %H:%M",
+                                                                             tz = "Australia/Hobart"), max = Sys.time(), 
+                      value = c(as.POSIXct('2009-01-01 00:00',
+                                                 format = "%Y-%m-%d %H:%M",
+                                                 tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d"),
           downloadButton(nsPhytoTsNRS("downloadData"), "Data"),
           downloadButton(nsPhytoTsNRS("downloadPlot"), "Plot"),
           downloadButton(nsPhytoTsNRS("downloadNote"), "Notebook")
@@ -68,7 +72,7 @@ mod_PhytoTsNRS_server <- function(id){
       selectedData <- datNRSp %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$parameters %in% input$ycol,
-                      dplyr::between(.data$SampleDate_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
     }) %>% bindCache(input$ycol,input$Site, input$DatesSlide[1], input$DatesSlide[2])
@@ -103,8 +107,8 @@ mod_PhytoTsNRS_server <- function(id){
         Scale <- 'identity'
       }
       
-      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", pal = "matter", y_trans = Scale, output = "ggplot")
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale, output = "ggplot") +
+      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", pal = "matter", y_trans = Scale)
+      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
@@ -134,11 +138,11 @@ mod_PhytoTsNRS_server <- function(id){
       p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', 'matter', Scale) + 
         ggplot2::theme(legend.position = 'none')
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Month, 'matter', Scale) + 
+      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', 'Month', 'matter', Scale) + 
         ggplot2::theme(legend.position = 'none',
                        axis.title.y = ggplot2::element_blank())
       
-      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Year, 'matter', Scale) + 
+      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', 'Year', 'matter', Scale) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                        legend.position = 'bottom')
       
@@ -156,7 +160,6 @@ mod_PhytoTsNRS_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedDataFG <- NRSfgp %>% 
-        dplyr::mutate(SampleTime_Local = as.Date(SampleTime_Local)) %>%
         dplyr::filter(.data$StationName %in% input$Site,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()

@@ -55,7 +55,7 @@ mod_NutrientsBGC_server <- function(id){
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       Nuts %>%
         filter(.data$StationName %in% input$station,
-               .data$SampleDate_Local > as.POSIXct(input$date[1]) & .data$SampleDate_Local < as.POSIXct(input$date[2]),
+               .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$parameters %in% input$parameter) %>%
         mutate(name = as.factor(.data$parameters),
                SampleDepth_m = round(.data$SampleDepth_m, -1)) %>%
@@ -66,9 +66,9 @@ mod_NutrientsBGC_server <- function(id){
       NutrientsBGC = {ncol(selected())},
       NutrientsBGCRows = {nrow(selected()) > 0},
       NutrientsBGCProjectisChr = {class(selected()$Project)},
-      NutrientsBGCMonthisNumeric = {class(selected()$Month)},
+      NutrientsBGCMonthisNumeric = {class(selected()$Month_Local)},
       NutrientsBGCDepthisNumeric = {class(selected()$SampleDepth_m)},
-      NutrientsBGCDateisDate = {class(selected()$SampleDate_Local)},
+      NutrientsBGCDateisDate = {class(selected()$SampleTime_Local)},
       NutrientsBGCStationisFactor = {class(selected()$StationName)},
       NutrientsBGCCodeisChr = {class(selected()$StationCode)},
       NutrientsBGCparametersisChr = {class(selected()$parameters)},

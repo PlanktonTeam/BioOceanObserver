@@ -26,8 +26,12 @@ mod_ZooTsCPR_ui <- function(id){
         plotOutput(nsZooTsCPR("plotmap")),
         h6("Note there is very little data in the North and North-west regions"),
         checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(sort(datCPRz$BioRegion)), selected = unique(datCPRz$BioRegion)),
-        sliderInput(nsZooTsCPR("DatesSlide"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
-                    value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
+        sliderInput(nsZooTsCPR("DatesSlide"), "Dates:", min = as.POSIXct('2009-01-01 00:00',
+                                                                         format = "%Y-%m-%d %H:%M",
+                                                                         tz = "Australia/Hobart"), max = Sys.time(), 
+                    value = c(as.POSIXct('2009-01-01 00:00',
+                                         format = "%Y-%m-%d %H:%M",
+                                         tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d"),
         downloadButton(nsZooTsCPR("downloadData"), "Data"),
         downloadButton(nsZooTsCPR("downloadPlot"), "Plot"),
         downloadButton(nsZooTsCPR("downloadNote"), "Notebook")
@@ -72,7 +76,7 @@ mod_ZooTsCPR_server <- function(id){
         mutate(BioRegion = factor(.data$BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
         dplyr::filter(.data$BioRegion %in% input$region,
                       .data$parameters %in% input$parameter,
-                      dplyr::between(.data$SampleDate_UTC, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
     }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2])
@@ -80,9 +84,9 @@ mod_ZooTsCPR_server <- function(id){
     shiny::exportTestValues(
       ZtsCPR = {ncol(selectedData())},
       ZtsCPRRows = {nrow(selectedData()) > 0},
-      ZtsCPRYearisNumeric = {class(selectedData()$Year)},
-      ZtsCPRMonthisNumeric = {class(selectedData()$Month)},
-      ZtsCPRDateisDate = {class(selectedData()$SampleDate_UTC)},
+      ZtsCPRYearisNumeric = {class(selectedData()$Year_Local)},
+      ZtsCPRMonthisNumeric = {class(selectedData()$Month_Local)},
+      ZtsCPRDateisDate = {class(selectedData()$SampleTime_Local)},
       ZtsCPRRegionisFactor = {class(selectedData()$BioRegion)},
       ZtsCPRparametersisChr = {class(selectedData()$parameters)},
       ZtsCPRValuesisNumeric = {class(selectedData()$Values)}
@@ -115,8 +119,8 @@ mod_ZooTsCPR_server <- function(id){
         Scale <- 'identity'
       }
       
-      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "CPR", method = "lm", pal = "matter", y_trans = Scale, output = "ggplot")
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "CPR", method = "loess", pal = "matter", y_trans = Scale, output = "ggplot") + 
+      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "CPR", method = "lm", pal = "matter", y_trans = Scale)
+      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "CPR", method = "loess", pal = "matter", y_trans = Scale) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
       p1 + p2 + patchwork::plot_layout(widths = c(3,1))
@@ -141,10 +145,10 @@ mod_ZooTsCPR_server <- function(id){
       p1 <- planktonr::pr_plot_timeseries(selectedData(), 'CPR', 'matter', Scale) + ggplot2::theme(legend.position = 'none',
                                                                                                    axis.title.y = ggplot2::element_blank())
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), 'CPR', Month, 'matter', Scale) + ggplot2::theme(legend.position = 'bottom',
+      p2 <- planktonr::pr_plot_climate(selectedData(), 'CPR', 'Month', 'matter', Scale) + ggplot2::theme(legend.position = 'bottom',
                                                                                                        axis.title.y = ggplot2::element_blank())
       
-      p3 <- planktonr::pr_plot_climate(selectedData(), 'CPR', Year, 'matter', Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+      p3 <- planktonr::pr_plot_climate(selectedData(), 'CPR', 'Year', 'matter', Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                                                                                                       legend.position = 'bottom')
       
       titleplot <- names(planktonr::pr_relabel(input$parameter, style = 'simple'))
@@ -162,9 +166,8 @@ mod_ZooTsCPR_server <- function(id){
       validate(need(!is.na(input$region), "Error: Please select a bioregion"))
       
       selectedDataFG <- CPRfgz %>% 
-        dplyr::mutate(SampleDate_UTC = as.Date(SampleDate_UTC)) %>%
         dplyr::filter(.data$BioRegion %in% input$region,
-                      dplyr::between(.data$SampleDate_UTC, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
     }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2])
     
@@ -181,8 +184,9 @@ mod_ZooTsCPR_server <- function(id){
       }
       
       p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
-      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, "Month")
-      
+      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, "Month") + 
+        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+                       legend.position = 'none')
       p1 + p2 + patchwork::plot_layout(widths = c(3,1))
       
     }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)

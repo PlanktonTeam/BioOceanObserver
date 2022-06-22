@@ -24,8 +24,12 @@ mod_MicroTsNRS_ui <- function(id){
         conditionalPanel(
           condition="input.NRSmts == 2 | input.NRSmts == 1", 
           checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE),
-          sliderInput(nsMicroTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
-                      value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
+          sliderInput(nsMicroTsNRS("DatesSlide"), "Dates:", min = as.POSIXct('2009-01-01 00:00',
+                                                                             format = "%Y-%m-%d %H:%M",
+                                                                             tz = "Australia/Hobart"), max = Sys.time(), 
+                      value = c(as.POSIXct('2009-01-01 00:00',
+                                           format = "%Y-%m-%d %H:%M",
+                                           tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d"),
           selectInput(inputId = nsMicroTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSm$parameters), style = "simple"), selected = "Bacterial_Richness"),
         ),
         conditionalPanel(
@@ -83,7 +87,7 @@ mod_MicroTsNRS_server <- function(id){
       selectedData <- datNRSm %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$parameters %in% input$ycol,
-                      dplyr::between(.data$SampleDate_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         mutate(name = as.factor(.data$parameters),
                # SampleDepth_m = dplyr::if_else(stringr::str_detect("WC", SampleDepth_m),
                #                                "WC",
@@ -97,9 +101,9 @@ mod_MicroTsNRS_server <- function(id){
       MicroTs = {ncol(selectedData())},
       MicroTsRows = {nrow(selectedData()) > 0},
       MicroTsYearisNumeric = {class(selectedData()$Year)},
-      MicroTsMonthisNumeric = {class(selectedData()$Month)},
+      MicroTsMonthisNumeric = {class(selectedData()$Month_Local)},
       MicroTsDepthisNumeric = {class(selectedData()$SampleDepth_m)},
-      MicroTsDateisDate = {class(selectedData()$SampleDate_Local)},
+      MicroTsDateisDate = {class(selectedData()$SampleTime_Local)},
       MicroTsStationisFactor = {class(selectedData()$StationName)},
       MicroTsCodeisChr = {class(selectedData()$StationCode)},
       MicroTsparametersisChr = {class(selectedData()$parameters)},
@@ -140,8 +144,8 @@ mod_MicroTsNRS_server <- function(id){
         Scale <- 'identity'
       }
       
-      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", pal = "matter", y_trans = Scale, output = "ggplot")
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale, output = "ggplot") +
+      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", pal = "matter", y_trans = Scale)
+      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
@@ -170,17 +174,16 @@ mod_MicroTsNRS_server <- function(id){
         Scale <- 'log10'
       }
       
-      np <- length(unique(selectedData()$StationName))
       p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', 'matter', Scale) + 
         ggplot2::theme(legend.position = 'none')
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Month, 'matter', Scale) + 
+      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', 'Month', 'matter', Scale) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       
-      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Year, 'matter', Scale) + 
+      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', 'Year', 'matter', Scale) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       
-      #titley <- planktonr::pr_relabel(unique(selectedData()$parameters), style = "ggplot")
+      #titley <- names(planktonr::pr_relabel(unique(selectedData()$parameters), style = "simple"))
       
       p1 + p2 + p3 + patchwork::plot_layout(widths = c(3,1,3), guides = 'collect')
       
@@ -214,12 +217,12 @@ mod_MicroTsNRS_server <- function(id){
       selectedData1 <- datNRSm %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$parameters %in% c(input$p1, input$p2)) %>%
-        tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleDate_Local), names_from = parameters, values_from = Values, values_fn = mean)
+        tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleTime_Local), names_from = parameters, values_from = Values, values_fn = mean)
       
       # selectedData1 <- datNRSm %>% 
       #   dplyr::filter(.data$StationName %in% 'Yongala',
       #                 .data$parameters %in% c('Bacterial_Richness', 'Prochlorococcus_Cellsml')) %>%
-      #   tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleDate_Local), names_from = parameters, values_from = Values, values_fn = mean)
+      #   tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleTime_Local), names_from = parameters, values_from = Values, values_fn = mean)
       # 
       #       
     }) %>% bindCache(input$p1, input$p2, input$Site)

@@ -29,8 +29,7 @@ CPRfgp <- planktonr::pr_get_fg("CPR", "P")
 Nuts <- planktonr::pr_get_NRSChemistry()
 Pigs <- planktonr::pr_get_NRSPigments()
 Pico <- planktonr::pr_get_NRSPico()
-LTnuts <- planktonr::pr_get_LTnuts()
-
+#LTnuts <- planktonr::pr_get_LTnuts()
 
 # STI data
 stiz <- planktonr::pr_get_sti("Z")

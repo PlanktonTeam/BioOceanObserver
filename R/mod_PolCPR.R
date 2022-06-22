@@ -46,19 +46,19 @@ mod_PolCPR_server <- function(id){
       
       selectedData <- PolCPR %>% 
         dplyr::filter(.data$BioRegion %in% input$Site) %>% 
-        dplyr::mutate(Month = Month * 2 * 3.142 / 12) %>%
+        dplyr::mutate(Month = Month_Local * 2 * 3.142 / 12) %>%
         droplevels()
     }) %>% bindCache(input$Site)
     
     shiny::exportTestValues(
       Polcpr = {ncol(selectedData())},
       PolcprRows = {nrow(selectedData()) > 0},
-      PolcprYearisNumeric = {class(selectedData()$Year)},
-      PolcprMonthisNumeric = {class(selectedData()$Month)},
+      PolcprYearisNumeric = {class(selectedData()$Year_Local)},
+      PolcprMonthisNumeric = {class(selectedData()$Month_Local)},
       PolcprMeansisNumeric = {class(selectedData()$means)},
       PolcprsdisNumeric = {class(selectedData()$sd)},
       PolcprAnomalyisNumeric = {class(selectedData()$anomaly)},
-      PolcprDateisDate = {class(selectedData()$SampleDate_UTC)},
+      PolcprDateisDate = {class(selectedData()$SampleTime_Local)},
       PolcprRegionisChr = {class(selectedData()$BioRegion)},
       PolcprparametersisChr = {class(selectedData()$parameters)},
       PolcprValuesisNumeric = {class(selectedData()$Values)}

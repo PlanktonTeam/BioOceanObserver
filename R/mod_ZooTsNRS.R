@@ -26,8 +26,12 @@ mod_ZooTsNRS_ui <- function(id){
         absolutePanel(
           plotOutput(nsZooTsNRS("plotmap")),
           checkboxGroupInput(inputId = nsZooTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSz$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala")),
-          sliderInput(nsZooTsNRS("DatesSlide"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
-                      value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
+          sliderInput(nsZooTsNRS("DatesSlide"), "Dates:", min = as.POSIXct('2009-01-01 00:00',
+                                                                           format = "%Y-%m-%d %H:%M",
+                                                                           tz = "Australia/Hobart"), max = Sys.time(), 
+                      value = c(as.POSIXct('2009-01-01 00:00',
+                                           format = "%Y-%m-%d %H:%M",
+                                           tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d"),
           downloadButton(nsZooTsNRS("downloadData"), "Data"),
           downloadButton(nsZooTsNRS("downloadPlot"), "Plot"),
           downloadButton(nsZooTsNRS("downloadNote"), "Notebook")
@@ -70,7 +74,7 @@ mod_ZooTsNRS_server <- function(id){
       selectedData <- datNRSz %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$parameters %in% input$ycol,
-                      dplyr::between(.data$SampleDate_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
@@ -78,9 +82,9 @@ mod_ZooTsNRS_server <- function(id){
     shiny::exportTestValues(
       ZtsNRS = {ncol(selectedData())},
       ZtsNRSRows = {nrow(selectedData()) > 0},
-      ZtsNRSYearisNumeric = {class(selectedData()$Year)},
-      ZtsNRSMonthisNumeric = {class(selectedData()$Month)},
-      ZtsNRSDateisDate = {class(selectedData()$SampleDate_Local)},
+      ZtsNRSYearisNumeric = {class(selectedData()$Year_Local)},
+      ZtsNRSMonthisNumeric = {class(selectedData()$Month_Local)},
+      ZtsNRSDateisDate = {class(selectedData()$SampleTime_Local)},
       ZtsNRSStationisFactor = {class(selectedData()$StationName)},
       ZtsNRSCodeisChr = {class(selectedData()$StationCode)},
       ZtsNRSparametersisChr = {class(selectedData()$parameters)},
@@ -89,31 +93,7 @@ mod_ZooTsNRS_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({ 
-      ##planktonr::pr_plot_NRSmap(selectedData()) ## restore this after 16-06-22
-      
-      MapOz <- rnaturalearth::ne_countries(scale = "medium", country = "Australia",
-                                           returnclass = "sf")
-      
-      meta_sf <- planktonr::pr_get_NRSTrips("Z") %>%
-        dplyr::select(StationName, StationCode, Longitude, Latitude) %>%
-        dplyr::distinct() %>%
-        dplyr::rename(Code = StationCode, Station = StationName) %>%
-        dplyr::filter(Station != 'Port Hacking 4') %>%
-        sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-      
-      meta2_sf <- meta_sf %>%
-        sf::st_as_sf() %>% # This seems to strip away some of the tibble stuff that makes the filter not work...
-        dplyr::filter(.data$Code %in% selectedData()$StationCode)
-      
-      ggplot2::ggplot() +
-        ggplot2::geom_sf(data = MapOz, size = 0.05, fill = "grey80") +
-        ggplot2::geom_sf(data = meta_sf, colour = "blue", size = 5) +
-        ggplot2::geom_sf(data = meta2_sf, colour = "red", size = 5) +
-        ggplot2::scale_x_continuous(expand = c(0, 0), limits = c(112, 155)) +
-        ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(-45, -9)) +
-        ggplot2::theme_void() +
-        ggplot2::theme(axis.title = ggplot2::element_blank(),
-                       axis.line = ggplot2::element_blank())
+      planktonr::pr_plot_NRSmap(selectedData()) 
       
     }) %>% bindCache(input$Site)
     
@@ -143,8 +123,8 @@ mod_ZooTsNRS_server <- function(id){
         Scale <- 'identity'
       }
       
-      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", pal = "matter", y_trans = Scale, output = "ggplot")
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale, output = "ggplot") +
+      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", pal = "matter", y_trans = Scale)
+      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
       
@@ -170,10 +150,10 @@ mod_ZooTsNRS_server <- function(id){
       p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', 'matter', Scale) + ggplot2::theme(legend.position = 'none',
                                                                                                    axis.title.y = ggplot2::element_blank())
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Month, 'matter', Scale) + ggplot2::theme(legend.position = 'bottom',
+      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', "Month", 'matter', Scale) + ggplot2::theme(legend.position = 'bottom',
                                                                                             axis.title.y = ggplot2::element_blank())
 
-      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', Year, 'matter', Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', "Year", 'matter', Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                                                                                                       legend.position = 'bottom')
       
       titleplot <- names(planktonr::pr_relabel(input$ycol, style = 'simple'))
@@ -191,7 +171,6 @@ mod_ZooTsNRS_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedDataFG <- NRSfgz %>% 
-        dplyr::mutate(SampleTime_Local = as.Date(SampleTime_Local)) %>%
         dplyr::filter(.data$StationName %in% input$Site,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()

@@ -87,7 +87,7 @@ mod_ZooSpatial_server <- function(id){
       output$SDMsMapExp <- renderText({
         paste("This map is a modelled output of the relative distribution for a species.",
               "This is calculated using NRS and CPR data in a Tweedie model.",
-              "The environmental variables are SST, Chla, deth, Month", sep =  "<br/>")
+              "The environmental variables are SST, Chla, depth, Month", sep =  "<br/>")
       }) 
       output$STIsExp <- renderText({
         paste("Figure of the species STI")

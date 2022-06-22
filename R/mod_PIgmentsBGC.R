@@ -55,7 +55,7 @@ mod_PigmentsBGC_server <- function(id){
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       Pigs %>%
         filter(.data$StationName %in% input$station,
-               .data$SampleDate_Local > as.POSIXct(input$date[1]) & .data$SampleDate_Local < as.POSIXct(input$date[2]),
+               .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$parameters %in% input$parameter) %>%
         mutate(Station = as.factor(.data$StationName),
                name = as.factor(.data$parameters),
@@ -67,9 +67,9 @@ mod_PigmentsBGC_server <- function(id){
       PigsBGC = {ncol(selected())},
       PigsBGCRows = {nrow(selected()) > 0},
       PigsBGCProjectisChr = {class(selected()$Project)},
-      PigsBGCMonthisNumeric = {class(selected()$Month)},
+      PigsBGCMonthisNumeric = {class(selected()$Month_Local)},
       PigsBGCDepthisNumeric = {class(selected()$SampleDepth_m)},
-      PigsBGCDateisDate = {class(selected()$SampleDate_Local)},
+      PigsBGCDateisDate = {class(selected()$SampleTime_Local)},
       PigsBGCStationisFactor = {class(selected()$StationName)},
       PigsBGCCodeisChr = {class(selected()$StationCode)},
       PigsBGCparametersisChr = {class(selected()$parameters)},
