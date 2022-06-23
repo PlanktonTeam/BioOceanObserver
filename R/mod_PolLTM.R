@@ -43,14 +43,14 @@ mod_PolLTM_server <- function(id){
       req(input$SiteLTM)
       validate(need(!is.na(input$SiteLTM), "Error: Please select a station."))
       
-      selectedDataLTM <- LTnuts %>% 
+      selectedDataLTM <- PolLTM %>% 
         dplyr::filter(.data$StationName %in% input$SiteLTM,
                       .data$SampleDepth_m < 15,
-                      !.data$parameters %in% c( "SOI", "Ammonium_umolL","Nitrite_umolL","DIC_umolkg", "TAlkalinity_umolkg", "Oxygen_umolL")) %>%
-        dplyr::group_by(.data$StationCode, .data$StationName, .data$SampleDate_Local, .data$anomaly, .data$Year_Local, .data$Month_Local, parameters) %>%
+                      !.data$parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL")) %>%
+        dplyr::group_by(.data$StationCode, .data$StationName, .data$SampleTime_Local, .data$anomaly, .data$Year_Local, .data$Month_Local, parameters) %>%
         dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE),
                                       .groups = 'drop') %>%
-        dplyr::rename(SampleDate = .data$SampleDate_Local) %>% 
+        dplyr::rename(SampleDate = .data$SampleTime_Local) %>% 
         dplyr::mutate(Month = .data$Month_Local * 2 * 3.142 / 12) %>%
         droplevels()
       
@@ -65,7 +65,7 @@ mod_PolLTM_server <- function(id){
       PolLTMsdisNumeric = {class(selectedDataLTM()$sd)},
       PolLTMAnomalyisNumeric = {class(selectedDataLTM()$anomaly)},
       PolLTMDepthisNumeric = {class(selectedDataLTM()$SampleDepth_m)},
-      PolLTMDateisDate = {class(selectedDataLTM()$SampleDate_Local)},
+      PolLTMDateisDate = {class(selectedDataLTM()$SampleTimee_Local)},
       PolLTMProjectisChr = {class(selectedDataLTM()$Project)},
       PolLTMStationisChr = {class(selectedDataLTM()$StationName)},
       PolLTMCodeisChr = {class(selectedDataLTM()$StationCode)},
@@ -130,7 +130,7 @@ mod_PolLTM_server <- function(id){
           p2 <-planktonr::pr_plot_EOV(outputs(), "Phosphate_umolL", Survey = 'LTM', "identity", pal = "algae", labels = "no") 
           p4 <-planktonr::pr_plot_EOV(outputs(), "Silicate_umolL", Survey = 'LTM', "identity", pal = "haline", labels = "no") 
           p7 <-planktonr::pr_plot_EOV(outputs(), "Temperature_degC", Survey = 'LTM', "identity", pal = "solar", labels = "no")
-          p3 <-planktonr::pr_plot_EOV(outputs(), "Salinity_psu", Survey = 'LTM', "identity", pal = "dense")
+          p3 <-planktonr::pr_plot_EOV(outputs(), "Salinity", Survey = 'LTM', "identity", pal = "dense")
           
           patchwork::wrap_elements(grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20))) + 
             p1 + p2 + p4 + p7 + p3 +

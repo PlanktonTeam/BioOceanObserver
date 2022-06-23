@@ -29,7 +29,7 @@ CPRfgp <- planktonr::pr_get_fg("CPR", "P")
 Nuts <- planktonr::pr_get_NRSChemistry()
 Pigs <- planktonr::pr_get_NRSPigments()
 Pico <- planktonr::pr_get_NRSPico()
-#LTnuts <- planktonr::pr_get_LTnuts()
+LTnuts <- planktonr::pr_get_LTnuts()
 
 # STI data
 stiz <- planktonr::pr_get_sti("Z")
@@ -44,6 +44,7 @@ PolNRS <- planktonr::pr_get_pol("NRS")
 PolCPR <- planktonr::pr_get_pol("CPR")
 NRSinfo <- planktonr::pr_get_polInfo("NRS")
 CPRinfo <- planktonr::pr_get_polInfo("CPR")
+PolLTM <- planktonr::pr_get_pol("LTM")
 
 # Species distribution data
 fMapDataz <- planktonr::pr_get_fMap_data("Z")
@@ -61,7 +62,7 @@ PMapData <- dplyr::bind_rows(planktonr::pr_get_NRSTrips(Type = c("P", "Z")) %>%
 
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts, 
-                  PolNRS, PolCPR, NRSinfo, CPRinfo, 
+                  PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, 
                   datCPRz, datCPRp, datNRSz, datNRSp, datNRSm,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
                   stiz, stip, daynightz, daynightp,
