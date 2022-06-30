@@ -44,9 +44,7 @@ mod_PolNRS_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedData <- PolNRS %>% 
-        dplyr::filter(.data$StationName %in% input$Site) %>%
-        dplyr::mutate(Month = Month_Local * 2 * 3.142 / 12) %>%
-        droplevels()
+        dplyr::filter(.data$StationName %in% input$Site)
     }) %>% bindCache(input$Site)
     
     shiny::exportTestValues(
@@ -101,9 +99,9 @@ mod_PolNRS_server <- function(id){
     output$PlotExp5 <- renderText({
       paste("STation Name:", input$Site, "\n",
             input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ".", "\n",  
-            "The water depth at the station is ", round(stationData()$STATIONDEPTH_M,0), "m and is currently sampled ", stationData()$SAMPLINGEFFORT, ".", "\n", 
-            "The station has been sampled since ", stationData()$STATIONSTARTDATE, " ", stationData()$now, ".", "\n", 
-            input$Site, " is part of ", stationData()$NODE, " and is in the ", stationData()$MANAGEMENTREGION, " management bioregion.",  "\n", 
+            "The water depth at the station is ", round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, ".", "\n", 
+            "The station has been sampled since ", stationData()$StationStartDate, " ", stationData()$now, ".", "\n", 
+            input$Site, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, " management bioregion.",  "\n", 
             "The station is characterised by ", stationData()$Features, sep = "")
     })
     

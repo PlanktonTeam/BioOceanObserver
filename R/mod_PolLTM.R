@@ -46,13 +46,7 @@ mod_PolLTM_server <- function(id){
       selectedDataLTM <- PolLTM %>% 
         dplyr::filter(.data$StationName %in% input$SiteLTM,
                       .data$SampleDepth_m < 15,
-                      !.data$parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL")) %>%
-        dplyr::group_by(.data$StationCode, .data$StationName, .data$SampleTime_Local, .data$anomaly, .data$Year_Local, .data$Month_Local, parameters) %>%
-        dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE),
-                                      .groups = 'drop') %>%
-        dplyr::rename(SampleDate = .data$SampleTime_Local) %>% 
-        dplyr::mutate(Month = .data$Month_Local * 2 * 3.142 / 12) %>%
-        droplevels()
+                      !.data$parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL")) 
       
     }) %>% bindCache(input$SiteLTM)
     
@@ -108,9 +102,9 @@ mod_PolLTM_server <- function(id){
     output$PlotExp5 <- renderText({
       paste("STation Name:", input$SiteLTM, "\n",
             input$SiteLTM, " National Reference Station is located at ", round(stationData()$Latitude,2), "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ".", "\n",
-            "The water depth at the station is ", round(stationData()$STATIONDEPTH_M,0), "m and is currently sampled ", stationData()$SAMPLINGEFFORT, ".", "\n",
-            "The station has been sampled since ", stationData()$STATIONSTARTDATE, " ", stationData()$now, ".", "\n",
-            input$SiteLTM, " is part of ", stationData()$NODE, " and is in the ", stationData()$MANAGEMENTREGION, " management bioregion.",  "\n",
+            "The water depth at the station is ", round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, ".", "\n",
+            "The station has been sampled since ", stationData()$StationStartDate, " ", stationData()$now, ".", "\n",
+            input$SiteLTM, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, " management bioregion.",  "\n",
             "The station is characterised by ", stationData()$Features, sep = "")
     })
     

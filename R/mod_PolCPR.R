@@ -45,9 +45,7 @@ mod_PolCPR_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedData <- PolCPR %>% 
-        dplyr::filter(.data$BioRegion %in% input$Site) %>% 
-        dplyr::mutate(Month = Month_Local * 2 * 3.142 / 12) %>%
-        droplevels()
+        dplyr::filter(.data$BioRegion %in% input$Site) 
     }) %>% bindCache(input$Site)
     
     shiny::exportTestValues(
@@ -97,8 +95,8 @@ mod_PolCPR_server <- function(id){
     }) 
     output$PlotExp5 <- renderText({
       paste("BioRegion:", input$Site, "\n", 
-            "The CPR has been sampling in this bioregion since ", min(stationData()$STARTSAMPLEDATEUTC), " and sampling is ongoing.", "\n",
-            "A total of ", sum(stationData()$MILES), " nautical miles has been towed.", "\n",
+            "The CPR has been sampling in this bioregion since ", min(stationData()$SampleStartDate), " and sampling is ongoing.", "\n",
+            "Approximately a total of ", sum(stationData()$Miles), " nautical miles has been towed in this region.", "\n",
             "The station is characterised by ", unique(stationData()$Features), sep = "")
     })
     
