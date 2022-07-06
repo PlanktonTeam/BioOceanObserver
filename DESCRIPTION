@@ -7,7 +7,6 @@ Description: A visualisation tool for IMOS biologial data.
 License: MIT + file LICENSE
 Imports: 
     attempt,
-    cmocean,
     config (>= 0.3.1),
     dplyr,
     DT,
@@ -20,7 +19,6 @@ Imports:
     patchwork,
     pkgload,
     planktonr (>= 0.0.0.9000),
-    plotly,
     processx,
     rlang,
     rnaturalearth,

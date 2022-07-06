@@ -199,7 +199,7 @@ mod_Snapshot_server <- function(id){
       
       planktonr::pr_plot_tsclimate(datNRSz %>% 
                                      dplyr::filter(.data$StationCode == st$StationCode[r1] &
-                                                               .data$parameters == meth[r2]), 'NRS', 'matter', 'log10')
+                                                               .data$parameters == meth[r2]), 'NRS', 'log10')
     })
     
     

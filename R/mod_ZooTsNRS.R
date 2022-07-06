@@ -123,8 +123,8 @@ mod_ZooTsNRS_server <- function(id){
         Scale <- 'identity'
       }
       
-      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", pal = "matter", y_trans = Scale)
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale) +
+      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", y_trans = Scale)
+      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", y_trans = Scale) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
       
@@ -147,13 +147,13 @@ mod_ZooTsNRS_server <- function(id){
         Scale <- 'log10'
       } 
       
-      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', 'matter', Scale) + ggplot2::theme(legend.position = 'none',
+      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', Scale) + ggplot2::theme(legend.position = 'none',
                                                                                                    axis.title.y = ggplot2::element_blank())
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', "Month", 'matter', Scale) + ggplot2::theme(legend.position = 'bottom',
+      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', "Month", Scale) + ggplot2::theme(legend.position = 'bottom',
                                                                                             axis.title.y = ggplot2::element_blank())
 
-      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', "Year", 'matter', Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', "Year", Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                                                                                                       legend.position = 'bottom')
       
       titleplot <- names(planktonr::pr_relabel(input$ycol, style = 'simple'))

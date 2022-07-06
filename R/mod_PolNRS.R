@@ -121,15 +121,15 @@ mod_PolNRS_server <- function(id){
     
     output$timeseries1 <- renderPlot({
 
-      p1 <-planktonr::pr_plot_EOV(outputs(), "Biomass_mgm3", "log10", pal = "matter", labels = "no") 
-      p2 <-planktonr::pr_plot_EOV(outputs(), "PhytoBiomassCarbon_pgL", "log10", pal = "algae") 
+      p1 <-planktonr::pr_plot_EOV(outputs(), "Biomass_mgm3", "log10", col = "cornflowerblue", labels = "no") 
+      p2 <-planktonr::pr_plot_EOV(outputs(), "PhytoBiomassCarbon_pgL", "log10", col = "darkolivegreen4") 
       
-      p6 <-planktonr::pr_plot_EOV(outputs(), "ShannonCopepodDiversity", "log10", pal = "matter", labels = "no") 
-      p7 <-planktonr::pr_plot_EOV(outputs(), "ShannonPhytoDiversity", "log10", pal = "algae")
+      p6 <-planktonr::pr_plot_EOV(outputs(), "ShannonCopepodDiversity", "log10", col = "cornflowerblue", labels = "no") 
+      p7 <-planktonr::pr_plot_EOV(outputs(), "ShannonPhytoDiversity", "log10", col = "darkolivegreen4")
       
-      p3 <-planktonr::pr_plot_EOV(outputs(), "CTDTemperature_degC", "identity", pal = "solar", labels = "no")
-      p4 <-planktonr::pr_plot_EOV(outputs(), "PigmentChla_mgm3", "log10", pal = "haline", labels = "no") 
-      p5 <-planktonr::pr_plot_EOV(outputs(), "CTDSalinity_PSU", "identity", pal = "dense")
+      p3 <-planktonr::pr_plot_EOV(outputs(), "CTDTemperature_degC", "identity", col = "darkviolet", labels = "no")
+      p4 <-planktonr::pr_plot_EOV(outputs(), "PigmentChla_mgm3", "log10", col = "darkgoldenrod", labels = "no") 
+      p5 <-planktonr::pr_plot_EOV(outputs(), "CTDSalinity_PSU", "identity", col = "darkred")
       
       patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
         p1 + p2 + 

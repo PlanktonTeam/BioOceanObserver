@@ -27,7 +27,7 @@ mod_PigmentsBGC_ui <- function(id){
       ),
       mainPanel(
         h6(textOutput(nsPigmentsBGC("PlotExp"), container = span)),
-        plotlyOutput(nsPigmentsBGC("plot")) %>% withSpinner(color="#0dc5c1")
+        plotOutput(nsPigmentsBGC("plot")) %>% withSpinner(color="#0dc5c1")
       )
     )
   )
@@ -57,10 +57,9 @@ mod_PigmentsBGC_server <- function(id){
         filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$parameters %in% input$parameter) %>%
-        mutate(Station = as.factor(.data$StationName),
-               name = as.factor(.data$parameters),
-               SampleDepth_m = round(.data$SampleDepth_m, -1)) %>%
-        tidyr::drop_na() 
+          mutate(name = as.factor(.data$parameters),
+                 SampleDepth_m = round(.data$SampleDepth_m, -1)) %>%
+          tidyr::drop_na() 
     }) %>% bindCache(input$station, input$parameter, input$date)
     
     shiny::exportTestValues(
@@ -78,11 +77,11 @@ mod_PigmentsBGC_server <- function(id){
     
   
     # Create timeseries object the plotOutput function is expecting
-    output$plot <- renderPlotly({
+    output$plot <- renderPlot({
       
       trend <-  input$smoother
       
-      plot <- planktonr::pr_plot_env_var(selected(), trend = trend)
+      planktonr::pr_plot_env_var(selected(), trend = trend)
       
     }) %>% bindCache(input$station, input$parameter, input$date, input$smoother)
     

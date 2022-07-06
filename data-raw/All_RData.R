@@ -51,36 +51,7 @@ fMapDataz <- planktonr::pr_get_fMap_data("Z")
 fMapDatap <- planktonr::pr_get_fMap_data("P")
 
 # Progress Map
-pr_get_ProgressMap <- function(Survey = c("NRS", "CPR", "Both")){
-  
-  if(Survey == "NRS") {
-    
-  PMapDataNRS <- planktonr::pr_get_NRSTrips(Type = c("P", "Z")) %>%
-    dplyr::select(.data$StationCode, .data$Longitude, .data$Latitude) %>%
-    dplyr::rename(Region = .data$StationCode) %>%
-    dplyr::mutate(Survey = 'NRS')
-  
-  } else if (Survey == "CPR") {
-    
-  PMapDataNRS <- readr::read_csv("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plankton/deprecated/CPR_Samp.csv")  %>%
-    dplyr::select(.data$REGION, .data$LONGITUDE, .data$LATITUDE) %>%
-    dplyr::rename(Region = .data$REGION, Longitude = .data$LONGITUDE, Latitude = .data$LATITUDE) %>%
-    dplyr::mutate(Survey = 'CPR')
-      
-  } else {
-  
-    PMapData <- dplyr::bind_rows(planktonr::pr_get_NRSTrips(Type = c("P", "Z")) %>%
-                       dplyr::select(.data$StationCode, .data$Longitude, .data$Latitude) %>%
-                       dplyr::rename(Region = .data$StationCode) %>%
-                       dplyr::mutate(Survey = 'NRS'),
-                     readr::read_csv("https://raw.githubusercontent.com/PlanktonTeam/IMOS_Toolbox/master/Plankton/deprecated/CPR_Samp.csv")  %>%
-                       dplyr::select(.data$REGION, .data$LONGITUDE, .data$LATITUDE) %>%
-                       dplyr::rename(Region = .data$REGION, Longitude = .data$LONGITUDE, Latitude = .data$LATITUDE) %>%
-                       dplyr::mutate(Survey = 'CPR'))
-  }
-  }
-
-test <- pr_get_ProgressMap()
+PmapData <- planktonr::pr_get_ProgressMap("Both")
 
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts, 

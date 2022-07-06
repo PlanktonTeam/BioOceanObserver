@@ -115,8 +115,8 @@ mod_PhytoTsCPR_server <- function(id){
         Scale <- 'identity'
       }
       
-      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "CPR", method = "lm", pal = "matter", y_trans = Scale)
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "CPR", method = "loess", pal = "matter", y_trans = Scale) + 
+      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "CPR", method = "lm", y_trans = Scale)
+      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "CPR", method = "loess", y_trans = Scale) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       
       p1 + p2 + patchwork::plot_layout(widths = c(3,1))
@@ -139,13 +139,13 @@ mod_PhytoTsCPR_server <- function(id){
       if (identical(input$region, "")) return(NULL)
       if (identical(input$parameter, "")) return(NULL)
       
-      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'CPR', 'matter', Scale) + ggplot2::theme(legend.position = 'none',
+      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'CPR', Scale) + ggplot2::theme(legend.position = 'none',
                                                                                                    axis.title.y = ggplot2::element_blank())
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), 'CPR', 'Month', 'matter', Scale) + ggplot2::theme(legend.position = 'bottom',
+      p2 <- planktonr::pr_plot_climate(selectedData(), 'CPR', 'Month', Scale) + ggplot2::theme(legend.position = 'bottom',
                                                                                                        axis.title.y = ggplot2::element_blank())
       
-      p3 <- planktonr::pr_plot_climate(selectedData(), 'CPR', 'Year', 'matter', Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+      p3 <- planktonr::pr_plot_climate(selectedData(), 'CPR', 'Year', Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                                                                                                       legend.position = 'bottom')
       
       titleplot <- names(planktonr::pr_relabel(input$parameter, style = 'simple'))

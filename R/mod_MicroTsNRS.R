@@ -36,8 +36,8 @@ mod_MicroTsNRS_ui <- function(id){
           condition="input.NRSmts == 3", 
           selectInput(inputId = nsMicroTsNRS("p1"), label = 'Select an x parameter', choices = planktonr::pr_relabel(unique(datNRSm$parameters), style = "simple"), selected = "Eukaryote_Chlorophyll_Index"),
           selectInput(inputId = nsMicroTsNRS("p2"), label = 'Select a y parameter', 
-                      choices = planktonr::pr_relabel(c("Prochlorococcus_Cellsml", "Synecochoccus_Cellsml", "Picoeukaryotes_Cellsml"), 
-                                                      style = "simple"), selected = "Prochlorococcus_Cellsml")
+                      choices = planktonr::pr_relabel(c("Prochlorococcus_CellsmL", "Synecochoccus_CellsmL", "Picoeukaryotes_CellsmL"), 
+                                                      style = "simple"), selected = "Prochlorococcus_CellsmL")
         ),
         absolutePanel(
           plotOutput(nsMicroTsNRS("plotmap")),
@@ -144,8 +144,8 @@ mod_MicroTsNRS_server <- function(id){
         Scale <- 'identity'
       }
       
-      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", pal = "matter", y_trans = Scale)
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", pal = "matter", y_trans = Scale) +
+      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", y_trans = Scale)
+      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", y_trans = Scale) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
@@ -174,13 +174,13 @@ mod_MicroTsNRS_server <- function(id){
         Scale <- 'log10'
       }
       
-      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', 'matter', Scale) + 
+      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', Scale) + 
         ggplot2::theme(legend.position = 'none')
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', 'Month', 'matter', Scale) + 
+      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', 'Month',Scale) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       
-      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', 'Year', 'matter', Scale) + 
+      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', 'Year', Scale) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       
       #titley <- names(planktonr::pr_relabel(unique(selectedData()$parameters), style = "simple"))
@@ -206,7 +206,7 @@ mod_MicroTsNRS_server <- function(id){
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$smoother, input$scaler1)
     
-    # Plots by depths ---------------------------------------------------------
+    # Plots by parameters ---------------------------------------------------------
     
     selectedData1 <- reactive({
       req(input$Site)
@@ -219,12 +219,6 @@ mod_MicroTsNRS_server <- function(id){
                       .data$parameters %in% c(input$p1, input$p2)) %>%
         tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleTime_Local), names_from = parameters, values_from = Values, values_fn = mean)
       
-      # selectedData1 <- datNRSm %>% 
-      #   dplyr::filter(.data$StationName %in% 'Yongala',
-      #                 .data$parameters %in% c('Bacterial_Richness', 'Prochlorococcus_Cellsml')) %>%
-      #   tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleTime_Local), names_from = parameters, values_from = Values, values_fn = mean)
-      # 
-      #       
     }) %>% bindCache(input$p1, input$p2, input$Site)
     
     output$timeseries4 <- renderPlot({
@@ -238,7 +232,7 @@ mod_MicroTsNRS_server <- function(id){
         ggplot2::geom_point(ggplot2::aes(!!x, !!y, colour = .data$StationName)) +
         ggplot2::xlab(titlex) + ggplot2::ylab(titley) 
       
-    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
     # Downloads ---------------------------------------------------------------
     

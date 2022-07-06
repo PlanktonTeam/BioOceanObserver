@@ -120,11 +120,11 @@ mod_PolLTM_server <- function(id){
     
     output$timeseriesLTM <- renderPlot({
 
-          p1 <-planktonr::pr_plot_EOV(outputs(), "Nitrate_umolL", Survey = 'LTM', trans = "identity", pal = "matter", labels = "no")
-          p2 <-planktonr::pr_plot_EOV(outputs(), "Phosphate_umolL", Survey = 'LTM', "identity", pal = "algae", labels = "no") 
-          p4 <-planktonr::pr_plot_EOV(outputs(), "Silicate_umolL", Survey = 'LTM', "identity", pal = "haline", labels = "no") 
-          p7 <-planktonr::pr_plot_EOV(outputs(), "Temperature_degC", Survey = 'LTM', "identity", pal = "solar", labels = "no")
-          p3 <-planktonr::pr_plot_EOV(outputs(), "Salinity", Survey = 'LTM', "identity", pal = "dense")
+          p1 <-planktonr::pr_plot_EOV(outputs(), "Nitrate_umolL", Survey = 'LTM', trans = "identity", col = "aquamarine4", labels = "no")
+          p2 <-planktonr::pr_plot_EOV(outputs(), "Phosphate_umolL", Survey = 'LTM', "identity", col = "darkorange3", labels = "no") 
+          p4 <-planktonr::pr_plot_EOV(outputs(), "Silicate_umolL", Survey = 'LTM', "identity", col = "darkgoldenrod1", labels = "no") 
+          p7 <-planktonr::pr_plot_EOV(outputs(), "Temperature_degC", Survey = 'LTM', "identity", col = "darkviolet", labels = "no")
+          p3 <-planktonr::pr_plot_EOV(outputs(), "Salinity", Survey = 'LTM', "identity", col = "darkred")
           
           patchwork::wrap_elements(grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20))) + 
             p1 + p2 + p4 + p7 + p3 +
