@@ -15,7 +15,7 @@ mod_PolNRS_ui <- function(id){
       sidebarPanel(
         shinydashboard::menuSubItem(text = "Find out more about the NRS stations here", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki/National-Reference-Stations"),
         shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
-        plotlyOutput(nsPolNRS("plotmap")),
+        plotOutput(nsPolNRS("plotmap")),
         radioButtons(inputId = nsPolNRS("Site"), label = "Select a station", choices = unique(sort(PolNRS$StationName)), selected = "Maria Island"),
         downloadButton(nsPolNRS("downloadData"), "Data"),
         downloadButton(nsPolNRS("downloadPlot"), "Plot"),
@@ -44,11 +44,23 @@ mod_PolNRS_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedData <- PolNRS %>% 
-        dplyr::filter(.data$StationName %in% input$Site) %>%
-        dplyr::mutate(Month = Month * 2 * 3.142 / 12) %>%
-        droplevels()
+        dplyr::filter(.data$StationName %in% input$Site)
     }) %>% bindCache(input$Site)
     
+    shiny::exportTestValues(
+      PolNRS = {ncol(selectedData())},
+      PolNRSRows = {nrow(selectedData()) > 0},
+      PolNRSYearisNumeric = {class(selectedData()$Year_Local)},
+      PolNRSMonthisNumeric = {class(selectedData()$Month_Local)},
+      PolNRSMMeansisNumeric = {class(selectedData()$means)},
+      PolNRSsdisNumeric = {class(selectedData()$sd)},
+      PolNRSAnomalyisNumeric = {class(selectedData()$anomaly)},
+      PolNRSDateisDate = {class(selectedData()$SampleTime_Local)},
+      PolNRSStationisChr = {class(selectedData()$StationName)},
+      PolNRSCodeisChr = {class(selectedData()$StationCode)},
+      PolNRSparametersisChr = {class(selectedData()$parameters)},
+      PolNRSValuesisNumeric = {class(selectedData()$Values)}
+    )
     outputs <- reactive({
       outputs <- planktonr::pr_get_coeffs(selectedData())
     }) %>% bindCache(input$Site)
@@ -62,8 +74,10 @@ mod_PolNRS_server <- function(id){
     }) %>% bindCache(input$Site)
     
     # Sidebar Map
-    output$plotmap <- renderPlotly({ 
-      pmap <- planktonr::pr_plot_NRSmap(selectedData())
+    output$plotmap <- renderPlot({ 
+      planktonr::pr_plot_NRSmap(selectedData()) 
+      
+      
     }) %>% bindCache(input$Site)
     
     # Add text information 
@@ -85,9 +99,9 @@ mod_PolNRS_server <- function(id){
     output$PlotExp5 <- renderText({
       paste("STation Name:", input$Site, "\n",
             input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ".", "\n",  
-            "The water depth at the station is ", round(stationData()$STATIONDEPTH_M,0), "m and is currently sampled ", stationData()$SAMPLINGEFFORT, ".", "\n", 
-            "The station has been sampled since ", stationData()$STATIONSTARTDATE, " ", stationData()$now, ".", "\n", 
-            input$Site, " is part of ", stationData()$NODE, " and is in the ", stationData()$MANAGEMENTREGION, " management bioregion.",  "\n", 
+            "The water depth at the station is ", round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, ".", "\n", 
+            "The station has been sampled since ", stationData()$StationStartDate, " ", stationData()$now, ".", "\n", 
+            input$Site, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, " management bioregion.",  "\n", 
             "The station is characterised by ", stationData()$Features, sep = "")
     })
     
@@ -107,15 +121,15 @@ mod_PolNRS_server <- function(id){
     
     output$timeseries1 <- renderPlot({
 
-      p1 <-planktonr::pr_plot_EOV(outputs(), "Biomass_mgm3", "log10", pal = "matter", labels = "no")
-      p2 <-planktonr::pr_plot_EOV(outputs(), "PhytoBiomassCarbon_pgL", "log10", pal = "algae") 
+      p1 <-planktonr::pr_plot_EOV(outputs(), "Biomass_mgm3", "log10", col = "cornflowerblue", labels = "no") 
+      p2 <-planktonr::pr_plot_EOV(outputs(), "PhytoBiomassCarbon_pgL", "log10", col = "darkolivegreen4") 
       
-      p6 <-planktonr::pr_plot_EOV(outputs(), "ShannonCopepodDiversity", "log10", pal = "matter", labels = "no") 
-      p7 <-planktonr::pr_plot_EOV(outputs(), "ShannonPhytoDiversity", "log10", pal = "algae")
+      p6 <-planktonr::pr_plot_EOV(outputs(), "ShannonCopepodDiversity", "log10", col = "cornflowerblue", labels = "no") 
+      p7 <-planktonr::pr_plot_EOV(outputs(), "ShannonPhytoDiversity", "log10", col = "darkolivegreen4")
       
-      p3 <-planktonr::pr_plot_EOV(outputs(), "CTDTemperature_degC", "identity", pal = "solar", labels = "no")
-      p4 <-planktonr::pr_plot_EOV(outputs(), "PigmentChla_mgm3", "log10", pal = "haline", labels = "no") 
-      p5 <-planktonr::pr_plot_EOV(outputs(), "CTDSalinity_psu", "identity", pal = "dense")
+      p3 <-planktonr::pr_plot_EOV(outputs(), "CTDTemperature_degC", "identity", col = "darkviolet", labels = "no")
+      p4 <-planktonr::pr_plot_EOV(outputs(), "PigmentChla_mgm3", "log10", col = "darkgoldenrod", labels = "no") 
+      p5 <-planktonr::pr_plot_EOV(outputs(), "CTDSalinity_PSU", "identity", col = "darkred")
       
       patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
         p1 + p2 + 

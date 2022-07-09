@@ -15,7 +15,7 @@ mod_PolLTM_ui <- function(id){
       sidebarPanel(
         shinydashboard::menuSubItem(text = "Find out more about the NRS stations here", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki/National-Reference-Stations"),
         shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
-        plotlyOutput(nsPolLTM("plotmap")),
+        plotOutput(nsPolLTM("plotmap")),
         radioButtons(inputId = nsPolLTM("SiteLTM"), label = "Select a station", choices = unique(sort(LTnuts$StationName)), selected = "Port Hacking"),
         downloadButton(nsPolLTM("downloadData"), "Data"),
         downloadButton(nsPolLTM("downloadPlot"), "Plot"),
@@ -43,20 +43,31 @@ mod_PolLTM_server <- function(id){
       req(input$SiteLTM)
       validate(need(!is.na(input$SiteLTM), "Error: Please select a station."))
       
-      selectedDataLTM <- LTnuts %>% 
+      selectedDataLTM <- PolLTM %>% 
         dplyr::filter(.data$StationName %in% input$SiteLTM,
                       .data$SampleDepth_m < 15,
-                      !.data$parameters %in% c( "SOI", "Ammonium_umolL","Nitrite_umolL","DIC_umolkg", "TAlkalinity_umolkg", "Oxygen_umolL")) %>%
-        dplyr::group_by(.data$StationCode, .data$StationName, .data$SampleDate_Local, .data$anomaly, .data$Year, .data$Month, parameters) %>%
-        dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE),
-                                      .groups = 'drop') %>%
-        dplyr::rename(SampleDate = .data$SampleDate_Local) %>% 
-        dplyr::mutate(Month = .data$Month * 2 * 3.142 / 12) %>%
-        droplevels()
+                      !.data$parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL")) 
       
     }) %>% bindCache(input$SiteLTM)
     
-    outputs <- reactive({
+    shiny::exportTestValues(
+      PolLTM = {ncol(selectedDataLTM())},
+      PolLTMRows = {nrow(selectedDataLTM()) > 0},
+      PolLTMYearisNumeric = {class(selectedDataLTM()$Year_Local)},
+      PolLTMMonthisNumeric = {class(selectedDataLTM()$Month_Local)},
+      PolLTMMeansisNumeric = {class(selectedDataLTM()$means)},
+      PolLTMsdisNumeric = {class(selectedDataLTM()$sd)},
+      PolLTMAnomalyisNumeric = {class(selectedDataLTM()$anomaly)},
+      PolLTMDepthisNumeric = {class(selectedDataLTM()$SampleDepth_m)},
+      PolLTMDateisDate = {class(selectedDataLTM()$SampleTimee_Local)},
+      PolLTMProjectisChr = {class(selectedDataLTM()$Project)},
+      PolLTMStationisChr = {class(selectedDataLTM()$StationName)},
+      PolLTMCodeisChr = {class(selectedDataLTM()$StationCode)},
+      PolLTMparametersisChr = {class(selectedDataLTM()$parameters)},
+      PolLTMValuesisNumeric = {class(selectedDataLTM()$Values)}
+    )
+
+        outputs <- reactive({
       outputs <- planktonr::pr_get_coeffs(selectedDataLTM())
     }) %>% bindCache(input$SiteLTM)
     
@@ -70,8 +81,8 @@ mod_PolLTM_server <- function(id){
     }) %>% bindCache(input$SiteLTM)
     
     # Sidebar Map
-    output$plotmap <- renderPlotly({ 
-      pmap <- planktonr::pr_plot_NRSmap(selectedDataLTM())
+    output$plotmap <- renderPlot({ 
+      planktonr::pr_plot_NRSmap(selectedDataLTM())
     }) %>% bindCache(input$SiteLTM)
     
     # Add text information 
@@ -91,9 +102,9 @@ mod_PolLTM_server <- function(id){
     output$PlotExp5 <- renderText({
       paste("STation Name:", input$SiteLTM, "\n",
             input$SiteLTM, " National Reference Station is located at ", round(stationData()$Latitude,2), "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ".", "\n",
-            "The water depth at the station is ", round(stationData()$STATIONDEPTH_M,0), "m and is currently sampled ", stationData()$SAMPLINGEFFORT, ".", "\n",
-            "The station has been sampled since ", stationData()$STATIONSTARTDATE, " ", stationData()$now, ".", "\n",
-            input$SiteLTM, " is part of ", stationData()$NODE, " and is in the ", stationData()$MANAGEMENTREGION, " management bioregion.",  "\n",
+            "The water depth at the station is ", round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, ".", "\n",
+            "The station has been sampled since ", stationData()$StationStartDate, " ", stationData()$now, ".", "\n",
+            input$SiteLTM, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, " management bioregion.",  "\n",
             "The station is characterised by ", stationData()$Features, sep = "")
     })
     
@@ -109,11 +120,11 @@ mod_PolLTM_server <- function(id){
     
     output$timeseriesLTM <- renderPlot({
 
-          p1 <-planktonr::pr_plot_EOV(outputs(), "Nitrate_umolL", Survey = 'LTM', trans = "identity", pal = "matter", labels = "no")
-          p2 <-planktonr::pr_plot_EOV(outputs(), "Phosphate_umolL", Survey = 'LTM', "identity", pal = "algae", labels = "no") 
-          p4 <-planktonr::pr_plot_EOV(outputs(), "Silicate_umolL", Survey = 'LTM', "identity", pal = "haline", labels = "no") 
-          p7 <-planktonr::pr_plot_EOV(outputs(), "Temperature_degC", Survey = 'LTM', "identity", pal = "solar", labels = "no")
-          p3 <-planktonr::pr_plot_EOV(outputs(), "Salinity_psu", Survey = 'LTM', "identity", pal = "dense")
+          p1 <-planktonr::pr_plot_EOV(outputs(), "Nitrate_umolL", Survey = 'LTM', trans = "identity", col = "aquamarine4", labels = "no")
+          p2 <-planktonr::pr_plot_EOV(outputs(), "Phosphate_umolL", Survey = 'LTM', "identity", col = "darkorange3", labels = "no") 
+          p4 <-planktonr::pr_plot_EOV(outputs(), "Silicate_umolL", Survey = 'LTM', "identity", col = "darkgoldenrod1", labels = "no") 
+          p7 <-planktonr::pr_plot_EOV(outputs(), "Temperature_degC", Survey = 'LTM', "identity", col = "darkviolet", labels = "no")
+          p3 <-planktonr::pr_plot_EOV(outputs(), "Salinity", Survey = 'LTM', "identity", col = "darkred")
           
           patchwork::wrap_elements(grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20))) + 
             p1 + p2 + p4 + p7 + p3 +

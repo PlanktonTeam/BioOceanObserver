@@ -1,0 +1,24 @@
+{
+  "export": {
+    "NutrientsBGC_ui_1-NutrientsBGC": 9,
+    "NutrientsBGC_ui_1-NutrientsBGCCodeisChr": "character",
+    "NutrientsBGC_ui_1-NutrientsBGCDateisDate": "Date",
+    "NutrientsBGC_ui_1-NutrientsBGCDepthisNumeric": "numeric",
+    "NutrientsBGC_ui_1-NutrientsBGCMonthisNumeric": "numeric",
+    "NutrientsBGC_ui_1-NutrientsBGCProjectisChr": "character",
+    "NutrientsBGC_ui_1-NutrientsBGCRows": true,
+    "NutrientsBGC_ui_1-NutrientsBGCStationisFactor": "factor",
+    "NutrientsBGC_ui_1-NutrientsBGCValuesisNumeric": "numeric",
+    "NutrientsBGC_ui_1-NutrientsBGCparametersisChr": "character",
+    "PigmentsBGC_ui_1-PigsBGC": 10,
+    "PigmentsBGC_ui_1-PigsBGCCodeisChr": "character",
+    "PigmentsBGC_ui_1-PigsBGCDateisDate": "Date",
+    "PigmentsBGC_ui_1-PigsBGCDepthisNumeric": "numeric",
+    "PigmentsBGC_ui_1-PigsBGCMonthisNumeric": "numeric",
+    "PigmentsBGC_ui_1-PigsBGCProjectisChr": "character",
+    "PigmentsBGC_ui_1-PigsBGCRows": true,
+    "PigmentsBGC_ui_1-PigsBGCStationisFactor": "factor",
+    "PigmentsBGC_ui_1-PigsBGCValuesisNumeric": "numeric",
+    "PigmentsBGC_ui_1-PigsBGCparametersisChr": "character"
+  }
+}

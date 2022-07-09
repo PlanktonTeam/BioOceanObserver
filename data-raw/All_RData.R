@@ -44,19 +44,21 @@ PolNRS <- planktonr::pr_get_pol("NRS")
 PolCPR <- planktonr::pr_get_pol("CPR")
 NRSinfo <- planktonr::pr_get_polInfo("NRS")
 CPRinfo <- planktonr::pr_get_polInfo("CPR")
-
+PolLTM <- planktonr::pr_get_pol("LTM")
 
 # Species distribution data
 fMapDataz <- planktonr::pr_get_fMap_data("Z")
 
 fMapDatap <- planktonr::pr_get_fMap_data("P")
 
+# Progress Map
+PmapData <- planktonr::pr_get_ProgressMap("Both")
 
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts, 
-                  PolNRS, PolCPR, NRSinfo, CPRinfo, 
+                  PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, 
                   datCPRz, datCPRp, datNRSz, datNRSp, datNRSm,
-                  NRSfgz, NRSfgp, CPRfgz, CPRfgp, 
+                  NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
                   stiz, stip, daynightz, daynightp,
                   overwrite = TRUE, internal = TRUE)
 
@@ -64,3 +66,4 @@ usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts,
 listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
 files <- paste("C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps/", listsdm, sep = "")
 file.copy(from=files, to="inst/app/www")
+

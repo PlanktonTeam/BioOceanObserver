@@ -16,7 +16,7 @@ mod_Snapshot_ui <- function(id){
     shinyWidgets::useShinydashboard(),
     fluidRow(
       h1("Plankton sampling progress"),
-      HTML('<center><img src="www/progress_map_150dpi.png"></center>')),
+      plotOutput(nsSnap("progplot"), height = 800)),
     h1("By the Numbers"),
     fluidRow(
       shinydashboard::valueBoxOutput(nsSnap("PCount"), width = 3),
@@ -32,7 +32,7 @@ mod_Snapshot_ui <- function(id){
              imageOutput(nsSnap("POD"))),
       column(8,
              h1("Graph of the Day"),
-             plotly::plotlyOutput(nsSnap("PlotOD")))),
+             plotOutput(nsSnap("PlotOD")))),
     fluidRow(
       shinydashboard::valueBoxOutput(nsSnap("Facts"), width = 12)),
     fluidRow(
@@ -148,17 +148,48 @@ mod_Snapshot_server <- function(id){
     }, deleteFile = FALSE)
     
     
+    # progress plot
     
+    output$progplot <- renderPlot({
+      MapOz <- rnaturalearth::ne_countries(scale = "medium", country = "Australia",
+                                         returnclass = "sf")
+    PMapData2 <- PMapData %>%
+      sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326) %>% 
+      sf::st_as_sf() 
     
+    PMapSum <- merge(PMapData %>% dplyr::group_by(Region, Survey) %>% dplyr::summarise(Sums = dplyr::n(),
+                                                                                       .groups = 'drop') %>%
+                       dplyr::mutate(label = paste0(Region, ' = ', Sums)),
+                     PMapData %>% dplyr::group_by(Region, Survey) %>% dplyr::summarise(Lats = mean(Latitude),
+                                                                                       Lons = mean(Longitude),
+                                                                                       .groups = 'drop')) %>%
+      sf::st_as_sf(coords = c("Lons", "Lats"), crs = 4326)
     
-    
+    nudgex = c(-2,5.5,2,8.5,9.5,0,0,4)
+    nudgey = c(-3,0,1,0,0,7,-2,10)
+    # GAB, GBR, NA, NEAC, SEAC, SO, Tas, WA
+    ggplot2::ggplot() +
+      ggplot2::geom_sf(data = MapOz, size = 0.05, fill = "grey80") +
+      ggplot2::geom_sf(data = PMapData2 %>% dplyr::filter(Survey == 'CPR'), size = 1, ggplot2::aes(color = Region),
+                       show.legend = FALSE) +
+      ggplot2::geom_sf_text(data = PMapSum %>% dplyr::filter(Survey == 'CPR'), size = 5, ggplot2::aes(label = label, color = Region),
+                            show.legend = FALSE, check_overlap = TRUE, nudge_x = nudgex, nudge_y = nudgey) +
+      ggplot2::geom_sf(data = PMapData2 %>% dplyr::filter(Survey == 'NRS'), size = 5) +
+      ggplot2::geom_sf_text(data = PMapSum %>% dplyr::filter(Survey == 'NRS'), size = 5, ggplot2::aes(label = label),
+                            show.legend = FALSE, nudge_x = 3) +
+      ggplot2::scale_x_continuous(expand = c(0, 0), limits = c(105, 170)) +
+      ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(-54, -7)) +
+      ggplot2::theme_void() +
+      ggplot2::theme(axis.title = ggplot2::element_blank(),
+                     axis.line = ggplot2::element_blank())
+    })
     
     # Plot of the Day ---------------------------------------------------------
     
     # In the future I will write some code to choose additional plot types
     
     # Plot abundance spectra by species
-    output$PlotOD <- plotly::renderPlotly({
+    output$PlotOD <- renderPlot({
       
       st <- planktonr::pr_get_NRSStation()
       r1 <- round(runif(1, min = 1, max = nrow(st)))
@@ -166,9 +197,9 @@ mod_Snapshot_server <- function(id){
       meth <- unique(datNRSz$parameters)
       r2 <- round(runif(1, min = 1, max = length(meth)))
       
-      plots <- planktonr::pr_plot_tsclimate(datNRSz %>% 
-                                              dplyr::filter(.data$StationCode == st$StationCode[r1] & 
-                                                              .data$parameters == meth[r2]), 'NRS', 'matter', 'log10')
+      planktonr::pr_plot_tsclimate(datNRSz %>% 
+                                     dplyr::filter(.data$StationCode == st$StationCode[r1] &
+                                                               .data$parameters == meth[r2]), 'NRS', 'log10')
     })
     
     

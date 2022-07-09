@@ -69,6 +69,17 @@ mod_PhytoSpatial_server <- function(id){
 
       }) %>% bindCache(input$species)
       
+      shiny::exportTestValues(
+        PhytoSpatial = {ncol(selectedZS())},
+        PhytoSpatialRows = {nrow(selectedZS()) > 0},
+        PhytoSpatialLatisNumeric = {class(selectedZS()$Lat)},
+        PhytoSpatialLongisNumeric = {class(selectedZS()$Long)},
+        PhytoSpatialFreqisFactor = {class(selectedZS()$Freqfac)},
+        PhytoSpatialSeasonisChr = {class(selectedZS()$Season)},
+        PhytoSpatialTaxonisChr = {class(selectedZS()$Taxon)},
+        PhytoSpatialfreqsampisNumeric = {class(selectedZS()$freqsamp)}
+      )
+      
       # add text information ------------------------------------------------------------------------------
       output$DistMapExp <- renderText({
         "This map is a frequency of occurence map based on the NRS and CPR data for each species"
@@ -76,7 +87,7 @@ mod_PhytoSpatial_server <- function(id){
       output$SDMsMapExp <- renderText({
         paste("This map is a modelled output of the relative distribution for a species.",
               "This is calculated using NRS and CPR data in a Tweedie model.",
-              "The environmental variables are SST, Chla, deth, Month", sep =  "<br/>")
+              "The environmental variables are SST, Chla, depth, Month", sep =  "<br/>")
       }) 
       output$STIsExp <- renderText({
         paste("Figure of the species STI")

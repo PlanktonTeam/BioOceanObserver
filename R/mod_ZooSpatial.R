@@ -69,6 +69,17 @@ mod_ZooSpatial_server <- function(id){
         
       }) %>% bindCache(input$species)
       
+      shiny::exportTestValues(
+        ZooSpatial = {ncol(selectedZS())},
+        ZooSpatialRows = {nrow(selectedZS()) > 0},
+        ZooSpatialLatisNumeric = {class(selectedZS()$Lat)},
+        ZooSpatialLongisNumeric = {class(selectedZS()$Long)},
+        ZooSpatialFreqisFactor = {class(selectedZS()$Freqfac)},
+        ZooSpatialSeasonisChr = {class(selectedZS()$Season)},
+        ZooSpatialTaxonisChr = {class(selectedZS()$Taxon)},
+        ZooSpatialfreqsampisNumeric = {class(selectedZS()$freqsamp)}
+      )
+      
       # add text information ------------------------------------------------------------------------------
       output$DistMapExp <- renderText({
         "This map is a frequency of occurence map based on the NRS and CPR data for each species"
@@ -76,7 +87,7 @@ mod_ZooSpatial_server <- function(id){
       output$SDMsMapExp <- renderText({
         paste("This map is a modelled output of the relative distribution for a species.",
               "This is calculated using NRS and CPR data in a Tweedie model.",
-              "The environmental variables are SST, Chla, deth, Month", sep =  "<br/>")
+              "The environmental variables are SST, Chla, depth, Month", sep =  "<br/>")
       }) 
       output$STIsExp <- renderText({
         paste("Figure of the species STI")
@@ -116,7 +127,7 @@ mod_ZooSpatial_server <- function(id){
       req(input$species1)
       validate(need(!is.na(input$species1), "Error: Please select a species"))
       
-      selectedSTI <- stiz %>% 
+      selectedSTI <- stiz %>% dplyr::rename(sst = SST) %>% 
         dplyr::filter(.data$Species %in% input$species1) 
       
     }) %>% bindCache(input$species1)
