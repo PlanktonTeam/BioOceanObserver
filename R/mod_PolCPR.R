@@ -61,18 +61,21 @@ mod_PolCPR_server <- function(id){
       PolcprparametersisChr = {class(selectedData()$parameters)},
       PolcprValuesisNumeric = {class(selectedData()$Values)}
     )
-
+    
     outputs <- reactive({
       outputs <- planktonr::pr_get_coeffs(selectedData())
     }) %>% bindCache(input$Site)
     
     info <- reactive({
-      info <- outputs() %>% dplyr::select(slope, p, parameters) %>% unique %>%
-        dplyr::arrange(parameters)
+      info <- outputs() %>% 
+        dplyr::select(.data$slope, .data$p, .data$parameters) %>% 
+        unique %>%
+        dplyr::arrange(.data$parameters)
     }) %>% bindCache(input$Site)
     
     stationData <- reactive({
-      stationData <- CPRinfo %>% dplyr::filter(BioRegion == input$Site) 
+      stationData <- CPRinfo %>% 
+        dplyr::filter(.data$BioRegion == input$Site) 
     }) %>% bindCache(input$Site)
     
     # Sidebar Map
@@ -112,13 +115,17 @@ mod_PolCPR_server <- function(id){
     
     output$timeseries1 <- renderPlot({
       
-      p1 <-planktonr::pr_plot_EOV(outputs(), "BiomassIndex_mgm3", Survey = 'CPR', "log10", col = "cornflowerblue", labels = "no")
-      p2 <-planktonr::pr_plot_EOV(outputs(), "PhytoBiomassCarbon_pgm3", Survey = 'CPR', "log10", col = "darkolivegreen4") 
+      p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "BiomassIndex_mgm3", Survey = 'CPR', 
+                                   trans = "log10", col = "cornflowerblue", labels = "no")
+      p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgm3", Survey = 'CPR', 
+                                   trans = "log10", col = "darkolivegreen4") 
       
-      p6 <-planktonr::pr_plot_EOV(outputs(), "ShannonCopepodDiversity", Survey = 'CPR', "log10", col = "cornflowerblue", labels = "no") #check these col names with new indicies data from AODN
-      p7 <-planktonr::pr_plot_EOV(outputs(), "ShannonPhytoDiversity", Survey = 'CPR', "log10", col = "darkolivegreen4")
+      p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonCopepodDiversity", Survey = 'CPR', 
+                                   trans = "log10", col = "cornflowerblue", labels = "no") #check these col names with new indices data from AODN
+      p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', 
+                                   trans = "log10", col = "darkolivegreen4")
       
-     patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
+      patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
         p1 + p2 + 
         grid::textGrob("Diversity EOVs", gp = grid::gpar(fontsize=20)) + 
         p6 + p7 + 

@@ -114,13 +114,13 @@ mod_ZooTsCPR_server <- function(id){
     # Plot Trends -------------------------------------------------------------
     ts1 <- reactive({
       if(input$scaler){
-        Scale <- 'log10'
+        trans <- "log10"
       } else {
-        Scale <- 'identity'
+        trans <- "identity"
       }
       
-      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "CPR", method = "lm", y_trans = Scale)
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "CPR", method = "loess", y_trans = Scale) + 
+      p1 <- planktonr::pr_plot_trends(selectedData(), Trend = "Raw", Survey = "CPR", method = "lm", trans = trans)
+      p2 <- planktonr::pr_plot_trends(selectedData(), Trend = "Month", Survey = "CPR", method = "loess", trans = trans) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
       p1 + p2 + patchwork::plot_layout(widths = c(3,1))
@@ -134,22 +134,25 @@ mod_ZooTsCPR_server <- function(id){
     # Climatologies -----------------------------------------------------------
     output$timeseries2 <- renderPlot({
       if(input$scaler){
-        Scale <- 'log10'
+        trans <- 'log10'
       } else {
-        Scale <- 'identity'
+        trans <- 'identity'
       }
       
       if (identical(input$region, "")) return(NULL)
       if (identical(input$parameter, "")) return(NULL)
       
-      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'CPR', Scale) + ggplot2::theme(legend.position = 'none',
-                                                                                                   axis.title.y = ggplot2::element_blank())
+      p1 <- planktonr::pr_plot_timeseries(selectedData(), Survey = "CPR", trans = trans) + 
+        ggplot2::theme(legend.position = 'none',
+                       axis.title.y = ggplot2::element_blank())
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), 'CPR', 'Month', Scale) + ggplot2::theme(legend.position = 'bottom',
-                                                                                                       axis.title.y = ggplot2::element_blank())
+      p2 <- planktonr::pr_plot_climate(selectedData(), Survey = "CPR", Trend = "Month", trans = trans) +
+        ggplot2::theme(legend.position = 'bottom',
+                       axis.title.y = ggplot2::element_blank())
       
-      p3 <- planktonr::pr_plot_climate(selectedData(), 'CPR', 'Year', Scale) + ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                                                                                                      legend.position = 'bottom')
+      p3 <- planktonr::pr_plot_climate(selectedData(), Survey = "CPR", Trend = "Year", trans = trans) + 
+        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+                       legend.position = 'bottom')
       
       titleplot <- names(planktonr::pr_relabel(input$parameter, style = 'simple'))
       
@@ -184,7 +187,7 @@ mod_ZooTsCPR_server <- function(id){
       }
       
       p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
-      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, "Month") + 
+      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                        legend.position = 'none')
       p1 + p2 + patchwork::plot_layout(widths = c(3,1))

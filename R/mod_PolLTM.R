@@ -72,12 +72,12 @@ mod_PolLTM_server <- function(id){
     }) %>% bindCache(input$SiteLTM)
     
     info <- reactive({
-      info <- outputs() %>% dplyr::select(slope, p, parameters) %>% unique() %>%
-        dplyr::arrange(parameters)
+      info <- outputs() %>% dplyr::select(.data$slope, .data$p, .data$parameters) %>% unique() %>%
+        dplyr::arrange(.data$parameters)
     }) %>% bindCache(input$SiteLTM)
     
     stationData <- reactive({
-       stationData <- NRSinfo %>% dplyr::filter(StationName == input$SiteLTM) 
+       stationData <- NRSinfo %>% dplyr::filter(.data$StationName == input$SiteLTM) 
     }) %>% bindCache(input$SiteLTM)
     
     # Sidebar Map
@@ -120,11 +120,11 @@ mod_PolLTM_server <- function(id){
     
     output$timeseriesLTM <- renderPlot({
 
-          p1 <-planktonr::pr_plot_EOV(outputs(), "Nitrate_umolL", Survey = 'LTM', trans = "identity", col = "aquamarine4", labels = "no")
-          p2 <-planktonr::pr_plot_EOV(outputs(), "Phosphate_umolL", Survey = 'LTM', "identity", col = "darkorange3", labels = "no") 
-          p4 <-planktonr::pr_plot_EOV(outputs(), "Silicate_umolL", Survey = 'LTM', "identity", col = "darkgoldenrod1", labels = "no") 
-          p7 <-planktonr::pr_plot_EOV(outputs(), "Temperature_degC", Survey = 'LTM', "identity", col = "darkviolet", labels = "no")
-          p3 <-planktonr::pr_plot_EOV(outputs(), "Salinity", Survey = 'LTM', "identity", col = "darkred")
+          p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrate_umolL", Survey = "LTM", trans = "identity", col = "aquamarine4", labels = "no")
+          p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "Phosphate_umolL", Survey = "LTM", trans = "identity", col = "darkorange3", labels = "no") 
+          p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "Silicate_umolL", Survey = "LTM", trans = "identity", col = "darkgoldenrod1", labels = "no") 
+          p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "Temperature_degC", Survey = "LTM", trans = "identity", col = "darkviolet", labels = "no")
+          p3 <- planktonr::pr_plot_EOV(outputs(), EOV = "Salinity", Survey = "LTM", trans = "identity", col = "darkred")
           
           patchwork::wrap_elements(grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20))) + 
             p1 + p2 + p4 + p7 + p3 +

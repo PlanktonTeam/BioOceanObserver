@@ -62,7 +62,7 @@ mod_PhytoSpatial_server <- function(id){
         validate(need(!is.na(input$species), "Error: Please select a species"))
         
         selectedZS <- fMapDatap %>%
-          dplyr::mutate(Taxon = ifelse(Taxon == "Taxon", input$species, .data$Taxon)) %>%
+          dplyr::mutate(Taxon = dplyr::if_else(.data$Taxon == "Taxon", input$species, .data$Taxon)) %>%
           dplyr::filter(.data$Taxon %in% input$species) %>%
           dplyr::mutate(freqfac = factor(.data$freqfac, levels = c("Absent", "Seen in 25%",'50%', '75%', "100 % of Samples"))) %>%
           dplyr::arrange(.data$freqfac)

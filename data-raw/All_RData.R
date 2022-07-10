@@ -48,6 +48,7 @@ PolLTM <- planktonr::pr_get_pol("LTM")
 
 # Species distribution data
 fMapDataz <- planktonr::pr_get_fMap_data("Z")
+
 fMapDatap <- planktonr::pr_get_fMap_data("P")
 
 # Progress Map
