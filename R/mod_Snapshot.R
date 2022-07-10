@@ -51,59 +51,59 @@ mod_Snapshot_server <- function(id){
     
     output$PCount <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
-        sum(planktonr::pr_get_SppCount("Phytoplankton")$n), #input$count,
+        sum(planktonr::pr_get_SppCount("P")$n), #input$count,
         "Number of Phytoplankton Counted",
-        icon = icon("chart-bar"),
+        icon = shiny::icon("chart-bar"),
         color = "yellow"
       )
     })
     
     output$ZCount <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
-        sum(planktonr::pr_get_SppCount("Zooplankton")$n), #input$count,
+        sum(planktonr::pr_get_SppCount("Z")$n), #input$count,
         "Number of Zooplankton Counted",
-        icon = icon("chart-bar"),
+        icon = shiny::icon("chart-bar"),
         color =  "light-blue"
       )
     })  
     
     output$PSpNo <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
-        nrow(unique(planktonr::pr_get_SppCount("Phytoplankton"))), #input$count,
+        nrow(unique(planktonr::pr_get_SppCount("P"))), #input$count,
         "Phytoplankton Species Identified",
-        icon = icon("comment-dots"),
+        icon = shiny::icon("comment-dots"),
         color = "orange"
       )
     })
     
     output$ZSpNo <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
-        nrow(unique(planktonr::pr_get_SppCount("Zooplankton"))), #input$count,
+        nrow(unique(planktonr::pr_get_SppCount("Z"))), #input$count,
         "Zooplankton Species Identified",
-        icon = icon("comment-dots"),
+        icon = shiny::icon("comment-dots"),
         color = "blue"
       )
     })
     
     output$PCommSp <- shinydashboard::renderValueBox({
-      ptax <- planktonr::pr_get_SppCount("Phytoplankton")[1,]
+      ptax <- planktonr::pr_get_SppCount("P")[1,]
       pLink <- stringr::str_c("javascript:void(window.open('http://www.marinespecies.org/aphia.php?p=taxdetails&id=", as.character(ptax$SPCode),"', '_blank'))")
       shinydashboard::valueBox(
         ptax$TaxonName,
         "Most Common Phytoplankton Species",
-        icon = icon("microscope"),
+        icon = shiny::icon("microscope"),
         color = "red",
         href = pLink
       )
     })
     
     output$ZCommSp <- shinydashboard::renderValueBox({
-      ztax <- planktonr::pr_get_SppCount("Zooplankton")[1,]
+      ztax <- planktonr::pr_get_SppCount("Z")[1,]
       zLink <- stringr::str_c("javascript:void(window.open('http://www.marinespecies.org/aphia.php?p=taxdetails&id=", as.character(ztax$SPCode),"', '_blank'))")
       shinydashboard::valueBox(
         ztax$TaxonName,
         "Most Common Zooplankton Species",
-        icon = icon("microscope"),
+        icon = shiny::icon("microscope"),
         color = "navy",
         href = zLink
       )
@@ -117,7 +117,7 @@ mod_Snapshot_server <- function(id){
       shinydashboard::valueBox(
         "Fun Facts",
         planktonr::pr_get_facts(),
-        icon = icon("info-circle"),
+        icon = shiny::icon("info-circle"),
         color = "green"
       )
     }) 
@@ -127,7 +127,7 @@ mod_Snapshot_server <- function(id){
         "Scientific Paper using the data in the Biological Ocean Observer",
         planktonr::pr_get_papers(),
         # tags$p(tags$b("Test "), tags$i("string")),
-        icon = icon("newspaper"),
+        icon = shiny::icon("newspaper"),
         color = "teal"
       )
     }) 
@@ -151,37 +151,46 @@ mod_Snapshot_server <- function(id){
     # progress plot
     
     output$progplot <- renderPlot({
-      MapOz <- rnaturalearth::ne_countries(scale = "medium", country = "Australia",
-                                         returnclass = "sf")
-    PMapData2 <- PMapData %>%
-      sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326) %>% 
-      sf::st_as_sf() 
+      
+      planktonr::pr_plot_ProgressMap(PMapData)
+      
+      # MapOz <- rnaturalearth::ne_countries(scale = "medium", country = "Australia",
+      #                                    returnclass = "sf")
+
+          # PMapData2 <- PMapData %>%
+    #   sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326) %>% 
+    #   sf::st_as_sf() 
     
-    PMapSum <- merge(PMapData %>% dplyr::group_by(Region, Survey) %>% dplyr::summarise(Sums = dplyr::n(),
-                                                                                       .groups = 'drop') %>%
-                       dplyr::mutate(label = paste0(Region, ' = ', Sums)),
-                     PMapData %>% dplyr::group_by(Region, Survey) %>% dplyr::summarise(Lats = mean(Latitude),
-                                                                                       Lons = mean(Longitude),
-                                                                                       .groups = 'drop')) %>%
-      sf::st_as_sf(coords = c("Lons", "Lats"), crs = 4326)
+    # PMapSum <- merge(PMapData %>% dplyr::group_by(.data$Region, .data$Survey) %>% 
+    #                    dplyr::summarise(Sums = dplyr::n(),
+    #                                     .groups = 'drop') %>%
+    #                    dplyr::mutate(label = paste0(.data$Region, ' = ', .data$Sums)),
+    #                  PMapData %>% dplyr::group_by(.data$Region, .data$Survey) %>% 
+    #                    dplyr::summarise(Lats = mean(.data$Latitude),
+    #                                     Lons = mean(.data$Longitude),
+    #                                     .groups = 'drop')) %>%
+    #   sf::st_as_sf(coords = c("Lons", "Lats"), crs = 4326)
     
-    nudgex = c(-2,5.5,2,8.5,9.5,0,0,4)
-    nudgey = c(-3,0,1,0,0,7,-2,10)
-    # GAB, GBR, NA, NEAC, SEAC, SO, Tas, WA
-    ggplot2::ggplot() +
-      ggplot2::geom_sf(data = MapOz, size = 0.05, fill = "grey80") +
-      ggplot2::geom_sf(data = PMapData2 %>% dplyr::filter(Survey == 'CPR'), size = 1, ggplot2::aes(color = Region),
-                       show.legend = FALSE) +
-      ggplot2::geom_sf_text(data = PMapSum %>% dplyr::filter(Survey == 'CPR'), size = 5, ggplot2::aes(label = label, color = Region),
-                            show.legend = FALSE, check_overlap = TRUE, nudge_x = nudgex, nudge_y = nudgey) +
-      ggplot2::geom_sf(data = PMapData2 %>% dplyr::filter(Survey == 'NRS'), size = 5) +
-      ggplot2::geom_sf_text(data = PMapSum %>% dplyr::filter(Survey == 'NRS'), size = 5, ggplot2::aes(label = label),
-                            show.legend = FALSE, nudge_x = 3) +
-      ggplot2::scale_x_continuous(expand = c(0, 0), limits = c(105, 170)) +
-      ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(-54, -7)) +
-      ggplot2::theme_void() +
-      ggplot2::theme(axis.title = ggplot2::element_blank(),
-                     axis.line = ggplot2::element_blank())
+    # nudgex = c(-2,5.5,2,8.5,9.5,0,0,4)
+    # nudgey = c(-3,0,1,0,0,7,-2,10)
+    # # GAB, GBR, NA, NEAC, SEAC, SO, Tas, WA
+    
+    # ggplot2::ggplot() +
+    #   ggplot2::geom_sf(data = MapOz, size = 0.05, fill = "grey80") +
+    #   ggplot2::geom_sf(data = PMapData2 %>% dplyr::filter(.data$Survey == 'CPR'), size = 1, ggplot2::aes(color = .data$Region),
+    #                    show.legend = FALSE) +
+    #   ggplot2::geom_sf_text(data = PMapSum %>% dplyr::filter(.data$Survey == 'CPR'), size = 5, ggplot2::aes(label = .data$label, color = .data$Region),
+    #                         show.legend = FALSE, check_overlap = TRUE, nudge_x = nudgex, nudge_y = nudgey) +
+    #   ggplot2::geom_sf(data = PMapData2 %>% dplyr::filter(.data$Survey == 'NRS'), size = 5) +
+    #   ggplot2::geom_sf_text(data = PMapSum %>% dplyr::filter(.data$Survey == 'NRS'), size = 5, ggplot2::aes(label = .data$label),
+    #                         show.legend = FALSE, nudge_x = 3) +
+    #   ggplot2::scale_x_continuous(expand = c(0, 0), limits = c(105, 170)) +
+    #   ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(-54, -7)) +
+    #   ggplot2::theme_void() +
+    #   ggplot2::theme(axis.title = ggplot2::element_blank(),
+    #                  axis.line = ggplot2::element_blank())
+    
+    
     })
     
     # Plot of the Day ---------------------------------------------------------

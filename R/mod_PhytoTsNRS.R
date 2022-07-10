@@ -102,13 +102,13 @@ mod_PhytoTsNRS_server <- function(id){
       }
       
       if(input$scaler){
-        Scale <- 'log10'
+        trans <- 'log10'
       } else {
-        Scale <- 'identity'
+        trans <- 'identity'
       }
       
-      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", y_trans = Scale)
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", y_trans = Scale) +
+      p1 <- planktonr::pr_plot_trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
+      p2 <- planktonr::pr_plot_trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
@@ -130,19 +130,19 @@ mod_PhytoTsNRS_server <- function(id){
       }
       # 
       if(input$scaler){
-        Scale <- 'log10'
+        trans <- 'log10'
       } else {
-        Scale <- 'identity'
+        trans <- 'identity'
       }
       
-      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', Scale) + 
+      p1 <- planktonr::pr_plot_timeseries(selectedData(), Survey = "NRS", trans = trans) + 
         ggplot2::theme(legend.position = 'none')
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', 'Month',, Scale) + 
+      p2 <- planktonr::pr_plot_climate(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) + 
         ggplot2::theme(legend.position = 'none',
                        axis.title.y = ggplot2::element_blank())
       
-      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', 'Year', Scale) + 
+      p3 <- planktonr::pr_plot_climate(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                        legend.position = 'bottom')
       
@@ -161,7 +161,7 @@ mod_PhytoTsNRS_server <- function(id){
       
       selectedDataFG <- NRSfgp %>% 
         dplyr::filter(.data$StationName %in% input$Site,
-                      dplyr::between(.data$SampleDate_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
     }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
@@ -179,7 +179,7 @@ mod_PhytoTsNRS_server <- function(id){
       }
       
       p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
-      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, "Month") + 
+      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                        legend.position = 'none')
       

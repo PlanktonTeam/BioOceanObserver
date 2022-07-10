@@ -139,13 +139,13 @@ mod_MicroTsNRS_server <- function(id){
         return(NULL)
       
       if(input$scaler1){
-        Scale <- 'log10'
+        trans <- 'log10'
       } else {
-        Scale <- 'identity'
+        trans <- 'identity'
       }
       
-      p1 <- planktonr::pr_plot_trends(selectedData(), trend = "Raw", survey = "NRS", method = "lm", y_trans = Scale)
-      p2 <- planktonr::pr_plot_trends(selectedData(), trend = "Month", survey = "NRS", method = "loess", y_trans = Scale) +
+      p1 <- planktonr::pr_plot_trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
+      p2 <- planktonr::pr_plot_trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
@@ -169,23 +169,23 @@ mod_MicroTsNRS_server <- function(id){
       if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
       
-      Scale <- 'identity'
+      trans <- 'identity'
       if(input$scaler1){
-        Scale <- 'log10'
+        trans <- 'log10'
       }
       
-      p1 <- planktonr::pr_plot_timeseries(selectedData(), 'NRS', Scale) + 
-        ggplot2::theme(legend.position = 'none')
+      p1 <- planktonr::pr_plot_timeseries(selectedData(), Survey = "NRS", trans = trans) + 
+        ggplot2::theme(legend.position = "none")
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), 'NRS', 'Month',Scale) + 
+      p2 <- planktonr::pr_plot_climate(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       
-      p3 <- planktonr::pr_plot_climate(selectedData(), 'NRS', 'Year', Scale) + 
+      p3 <- planktonr::pr_plot_climate(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       
       #titley <- names(planktonr::pr_relabel(unique(selectedData()$parameters), style = "simple"))
       
-      p1 + p2 + p3 + patchwork::plot_layout(widths = c(3,1,3), guides = 'collect')
+      p1 + p2 + p3 + patchwork::plot_layout(widths = c(3,1,3), guides = "collect")
       
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
@@ -197,12 +197,12 @@ mod_MicroTsNRS_server <- function(id){
       trend <-  input$smoother
       
       if(input$scaler1){
-        Scale <- 'log10'
+        trans <- "log10"
       } else {
-        Scale <- 'identity'
+        trans <- "identity"
       }
       
-      planktonr::pr_plot_env_var(selectedData(), trend = trend, Scale = Scale)
+      planktonr::pr_plot_env_var(selectedData(), Trend = trend, trans = trans)
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$smoother, input$scaler1)
     
@@ -217,7 +217,7 @@ mod_MicroTsNRS_server <- function(id){
       selectedData1 <- datNRSm %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$parameters %in% c(input$p1, input$p2)) %>%
-        tidyr::pivot_wider(c(StationName, SampleDepth_m, SampleTime_Local), names_from = parameters, values_from = Values, values_fn = mean)
+        tidyr::pivot_wider(c(.data$StationName, .data$SampleDepth_m, .data$SampleTime_Local), names_from = .data$parameters, values_from = .data$Values, values_fn = mean)
       
     }) %>% bindCache(input$p1, input$p2, input$Site)
     

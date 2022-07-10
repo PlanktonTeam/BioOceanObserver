@@ -66,11 +66,11 @@ mod_PolNRS_server <- function(id){
     }) %>% bindCache(input$Site)
     
     info <- reactive({
-      info <- outputs() %>% dplyr::select(slope, p, parameters) %>% unique()
+      info <- outputs() %>% dplyr::select(.data$slope, .data$p, .data$parameters) %>% unique()
     }) %>% bindCache(input$Site)
     
     stationData <- reactive({
-      stationData <- NRSinfo %>% dplyr::filter(StationName == input$Site) 
+      stationData <- NRSinfo %>% dplyr::filter(.data$StationName == input$Site) 
     }) %>% bindCache(input$Site)
     
     # Sidebar Map
@@ -121,15 +121,15 @@ mod_PolNRS_server <- function(id){
     
     output$timeseries1 <- renderPlot({
 
-      p1 <-planktonr::pr_plot_EOV(outputs(), "Biomass_mgm3", "log10", col = "cornflowerblue", labels = "no") 
-      p2 <-planktonr::pr_plot_EOV(outputs(), "PhytoBiomassCarbon_pgL", "log10", col = "darkolivegreen4") 
+      p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Biomass_mgm3", trans = "log10", col = "cornflowerblue", labels = "no") 
+      p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = "darkolivegreen4") 
       
-      p6 <-planktonr::pr_plot_EOV(outputs(), "ShannonCopepodDiversity", "log10", col = "cornflowerblue", labels = "no") 
-      p7 <-planktonr::pr_plot_EOV(outputs(), "ShannonPhytoDiversity", "log10", col = "darkolivegreen4")
+      p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonCopepodDiversity", trans = "log10", col = "cornflowerblue", labels = "no") 
+      p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", trans = "log10", col = "darkolivegreen4")
       
-      p3 <-planktonr::pr_plot_EOV(outputs(), "CTDTemperature_degC", "identity", col = "darkviolet", labels = "no")
-      p4 <-planktonr::pr_plot_EOV(outputs(), "PigmentChla_mgm3", "log10", col = "darkgoldenrod", labels = "no") 
-      p5 <-planktonr::pr_plot_EOV(outputs(), "CTDSalinity_PSU", "identity", col = "darkred")
+      p3 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDTemperature_degC", trans = "identity", col = "darkviolet", labels = "no")
+      p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "PigmentChla_mgm3", trans = "log10", col = "darkgoldenrod", labels = "no") 
+      p5 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDSalinity_PSU", trans = "identity", col = "darkred")
       
       patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
         p1 + p2 + 
