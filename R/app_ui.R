@@ -11,7 +11,7 @@ app_ui <- function(request) {
              id = "navbar",  
              title = div(img(src = "www/logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),
              windowTitle = "The Biological Ocean Observatory",
-             theme = shinythemes::shinytheme("flatly"), # not recommended to use themes anymore as used in bslib package
+             theme = bslib::bs_theme(version = 5, bootswatch = "flatly"), #https://rstudio.github.io/bslib/articles/bslib.html#custom
              selected = "Welcome", 
              # footer = column(12, "\u00A9 2021 Jason Everett (UQ, UNSW, CSIRO) and Claire Davies (CSIRO)"), # \u00A9 is equivalent to © 
              tabPanel("Welcome",
