@@ -102,7 +102,7 @@ mod_ZooSpatial_server <- function(id){
     # Create dot map of distribution
     output$plot2 <- renderPlot({
     
-              plot2 <- planktonr::pr_plot_fmap(selectedZS())
+              plot2 <- planktonr::pr_plot_FreqMap(selectedZS())
               plot2
         
     }) %>% bindCache(input$species)
@@ -139,7 +139,7 @@ mod_ZooSpatial_server <- function(id){
         need(nrow(selectedSTI()) > 20, "Not enough data for this copepod species")
       )
       
-      plotsti <- planktonr::pr_plot_sti(selectedSTI())
+      plotsti <- planktonr::pr_plot_STI(selectedSTI())
       plotsti
 
     }) %>% bindCache(input$species1)
@@ -164,7 +164,7 @@ mod_ZooSpatial_server <- function(id){
         need(length(unique(selecteddn()$daynight)) == 2 | nrow(selecteddn()) > 20, "Not enough data for this copepod species to plot")
       )
       
-      plotdn <- planktonr::pr_plot_daynight(selecteddn())
+      plotdn <- planktonr::pr_plot_DayNight(selecteddn())
       plotdn
       
     }) %>% bindCache(input$species1)

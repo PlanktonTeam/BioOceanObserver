@@ -115,8 +115,8 @@ mod_PhytoTsCPR_server <- function(id){
         trans <- "identity"
       }
       
-      p1 <- planktonr::pr_plot_trends(selectedData(), Trend = "Raw", Survey = "CPR", method = "lm", trans = trans)
-      p2 <- planktonr::pr_plot_trends(selectedData(), Trend = "Month", Survey = "CPR", method = "loess", trans = trans) + 
+      p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "CPR", method = "lm", trans = trans)
+      p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "CPR", method = "loess", trans = trans) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       
       p1 + p2 + patchwork::plot_layout(widths = c(3,1))
@@ -140,15 +140,15 @@ mod_PhytoTsCPR_server <- function(id){
       if (identical(input$region, "")) return(NULL)
       if (identical(input$parameter, "")) return(NULL)
       
-      p1 <- planktonr::pr_plot_timeseries(selectedData(), Survey = "CPR", trans = trans) + 
+      p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "CPR", trans = trans) + 
         ggplot2::theme(legend.position = 'none',
                        axis.title.y = ggplot2::element_blank())
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), Survey = "CPR", Trend = "Month", trans = trans) + 
+      p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Month", trans = trans) + 
         ggplot2::theme(legend.position = 'bottom',
                        axis.title.y = ggplot2::element_blank())
       
-      p3 <- planktonr::pr_plot_climate(selectedData(), Survey = "CPR", Trend = "Year", trans = trans) + 
+      p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Year", trans = trans) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                        legend.position = 'bottom')
       

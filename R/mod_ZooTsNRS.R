@@ -123,8 +123,8 @@ mod_ZooTsNRS_server <- function(id){
         trans <- 'identity'
       }
       
-      p1 <- planktonr::pr_plot_trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
-      p2 <- planktonr::pr_plot_trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
+      p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
+      p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
       
@@ -147,15 +147,15 @@ mod_ZooTsNRS_server <- function(id){
         trans <- 'log10'
       } 
       
-      p1 <- planktonr::pr_plot_timeseries(selectedData(), Survey = "NRS", trans = trans) + 
+      p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "NRS", trans = trans) + 
         ggplot2::theme(legend.position = 'none',
                        axis.title.y = ggplot2::element_blank())
       
-      p2 <- planktonr::pr_plot_climate(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) + 
+      p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) + 
         ggplot2::theme(legend.position = 'bottom',
                        axis.title.y = ggplot2::element_blank())
       
-      p3 <- planktonr::pr_plot_climate(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) + 
+      p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                        legend.position = 'bottom')
       

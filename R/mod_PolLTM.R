@@ -68,7 +68,7 @@ mod_PolLTM_server <- function(id){
     )
 
         outputs <- reactive({
-      outputs <- planktonr::pr_get_coeffs(selectedDataLTM())
+      outputs <- planktonr::pr_get_Coeffs(selectedDataLTM())
     }) %>% bindCache(input$SiteLTM)
     
     info <- reactive({
