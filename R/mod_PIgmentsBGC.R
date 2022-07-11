@@ -81,7 +81,7 @@ mod_PigmentsBGC_server <- function(id){
       
       trend <-  input$smoother
       
-      planktonr::pr_plot_env_var(selected(), Trend = trend)
+      planktonr::pr_plot_Enviro(selected(), Trend = trend)
       
     }) %>% bindCache(input$station, input$parameter, input$date, input$smoother)
     

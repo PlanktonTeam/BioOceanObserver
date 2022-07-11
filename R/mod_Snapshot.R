@@ -116,7 +116,7 @@ mod_Snapshot_server <- function(id){
     output$Facts <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
         "Fun Facts",
-        planktonr::pr_get_facts(),
+        planktonr::pr_get_Facts(),
         icon = shiny::icon("info-circle"),
         color = "green"
       )
@@ -125,7 +125,7 @@ mod_Snapshot_server <- function(id){
     output$Papers <- shinydashboard::renderValueBox({
       shinydashboard::valueBox(
         "Scientific Paper using the data in the Biological Ocean Observer",
-        planktonr::pr_get_papers(),
+        planktonr::pr_get_Papers(),
         # tags$p(tags$b("Test "), tags$i("string")),
         icon = shiny::icon("newspaper"),
         color = "teal"

@@ -62,7 +62,7 @@ mod_PolNRS_server <- function(id){
       PolNRSValuesisNumeric = {class(selectedData()$Values)}
     )
     outputs <- reactive({
-      outputs <- planktonr::pr_get_coeffs(selectedData())
+      outputs <- planktonr::pr_get_Coeffs(selectedData())
     }) %>% bindCache(input$Site)
     
     info <- reactive({

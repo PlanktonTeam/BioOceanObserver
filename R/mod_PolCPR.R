@@ -63,7 +63,7 @@ mod_PolCPR_server <- function(id){
     )
     
     outputs <- reactive({
-      outputs <- planktonr::pr_get_coeffs(selectedData())
+      outputs <- planktonr::pr_get_Coeffs(selectedData())
     }) %>% bindCache(input$Site)
     
     info <- reactive({
