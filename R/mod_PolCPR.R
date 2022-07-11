@@ -7,7 +7,6 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
-#' @importFrom stats runif
 mod_PolCPR_ui <- function(id){
   nsPolCPR <- NS(id)
   tagList(
@@ -96,21 +95,16 @@ mod_PolCPR_server <- function(id){
             "Copepod diversity at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
             "Phytoplankton diveristy at", input$Site, "is", info()[4,1], info()[4,2])
     }) 
-    output$PlotExp5 <- renderText({
-      paste("BioRegion:", input$Site, "\n", 
-            "The CPR has been sampling in this bioregion since ", min(stationData()$SampleStartDate), " and sampling is ongoing.", "\n",
-            "Approximately a total of ", sum(stationData()$Miles), " nautical miles has been towed in this region.", "\n",
-            "The station is characterised by ", unique(stationData()$Features), sep = "")
-    })
     
     # Plot Trends -------------------------------------------------------------
     layout1 <- c(
-      patchwork::area(1,1,1,1),
-      patchwork::area(2,1,2,3),
+      patchwork::area(1,1,1,3),  # Text
+      patchwork::area(2,1,2,1),  # Header
       patchwork::area(3,1,3,3),
-      patchwork::area(4,1,4,1),
-      patchwork::area(5,1,5,3),
-      patchwork::area(6,1,6,3)
+      patchwork::area(4,1,4,3),
+      patchwork::area(5,1,5,1),  # Header
+      patchwork::area(6,1,6,3),
+      patchwork::area(7,1,7,3)
     )
     
     output$timeseries1 <- renderPlot({
@@ -125,7 +119,18 @@ mod_PolCPR_server <- function(id){
       p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', 
                                    trans = "log10", col = "darkolivegreen4")
       
-      patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
+      BioRegionSummary <- strwrap(
+        paste("The CPR has been sampling in the ", input$Site," bioregion since ", min(stationData()$SampleStartDate), 
+              " and sampling is ongoing.", " Approximately ", format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
+              " nautical miles has been towed in this region. The ", input$Site, " bioregion is characterised by ", 
+              unique(stationData()$Features), sep = ""),
+        width = 80, simplify = FALSE)
+      BioRegionSummary2 <- sapply(BioRegionSummary, paste, collapse = "\n")
+      
+      
+      patchwork::wrap_elements(
+        grid::textGrob(BioRegionSummary2, gp = grid::gpar(fontsize=16))) +
+        grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20)) + 
         p1 + p2 + 
         grid::textGrob("Diversity EOVs", gp = grid::gpar(fontsize=20)) + 
         p6 + p7 + 

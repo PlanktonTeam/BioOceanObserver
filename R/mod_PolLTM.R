@@ -7,7 +7,6 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
-#' @importFrom stats runif
 mod_PolLTM_ui <- function(id){
   nsPolLTM <- NS(id)
   tagList(
@@ -20,15 +19,15 @@ mod_PolLTM_ui <- function(id){
         downloadButton(nsPolLTM("downloadData"), "Data"),
         downloadButton(nsPolLTM("downloadPlot"), "Plot"),
         downloadButton(nsPolLTM("downloadNote"), "Notebook")
-          ),
+      ),
       mainPanel(id = "EOV paramters from Long Term Monitoring", 
                 h6(textOutput(nsPolLTM("PlotExp1"), container = span)),
                 h6(verbatimTextOutput(nsPolLTM("PlotExp5"))),
                 plotOutput(nsPolLTM("timeseriesLTM"), height = 1000) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
                 h6(verbatimTextOutput(nsPolLTM("PlotExp3")))
-             )
       )
     )
+  )
 }
 
 #' Policy Server Functions
@@ -66,8 +65,8 @@ mod_PolLTM_server <- function(id){
       PolLTMparametersisChr = {class(selectedDataLTM()$parameters)},
       PolLTMValuesisNumeric = {class(selectedDataLTM()$Values)}
     )
-
-        outputs <- reactive({
+    
+    outputs <- reactive({
       outputs <- planktonr::pr_get_Coeffs(selectedDataLTM())
     }) %>% bindCache(input$SiteLTM)
     
@@ -77,7 +76,7 @@ mod_PolLTM_server <- function(id){
     }) %>% bindCache(input$SiteLTM)
     
     stationData <- reactive({
-       stationData <- NRSinfo %>% dplyr::filter(.data$StationName == input$SiteLTM) 
+      stationData <- NRSinfo %>% dplyr::filter(.data$StationName == input$SiteLTM) 
     }) %>% bindCache(input$SiteLTM)
     
     # Sidebar Map
@@ -93,7 +92,7 @@ mod_PolLTM_server <- function(id){
       They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment"
     }) 
     output$PlotExp3 <- renderText({
-        paste(" Nitrate concentration at", input$SiteLTM, "is", info()[1,1], info()[1,2],  "\n",
+      paste(" Nitrate concentration at", input$SiteLTM, "is", info()[1,1], info()[1,2],  "\n",
             "Phosphate concentration at", input$SiteLTM, "is", info()[2,1], info()[2,2],  "\n",
             "Silicate concentration", input$SiteLTM, "is", info()[4,1], info()[4,2],  "\n",
             "Temperature at", input$SiteLTM, "is", info()[5,1], info()[5,2],  "\n",
@@ -110,7 +109,7 @@ mod_PolLTM_server <- function(id){
     
     # Plot Trends -------------------------------------------------------------
     layout1 <- c(
-      patchwork::area(1,1,1,1),
+      patchwork::area(1,1,1,1),  # Header
       patchwork::area(2,1,2,3),
       patchwork::area(3,1,3,3),
       patchwork::area(4,1,4,3),
@@ -119,20 +118,20 @@ mod_PolLTM_server <- function(id){
     )
     
     output$timeseriesLTM <- renderPlot({
-
-          p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrate_umolL", Survey = "LTM", trans = "identity", col = "aquamarine4", labels = "no")
-          p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "Phosphate_umolL", Survey = "LTM", trans = "identity", col = "darkorange3", labels = "no") 
-          p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "Silicate_umolL", Survey = "LTM", trans = "identity", col = "darkgoldenrod1", labels = "no") 
-          p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "Temperature_degC", Survey = "LTM", trans = "identity", col = "darkviolet", labels = "no")
-          p3 <- planktonr::pr_plot_EOV(outputs(), EOV = "Salinity", Survey = "LTM", trans = "identity", col = "darkred")
-          
-          patchwork::wrap_elements(grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20))) + 
-            p1 + p2 + p4 + p7 + p3 +
-            patchwork::plot_layout(design = layout1) &
-            patchwork::plot_annotation(title = input$SiteLTM)  +
-            ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
-                           plot.title = ggplot2::element_text(hjust = 0.5)) 
-          
-        }) %>% bindCache(input$SiteLTM)
+      
+      p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrate_umolL", Survey = "LTM", trans = "identity", col = "aquamarine4", labels = "no")
+      p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "Phosphate_umolL", Survey = "LTM", trans = "identity", col = "darkorange3", labels = "no") 
+      p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "Silicate_umolL", Survey = "LTM", trans = "identity", col = "darkgoldenrod1", labels = "no") 
+      p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "Temperature_degC", Survey = "LTM", trans = "identity", col = "darkviolet", labels = "no")
+      p3 <- planktonr::pr_plot_EOV(outputs(), EOV = "Salinity", Survey = "LTM", trans = "identity", col = "darkred")
+      
+      patchwork::wrap_elements(grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20))) + 
+        p1 + p2 + p4 + p7 + p3 +
+        patchwork::plot_layout(design = layout1) &
+        patchwork::plot_annotation(title = input$SiteLTM)  +
+        ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
+                       plot.title = ggplot2::element_text(hjust = 0.5)) 
+      
+    }) %>% bindCache(input$SiteLTM)
     
-})}
+  })}

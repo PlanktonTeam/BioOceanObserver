@@ -7,7 +7,6 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
-#' @importFrom stats runif
 mod_PolNRS_ui <- function(id){
   nsPolNRS <- NS(id)
   tagList(
@@ -20,15 +19,15 @@ mod_PolNRS_ui <- function(id){
         downloadButton(nsPolNRS("downloadData"), "Data"),
         downloadButton(nsPolNRS("downloadPlot"), "Plot"),
         downloadButton(nsPolNRS("downloadNote"), "Notebook")
-          ),
+      ),
       mainPanel(id = "EOV Biomass by NRS", 
                 h6(textOutput(nsPolNRS("PlotExp1"), container = span)),
-                h6(verbatimTextOutput(nsPolNRS("PlotExp5"))),
+                # h6(verbatimTextOutput(nsPolNRS("PlotExp5"))),
                 plotOutput(nsPolNRS("timeseries1"), height = 1600) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
                 h6(verbatimTextOutput(nsPolNRS("PlotExp3")))
-             )
       )
     )
+  )
 }
 
 #' Policy Server Functions
@@ -88,7 +87,7 @@ mod_PolNRS_server <- function(id){
       They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment"
     }) 
     output$PlotExp3 <- renderText({
-      paste(" Zooplankton biomass at", input$Site, "is", info()[1,1], info()[1,2],  "\n",
+      paste("Zooplankton biomass at", input$Site, "is", info()[1,1], info()[1,2],  "\n",
             "Phytoplankton carbon biomass at", input$Site, "is", info()[2,1], info()[2,2],  "\n",
             "Copepod diversity at", input$Site, "is", info()[4,1], info()[4,2],  "\n",
             "Phytoplankton diveristy at", input$Site, "is", info()[5,1], info()[5,2],  "\n",
@@ -96,31 +95,25 @@ mod_PolNRS_server <- function(id){
             "Surface chlorophyll at", input$Site, "is", info()[7,1], info()[7,2],  "\n",
             "Surface salinity at", input$Site, "is", info()[6,1], info()[6,2])
     }) 
-    output$PlotExp5 <- renderText({
-      paste("STation Name:", input$Site, "\n",
-            input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ".", "\n",  
-            "The water depth at the station is ", round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, ".", "\n", 
-            "The station has been sampled since ", stationData()$StationStartDate, " ", stationData()$now, ".", "\n", 
-            input$Site, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, " management bioregion.",  "\n", 
-            "The station is characterised by ", stationData()$Features, sep = "")
-    })
     
     # Plot Trends -------------------------------------------------------------
     layout1 <- c(
-      patchwork::area(1,1,1,1),
-      patchwork::area(2,1,2,3),
+      #t, l, b, r
+      patchwork::area(1,1,1,3),
+      patchwork::area(2,1,2,1), # Header
       patchwork::area(3,1,3,3),
-      patchwork::area(4,1,4,1),
-      patchwork::area(5,1,5,3),
+      patchwork::area(4,1,4,3),
+      patchwork::area(5,1,5,1), # Header
       patchwork::area(6,1,6,3),
-      patchwork::area(7,1,7,1),
-      patchwork::area(8,1,8,3),
+      patchwork::area(7,1,7,3),
+      patchwork::area(8,1,8,1), # Header
       patchwork::area(9,1,9,3),
-      patchwork::area(10,1,10,3)
+      patchwork::area(10,1,10,3),
+      patchwork::area(11,1,11,3)
     )
     
     output$timeseries1 <- renderPlot({
-
+      
       p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Biomass_mgm3", trans = "log10", col = "cornflowerblue", labels = "no") 
       p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = "darkolivegreen4") 
       
@@ -131,7 +124,19 @@ mod_PolNRS_server <- function(id){
       p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "PigmentChla_mgm3", trans = "log10", col = "darkgoldenrod", labels = "no") 
       p5 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDSalinity_PSU", trans = "identity", col = "darkred")
       
-      patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
+      StationSummary <- strwrap(
+        paste("The ", input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), 
+              "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ". The water depth at the station is ", 
+              round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, 
+              ". The station has been sampled since ", stationData()$StationStartDate, " ", stationData()$now,
+              ". ", input$Site, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, 
+              " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = ""), 
+        width = 80, simplify = FALSE)
+      StationSummary2 <- sapply(StationSummary, paste, collapse = "\n")
+      
+      patchwork::wrap_elements(
+        grid::textGrob(StationSummary2, gp = grid::gpar(fontsize=16))) +
+        grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20)) +
         p1 + p2 + 
         grid::textGrob("Diversity EOVs", gp = grid::gpar(fontsize=20)) + 
         p6 + p7 + 
@@ -141,6 +146,6 @@ mod_PolNRS_server <- function(id){
         ggplot2::theme(title = element_text(size = 20, face = "bold"),
                        plot.title = element_text(hjust = 0.5))
       
-      }) %>% bindCache(input$Site)
+    }) %>% bindCache(input$Site)
     
-})}
+  })}
