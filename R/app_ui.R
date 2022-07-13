@@ -11,7 +11,8 @@ app_ui <- function(request) {
              id = "navbar",  
              title = div(img(src = "www/logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),
              windowTitle = "The Biological Ocean Observatory",
-             theme = bslib::bs_theme(version = 5, bootswatch = "flatly"), #https://rstudio.github.io/bslib/articles/bslib.html#custom
+             theme = bslib::bs_theme(version = 5, 
+                                     bootswatch = "flatly"), #https://rstudio.github.io/bslib/articles/bslib.html#custom
              selected = "Welcome", 
              # footer = column(12, "\u00A9 2021 Jason Everett (UQ, UNSW, CSIRO) and Claire Davies (CSIRO)"), # \u00A9 is equivalent to © 
              tabPanel("Welcome",
@@ -27,6 +28,10 @@ app_ui <- function(request) {
                             We aim to enhance the availability and understanding of biological data and make it 
                             accessible to broader and non-specialist audiences in order to accelerate the next 
                             generation of scientific insights."),
+                          p("Data was sourced from Australia’s ",tags$a(href="https://imos.org.au","Integrated Marine Observing System (IMOS)"),
+                          " – IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). 
+                            It is operated by a consortium of institutions as an unincorporated joint venture, with 
+                            the University of Tasmania as Lead Agent."),
                           h3("Code"),
                           p("This project is entirely open source, as are all the IMOS data underlying it. All the 
                             code for this tool are freely available on GitHub. We welcome collaborators and pull 
