@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id,input,output,session Internal Parameters for {shiny}.
 #'
 #' @noRd 
 #'
@@ -57,7 +57,7 @@ mod_PolNRS_server <- function(id){
       PolNRSDateisDate = {class(selectedData()$SampleTime_Local)},
       PolNRSStationisChr = {class(selectedData()$StationName)},
       PolNRSCodeisChr = {class(selectedData()$StationCode)},
-      PolNRSparametersisChr = {class(selectedData()$parameters)},
+      PolNRSParametersisChr = {class(selectedData()$Parameters)},
       PolNRSValuesisNumeric = {class(selectedData()$Values)}
     )
     outputs <- reactive({
@@ -65,7 +65,7 @@ mod_PolNRS_server <- function(id){
     }) %>% bindCache(input$Site)
     
     info <- reactive({
-      info <- outputs() %>% dplyr::select(.data$slope, .data$p, .data$parameters) %>% unique()
+      info <- outputs() %>% dplyr::select(.data$slope, .data$p, .data$Parameters) %>% unique()
     }) %>% bindCache(input$Site)
     
     stationData <- reactive({

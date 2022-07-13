@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id,input,output,session Internal Parameters for {shiny}.
 #'
 #' @noRd 
 #'
@@ -16,7 +16,7 @@ mod_ZooTsNRS_ui <- function(id){
           condition="input.NRSzts == 1",  
           # Select whether to overlay smooth trend line 
           checkboxInput(inputId = nsZooTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE),
-          selectInput(inputId = nsZooTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSz$parameters), style = "simple"), selected = "Biomass_mgm3")
+          selectInput(inputId = nsZooTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSz$Parameters), style = "simple"), selected = "Biomass_mgm3")
         ),
         conditionalPanel(
           condition="input.NRSzts == 2", 
@@ -74,7 +74,7 @@ mod_ZooTsNRS_server <- function(id){
       
       selectedData <- datNRSz %>% 
         dplyr::filter(.data$StationName %in% input$Site,
-                      .data$parameters %in% input$ycol,
+                      .data$Parameters %in% input$ycol,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
@@ -88,7 +88,7 @@ mod_ZooTsNRS_server <- function(id){
       ZtsNRSDateisDate = {class(selectedData()$SampleTime_Local)},
       ZtsNRSStationisFactor = {class(selectedData()$StationName)},
       ZtsNRSCodeisChr = {class(selectedData()$StationCode)},
-      ZtsNRSparametersisChr = {class(selectedData()$parameters)},
+      ZtsNRSParametersisChr = {class(selectedData()$Parameters)},
       ZtsNRSValuesisNumeric = {class(selectedData()$Values)}
     )
     
@@ -100,7 +100,7 @@ mod_ZooTsNRS_server <- function(id){
     
     # Add text information 
     output$PlotExp1 <- renderText({
-      "A plot of selected zooplankton parameters from the NRS around Australia, as a time series and a monthly climatology by station."
+      "A plot of selected zooplankton Parameters from the NRS around Australia, as a time series and a monthly climatology by station."
     }) 
     
     output$PlotExp2 <- renderText({

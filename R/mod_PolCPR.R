@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id,input,output,session Internal Parameters for {shiny}.
 #'
 #' @noRd 
 #'
@@ -57,7 +57,7 @@ mod_PolCPR_server <- function(id){
       PolcprAnomalyisNumeric = {class(selectedData()$anomaly)},
       PolcprDateisDate = {class(selectedData()$SampleTime_Local)},
       PolcprRegionisChr = {class(selectedData()$BioRegion)},
-      PolcprparametersisChr = {class(selectedData()$parameters)},
+      PolcprParametersisChr = {class(selectedData()$Parameters)},
       PolcprValuesisNumeric = {class(selectedData()$Values)}
     )
     
@@ -67,9 +67,9 @@ mod_PolCPR_server <- function(id){
     
     info <- reactive({
       info <- outputs() %>% 
-        dplyr::select(.data$slope, .data$p, .data$parameters) %>% 
+        dplyr::select(.data$slope, .data$p, .data$Parameters) %>% 
         unique %>%
-        dplyr::arrange(.data$parameters)
+        dplyr::arrange(.data$Parameters)
     }) %>% bindCache(input$Site)
     
     stationData <- reactive({

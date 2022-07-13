@@ -15,7 +15,7 @@ app_ui <- function(request) {
              windowTitle = "The Biological Ocean Observatory",
              theme = bslib::bs_theme(version = 5, 
                                      bootswatch = "flatly",
-                                     "border-width" = "1px",
+                                     "border-width" = "0px",
                                      "enable-rounded" = TRUE,
                                      primary = "#2C3E50"
                                      ), #https://rstudio.github.io/bslib/articles/bslib.html#custom
