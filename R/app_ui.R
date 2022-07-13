@@ -78,7 +78,6 @@ app_ui <- function(request) {
                       tabsetPanel(id = 'env',
                                   tabPanel(value = "bgc", "NRS BGC Nutrients", mod_NutrientsBGC_ui("NutrientsBGC_ui_1")),
                                   tabPanel(value = "pigs", "NRS BGC Pigments", mod_PigmentsBGC_ui("PigmentsBGC_ui_1")),
-                                  tabPanel(value = "water", "NRS BGC Water", mod_WaterBGC_ui("WaterBGC_ui_1")),
                                   tabPanel("NRS Moorings",
                                            img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")))),
              navbarMenu("", icon = icon("question-circle"),

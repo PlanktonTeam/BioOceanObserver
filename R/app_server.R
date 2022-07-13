@@ -20,7 +20,7 @@ app_server <- function( input, output, session ) {
   # Your application server logic 
   
   ## global options and themes can go here
-  theme_set(theme_bw(base_size = 10) + theme(legend.position = "bottom")) 
+  theme_set(theme_bw(base_size = 12) + theme(legend.position = "bottom")) 
   options(na.action = "na.omit")
 
 ## only run if selected by tab - this should be home page for each Tab level
@@ -95,10 +95,5 @@ app_server <- function( input, output, session ) {
         if(input$env == "pigs"){
           mod_PigmentsBGC_server("PigmentsBGC_ui_1")
         }
-    })
-    observeEvent(input$env, {
-      if(input$env == "water"){
-        mod_WaterBGC_server("WaterBGC_ui_1")
-      }
     })
 }
