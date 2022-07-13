@@ -59,7 +59,7 @@ fMapDataz <- planktonr::pr_get_FreqMap("Z")
 fMapDatap <- planktonr::pr_get_FreqMap("P")
 
 # Progress Map
-PmapData <- planktonr::pr_get_ProgressMap(c("NRS", "CPR"))
+PMapData <- planktonr::pr_get_ProgressMap(c("NRS", "CPR"))
 
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts, 
@@ -70,8 +70,8 @@ usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts,
                   stiz, stip, daynightz, daynightp,
                   overwrite = TRUE, internal = TRUE)
 
-## files for SDMs (this will only work for Claire at the moment)
-listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
-files <- paste("C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps/", listsdm, sep = "")
-file.copy(from=files, to="inst/app/www")
+## files for SDMs (tshis will only work for Claire at the moment)
+# listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
+# files <- paste("C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps/", listsdm, sep = "")
+# file.copy(from=files, to="inst/app/www")
 
