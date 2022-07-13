@@ -15,12 +15,12 @@ datNRSz <- planktonr::pr_get_Indices("NRS", "Z")
 datNRSp <- planktonr::pr_get_Indices("NRS", "P")
 datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
 datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
-  tidyr::pivot_wider(values_from = "Values", names_from = "parameters") %>%
+  tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
   dplyr::mutate(MLD_m = dplyr::case_when(.data$MLDtemp_m <= .data$MLDsal_m ~ .data$MLDtemp_m,
                                          .data$MLDsal_m < .data$MLDtemp_m ~ .data$MLDsal_m,
                                          TRUE ~ NA_real_)) %>%
   dplyr::select(-c(.data$MLDtemp_m, .data$MLDsal_m)) %>%
-  tidyr::pivot_longer(-c(.data$Year_Local:.data$StationCode), names_to = 'parameters', values_to = 'Values')
+  tidyr::pivot_longer(-c(.data$Year_Local:.data$StationCode), names_to = 'Parameters', values_to = 'Values')
 
 # CPR time series data
 datCPRz <- planktonr::pr_get_Indices("CPR", "Z")
@@ -55,9 +55,8 @@ CPRinfo <- planktonr::pr_get_PolicyInfo("CPR")
 PolLTM <- planktonr::pr_get_PolicyData("LTM")
 
 # Species distribution data
-fMapDataz <- planktonr::pr_get_fMap_data("Z")
-
-fMapDatap <- planktonr::pr_get_fMap_data("P")
+fMapDataz <- planktonr::pr_get_FreqMap("Z")
+fMapDatap <- planktonr::pr_get_FreqMap("P")
 
 # Progress Map
 PmapData <- planktonr::pr_get_ProgressMap(c("NRS", "CPR"))
