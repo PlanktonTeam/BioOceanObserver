@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal Parameters for {shiny}.
+#' @param id,input,output,session Internal parameters for {shiny}.
 #'
 #' @noRd 
 #'
@@ -30,11 +30,11 @@ mod_MicroTsNRS_ui <- function(id){
                       value = c(as.POSIXct('2009-01-01 00:00',
                                            format = "%Y-%m-%d %H:%M",
                                            tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d"),
-          selectInput(inputId = nsMicroTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSm$Parameters), style = "simple"), selected = "Bacterial_Richness"),
+          selectInput(inputId = nsMicroTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSm$parameters), style = "simple"), selected = "Bacterial_Richness"),
         ),
         conditionalPanel(
           condition="input.NRSmts == 3", 
-          selectInput(inputId = nsMicroTsNRS("p1"), label = 'Select an x parameter', choices = planktonr::pr_relabel(unique(datNRSm$Parameters), style = "simple"), selected = "Eukaryote_Chlorophyll_Index"),
+          selectInput(inputId = nsMicroTsNRS("p1"), label = 'Select an x parameter', choices = planktonr::pr_relabel(unique(datNRSm$parameters), style = "simple"), selected = "Eukaryote_Chlorophyll_Index"),
           selectInput(inputId = nsMicroTsNRS("p2"), label = 'Select a y parameter', 
                       choices = planktonr::pr_relabel(c("Prochlorococcus_CellsmL", "Synecochoccus_CellsmL", "Picoeukaryotes_CellsmL"), 
                                                       style = "simple"), selected = "Prochlorococcus_CellsmL")
@@ -42,15 +42,16 @@ mod_MicroTsNRS_ui <- function(id){
         absolutePanel(
           plotOutput(nsMicroTsNRS("plotmap")),
           checkboxGroupInput(inputId = nsMicroTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSm$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala")),
-          fDownloadData(id, "Data"),
-          fDownloadPlot(id, "Plot")
+          downloadButton(nsMicroTsNRS("downloadData"), "Data"),
+          downloadButton(nsMicroTsNRS("downloadPlot"), "Plot"),
+          downloadButton(nsMicroTsNRS("downloadNote"), "Notebook")
         )
       ),
       mainPanel(
         tabsetPanel(id = "NRSmts",
                     tabPanel("Trend Analysis", value=1, 
                              h6(textOutput(nsMicroTsNRS("PlotExp1"), container = span)),
-                             plotOutput(nsMicroTsNRS("timeseries1"), height = "auto") %>% 
+                             plotOutput(nsMicroTsNRS("timeseries1"), height = 'auto') %>% 
                                shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Climatologies", value=1,
@@ -85,9 +86,9 @@ mod_MicroTsNRS_server <- function(id){
     selectedData <- reactive({
       selectedData <- datNRSm %>% 
         dplyr::filter(.data$StationName %in% input$Site,
-                      .data$Parameters %in% input$ycol,
+                      .data$parameters %in% input$ycol,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-        mutate(name = as.factor(.data$Parameters),
+        mutate(name = as.factor(.data$parameters),
                # SampleDepth_m = dplyr::if_else(stringr::str_detect("WC", SampleDepth_m),
                #                                "WC",
                #                                as.character(round(as.numeric(.data$SampleDepth_m)/5,0)*5))
@@ -105,7 +106,7 @@ mod_MicroTsNRS_server <- function(id){
       MicroTsDateisDate = {class(selectedData()$SampleTime_Local)},
       MicroTsStationisFactor = {class(selectedData()$StationName)},
       MicroTsCodeisChr = {class(selectedData()$StationCode)},
-      MicroTsParametersisChr = {class(selectedData()$Parameters)},
+      MicroTsparametersisChr = {class(selectedData()$parameters)},
       MicroTsValuesisNumeric = {class(selectedData()$Values)}
     )
     
@@ -147,7 +148,7 @@ mod_MicroTsNRS_server <- function(id){
       p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
-      p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
+      p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
 
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
@@ -182,7 +183,7 @@ mod_MicroTsNRS_server <- function(id){
       p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       
-      #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple"))
+      #titley <- names(planktonr::pr_relabel(unique(selectedData()$parameters), style = "simple"))
       
       p1 + p2 + p3 + patchwork::plot_layout(widths = c(3,1,3), guides = "collect")
       
@@ -205,7 +206,7 @@ mod_MicroTsNRS_server <- function(id){
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$smoother, input$scaler1)
     
-    # Plots by Parameters ---------------------------------------------------------
+    # Plots by parameters ---------------------------------------------------------
     
     selectedData1 <- reactive({
       req(input$Site)
@@ -215,8 +216,8 @@ mod_MicroTsNRS_server <- function(id){
       
       selectedData1 <- datNRSm %>% 
         dplyr::filter(.data$StationName %in% input$Site,
-                      .data$Parameters %in% c(input$p1, input$p2)) %>%
-        tidyr::pivot_wider(c(.data$StationName, .data$SampleDepth_m, .data$SampleTime_Local), names_from = .data$Parameters, values_from = .data$Values, values_fn = mean)
+                      .data$parameters %in% c(input$p1, input$p2)) %>%
+        tidyr::pivot_wider(c(.data$StationName, .data$SampleDepth_m, .data$SampleTime_Local), names_from = .data$parameters, values_from = .data$Values, values_fn = mean)
       
     }) %>% bindCache(input$p1, input$p2, input$Site)
     

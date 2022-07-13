@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal Parameters for {shiny}.
+#' @param id,input,output,session Internal parameters for {shiny}.
 #'
 #' @noRd 
 #'
@@ -11,24 +11,46 @@ mod_ZooTsNRS_ui <- function(id){
   nsZooTsNRS <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, panel_id = "NRSzts", input = input, dat = datNRSz),
+      sidebarPanel(
+        conditionalPanel(
+          condition="input.NRSzts == 1",  
+          # Select whether to overlay smooth trend line 
+          checkboxInput(inputId = nsZooTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE),
+          selectInput(inputId = nsZooTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSz$parameters), style = "simple"), selected = "Biomass_mgm3")
+        ),
+        conditionalPanel(
+          condition="input.NRSzts == 2", 
+          # Select whether to overlay smooth trend line
+          checkboxInput(inputId = nsZooTsNRS("scaler3"), label = strong("Change the plot scale to percent"), value = FALSE)
+        ),
+        absolutePanel(
+          plotOutput(nsZooTsNRS("plotmap")),
+          checkboxGroupInput(inputId = nsZooTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSz$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala")),
+          sliderInput(nsZooTsNRS("DatesSlide"), "Dates:", min = as.POSIXct('2009-01-01 00:00',
+                                                                           format = "%Y-%m-%d %H:%M",
+                                                                           tz = "Australia/Hobart"), max = Sys.time(), 
+                      value = c(as.POSIXct('2009-01-01 00:00',
+                                           format = "%Y-%m-%d %H:%M",
+                                           tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d"),
+          downloadButton(nsZooTsNRS("downloadData"), "Data"),
+          downloadButton(nsZooTsNRS("downloadPlot"), "Plot"),
+          downloadButton(nsZooTsNRS("downloadNote"), "Notebook")
+        )
+      ),
       mainPanel(
         tabsetPanel(id = "NRSzts",
                     tabPanel("Trend Analysis", value=1,
                              h6(textOutput(nsZooTsNRS("PlotExp1"), container = span)),
-                             plotOutput(nsZooTsNRS("timeseries1"), height = "auto") %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsZooTsNRS("timeseries1"), height = 'auto') %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Climatologies", value=1,
                              h6(textOutput(nsZooTsNRS("PlotExp2"), container = span)),  
                              textOutput(nsZooTsNRS("selected_var")),
-                             plotOutput(nsZooTsNRS("timeseries2"), height = 800) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsZooTsNRS("timeseries2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Functional groups", value=2,
                              h6(textOutput(nsZooTsNRS("PlotExp3"), container = span)),  
-                             plotOutput(nsZooTsNRS("timeseries3"), height = "auto") %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsZooTsNRS("timeseries3"), height = 'auto') %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     )
         )
       )
@@ -45,17 +67,17 @@ mod_ZooTsNRS_server <- function(id){
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
       req(input$Site)
-      req(input$parameter)
+      req(input$ycol)
       validate(need(!is.na(input$Site), "Error: Please select a station."))
-      validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
+      validate(need(!is.na(input$ycol), "Error: Please select a parameter."))
       
       selectedData <- datNRSz %>% 
         dplyr::filter(.data$StationName %in% input$Site,
-                      .data$Parameters %in% input$parameter,
+                      .data$parameters %in% input$ycol,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
-    }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
     shiny::exportTestValues(
       ZtsNRS = {ncol(selectedData())},
@@ -65,18 +87,19 @@ mod_ZooTsNRS_server <- function(id){
       ZtsNRSDateisDate = {class(selectedData()$SampleTime_Local)},
       ZtsNRSStationisFactor = {class(selectedData()$StationName)},
       ZtsNRSCodeisChr = {class(selectedData()$StationCode)},
-      ZtsNRSParametersisChr = {class(selectedData()$Parameters)},
+      ZtsNRSparametersisChr = {class(selectedData()$parameters)},
       ZtsNRSValuesisNumeric = {class(selectedData()$Values)}
     )
     
     # Sidebar Map
     output$plotmap <- renderPlot({ 
       planktonr::pr_plot_NRSmap(selectedData()) 
+      
     }) %>% bindCache(input$Site)
     
     # Add text information 
     output$PlotExp1 <- renderText({
-      "A plot of selected zooplankton Parameters from the NRS around Australia, as a time series and a monthly climatology by station."
+      "A plot of selected zooplankton parameters from the NRS around Australia, as a time series and a monthly climatology by station."
     }) 
     
     output$PlotExp2 <- renderText({
@@ -94,14 +117,18 @@ mod_ZooTsNRS_server <- function(id){
       if (is.null(datNRSz$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
       
-      trans <- dplyr::if_else(input$scaler1, "log10", "identity")
+      if(input$scaler1){
+        trans <- 'log10'
+      } else {
+        trans <- 'identity'
+      }
       
       p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
       p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
-      p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
+      p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
       
-    }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     output$timeseries1 <- renderPlot({
       ts1()
@@ -115,69 +142,87 @@ mod_ZooTsNRS_server <- function(id){
       if (is.null(datNRSz$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
       
-      trans <- dplyr::if_else(input$scaler1, "log10", "identity")
+      trans <- 'identity'
+      if(input$scaler1){
+        trans <- 'log10'
+      } 
       
       p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "NRS", trans = trans) + 
-        ggplot2::theme(legend.position = "none",
+        ggplot2::theme(legend.position = 'none',
                        axis.title.y = ggplot2::element_blank())
       
       p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) + 
-        ggplot2::theme(legend.position = "bottom",
+        ggplot2::theme(legend.position = 'bottom',
                        axis.title.y = ggplot2::element_blank())
       
       p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       legend.position = "bottom")
+                       legend.position = 'bottom')
       
-      titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
+      titleplot <- names(planktonr::pr_relabel(input$ycol, style = 'simple'))
       
-      p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect") + patchwork::plot_annotation(title = titleplot)
+      p1 / (p2 | p3) + patchwork::plot_layout(guides = 'collect') + patchwork::plot_annotation(title = titleplot)
       
-    }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
+
     # Functional groups -------------------------------------------------------
-    # observeEvent(input$NRSzts, {
-    #   if(input$NRSzts == "Functional groups") {
-    #     
-        selectedDataFG <- reactive({
-          req(input$Site)
-          validate(need(!is.na(input$Site), "Error: Please select a station."))
-          selectedDataFG <- NRSfgz %>% 
-            dplyr::filter(.data$StationName %in% input$Site,
-                          dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-            droplevels()
-        }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    
+    selectedDataFG <- reactive({
+      req(input$Site)
+      validate(need(!is.na(input$Site), "Error: Please select a station."))
+      
+      selectedDataFG <- NRSfgz %>% 
+        dplyr::filter(.data$StationName %in% input$Site,
+                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+        droplevels()
+    
+      }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    
+    ts3 <- reactive({
+      
+      if(input$scaler3){
+        scale <- 'Percent'
+      } else {
+        scale <- 'Actual'
+      }
+      
+      p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
+      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") + 
+        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+                       legend.position = 'none')
+      p1 + p2 + patchwork::plot_layout(widths = c(3,1))
         
-        ts3 <- reactive({
-          
-          scale <- dplyr::if_else(input$scaler3, "Actual", "Percent")
-          
-          p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
-          p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") + 
-            ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                           legend.position = "none")
-          p1 + p2 + patchwork::plot_layout(widths = c(3,1))
-        }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
-        
-        output$timeseries3 <- renderPlot({
-          ts3()
-        }, height = function() {length(unique(selectedDataFG()$StationName)) * 200}) 
-        
-    #   }
-    # })
+    }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
+
+    output$timeseries3 <- renderPlot({
+      ts3()
+    }, height = function() {length(unique(selectedDataFG()$StationName)) * 200}) 
+  
+    # Downloads ---------------------------------------------------------------
     
-    
-    
-    
-    
+    # Table of selected dataset ----
+    output$table <- renderTable({
+      # datasetInput()
+    })
     
     # Download -------------------------------------------------------
-    # Downloadable csv of selected dataset ----
-    output$downloadData <- fDownloadDataServer(input, selectedData())
+    #Downloadable csv of selected dataset ----
+    output$downloadData <- downloadHandler(
+      filename = function() {
+        paste0(tools::file_path_sans_ext(input$ycol),"_", format(Sys.time(), "%Y%m%dT%H%M%S"), ".csv")
+      },
+      content = function(file) {
+        vroom::vroom_write(selectedData(), file, delim = ",")
+      })
+  
     
     # Download figure
-    output$downloadPlot <- fDownloadPlotServer(input, ts3())
-    
+    # output$downloadPlot <- downloadHandler(
+    #   filename = function() {paste(input$ycol, '.png', sep='') },
+    #   content = function(file) {
+    #     ggsave(file, plot = plotInput(), device = "png")
+    #   })
   })
 }
 
