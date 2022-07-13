@@ -39,6 +39,7 @@ mod_ZooTsNRS_ui <- function(id){
       ),
       mainPanel(
         tabsetPanel(id = "NRSzts",
+                    type = "pills",
                     tabPanel("Trend Analysis", value=1,
                              h6(textOutput(nsZooTsNRS("PlotExp1"), container = span)),
                              plotOutput(nsZooTsNRS("timeseries1"), height = 'auto') %>% shinycssloaders::withSpinner(color="#0dc5c1")

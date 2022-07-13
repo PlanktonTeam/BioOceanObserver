@@ -38,6 +38,7 @@ mod_PhytoTsNRS_ui <- function(id){
       ),
       mainPanel(
         tabsetPanel(id = "NRSpts",
+                    type = "pills",
                     tabPanel("Trend Analysis", value=1,
                              h6(textOutput(nsPhytoTsNRS("PlotExp1"), container = span)),
                              plotOutput(nsPhytoTsNRS("timeseries1"), height = 'auto') %>% shinycssloaders::withSpinner(color="#0dc5c1")

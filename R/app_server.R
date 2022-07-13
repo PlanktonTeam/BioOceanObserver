@@ -17,6 +17,7 @@
 #' @noRd
 #' 
 app_server <- function( input, output, session ) {
+  
   # Your application server logic 
   
   ## global options and themes can go here
