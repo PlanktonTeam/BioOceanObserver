@@ -13,11 +13,19 @@
 # NRS indices data
 datNRSz <- planktonr::pr_get_indices("NRS", "Z")
 datNRSp <- planktonr::pr_get_indices("NRS", "P")
+datNRSw <- planktonr::pr_get_indices("NRS", "W") %>%
+  tidyr::pivot_wider(values_from = "Values", names_from = "parameters") %>%
+  dplyr::mutate(MLD_m = dplyr::case_when(.data$MLDtemp_m <= .data$MLDsal_m ~ .data$MLDtemp_m,
+                                         .data$MLDsal_m < .data$MLDtemp_m ~ .data$MLDsal_m,
+                                         TRUE ~ NA_real_)) %>%
+  dplyr::select(-c(.data$MLDtemp_m, .data$MLDsal_m)) %>%
+  tidyr::pivot_longer(-c(.data$Year_Local:.data$StationCode), names_to = 'parameters', values_to = 'Values')
 datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
 
 # CPR time series data
 datCPRz <- planktonr::pr_get_indices("CPR", "Z")
 datCPRp <- planktonr::pr_get_indices("CPR", "P")
+datCPRw <- planktonr::pr_get_indices("CPR", "W") # just PCI atm
 
 # FG time series data
 NRSfgz <- planktonr::pr_get_fg("NRS", "Z")
@@ -57,7 +65,8 @@ PmapData <- planktonr::pr_get_ProgressMap("Both")
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts, 
                   PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, 
-                  datCPRz, datCPRp, datNRSz, datNRSp, datNRSm,
+                  datCPRz, datCPRp, datCPRw, 
+                  datNRSz, datNRSp, datNRSw, datNRSm,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
                   stiz, stip, daynightz, daynightp,
                   overwrite = TRUE, internal = TRUE)

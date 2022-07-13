@@ -137,6 +137,7 @@ mod_PolCPR_server <- function(id){
         patchwork::plot_layout(design = layout1) +
         patchwork::plot_annotation(title = input$Site) & 
         ggplot2::theme(title = element_text(size = 20, face = "bold"),
+                       axis.title = element_text(size = 12, face = 'plain'),
                        plot.title = element_text(hjust = 0.5))
       
     }) %>% bindCache(input$Site)
