@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal Parameters for {shiny}.
+#' @param id,input,output,session Internal parameters for {shiny}.
 #'
 #' @noRd 
 #'
@@ -203,12 +203,12 @@ mod_Snapshot_server <- function(id){
       st <- planktonr::pr_get_NRSStation()
       r1 <- round(runif(1, min = 1, max = nrow(st)))
       
-      meth <- unique(datNRSz$Parameters)
+      meth <- unique(datNRSz$parameters)
       r2 <- round(runif(1, min = 1, max = length(meth)))
       
       planktonr::pr_plot_tsclimate(datNRSz %>% 
                                      dplyr::filter(.data$StationCode == st$StationCode[r1] &
-                                                               .data$Parameters == meth[r2]), 'NRS', 'log10')
+                                                               .data$parameters == meth[r2]), 'NRS', 'log10')
     })
     
     

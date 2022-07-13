@@ -11,19 +11,19 @@
    # "PolCPR", "PolNRS", "stip", "stiz")
 
 # NRS indices data
-datNRSz <- planktonr::pr_get_Indices("NRS", "Z")
-datNRSp <- planktonr::pr_get_Indices("NRS", "P")
+datNRSz <- planktonr::pr_get_indices("NRS", "Z")
+datNRSp <- planktonr::pr_get_indices("NRS", "P")
 datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
 
 # CPR time series data
-datCPRz <- planktonr::pr_get_Indices("CPR", "Z")
-datCPRp <- planktonr::pr_get_Indices("CPR", "P")
+datCPRz <- planktonr::pr_get_indices("CPR", "Z")
+datCPRp <- planktonr::pr_get_indices("CPR", "P")
 
 # FG time series data
-NRSfgz <- planktonr::pr_get_FuncGroups("NRS", "Z")
-NRSfgp <- planktonr::pr_get_FuncGroups("NRS", "P")
-CPRfgz <- planktonr::pr_get_FuncGroups("CPR", "Z")
-CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P")
+NRSfgz <- planktonr::pr_get_fg("NRS", "Z")
+NRSfgp <- planktonr::pr_get_fg("NRS", "P")
+CPRfgz <- planktonr::pr_get_fg("CPR", "Z")
+CPRfgp <- planktonr::pr_get_fg("CPR", "P")
 
 # BGC Environmental variables data
 Nuts <- planktonr::pr_get_NRSChemistry()
@@ -32,27 +32,27 @@ Pico <- planktonr::pr_get_NRSPico()
 LTnuts <- planktonr::pr_get_LTnuts()
 
 # STI data
-stiz <- planktonr::pr_get_STI("Z")
-stip <- planktonr::pr_get_STI("P")
+stiz <- planktonr::pr_get_sti("Z")
+stip <- planktonr::pr_get_sti("P")
 
 # Day-Night data (from CPR only)
-daynightz <- planktonr::pr_get_DayNight("Z")
-daynightp <- planktonr::pr_get_DayNight("P")
+daynightz <- planktonr::pr_get_daynight("Z")
+daynightp <- planktonr::pr_get_daynight("P")
 
 # Policy data
-PolNRS <- planktonr::pr_get_PolicyData("NRS")
-PolCPR <- planktonr::pr_get_PolicyData("CPR")
-PolLTM <- planktonr::pr_get_PolicyData("LTM")
-NRSinfo <- planktonr::pr_get_PolicyInfo("NRS")
-CPRinfo <- planktonr::pr_get_PolicyInfo("CPR")
+PolNRS <- planktonr::pr_get_pol("NRS")
+PolCPR <- planktonr::pr_get_pol("CPR")
+NRSinfo <- planktonr::pr_get_polInfo("NRS")
+CPRinfo <- planktonr::pr_get_polInfo("CPR")
+PolLTM <- planktonr::pr_get_pol("LTM")
 
 # Species distribution data
-fMapDataz <- planktonr::pr_get_FreqMap("Z")
+fMapDataz <- planktonr::pr_get_fMap_data("Z")
 
-fMapDatap <- planktonr::pr_get_FreqMap("P")
+fMapDatap <- planktonr::pr_get_fMap_data("P")
 
 # Progress Map
-PMapData <- planktonr::pr_get_ProgressMap(c("NRS", "CPR"))
+PmapData <- planktonr::pr_get_ProgressMap("Both")
 
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts, 

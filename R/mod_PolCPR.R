@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal Parameters for {shiny}.
+#' @param id,input,output,session Internal parameters for {shiny}.
 #'
 #' @noRd 
 #'
@@ -17,8 +17,9 @@ mod_PolCPR_ui <- function(id){
         plotOutput(nsPolCPR("plotmap")),
         h6("Note there is very little data in the North and North-west regions"),
         radioButtons(inputId = nsPolCPR("Site"), label = "Select a bioregion", choices = unique(sort(PolCPR$BioRegion)), selected = "Temperate East"),
-        fDownloadData(id, "Data"),
-        fDownloadPlot(id, "Plot")
+        downloadButton(nsPolCPR("downloadData"), "Data"),
+        downloadButton(nsPolCPR("downloadPlot"), "Plot"),
+        downloadButton(nsPolCPR("downloadNote"), "Notebook")
       ),
       mainPanel(id = "EOV Biomass by CPR", 
                 h6(textOutput(nsPolCPR("PlotExp1"), container = span)),
@@ -56,7 +57,7 @@ mod_PolCPR_server <- function(id){
       PolcprAnomalyisNumeric = {class(selectedData()$anomaly)},
       PolcprDateisDate = {class(selectedData()$SampleTime_Local)},
       PolcprRegionisChr = {class(selectedData()$BioRegion)},
-      PolcprParametersisChr = {class(selectedData()$Parameters)},
+      PolcprparametersisChr = {class(selectedData()$parameters)},
       PolcprValuesisNumeric = {class(selectedData()$Values)}
     )
     
@@ -66,9 +67,9 @@ mod_PolCPR_server <- function(id){
     
     info <- reactive({
       info <- outputs() %>% 
-        dplyr::select(.data$slope, .data$p, .data$Parameters) %>% 
+        dplyr::select(.data$slope, .data$p, .data$parameters) %>% 
         unique %>%
-        dplyr::arrange(.data$Parameters)
+        dplyr::arrange(.data$parameters)
     }) %>% bindCache(input$Site)
     
     stationData <- reactive({
