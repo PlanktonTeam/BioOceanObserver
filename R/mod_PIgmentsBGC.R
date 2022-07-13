@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id,input,output,session Internal Parameters for {shiny}.
 #'
 #' @noRd 
 #'
@@ -20,7 +20,7 @@ mod_PigmentsBGC_ui <- function(id){
         sliderInput(nsPigmentsBGC("date"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
                     value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
         # select parameter
-        selectizeInput(inputId = nsPigmentsBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(Pigs$parameters), style = "simple"), selected = 'TotalChla', multiple = FALSE),
+        selectizeInput(inputId = nsPigmentsBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(Pigs$Parameters), style = "simple"), selected = 'TotalChla', multiple = FALSE),
         #selectizeInput(inputId = nsPigmentsBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
         # Select whether to overlay smooth trend line
         selectizeInput(inputId = nsPigmentsBGC("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
@@ -56,8 +56,8 @@ mod_PigmentsBGC_server <- function(id){
       Pigs %>%
         filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
-               .data$parameters %in% input$parameter) %>%
-          mutate(name = as.factor(.data$parameters),
+               .data$Parameters %in% input$parameter) %>%
+          mutate(name = as.factor(.data$Parameters),
                  SampleDepth_m = round(.data$SampleDepth_m, -1)) %>%
           tidyr::drop_na() 
     }) %>% bindCache(input$station, input$parameter, input$date)
@@ -71,7 +71,7 @@ mod_PigmentsBGC_server <- function(id){
       PigsBGCDateisDate = {class(selected()$SampleTime_Local)},
       PigsBGCStationisFactor = {class(selected()$StationName)},
       PigsBGCCodeisChr = {class(selected()$StationCode)},
-      PigsBGCparametersisChr = {class(selected()$parameters)},
+      PigsBGCParametersisChr = {class(selected()$Parameters)},
       PigsBGCValuesisNumeric = {class(selected()$Values)}
     )
     
@@ -94,7 +94,7 @@ mod_PigmentsBGC_server <- function(id){
     
     # add text information 
     output$PlotExp <- renderText({
-      "A plot of selected nutrient parameters from the NRS as timeseries at analysed depths"
+      "A plot of selected nutrient Parameters from the NRS as timeseries at analysed depths"
     }) 
     
     # create table output
