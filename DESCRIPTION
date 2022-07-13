@@ -16,12 +16,14 @@ Imports:
     patchwork,
     planktonr (>= 0.0.0.9000),
     rlang,
+    rnaturalearth,
     shiny (>= 1.6.0),
     shinycssloaders,
     shinydashboard,
     shinythemes,
     shinyWidgets,
     stringr,
+    thinkr,
     tidyr,
     vroom
 Encoding: UTF-8
