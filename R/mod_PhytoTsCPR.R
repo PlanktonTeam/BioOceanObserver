@@ -39,6 +39,7 @@ mod_PhytoTsCPR_ui <- function(id){
      ),
       mainPanel(
         tabsetPanel(id = "CPRpts",
+                    type = "pills",
                     tabPanel("Trend Analysis", value = 1,
                              h6(textOutput(nsPhytoTsCPR("PlotExp1"), container = span)),  
                              plotOutput(nsPhytoTsCPR("timeseries1")) %>% shinycssloaders::withSpinner(color="#0dc5c1")

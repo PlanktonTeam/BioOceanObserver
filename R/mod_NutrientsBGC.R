@@ -27,7 +27,8 @@ mod_NutrientsBGC_ui <- function(id){
       ),
       mainPanel(
         h6(textOutput(nsNutrientsBGC("PlotExp"), container = span)),
-        plotOutput(nsNutrientsBGC("plot"), height = 1000) %>% withSpinner(color="#0dc5c1")
+        plotOutput(nsNutrientsBGC("plot"), height = 1000) %>% 
+          withSpinner(color="#0dc5c1")
       )
     )
   )
