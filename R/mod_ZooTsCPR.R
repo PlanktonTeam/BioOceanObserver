@@ -14,6 +14,7 @@ mod_ZooTsCPR_ui <- function(id){
       fPlanktonSidebar(id = id, panel_id = "CPRzts", input = input, dat = datCPRz),
       mainPanel(
         tabsetPanel(id = "CPRzts",
+                    type = "pills",
                     tabPanel("Trend Analysis", value = 1,
                              h6(textOutput(nsZooTsCPR("PlotExp1"), container = span)),  
                              plotOutput(nsZooTsCPR("timeseries1"), height = "auto") %>% shinycssloaders::withSpinner(color="#0dc5c1")

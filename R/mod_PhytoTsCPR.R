@@ -14,6 +14,7 @@ mod_PhytoTsCPR_ui <- function(id){
       fPlanktonSidebar(id = id, panel_id = "CPRpts", input = input, dat = datCPRp),
       mainPanel(
         tabsetPanel(id = "CPRpts",
+                    type = "pills",
                     tabPanel("Trend Analysis", value = 1,
                              h6(textOutput(nsPhytoTsCPR("PlotExp1"), container = span)),  
                              plotOutput(nsPhytoTsCPR("timeseries1")) %>% 

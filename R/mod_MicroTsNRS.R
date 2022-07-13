@@ -48,6 +48,7 @@ mod_MicroTsNRS_ui <- function(id){
       ),
       mainPanel(
         tabsetPanel(id = "NRSmts",
+                    type = "pills",
                     tabPanel("Trend Analysis", value=1, 
                              h6(textOutput(nsMicroTsNRS("PlotExp1"), container = span)),
                              plotOutput(nsMicroTsNRS("timeseries1"), height = "auto") %>% 

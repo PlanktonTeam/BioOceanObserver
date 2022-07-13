@@ -14,6 +14,7 @@ mod_PhytoTsNRS_ui <- function(id){
       fPlanktonSidebar(id = id, panel_id = "NRSpts", input = input, dat = datNRSp),
       mainPanel(
         tabsetPanel(id = "NRSpts",
+                    type = "pills",
                     tabPanel("Trend Analysis", value=1,
                              h6(textOutput(nsPhytoTsNRS("PlotExp1"), container = span)),
                              plotOutput(nsPhytoTsNRS("timeseries1"), height = "auto") %>% 
