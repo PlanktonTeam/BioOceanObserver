@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id,input,output,session Internal Parameters for {shiny}.
 #'
 #' @noRd 
 #'
@@ -15,7 +15,7 @@ mod_PhytoTsCPR_ui <- function(id){
         conditionalPanel(
           condition="input.CPRpts == 1",
           checkboxInput(inputId = nsPhytoTsCPR("scaler"), label = strong("Change the plot scale to log10"), value = FALSE),
-          selectInput(inputId = nsPhytoTsCPR("parameter"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datCPRp$parameters), style = "simple"), 
+          selectInput(inputId = nsPhytoTsCPR("parameter"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datCPRp$Parameters), style = "simple"), 
                       selected = "PhytoAbund_Cellsm3")
         ),
         conditionalPanel(
@@ -74,7 +74,7 @@ mod_PhytoTsCPR_server <- function(id){
       selectedData <- datCPRp %>% 
         mutate(BioRegion = factor(.data$BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
         dplyr::filter(.data$BioRegion %in% input$region,
-                      .data$parameters %in% input$parameter,
+                      .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
@@ -87,7 +87,7 @@ mod_PhytoTsCPR_server <- function(id){
       PhytoTsCPRMonthisNumeric = {class(selectedData()$Month_Local)},
       PhytoTsCPRDateisDate = {class(selectedData()$SampleTime_Local)},
       PhytoTsCPRRegionisFactor = {class(selectedData()$BioRegion)},
-      PhytoTsCPRparametersisChr = {class(selectedData()$parameters)},
+      PhytoTsCPRParametersisChr = {class(selectedData()$Parameters)},
       PhytoTsCPRValuesisNumeric = {class(selectedData()$Values)}
     )
     
@@ -97,10 +97,10 @@ mod_PhytoTsCPR_server <- function(id){
     
     # add text information 
     output$PlotExp1 <- renderText({
-      "A plot of selected Phytoplantkon parameters from the CPR around Australia, as a time series and a monthly climatology across bioregions. "
+      "A plot of selected Phytoplantkon Parameters from the CPR around Australia, as a time series and a monthly climatology across bioregions. "
     }) 
     output$PlotExp2 <- renderText({
-      "A plot of selected Phytoplantkon parameters from the CPR around Australia, as a time series, a monthly climatology and an annual mean for each bioregion"
+      "A plot of selected Phytoplantkon Parameters from the CPR around Australia, as a time series, a monthly climatology and an annual mean for each bioregion"
     }) 
     output$PlotExp3 <- renderText({
       "A plot of functional groups from the light microscope phytoplankton counts from the CPR around Australia, as a time series and a monthly climatology for each bioregion"
@@ -180,7 +180,7 @@ mod_PhytoTsCPR_server <- function(id){
       PhytoFGCPRMonthisNumeric = {class(selectedDataFG()$Month_Local)},
       PhytoFGCPRDateisDate = {class(selectedDataFG()$SampleTime_Local)},
       PhytoFGCPRRegionisFactor = {class(selectedDataFG()$BioRegion)},
-      PhytoFGCPRparametersisChr = {class(selectedDataFG()$parameters)},
+      PhytoFGCPRParametersisChr = {class(selectedDataFG()$Parameters)},
       PhytoFGCPRValuesisNumeric = {class(selectedDataFG()$Values)}
     )
     

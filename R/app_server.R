@@ -1,6 +1,6 @@
 #' The application server-side
 #' 
-#' @param input,output,session Internal parameters for {shiny}. 
+#' @param input,output,session Internal Parameters for {shiny}. 
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @importFrom rlang .data

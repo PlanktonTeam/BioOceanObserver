@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id,input,output,session Internal Parameters for {shiny}.
 #'
 #' @noRd 
 #'
@@ -15,7 +15,7 @@ mod_PhytoTsNRS_ui <- function(id){
         conditionalPanel(
           condition="input.NRSpts == 1",  
           checkboxInput(inputId = nsPhytoTsNRS("scaler"), label = strong("Change the plot scale to log10"), value = FALSE),
-          selectInput(inputId = nsPhytoTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSp$parameters), style = "simple"), 
+          selectInput(inputId = nsPhytoTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSp$Parameters), style = "simple"), 
                       selected = "PhytoBiomassCarbon_pgL")
         ),
         conditionalPanel(
@@ -72,7 +72,7 @@ mod_PhytoTsNRS_server <- function(id){
       
       selectedData <- datNRSp %>% 
         dplyr::filter(.data$StationName %in% input$Site,
-                      .data$parameters %in% input$ycol,
+                      .data$Parameters %in% input$ycol,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
@@ -84,7 +84,7 @@ mod_PhytoTsNRS_server <- function(id){
     
     # add text information 
     output$PlotExp1 <- renderText({
-      "A plot of selected phytoplantkon parameters from the NRS around Australia, as a time series and a monthly climatology by station."
+      "A plot of selected phytoplantkon Parameters from the NRS around Australia, as a time series and a monthly climatology by station."
     }) 
     output$PlotExp2 <- renderText({
       "A plot of selected indicies from the NRS around Australia, as a time series, a monthly climatology and an annual mean"

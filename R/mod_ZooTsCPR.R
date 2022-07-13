@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id,input,output,session Internal Parameters for {shiny}.
 #'
 #' @noRd 
 #'
@@ -15,7 +15,7 @@ mod_ZooTsCPR_ui <- function(id){
         conditionalPanel(
           condition = "input.CPRzts == 1",
           checkboxInput(inputId = nsZooTsCPR("scaler"), label = strong("Change the plot scale to log10"), value = FALSE),
-          selectInput(inputId = nsZooTsCPR("parameter"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datCPRz$parameters), style = "simple"), 
+          selectInput(inputId = nsZooTsCPR("parameter"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datCPRz$Parameters), style = "simple"), 
                       selected = "ZoopAbundance_m3")
         ),
         conditionalPanel(
@@ -76,7 +76,7 @@ mod_ZooTsCPR_server <- function(id){
       selectedData <- datCPRz %>% 
         mutate(BioRegion = factor(.data$BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
         dplyr::filter(.data$BioRegion %in% input$region,
-                      .data$parameters %in% input$parameter,
+                      .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
@@ -89,7 +89,7 @@ mod_ZooTsCPR_server <- function(id){
       ZtsCPRMonthisNumeric = {class(selectedData()$Month_Local)},
       ZtsCPRDateisDate = {class(selectedData()$SampleTime_Local)},
       ZtsCPRRegionisFactor = {class(selectedData()$BioRegion)},
-      ZtsCPRparametersisChr = {class(selectedData()$parameters)},
+      ZtsCPRParametersisChr = {class(selectedData()$Parameters)},
       ZtsCPRValuesisNumeric = {class(selectedData()$Values)}
     )
 
@@ -103,10 +103,10 @@ mod_ZooTsCPR_server <- function(id){
     
     # add text information 
     output$PlotExp1 <- renderText({
-      "A plot of selected zooplankton parameters from the CPR around Australia, as a time series and a monthly climatology across bioregions. "
+      "A plot of selected zooplankton Parameters from the CPR around Australia, as a time series and a monthly climatology across bioregions. "
     }) 
     output$PlotExp2 <- renderText({
-      "A plot of selected zooplankton parameters from the CPR around Australia, as a time series, a monthly climatology and an annual mean for each bioregion"
+      "A plot of selected zooplankton Parameters from the CPR around Australia, as a time series, a monthly climatology and an annual mean for each bioregion"
     }) 
     output$PlotExp3 <- renderText({
       "A plot of functional groups from the zooplankton counts from the CPR around Australia, as a time series and a monthly climatology for each bioregion"
