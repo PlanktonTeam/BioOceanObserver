@@ -20,7 +20,7 @@ mod_WaterBGC_ui <- function(id){
         sliderInput(nsWaterBGC("date"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
                     value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
         # select parameter
-        selectizeInput(inputId = nsWaterBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSw$parameters), style = "simple"), selected = 'Silicate_umolL', multiple = FALSE)
+        selectizeInput(inputId = nsWaterBGC('Parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSw$Parameters), style = "simple"), selected = 'Silicate_umolL', multiple = FALSE)
         # Select whether to overlay smooth trend line
         #selectizeInput(inputId = nsWaterBGC("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
       ),
@@ -41,9 +41,9 @@ mod_WaterBGC_server <- function(id){
     
     observe({
       req(input$station)
-      req(input$parameter)
+      req(input$Parameter)
       validate(need(!is.na(input$station), "Error: Please select a station."))
-      validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
+      validate(need(!is.na(input$Parameter), "Error: Please select a parameter."))
     })
     
     selected <- reactive({
@@ -53,10 +53,10 @@ mod_WaterBGC_server <- function(id){
       datNRSw %>%
         filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
-               .data$parameters %in% input$parameter) %>%
-        mutate(name = as.factor(.data$parameters)) %>%
+               .data$Parameters %in% input$Parameter) %>%
+        mutate(name = as.factor(.data$Parameters)) %>%
         tidyr::drop_na() 
-    }) %>% bindCache(input$station, input$parameter, input$date)
+    }) %>% bindCache(input$station, input$Parameter, input$date)
     
     shiny::exportTestValues(
       WaterBGC = {ncol(selected())},
@@ -66,19 +66,19 @@ mod_WaterBGC_server <- function(id){
       WaterBGCDateisDate = {class(selected()$SampleTime_Local)},
       WaterBGCStationisFactor = {class(selected()$StationName)},
       WaterBGCCodeisChr = {class(selected()$StationCode)},
-      WaterBGCparametersisChr = {class(selected()$parameters)},
+      WaterBGCparametersisChr = {class(selected()$Parameters)},
       WaterBGCValuesisNumeric = {class(selected()$Values)}
     )
     
     # Create timeseries object the plotOutput function is expecting
     ts1 <-  reactive({
       
-      p1 <- planktonr::pr_plot_trends(selected(), trend = "Raw", survey = "NRS", method = "lm", y_trans = 'identity')
-      p2 <- planktonr::pr_plot_trends(selected(), trend = "Month", survey = "NRS", method = "loess", y_trans = 'identity') +
+      p1 <- planktonr::pr_plot_Trends(selected(), Trend = "Raw", Survey = "NRS", method = "lm", trans = 'identity')
+      p2 <- planktonr::pr_plot_Trends(selected(), Trend = "Month", Survey = "NRS", method = "loess", trans = 'identity') +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
       
-    }) %>% bindCache(input$station, input$parameter, input$date, input$smoother)
+    }) %>% bindCache(input$station, input$Parameter, input$date, input$smoother)
     
     output$plot <- renderPlot({
       ts1()

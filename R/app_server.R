@@ -97,4 +97,10 @@ app_server <- function( input, output, session ) {
           mod_PigmentsBGC_server("PigmentsBGC_ui_1")
         }
     })
+    
+    observeEvent(input$env, {
+      if(input$env == "water"){
+        mod_WaterBGC_server("WaterBGC_ui_1")
+      }
+    })
 }
