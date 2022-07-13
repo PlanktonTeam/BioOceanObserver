@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id,input,output,session Internal Parameters for {shiny}.
 #'
 #' @noRd 
 #'
@@ -16,9 +16,8 @@ mod_PolLTM_ui <- function(id){
         shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
         plotOutput(nsPolLTM("plotmap")),
         radioButtons(inputId = nsPolLTM("SiteLTM"), label = "Select a station", choices = unique(sort(LTnuts$StationName)), selected = "Port Hacking"),
-        downloadButton(nsPolLTM("downloadData"), "Data"),
-        downloadButton(nsPolLTM("downloadPlot"), "Plot"),
-        downloadButton(nsPolLTM("downloadNote"), "Notebook")
+        fDownloadData(id, "Data"),
+        fDownloadPlot(id, "Plot")
       ),
       mainPanel(id = "EOV paramters from Long Term Monitoring", 
                 h6(textOutput(nsPolLTM("PlotExp1"), container = span)),
@@ -45,7 +44,7 @@ mod_PolLTM_server <- function(id){
       selectedDataLTM <- PolLTM %>% 
         dplyr::filter(.data$StationName %in% input$SiteLTM,
                       .data$SampleDepth_m < 15,
-                      !.data$parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL")) 
+                      !.data$Parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL")) 
       
     }) %>% bindCache(input$SiteLTM)
     
@@ -62,7 +61,7 @@ mod_PolLTM_server <- function(id){
       PolLTMProjectisChr = {class(selectedDataLTM()$Project)},
       PolLTMStationisChr = {class(selectedDataLTM()$StationName)},
       PolLTMCodeisChr = {class(selectedDataLTM()$StationCode)},
-      PolLTMparametersisChr = {class(selectedDataLTM()$parameters)},
+      PolLTMParametersisChr = {class(selectedDataLTM()$Parameters)},
       PolLTMValuesisNumeric = {class(selectedDataLTM()$Values)}
     )
     
@@ -71,8 +70,8 @@ mod_PolLTM_server <- function(id){
     }) %>% bindCache(input$SiteLTM)
     
     info <- reactive({
-      info <- outputs() %>% dplyr::select(.data$slope, .data$p, .data$parameters) %>% unique() %>%
-        dplyr::arrange(.data$parameters)
+      info <- outputs() %>% dplyr::select(.data$slope, .data$p, .data$Parameters) %>% unique() %>%
+        dplyr::arrange(.data$Parameters)
     }) %>% bindCache(input$SiteLTM)
     
     stationData <- reactive({
