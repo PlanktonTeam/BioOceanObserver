@@ -1,6 +1,6 @@
 #' The application server-side
 #' 
-#' @param input,output,session Internal parameters for {shiny}. 
+#' @param input,output,session Internal Parameters for {shiny}. 
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @importFrom rlang .data
@@ -11,13 +11,13 @@
 #' labs position_dodge 
 #' scale_colour_manual scale_fill_manual scale_x_continuous scale_x_datetime scale_y_continuous 
 #' theme theme_set theme_bw theme_minimal theme_void unit
-#' @importFrom plotly ggplotly layout plotlyOutput renderPlotly style subplot 
 #' @importFrom dplyr filter group_by inner_join left_join mutate n select summarise ungroup
 #' @importFrom tidyr drop_na
 #' @importFrom shinycssloaders withSpinner
 #' @noRd
 #' 
 app_server <- function( input, output, session ) {
+  
   # Your application server logic 
   
   ## global options and themes can go here
@@ -96,5 +96,11 @@ app_server <- function( input, output, session ) {
         if(input$env == "pigs"){
           mod_PigmentsBGC_server("PigmentsBGC_ui_1")
         }
+    })
+    
+    observeEvent(input$env, {
+      if(input$env == "water"){
+        mod_WaterBGC_server("WaterBGC_ui_1")
+      }
     })
 }

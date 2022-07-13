@@ -6,22 +6,15 @@ Authors@R: c(person('Claire H.', 'Davies', email = 'claire.davies@csiro.au', rol
 Description: A visualisation tool for IMOS biologial data.
 License: MIT + file LICENSE
 Imports: 
-    attempt,
-    cmocean,
     config (>= 0.3.1),
     dplyr,
     DT,
     ggplot2,
-    glue,
     golem (>= 0.3.1),
-    htmltools,
     lubridate,
     magrittr,
     patchwork,
-    pkgload,
     planktonr (>= 0.0.0.9000),
-    plotly,
-    processx,
     rlang,
     rnaturalearth,
     shiny (>= 1.6.0),

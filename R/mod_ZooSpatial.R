@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id,input,output,session Internal Parameters for {shiny}.
 #'
 #' @noRd 
 #'
@@ -28,6 +28,7 @@ mod_ZooSpatial_ui <- function(id){
     ),
     mainPanel(
       tabsetPanel(id = "NRSspat",
+                  type = "pills",
         tabPanel("Observation maps", value = 1, 
                  h6(textOutput(nsZooSpatial("DistMapExp"), container = span)),
                  plotOutput(nsZooSpatial("plot2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1")
@@ -62,7 +63,7 @@ mod_ZooSpatial_server <- function(id){
         validate(need(!is.na(input$species), "Error: Please select a species"))
         
         selectedZS <- fMapDataz %>% 
-          dplyr::mutate(Taxon = ifelse(Taxon == "Taxon", input$species, .data$Taxon)) %>%
+          dplyr::mutate(Taxon = dplyr::if_else(.data$Taxon == "Taxon", input$species, .data$Taxon)) %>%
           dplyr::filter(.data$Taxon %in% input$species) %>%
           dplyr::mutate(freqfac = factor(.data$freqfac, levels = c("Absent", "Seen in 25%",'50%', '75%', "100 % of Samples"))) %>%
           dplyr::arrange(.data$freqfac)
@@ -87,7 +88,7 @@ mod_ZooSpatial_server <- function(id){
       output$SDMsMapExp <- renderText({
         paste("This map is a modelled output of the relative distribution for a species.",
               "This is calculated using NRS and CPR data in a Tweedie model.",
-              "The environmental variables are SST, Chla, deth, Month", sep =  "<br/>")
+              "The environmental variables are SST, Chla, depth, Month", sep =  "<br/>")
       }) 
       output$STIsExp <- renderText({
         paste("Figure of the species STI")
@@ -102,7 +103,7 @@ mod_ZooSpatial_server <- function(id){
     # Create dot map of distribution
     output$plot2 <- renderPlot({
     
-              plot2 <- planktonr::pr_plot_fmap(selectedZS())
+              plot2 <- planktonr::pr_plot_FreqMap(selectedZS())
               plot2
         
     }) %>% bindCache(input$species)
@@ -127,7 +128,7 @@ mod_ZooSpatial_server <- function(id){
       req(input$species1)
       validate(need(!is.na(input$species1), "Error: Please select a species"))
       
-      selectedSTI <- stiz %>% 
+      selectedSTI <- stiz %>% dplyr::rename(sst = .data$SST) %>% 
         dplyr::filter(.data$Species %in% input$species1) 
       
     }) %>% bindCache(input$species1)
@@ -139,7 +140,7 @@ mod_ZooSpatial_server <- function(id){
         need(nrow(selectedSTI()) > 20, "Not enough data for this copepod species")
       )
       
-      plotsti <- planktonr::pr_plot_sti(selectedSTI())
+      plotsti <- planktonr::pr_plot_STI(selectedSTI())
       plotsti
 
     }) %>% bindCache(input$species1)
@@ -164,7 +165,7 @@ mod_ZooSpatial_server <- function(id){
         need(length(unique(selecteddn()$daynight)) == 2 | nrow(selecteddn()) > 20, "Not enough data for this copepod species to plot")
       )
       
-      plotdn <- planktonr::pr_plot_daynight(selecteddn())
+      plotdn <- planktonr::pr_plot_DayNight(selecteddn())
       plotdn
       
     }) %>% bindCache(input$species1)

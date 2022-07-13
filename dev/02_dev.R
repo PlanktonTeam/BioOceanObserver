@@ -15,13 +15,11 @@
 
 ## Dependencies ----
 ## Add one line by package you want to add as dependency
-usethis::use_package( "cmocean")
 usethis::use_package( "dplyr") # using tidyverse as a dependency is discouraged as it is a meta-package
 usethis::use_package( "ggplot2")
 usethis::use_package( "lubridate")
 usethis::use_package( "patchwork")
 #usethis::use_package( "planktonr")
-usethis::use_package( "plotly")
 usethis::use_package( "rlang")
 usethis::use_package( "rnaturalearth")
 usethis::use_package( "shinycssloaders")
@@ -32,7 +30,7 @@ usethis::use_package( "tidyr")
 usethis::use_pipe()
 
 usethis::use_dev_package("planktonr", type = "Imports", remote = "PlanktonTeam/planktonr@AddShinyFuncs")
-remotes::install_github("PlanktonTeam/planktonr@AddShinyFuncs", force = TRUE)
+remotes::install_github("PlanktonTeam/planktonr", force = TRUE)
 
 #devtools::install_local("C:/Users/dav649/Documents/GitHub/planktonr", force = TRUE)
 

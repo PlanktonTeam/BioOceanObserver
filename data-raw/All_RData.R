@@ -10,26 +10,28 @@
    # "LTnuts", "NRSfgp", "NRSfgz", "NRSinfo", "Nuts", "Pico", "Pigs",
    # "PolCPR", "PolNRS", "stip", "stiz")
 
-# NRS indices data
-datNRSz <- planktonr::pr_get_indices("NRS", "Z")
-datNRSp <- planktonr::pr_get_indices("NRS", "P")
+# NRS Indices data
+datNRSz <- planktonr::pr_get_Indices("NRS", "Z")
+datNRSp <- planktonr::pr_get_Indices("NRS", "P")
 datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
-
-shiny::exportTestValues(
-  expect_equal(ncol(datNRSz), 7),
-  expect_is(datNRSz,'data.frame')
-  expect_is(datNRSz$Year, 'number')
-)
+datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
+  tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
+  dplyr::mutate(MLD_m = dplyr::case_when(.data$MLDtemp_m <= .data$MLDsal_m ~ .data$MLDtemp_m,
+                                         .data$MLDsal_m < .data$MLDtemp_m ~ .data$MLDsal_m,
+                                         TRUE ~ NA_real_)) %>%
+  dplyr::select(-c(.data$MLDtemp_m, .data$MLDsal_m)) %>%
+  tidyr::pivot_longer(-c(.data$Year_Local:.data$StationCode), names_to = 'Parameters', values_to = 'Values')
 
 # CPR time series data
-datCPRz <- planktonr::pr_get_indices("CPR", "Z")
-datCPRp <- planktonr::pr_get_indices("CPR", "P")
+datCPRz <- planktonr::pr_get_Indices("CPR", "Z")
+datCPRp <- planktonr::pr_get_Indices("CPR", "P")
+datCPRw <- planktonr::pr_get_Indices("CPR", "W")
 
 # FG time series data
-NRSfgz <- planktonr::pr_get_fg("NRS", "Z")
-NRSfgp <- planktonr::pr_get_fg("NRS", "P")
-CPRfgz <- planktonr::pr_get_fg("CPR", "Z")
-CPRfgp <- planktonr::pr_get_fg("CPR", "P")
+NRSfgz <- planktonr::pr_get_FuncGroups("NRS", "Z")
+NRSfgp <- planktonr::pr_get_FuncGroups("NRS", "P")
+CPRfgz <- planktonr::pr_get_FuncGroups("CPR", "Z")
+CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P")
 
 # BGC Environmental variables data
 Nuts <- planktonr::pr_get_NRSChemistry()
@@ -37,36 +39,39 @@ Pigs <- planktonr::pr_get_NRSPigments()
 Pico <- planktonr::pr_get_NRSPico()
 LTnuts <- planktonr::pr_get_LTnuts()
 
-
 # STI data
-stiz <- planktonr::pr_get_sti("Z")
-stip <- planktonr::pr_get_sti("P")
+stiz <- planktonr::pr_get_STI("Z")
+stip <- planktonr::pr_get_STI("P")
 
 # Day-Night data (from CPR only)
-daynightz <- planktonr::pr_get_daynight("Z")
-daynightp <- planktonr::pr_get_daynight("P")
+daynightz <- planktonr::pr_get_DayNight("Z")
+daynightp <- planktonr::pr_get_DayNight("P")
 
 # Policy data
-PolNRS <- planktonr::pr_get_pol("NRS")
-PolCPR <- planktonr::pr_get_pol("CPR")
-NRSinfo <- planktonr::pr_get_polInfo("NRS")
-CPRinfo <- planktonr::pr_get_polInfo("CPR")
-
+PolNRS <- planktonr::pr_get_PolicyData("NRS")
+PolCPR <- planktonr::pr_get_PolicyData("CPR")
+NRSinfo <- planktonr::pr_get_PolicyInfo("NRS")
+CPRinfo <- planktonr::pr_get_PolicyInfo("CPR")
+PolLTM <- planktonr::pr_get_PolicyData("LTM")
 
 # Species distribution data
-fMapDataz <- planktonr::pr_get_fMap_data("Z")
-fMapDatap <- planktonr::pr_get_fMap_data("P")
+fMapDataz <- planktonr::pr_get_FreqMap("Z")
+fMapDatap <- planktonr::pr_get_FreqMap("P")
 
+# Progress Map
+PMapData <- planktonr::pr_get_ProgressMap(c("NRS", "CPR"))
 
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts, 
-                  PolNRS, PolCPR, NRSinfo, CPRinfo, 
+                  PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, 
                   datCPRz, datCPRp, datNRSz, datNRSp, datNRSm,
-                  NRSfgz, NRSfgp, CPRfgz, CPRfgp, 
+                  datNRSw, datCPRw,
+                  NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
                   stiz, stip, daynightz, daynightp,
                   overwrite = TRUE, internal = TRUE)
 
-## files for SDMs (this will only work for Claire at the moment)
-listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
-files <- paste("C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps/", listsdm, sep = "")
-file.copy(from=files, to="inst/app/www")
+## files for SDMs (tshis will only work for Claire at the moment)
+# listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
+# files <- paste("C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps/", listsdm, sep = "")
+# file.copy(from=files, to="inst/app/www")
+

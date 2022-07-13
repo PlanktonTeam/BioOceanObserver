@@ -2,12 +2,11 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id,input,output,session Internal Parameters for {shiny}.
 #'
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
-#' @importFrom stats runif
 mod_PolCPR_ui <- function(id){
   nsPolCPR <- NS(id)
   tagList(
@@ -15,7 +14,7 @@ mod_PolCPR_ui <- function(id){
       sidebarPanel(
         shinydashboard::menuSubItem(text = "Find out more about the BioRegions here", href = "https://soe.environment.gov.au/theme/marine-environment/topic/2016/marine-regions"),
         shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
-        plotlyOutput(nsPolCPR("plotmap")),
+        plotOutput(nsPolCPR("plotmap")),
         h6("Note there is very little data in the North and North-west regions"),
         radioButtons(inputId = nsPolCPR("Site"), label = "Select a bioregion", choices = unique(sort(PolCPR$BioRegion)), selected = "Temperate East"),
         downloadButton(nsPolCPR("downloadData"), "Data"),
@@ -45,41 +44,42 @@ mod_PolCPR_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedData <- PolCPR %>% 
-        dplyr::filter(.data$BioRegion %in% input$Site) %>% 
-        dplyr::mutate(Month = Month * 2 * 3.142 / 12) %>%
-        droplevels()
+        dplyr::filter(.data$BioRegion %in% input$Site) 
     }) %>% bindCache(input$Site)
     
     shiny::exportTestValues(
       Polcpr = {ncol(selectedData())},
       PolcprRows = {nrow(selectedData()) > 0},
-      PolcprYearisNumeric = {class(selectedData()$Year)},
-      PolcprMonthisNumeric = {class(selectedData()$Month)},
+      PolcprYearisNumeric = {class(selectedData()$Year_Local)},
+      PolcprMonthisNumeric = {class(selectedData()$Month_Local)},
       PolcprMeansisNumeric = {class(selectedData()$means)},
       PolcprsdisNumeric = {class(selectedData()$sd)},
       PolcprAnomalyisNumeric = {class(selectedData()$anomaly)},
-      PolcprDateisDate = {class(selectedData()$SampleDate_UTC)},
+      PolcprDateisDate = {class(selectedData()$SampleTime_Local)},
       PolcprRegionisChr = {class(selectedData()$BioRegion)},
-      PolcprparametersisChr = {class(selectedData()$parameters)},
+      PolcprParametersisChr = {class(selectedData()$Parameters)},
       PolcprValuesisNumeric = {class(selectedData()$Values)}
     )
-
+    
     outputs <- reactive({
-      outputs <- planktonr::pr_get_coeffs(selectedData())
+      outputs <- planktonr::pr_get_Coeffs(selectedData())
     }) %>% bindCache(input$Site)
     
     info <- reactive({
-      info <- outputs() %>% dplyr::select(slope, p, parameters) %>% unique %>%
-        dplyr::arrange(parameters)
+      info <- outputs() %>% 
+        dplyr::select(.data$slope, .data$p, .data$Parameters) %>% 
+        unique %>%
+        dplyr::arrange(.data$Parameters)
     }) %>% bindCache(input$Site)
     
     stationData <- reactive({
-      stationData <- CPRinfo %>% dplyr::filter(BioRegion == input$Site) 
+      stationData <- CPRinfo %>% 
+        dplyr::filter(.data$BioRegion == input$Site) 
     }) %>% bindCache(input$Site)
     
     # Sidebar Map
-    output$plotmap <- renderPlotly({ 
-      pmap <- planktonr::pr_plot_CPRmap(selectedData())
+    output$plotmap <- renderPlot({ 
+      planktonr::pr_plot_CPRmap(selectedData())
     }) %>% bindCache(input$Site)
     
     # Add text information 
@@ -95,32 +95,42 @@ mod_PolCPR_server <- function(id){
             "Copepod diversity at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
             "Phytoplankton diveristy at", input$Site, "is", info()[4,1], info()[4,2])
     }) 
-    output$PlotExp5 <- renderText({
-      paste("BioRegion:", input$Site, "\n", 
-            "The CPR has been sampling in this bioregion since ", min(stationData()$STARTSAMPLEDATEUTC), " and sampling is ongoing.", "\n",
-            "A total of ", sum(stationData()$MILES), " nautical miles has been towed.", "\n",
-            "The station is characterised by ", unique(stationData()$Features), sep = "")
-    })
     
     # Plot Trends -------------------------------------------------------------
     layout1 <- c(
-      patchwork::area(1,1,1,1),
-      patchwork::area(2,1,2,3),
+      patchwork::area(1,1,1,3),  # Text
+      patchwork::area(2,1,2,1),  # Header
       patchwork::area(3,1,3,3),
-      patchwork::area(4,1,4,1),
-      patchwork::area(5,1,5,3),
-      patchwork::area(6,1,6,3)
+      patchwork::area(4,1,4,3),
+      patchwork::area(5,1,5,1),  # Header
+      patchwork::area(6,1,6,3),
+      patchwork::area(7,1,7,3)
     )
     
     output$timeseries1 <- renderPlot({
       
-      p1 <-planktonr::pr_plot_EOV(outputs(), "Biomass_mgm3", Survey = 'CPR', "log10", pal = "matter", labels = "no")
-      p2 <-planktonr::pr_plot_EOV(outputs(), "PhytoBiomassCarbon_pgm3", Survey = 'CPR', "log10", pal = "algae") 
+      p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "BiomassIndex_mgm3", Survey = 'CPR', 
+                                   trans = "log10", col = "cornflowerblue", labels = "no")
+      p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgm3", Survey = 'CPR', 
+                                   trans = "log10", col = "darkolivegreen4") 
       
-      p6 <-planktonr::pr_plot_EOV(outputs(), "ShannonCopepodDiversityCPR", Survey = 'CPR', "log10", pal = "matter", labels = "no") #check these col names with new indicies data from AODN
-      p7 <-planktonr::pr_plot_EOV(outputs(), "ShannonPhytoDiversitycpr", Survey = 'CPR', "log10", pal = "algae")
+      p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonCopepodDiversity", Survey = 'CPR', 
+                                   trans = "log10", col = "cornflowerblue", labels = "no") #check these col names with new indices data from AODN
+      p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', 
+                                   trans = "log10", col = "darkolivegreen4")
       
-     patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
+      BioRegionSummary <- strwrap(
+        paste("The CPR has been sampling in the ", input$Site," bioregion since ", min(stationData()$SampleStartDate), 
+              " and sampling is ongoing.", " Approximately ", format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
+              " nautical miles has been towed in this region. The ", input$Site, " bioregion is characterised by ", 
+              unique(stationData()$Features), sep = ""),
+        width = 80, simplify = FALSE)
+      BioRegionSummary2 <- sapply(BioRegionSummary, paste, collapse = "\n")
+      
+      
+      patchwork::wrap_elements(
+        grid::textGrob(BioRegionSummary2, gp = grid::gpar(fontsize=16))) +
+        grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20)) + 
         p1 + p2 + 
         grid::textGrob("Diversity EOVs", gp = grid::gpar(fontsize=20)) + 
         p6 + p7 + 
