@@ -1,11 +1,6 @@
-#' Title
+#' BOO Plankton Sidebar
 #'
-#' @param id 
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd 
 fPlanktonSidebar <- function(id, panel_id, input, dat){
   ns <- NS(id)
   
@@ -32,7 +27,7 @@ fPlanktonSidebar <- function(id, panel_id, input, dat){
   
   shiny::sidebarPanel(
     shiny::conditionalPanel(
-      condition = paste0("input.", panel_id, "== 1 || == 2"), 
+      condition = paste0("input.", panel_id, " == 1 | input.", panel_id, " == 2"), 
       # Select whether to overlay smooth trend line 
       shiny::checkboxInput(inputId = ns("scaler1"), 
                            label = strong("Change the plot scale to log10"), 
@@ -44,7 +39,7 @@ fPlanktonSidebar <- function(id, panel_id, input, dat){
     ),
     # browser(),
     shiny::conditionalPanel(
-      condition = paste0("input.", panel_id, "== 3"), 
+      condition = paste0("input.", panel_id, " == 3"), 
       # Select whether to overlay smooth trend line
       shiny::checkboxInput(inputId = ns("scaler3"), 
                            label = strong("Change the plot scale to percent"), 
@@ -72,16 +67,9 @@ fPlanktonSidebar <- function(id, panel_id, input, dat){
 
 
 
-#' helpers 
+#' Download Data
 #'
-#' @param id 
-#' @param label 
-#'
-#' @description A utils function
-#'
-#' @return The return value, if any, from executing the utility.
-#'
-#' @noRd
+#' @noRd 
 fDownloadData <- function(id, label) {
   ns <- NS(id)
   tagList(
@@ -90,15 +78,9 @@ fDownloadData <- function(id, label) {
 }
 
 
-#' Title
+#' Download Data - Server Side
 #'
-#' @param input 
-#' @param selectedData 
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd 
 fDownloadDataServer <- function(input, dat) {
   
   downloadData <- shiny::downloadHandler(
@@ -113,16 +95,9 @@ fDownloadDataServer <- function(input, dat) {
 
 
 
-#' helpers 
+#' Download Plot
 #'
-#' @param id 
-#' @param label 
-#'
-#' @description A utils function
-#'
-#' @return The return value, if any, from executing the utility.
-#'
-#' @noRd
+#' @noRd 
 fDownloadPlot <- function(id, label) {
   ns <- NS(id)
   tagList(
@@ -130,19 +105,13 @@ fDownloadPlot <- function(id, label) {
   )
 }
 
-#' Title
+#' Download Plot - Server Side
 #'
-#' @param input 
-#' @param gg_id 
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @noRd 
 fDownloadPlotServer <- function(input, gg_id) {
   downloadPlot <- downloadHandler(
     filename = function() {
-      paste0(input$ycol,"_", format(Sys.time(), "%Y%m%d"), ".png")
+      paste0(input$parameter,"_", format(Sys.time(), "%Y%m%d"), ".png")
     },
     content = function(file) {
       ggsave(file, plot = gg_id, device = "png", dpi = 500)
