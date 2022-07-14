@@ -28,7 +28,6 @@ mod_ZooSpatial_ui <- function(id){
     ),
     mainPanel(
       tabsetPanel(id = "NRSspat",
-                  type = "pills",
         tabPanel("Observation maps", value = 1, 
                  h6(textOutput(nsZooSpatial("DistMapExp"), container = span)),
                  plotOutput(nsZooSpatial("plot2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1")

@@ -27,8 +27,7 @@ mod_PigmentsBGC_ui <- function(id){
       ),
       mainPanel(
         h6(textOutput(nsPigmentsBGC("PlotExp"), container = span)),
-        plotOutput(nsPigmentsBGC("plot")) %>% 
-          withSpinner(color="#0dc5c1")
+        plotOutput(nsPigmentsBGC("plot")) %>% withSpinner(color="#0dc5c1")
       )
     )
   )

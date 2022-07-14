@@ -9,16 +9,10 @@ app_ui <- function(request) {
   # Your application UI logic 
   navbarPage(golem_add_external_resources(), # Leave this function for adding external resources
              id = "navbar",  
-             title = div(img(src = "www/logo.png", 
-                             style="margin-top: -10px; padding-right:5px;padding-bottom:2px", 
-                             height = 40), "The Biological Ocean Observatory"),
+             title = div(img(src = "www/logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),
              windowTitle = "The Biological Ocean Observatory",
              theme = bslib::bs_theme(version = 5, 
-                                     bootswatch = "flatly",
-                                     "border-width" = "0px",
-                                     "enable-rounded" = TRUE,
-                                     primary = "#2C3E50"
-                                     ), #https://rstudio.github.io/bslib/articles/bslib.html#custom
+                                     bootswatch = "flatly"), #https://rstudio.github.io/bslib/articles/bslib.html#custom
              selected = "Welcome", 
              # footer = column(12, "\u00A9 2021 Jason Everett (UQ, UNSW, CSIRO) and Claire Davies (CSIRO)"), # \u00A9 is equivalent to © 
              tabPanel("Welcome",
@@ -34,6 +28,10 @@ app_ui <- function(request) {
                             We aim to enhance the availability and understanding of biological data and make it 
                             accessible to broader and non-specialist audiences in order to accelerate the next 
                             generation of scientific insights."),
+                          p("Data was sourced from Australia’s ",tags$a(href="https://imos.org.au","Integrated Marine Observing System (IMOS)"),
+                          " – IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). 
+                            It is operated by a consortium of institutions as an unincorporated joint venture, with 
+                            the University of Tasmania as Lead Agent."),
                           h3("Code"),
                           p("This project is entirely open source, as are all the IMOS data underlying it. All the 
                             code for this tool are freely available on GitHub. We welcome collaborators and pull 
@@ -52,28 +50,24 @@ app_ui <- function(request) {
              ),
              tabPanel("Policy",
                       tabsetPanel(id = 'pol',
-                                  type = "pills",
                                   tabPanel(value = "nrs", "National Reference Stations", mod_PolNRS_ui("PolNRS_ui_1")),
                                   tabPanel(value = "cpr", "CPR - bioregions", mod_PolCPR_ui("PolCPR_ui_1")),
                                   tabPanel(value = 'LTM', "Long term monitoring", mod_PolLTM_ui("PolLTM_ui_1"))
                       )),
              tabPanel("Microbes",
                       tabsetPanel(id = 'mic',
-                                  type = "pills",
                                   tabPanel(value = "mts", "Time Series NRS", mod_MicroTsNRS_ui("MicroTsNRS_ui_1")),
                                   tabPanel("Diversity"),
                                   tabPanel("Composition")
                                  )),
              tabPanel("Phytoplankton",
                       tabsetPanel(id = 'phyto',
-                                  type = "pills",
                                   tabPanel(value = "pts", "Time Series NRS", mod_PhytoTsNRS_ui("PhytoTsNRS_ui_1")),
                                   tabPanel(value = "ptscpr", "Time Series CPR", mod_PhytoTsCPR_ui("PhytoTsCPR_ui_1")),
                                   tabPanel(value = "distp", "Distributions", mod_PhytoSpatial_ui("PhytoSpatial_ui_1"))
                       )),
              tabPanel("Zooplankton",
                       tabsetPanel(id = 'zoo',
-                                  type = "pills",
                                   tabPanel(value = "zts", "Time Series NRS", mod_ZooTsNRS_ui("ZooTsNRS_ui_1")),
                                   tabPanel(value = "ztscpr", "Time Series CPR", mod_ZooTsCPR_ui("ZooTsCPR_ui_1")),
                                   tabPanel(value = "dist", "Distributions", mod_ZooSpatial_ui("ZooSpatial_ui_1")),
@@ -81,17 +75,14 @@ app_ui <- function(request) {
                                   )),
              tabPanel("Larval Fish",
                       tabsetPanel(id = 'fish',
-                                  type = "pills",
                                   tabPanel("Time Series",
                                            img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")),
                                   tabPanel("Spatial Analysis",
                                            img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")))),
              tabPanel("Environmental Data",
                       tabsetPanel(id = 'env',
-                                  type = "pills",
                                   tabPanel(value = "bgc", "NRS BGC Nutrients", mod_NutrientsBGC_ui("NutrientsBGC_ui_1")),
                                   tabPanel(value = "pigs", "NRS BGC Pigments", mod_PigmentsBGC_ui("PigmentsBGC_ui_1")),
-                                  tabPanel(value = "water", "NRS BGC Water", mod_WaterBGC_ui("WaterBGC_ui_1")),
                                   tabPanel("NRS Moorings",
                                            img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")))),
              navbarMenu("", icon = icon("question-circle"),
@@ -138,9 +129,9 @@ golem_add_external_resources <- function(){
     # for example, you can add shinyalert::useShinyalert() 
     
     # Script for CSIRO branding tab ----
-    #  tags$script(type="text/javascript",
-    #              src="https://www.csiro.au/themes/default/js/csirotab.min.js"),
-    # # Google fonts ----
+     tags$script(type="text/javascript",
+                 src="https://www.csiro.au/themes/default/js/csirotab.min.js"),
+    # Google fonts ----
     tags$link(href="https://fonts.googleapis.com/css?family=Open+Sans",
               rel="stylesheet"),
     tags$link(href="https://fonts.googleapis.com/css?family=Montserrat",

@@ -28,7 +28,6 @@ mod_PhytoSpatial_ui <- function(id){
     ),
     mainPanel(
       tabsetPanel(id = "NRSspatp",
-                  type = "pills",
         tabPanel("Observation maps", value = 1, 
                  h6(textOutput(nsPhytoSpatial("DistMapExp"), container = span)),
                  plotOutput(nsPhytoSpatial("plot2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1")

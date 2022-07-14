@@ -16,9 +16,8 @@ mod_PolNRS_ui <- function(id){
         shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
         plotOutput(nsPolNRS("plotmap")),
         radioButtons(inputId = nsPolNRS("Site"), label = "Select a station", choices = unique(sort(PolNRS$StationName)), selected = "Maria Island"),
-        downloadButton(nsPolNRS("downloadData"), "Data"),
-        downloadButton(nsPolNRS("downloadPlot"), "Plot"),
-        downloadButton(nsPolNRS("downloadNote"), "Notebook")
+        fDownloadData(id, "Data"),
+        fDownloadPlot(id, "Plot")
       ),
       mainPanel(id = "EOV Biomass by NRS", 
                 h6(textOutput(nsPolNRS("PlotExp1"), container = span)),

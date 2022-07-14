@@ -42,17 +42,15 @@ mod_MicroTsNRS_ui <- function(id){
         absolutePanel(
           plotOutput(nsMicroTsNRS("plotmap")),
           checkboxGroupInput(inputId = nsMicroTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSm$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala")),
-          downloadButton(nsMicroTsNRS("downloadData"), "Data"),
-          downloadButton(nsMicroTsNRS("downloadPlot"), "Plot"),
-          downloadButton(nsMicroTsNRS("downloadNote"), "Notebook")
+          fDownloadData(id, "Data"),
+          fDownloadPlot(id, "Plot")
         )
       ),
       mainPanel(
         tabsetPanel(id = "NRSmts",
-                    type = "pills",
                     tabPanel("Trend Analysis", value=1, 
                              h6(textOutput(nsMicroTsNRS("PlotExp1"), container = span)),
-                             plotOutput(nsMicroTsNRS("timeseries1"), height = 'auto') %>% 
+                             plotOutput(nsMicroTsNRS("timeseries1"), height = "auto") %>% 
                                shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Climatologies", value=1,
@@ -149,7 +147,7 @@ mod_MicroTsNRS_server <- function(id){
       p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
-      p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
+      p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
 
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
