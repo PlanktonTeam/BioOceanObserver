@@ -20,7 +20,7 @@ mod_WaterBGC_ui <- function(id){
         sliderInput(nsWaterBGC("date"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
                     value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
         # select parameter
-        selectizeInput(inputId = nsWaterBGC('Parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSw$Parameters), style = "simple"), selected = 'Silicate_umolL', multiple = FALSE)
+        selectizeInput(inputId = nsWaterBGC('Parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSw$Parameters), style = "simple"), selected = 'CTDTemperature_degC', multiple = FALSE)
         # Select whether to overlay smooth trend line
         #selectizeInput(inputId = nsWaterBGC("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
       ),

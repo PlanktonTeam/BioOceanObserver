@@ -88,12 +88,17 @@ app_server <- function( input, output, session ) {
         mod_PhytoSpatial_server("PhytoSpatial_ui_1")
       }
     })
-    
-    
+ 
     ### Zooplankton Env data  
     observeEvent(input$env, {
         if(input$env == "pigs"){
           mod_PigmentsBGC_server("PigmentsBGC_ui_1")
         }
+    })
+    
+    observeEvent(input$env, {
+      if(input$env == "water"){
+        mod_WaterBGC_server("WaterBGC_ui_1")
+      }
     })
 }
