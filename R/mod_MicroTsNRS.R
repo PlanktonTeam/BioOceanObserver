@@ -41,9 +41,7 @@ mod_MicroTsNRS_ui <- function(id){
         ),
         absolutePanel(
           plotOutput(nsMicroTsNRS("plotmap")),
-          checkboxGroupInput(inputId = nsMicroTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSm$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala")),
-          fDownloadData(id, "Data"),
-          fDownloadPlot(id, "Plot")
+          checkboxGroupInput(inputId = nsMicroTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSm$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala"))
         )
       ),
       mainPanel(
@@ -233,29 +231,8 @@ mod_MicroTsNRS_server <- function(id){
       
     }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
-    # Downloads ---------------------------------------------------------------
-    
-    # Table of selected dataset ----
-    output$table <- renderTable({
-      # datasetInput()
-    })
     
     # Download -------------------------------------------------------
-    #Downloadable csv of selected dataset ----
-    output$downloadData <- downloadHandler(
-      filename = function() {
-        paste0(tools::file_path_sans_ext(input$ycol),"_", format(Sys.time(), "%Y%m%dT%H%M%S"), ".csv")
-      },
-      content = function(file) {
-        vroom::vroom_write(selectedData(), file, delim = ",")
-      })
     
-    
-    # Download figure
-    # output$downloadPlot <- downloadHandler(
-    #   filename = function() {paste(input$ycol, '.png', sep='') },
-    #   content = function(file) {
-    #     ggsave(file, plot = plotInput(), device = "png")
-    #   })
   })
 }

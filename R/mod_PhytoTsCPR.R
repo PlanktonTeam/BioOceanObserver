@@ -175,10 +175,5 @@ mod_PhytoTsCPR_server <- function(id){
     }, height = function() {length(unique(selectedDataFG()$BioRegion)) * 200})     
     
     # Download -------------------------------------------------------
-    # Downloadable csv of selected dataset ----
-    output$downloadData <- fDownloadDataServer(input, selectedData())
-    
-    # Download figure
-    output$downloadPlot <- fDownloadPlotServer(input, ts3())
   })
 }

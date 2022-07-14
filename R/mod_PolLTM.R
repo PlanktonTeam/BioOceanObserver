@@ -15,9 +15,7 @@ mod_PolLTM_ui <- function(id){
         shinydashboard::menuSubItem(text = "Find out more about the NRS stations here", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki/National-Reference-Stations"),
         shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
         plotOutput(nsPolLTM("plotmap")),
-        radioButtons(inputId = nsPolLTM("SiteLTM"), label = "Select a station", choices = unique(sort(LTnuts$StationName)), selected = "Port Hacking"),
-        fDownloadData(id, "Data"),
-        fDownloadPlot(id, "Plot")
+        radioButtons(inputId = nsPolLTM("SiteLTM"), label = "Select a station", choices = unique(sort(LTnuts$StationName)), selected = "Port Hacking")
       ),
       mainPanel(id = "EOV paramters from Long Term Monitoring", 
                 h6(textOutput(nsPolLTM("PlotExp1"), container = span)),

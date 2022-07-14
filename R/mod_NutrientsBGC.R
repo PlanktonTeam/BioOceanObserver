@@ -96,9 +96,5 @@ mod_NutrientsBGC_server <- function(id){
       "A plot of selected nutrient Parameters from the NRS as timeseries at analysed depths"
     }) 
     
-    # create table output
-    output$table <- DT::renderDataTable(
-      selected() ) 
-    
   })
 }
