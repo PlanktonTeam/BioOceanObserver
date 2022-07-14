@@ -32,7 +32,7 @@ fPlanktonSidebar <- function(id, panel_id, input, dat){
   
   shiny::sidebarPanel(
     shiny::conditionalPanel(
-      condition = paste0("input.", panel_id, "== 1"), 
+      condition = paste0("input.", panel_id, "== 1 || == 2"), 
       # Select whether to overlay smooth trend line 
       shiny::checkboxInput(inputId = ns("scaler1"), 
                            label = strong("Change the plot scale to log10"), 
@@ -44,7 +44,7 @@ fPlanktonSidebar <- function(id, panel_id, input, dat){
     ),
     # browser(),
     shiny::conditionalPanel(
-      condition = paste0("input.", panel_id, "== 2"), 
+      condition = paste0("input.", panel_id, "== 3"), 
       # Select whether to overlay smooth trend line
       shiny::checkboxInput(inputId = ns("scaler3"), 
                            label = strong("Change the plot scale to percent"), 

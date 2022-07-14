@@ -19,12 +19,12 @@ mod_PhytoTsNRS_ui <- function(id){
                              plotOutput(nsPhytoTsNRS("timeseries1"), height = "auto") %>% 
                                shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
-                    tabPanel("Climatologies", value=1,
+                    tabPanel("Climatologies", value=2,
                              h6(textOutput(nsPhytoTsNRS("PlotExp2"), container = span)),  
                              plotOutput(nsPhytoTsNRS("timeseries2"), height = 800) %>% 
                                shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
-                    tabPanel("Functional groups", value=2,
+                    tabPanel("Functional groups", value=3,
                              h6(textOutput(nsPhytoTsNRS("PlotExp3"), container = span)),  
                              plotOutput(nsPhytoTsNRS("timeseries3"), height = "auto") %>% 
                                shinycssloaders::withSpinner(color="#0dc5c1")
@@ -73,6 +73,7 @@ mod_PhytoTsNRS_server <- function(id){
     
     
     # Plot Trends -------------------------------------------------------------
+    observeEvent({input$NRSpts == 1}, {
     
     ts1 <- reactive({
       
@@ -93,12 +94,14 @@ mod_PhytoTsNRS_server <- function(id){
     output$timeseries1 <- renderPlot({
       ts1()
     }, height = function() {length(unique(selectedData()$StationName)) * 200}) 
-      
+    }) 
       
     # Climatologies -----------------------------------------------------------
     
     # Plot abundance spectra by species
-    output$timeseries2 <- renderPlot({
+    observeEvent({input$NRSpt == 2}, {
+      
+      output$timeseries2 <- renderPlot({
       
       if (is.null(datNRSp$StationCode)) {  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
@@ -121,11 +124,13 @@ mod_PhytoTsNRS_server <- function(id){
       
       p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect") + patchwork::plot_annotation(
         title = titleplot)
-      
+ 
     }) %>% bindCache(input$parameter,input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
+    })
     
     # Functional groups -------------------------------------------------------
-    
+    observeEvent({input$NRSpt == 3}, {
+      
     selectedDataFG <- reactive({
       req(input$Site)
       validate(need(!is.na(input$Site), "Error: Please select a station."))
@@ -157,6 +162,7 @@ mod_PhytoTsNRS_server <- function(id){
      output$timeseries3 <- renderPlot({
        ts3()
      }, height = function() {length(unique(selectedDataFG()$StationName)) * 200}) 
+    })
     
      # Download -------------------------------------------------------
      # Downloadable csv of selected dataset ----
