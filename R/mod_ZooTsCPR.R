@@ -11,38 +11,12 @@ mod_ZooTsCPR_ui <- function(id){
   nsZooTsCPR <- NS(id)
   tagList(
     sidebarLayout(
-      sidebarPanel(
-        conditionalPanel(
-          condition = "input.CPRzts == 1",
-          checkboxInput(inputId = nsZooTsCPR("scaler"), label = strong("Change the plot scale to log10"), value = FALSE),
-          selectInput(inputId = nsZooTsCPR("parameter"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datCPRz$Parameters), style = "simple"), 
-                      selected = "ZoopAbundance_m3")
-        ),
-        conditionalPanel(
-          condition = "input.CPRzts == 2",
-          checkboxInput(inputId = nsZooTsCPR("scaler1"), label = strong("Change the plot scale to percent"), value = FALSE)
-        ),  
-        absolutePanel(
-        plotOutput(nsZooTsCPR("plotmap")),
-        h6("Note there is very little data in the North and North-west regions"),
-        checkboxGroupInput(inputId = nsZooTsCPR("region"), label = "Select a region", choices = unique(sort(datCPRz$BioRegion)), selected = unique(datCPRz$BioRegion)),
-        sliderInput(nsZooTsCPR("DatesSlide"), "Dates:", min = as.POSIXct('2009-01-01 00:00',
-                                                                         format = "%Y-%m-%d %H:%M",
-                                                                         tz = "Australia/Hobart"), max = Sys.time(), 
-                    value = c(as.POSIXct('2009-01-01 00:00',
-                                         format = "%Y-%m-%d %H:%M",
-                                         tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d"),
-        downloadButton(nsZooTsCPR("downloadData"), "Data"),
-        downloadButton(nsZooTsCPR("downloadPlot"), "Plot"),
-        downloadButton(nsZooTsCPR("downloadNote"), "Notebook")
-        )
-      ),
+      fPlanktonSidebar(id = id, panel_id = "CPRzts", input = input, dat = datCPRz),
       mainPanel(
         tabsetPanel(id = "CPRzts",
-                    type = "pills",
                     tabPanel("Trend Analysis", value = 1,
                              h6(textOutput(nsZooTsCPR("PlotExp1"), container = span)),  
-                             plotOutput(nsZooTsCPR("timeseries1"), height = 'auto') %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsZooTsCPR("timeseries1"), height = "auto") %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
                     tabPanel("Climatologies", value = 1,
                              h6(textOutput(nsZooTsCPR("PlotExp2"), container = span)),  
@@ -50,7 +24,7 @@ mod_ZooTsCPR_ui <- function(id){
                     ),
                     tabPanel("Functional groups", value = 2,
                              h6(textOutput(nsZooTsCPR("PlotExp3"), container = span)),  
-                             plotOutput(nsZooTsCPR("timeseries3"), height = 'auto') %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsZooTsCPR("timeseries3"), height = "auto") %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     )
         )
       )
@@ -94,11 +68,10 @@ mod_ZooTsCPR_server <- function(id){
     )
 
     output$plotmap <- renderPlot({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
-      
-      planktonr::pr_plot_CPRmap(selectedData()) +
-        ggplot2::theme(plot.background = ggplot2::element_blank(),
-                       panel.background = ggplot2::element_blank())
-      
+      planktonr::pr_plot_CPRmap(selectedData()) 
+      # +
+      #   ggplot2::theme(plot.background = ggplot2::element_blank(),
+      #                  panel.background = ggplot2::element_blank())
     }) %>% bindCache(input$region)
     
     # add text information 
@@ -114,11 +87,8 @@ mod_ZooTsCPR_server <- function(id){
     
     # Plot Trends -------------------------------------------------------------
     ts1 <- reactive({
-      if(input$scaler){
-        trans <- "log10"
-      } else {
-        trans <- "identity"
-      }
+      
+      trans <- dplyr::if_else(input$scaler1, "log10", "identity")
       
       p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "CPR", method = "lm", trans = trans)
       p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "CPR", method = "loess", trans = trans) + 
@@ -126,7 +96,7 @@ mod_ZooTsCPR_server <- function(id){
 
       p1 + p2 + patchwork::plot_layout(widths = c(3,1))
       
-          }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
+          }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     output$timeseries1 <- renderPlot({
       ts1()
@@ -134,33 +104,30 @@ mod_ZooTsCPR_server <- function(id){
     
     # Climatologies -----------------------------------------------------------
     output$timeseries2 <- renderPlot({
-      if(input$scaler){
-        trans <- 'log10'
-      } else {
-        trans <- 'identity'
-      }
+     
+      trans <- dplyr::if_else(input$scaler1, "log10", "identity")
       
       if (identical(input$region, "")) return(NULL)
       if (identical(input$parameter, "")) return(NULL)
       
       p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "CPR", trans = trans) + 
-        ggplot2::theme(legend.position = 'none',
+        ggplot2::theme(legend.position = "none",
                        axis.title.y = ggplot2::element_blank())
       
       p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Month", trans = trans) +
-        ggplot2::theme(legend.position = 'bottom',
+        ggplot2::theme(legend.position = "bottom",
                        axis.title.y = ggplot2::element_blank())
       
       p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Year", trans = trans) + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       legend.position = 'bottom')
+                       legend.position = "bottom")
       
-      titleplot <- names(planktonr::pr_relabel(input$parameter, style = 'simple'))
+      titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
       
-      p1 / (p2 | p3) + patchwork::plot_layout(guides = 'collect') + patchwork::plot_annotation(
+      p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect") + patchwork::plot_annotation(
         title = titleplot)
       
-    }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
+    }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
 
     # Functional groups -------------------------------------------------------
@@ -181,16 +148,12 @@ mod_ZooTsCPR_server <- function(id){
         return(NULL)
       }
       
-      if(input$scaler1){
-        scale <- 'Percent'
-      } else {
-        scale <- 'Actual'
-      }
+      scale <- dplyr::if_else(input$scaler3, "Actual", "Percent")
       
       p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
       p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") + 
         ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       legend.position = 'none')
+                       legend.position = "none")
       p1 + p2 + patchwork::plot_layout(widths = c(3,1))
       
     }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
@@ -199,27 +162,13 @@ mod_ZooTsCPR_server <- function(id){
       ts3()
     }, height = function() {length(unique(selectedDataFG()$BioRegion)) * 200})     
 
-    # Downloads ---------------------------------------------------------------
+  
+    # Download -------------------------------------------------------
+    # Downloadable csv of selected dataset ----
+    output$downloadData <- fDownloadDataServer(input, selectedData())
     
-    ## Table of selected dataset ----
-    output$table <- renderTable({
-      # datasetInput()
-    })
-    
-    #Downloadable csv of selected dataset ----
-    output$downloadData <- downloadHandler(
-      filename = function() {
-        paste0(tools::file_path_sans_ext(input$ycol),"_", format(Sys.time(), "%Y%m%dT%H%M%S"), ".csv")
-      },
-      content = function(file) {
-        vroom::vroom_write(selectedData(), file, delim = ",")
-      })
-    
-    ## Download figure
-    # output$downloadPlot <- downloadHandler(
-    #   filename = function() {paste(input$parameter, '.png', sep='') },
-    #   content = function(file) {
-    #     ggsave(file, plot = plotInput(), device = "png")
-    #   })
+    # Download figure
+    output$downloadPlot <- fDownloadPlotServer(input, ts3())
+  
   })
 }

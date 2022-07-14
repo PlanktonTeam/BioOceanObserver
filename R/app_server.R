@@ -17,7 +17,6 @@
 #' @noRd
 #' 
 app_server <- function( input, output, session ) {
-  
   # Your application server logic 
   
   ## global options and themes can go here
@@ -96,11 +95,5 @@ app_server <- function( input, output, session ) {
         if(input$env == "pigs"){
           mod_PigmentsBGC_server("PigmentsBGC_ui_1")
         }
-    })
-    
-    observeEvent(input$env, {
-      if(input$env == "water"){
-        mod_WaterBGC_server("WaterBGC_ui_1")
-      }
     })
 }

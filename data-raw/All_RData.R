@@ -10,22 +10,14 @@
    # "LTnuts", "NRSfgp", "NRSfgz", "NRSinfo", "Nuts", "Pico", "Pigs",
    # "PolCPR", "PolNRS", "stip", "stiz")
 
-# NRS Indices data
+# NRS indices data
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z")
 datNRSp <- planktonr::pr_get_Indices("NRS", "P")
 datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
-datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
-  tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
-  dplyr::mutate(MLD_m = dplyr::case_when(.data$MLDtemp_m <= .data$MLDsal_m ~ .data$MLDtemp_m,
-                                         .data$MLDsal_m < .data$MLDtemp_m ~ .data$MLDsal_m,
-                                         TRUE ~ NA_real_)) %>%
-  dplyr::select(-c(.data$MLDtemp_m, .data$MLDsal_m)) %>%
-  tidyr::pivot_longer(-c(.data$Year_Local:.data$StationCode), names_to = 'Parameters', values_to = 'Values')
 
 # CPR time series data
 datCPRz <- planktonr::pr_get_Indices("CPR", "Z")
 datCPRp <- planktonr::pr_get_Indices("CPR", "P")
-datCPRw <- planktonr::pr_get_Indices("CPR", "W")
 
 # FG time series data
 NRSfgz <- planktonr::pr_get_FuncGroups("NRS", "Z")
@@ -50,12 +42,13 @@ daynightp <- planktonr::pr_get_DayNight("P")
 # Policy data
 PolNRS <- planktonr::pr_get_PolicyData("NRS")
 PolCPR <- planktonr::pr_get_PolicyData("CPR")
+PolLTM <- planktonr::pr_get_PolicyData("LTM")
 NRSinfo <- planktonr::pr_get_PolicyInfo("NRS")
 CPRinfo <- planktonr::pr_get_PolicyInfo("CPR")
-PolLTM <- planktonr::pr_get_PolicyData("LTM")
 
 # Species distribution data
 fMapDataz <- planktonr::pr_get_FreqMap("Z")
+
 fMapDatap <- planktonr::pr_get_FreqMap("P")
 
 # Progress Map
@@ -65,13 +58,12 @@ PMapData <- planktonr::pr_get_ProgressMap(c("NRS", "CPR"))
 usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts, 
                   PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, 
                   datCPRz, datCPRp, datNRSz, datNRSp, datNRSm,
-                  datNRSw, datCPRw,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
                   stiz, stip, daynightz, daynightp,
                   overwrite = TRUE, internal = TRUE)
 
-## files for SDMs (tshis will only work for Claire at the moment)
-# listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
-# files <- paste("C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps/", listsdm, sep = "")
-# file.copy(from=files, to="inst/app/www")
+## files for SDMs (this will only work for Claire at the moment)
+listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
+files <- paste("C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps/", listsdm, sep = "")
+file.copy(from=files, to="inst/app/www")
 

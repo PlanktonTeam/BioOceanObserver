@@ -16,9 +16,8 @@ mod_PolLTM_ui <- function(id){
         shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
         plotOutput(nsPolLTM("plotmap")),
         radioButtons(inputId = nsPolLTM("SiteLTM"), label = "Select a station", choices = unique(sort(LTnuts$StationName)), selected = "Port Hacking"),
-        downloadButton(nsPolLTM("downloadData"), "Data"),
-        downloadButton(nsPolLTM("downloadPlot"), "Plot"),
-        downloadButton(nsPolLTM("downloadNote"), "Notebook")
+        fDownloadData(id, "Data"),
+        fDownloadPlot(id, "Plot")
       ),
       mainPanel(id = "EOV paramters from Long Term Monitoring", 
                 h6(textOutput(nsPolLTM("PlotExp1"), container = span)),
