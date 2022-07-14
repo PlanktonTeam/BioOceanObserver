@@ -33,7 +33,8 @@ fPlanktonSidebar <- function(id, panel_id, input, dat){
                            label = strong("Change the plot scale to log10"), 
                            value = FALSE),
       shiny::selectInput(inputId = ns("parameter"), 
-                         label = 'Select a parameter', 
+            
+                                     label = 'Select a parameter', 
                          choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), 
                          selected = selectedVar)
     ),
@@ -51,44 +52,55 @@ fPlanktonSidebar <- function(id, panel_id, input, dat){
                                 label = "Select a station", 
                                 choices = choices, 
                                 selected = selectedSite),
-      shiny::sliderInput(ns("DatesSlide"), "Dates:", min = as.POSIXct('2009-01-01 00:00',
-                                                                      format = "%Y-%m-%d %H:%M",
-                                                                      tz = "Australia/Hobart"), max = Sys.time(), 
+      shiny::sliderInput(ns("DatesSlide"), 
+                         "Dates:", 
+                         min = as.POSIXct('2009-01-01 00:00',
+                                          format = "%Y-%m-%d %H:%M",
+                                          tz = "Australia/Hobart"), 
+                         max = Sys.time(), 
                          value = c(as.POSIXct('2009-01-01 00:00',
                                               format = "%Y-%m-%d %H:%M",
                                               tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d"),
-      fDownloadData(id, "Data"),
-      fDownloadPlot(id, "Plot")
       
+      tagList(
+        downloadButton(ns("downloadPlot1"), label = "Plot1"),
+        downloadButton(ns("downloadData1"), label = "Data1"),
+        downloadButton(ns("downloadPlot2"), label = "Plot2"),
+        downloadButton(ns("downloadData2"), label = "Data2"),
+        downloadButton(ns("downloadPlot3"), label = "Plot3"),
+        downloadButton(ns("downloadData3"), label = "Data3")
+      )
+      
+      # fDownloadData(id, "Data"),
+      # fDownloadPlot(id, "Plot")
+      # 
     )
   )
 }
 
 
-
-
-#' Download Data
-#'
-#' @noRd 
-fDownloadData <- function(id, label) {
-  ns <- NS(id)
-  tagList(
-    downloadButton(ns("downloadData"), label = label),
-  )
-}
+# Download Data
+#
+# @noRd
+# fDownloadData <- function(id, label) {
+  # ns <- NS(id)
+  # tagList(
+    # downloadButton(ns("downloadData"), label = label),
+  # )
+# }
 
 
 #' Download Data - Server Side
 #'
 #' @noRd 
-fDownloadDataServer <- function(input, dat) {
+fDownloadDataServer <- function(input, input_dat) {
   
   downloadData <- shiny::downloadHandler(
     filename = function() {
-      paste0(input$ycol,"_", format(Sys.time(), "%Y%m%d"), ".csv")
+      paste0(input$parameter,"_", format(Sys.time(), "%Y%m%d"), ".csv")
     },
     content = function(file) {
-      vroom::vroom_write(dat, file, delim = ",")
+      vroom::vroom_write(input_dat, file, delim = ",")
     })
   return(downloadData)
 }
@@ -96,8 +108,8 @@ fDownloadDataServer <- function(input, dat) {
 
 
 #' Download Plot
-#'
-#' @noRd 
+#' 
+#' @noRd
 fDownloadPlot <- function(id, label) {
   ns <- NS(id)
   tagList(

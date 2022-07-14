@@ -79,7 +79,7 @@ mod_PhytoTsNRS_server <- function(id){
     observeEvent({input$NRSpts == 1}, {
       
       gg_out1 <- reactive({
-        
+        print("Tab 1")  
         if (is.null(datNRSp$StationCode)) {return(NULL)}
         
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
@@ -89,7 +89,7 @@ mod_PhytoTsNRS_server <- function(id){
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
         p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
         
-      }) %>% bindCache(input$parameter,input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
+      }) %>% bindCache(input$parameter,input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
       output$timeseries1 <- renderPlot({
         gg_out1()
@@ -97,8 +97,8 @@ mod_PhytoTsNRS_server <- function(id){
       
       
       # Download -------------------------------------------------------
-      output$downloadData <- fDownloadDataServer(input, selectedData()) # Download csv of data
-      output$downloadPlot <- fDownloadPlotServer(input, gg_id = gg_out1()) # Download figure
+      output$downloadData1 <- fDownloadDataServer(input, selectedData()) # Download csv of data
+      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1()) # Download figure
     }) 
     
     # Climatologies -----------------------------------------------------------
@@ -107,7 +107,7 @@ mod_PhytoTsNRS_server <- function(id){
     observeEvent({input$NRSpt == 2}, {
       
       gg_out2 <- reactive({
-        
+        print("Tab 2")  
         if (is.null(datNRSp$StationCode)) {return(NULL)}
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
         
@@ -125,15 +125,15 @@ mod_PhytoTsNRS_server <- function(id){
         p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect") + 
           patchwork::plot_annotation(title = titleplot)
         
-      }) %>% bindCache(input$parameter,input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
+      }) %>% bindCache(input$parameter,input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
       output$timeseries2 <- renderPlot({
         gg_out2()
       }) 
       
       # Download -------------------------------------------------------
-      output$downloadData <- fDownloadDataServer(input, selectedData()) # Download csv of data
-      output$downloadPlot <- fDownloadPlotServer(input, gg_id = gg_out2()) # Download figure
+      output$downloadData2 <- fDownloadDataServer(input, selectedData()) # Download csv of data
+      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2()) # Download figure
     })
     
     # Functional groups -------------------------------------------------------
@@ -148,27 +148,29 @@ mod_PhytoTsNRS_server <- function(id){
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
           droplevels()
         
-      }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
+      })%>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
       gg_out3 <- reactive({
         
+        print("Tab 3")
+        
         if (is.null(NRSfgp$StationCode)) {return(NULL)}
-        scale <- dplyr::if_else(input$scaler3, "Actual", "Percent")
+        scale <- dplyr::if_else(input$scaler3, "Percent", "Actual")
         
         p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
         p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") + 
           ggplot2::theme(axis.title.y = ggplot2::element_blank(), legend.position = "none")
         p1 + p2 + patchwork::plot_layout(widths = c(3,1))
         
-      }) %>% bindCache(input$Site, input$scaler1, input$DatesSlide[1], input$DatesSlide[2])
+      }) %>% bindCache(input$Site, input$scaler3, input$DatesSlide[1], input$DatesSlide[2])
       
       output$timeseries3 <- renderPlot({
         gg_out3()
       }, height = function() {length(unique(selectedData()$StationName)) * 200}) 
       
       # Download -------------------------------------------------------
-      output$downloadData <- fDownloadDataServer(input, selectedDataFG()) # Download csv of data
-      output$downloadPlot <- fDownloadPlotServer(input, gg_id = gg_out3()) # Download figure
+      output$downloadData3 <- fDownloadDataServer(input, selectedDataFG()) # Download csv of data
+      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3()) # Download figure
       
     })
     

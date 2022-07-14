@@ -164,11 +164,6 @@ mod_ZooTsCPR_server <- function(id){
 
   
     # Download -------------------------------------------------------
-    # Downloadable csv of selected dataset ----
-    output$downloadData <- fDownloadDataServer(input, selectedData())
-    
-    # Download figure
-    output$downloadPlot <- fDownloadPlotServer(input, ts3())
   
   })
 }

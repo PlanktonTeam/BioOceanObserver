@@ -17,8 +17,6 @@ mod_PolCPR_ui <- function(id){
         plotOutput(nsPolCPR("plotmap")),
         h6("Note there is very little data in the North and North-west regions"),
         radioButtons(inputId = nsPolCPR("Site"), label = "Select a bioregion", choices = unique(sort(PolCPR$BioRegion)), selected = "Temperate East"),
-        fDownloadData(id, "Data"),
-        fDownloadPlot(id, "Plot")
       ),
       mainPanel(id = "EOV Biomass by CPR", 
                 h6(textOutput(nsPolCPR("PlotExp1"), container = span)),

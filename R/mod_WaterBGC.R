@@ -96,9 +96,5 @@ mod_WaterBGC_server <- function(id){
       "A plot of selected water parameters from the NRS as timeseries"
     }) 
     
-    # create table output
-    output$table <- DT::renderDataTable(
-      selected() ) 
-    
   })
 }
