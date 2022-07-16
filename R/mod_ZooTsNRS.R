@@ -12,26 +12,7 @@ mod_ZooTsNRS_ui <- function(id){
   tagList(
     sidebarLayout(
       fPlanktonSidebar(id = id, panel_id = "NRSzts", input = input, dat = datNRSz),
-      mainPanel(
-        tabsetPanel(id = "NRSzts",
-                    tabPanel("Trend Analysis", value=1,
-                             h6(textOutput(nsZooTsNRS("PlotExp1"), container = span)),
-                             plotOutput(nsZooTsNRS("timeseries1"), height = "auto") %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
-                    ),
-                    tabPanel("Climatologies", value=1,
-                             h6(textOutput(nsZooTsNRS("PlotExp2"), container = span)),  
-                             textOutput(nsZooTsNRS("selected_var")),
-                             plotOutput(nsZooTsNRS("timeseries2"), height = 800) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
-                    ),
-                    tabPanel("Functional groups", value=2,
-                             h6(textOutput(nsZooTsNRS("PlotExp3"), container = span)),  
-                             plotOutput(nsZooTsNRS("timeseries3"), height = "auto") %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
-                    )
-        )
-      )
+      fPLanktonPanel(id = id, panel_id = "NRSzts")
     )
   )
 }
@@ -139,30 +120,30 @@ mod_ZooTsNRS_server <- function(id){
     # observeEvent(input$NRSzts, {
     #   if(input$NRSzts == "Functional groups") {
     #     
-        selectedDataFG <- reactive({
-          req(input$Site)
-          validate(need(!is.na(input$Site), "Error: Please select a station."))
-          selectedDataFG <- NRSfgz %>% 
-            dplyr::filter(.data$StationName %in% input$Site,
-                          dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-            droplevels()
-        }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
-        
-        ts3 <- reactive({
-          
-          scale <- dplyr::if_else(input$scaler3, "Actual", "Percent")
-          
-          p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
-          p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") + 
-            ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                           legend.position = "none")
-          p1 + p2 + patchwork::plot_layout(widths = c(3,1))
-        }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
-        
-        output$timeseries3 <- renderPlot({
-          ts3()
-        }, height = function() {length(unique(selectedDataFG()$StationName)) * 200}) 
-        
+    selectedDataFG <- reactive({
+      req(input$Site)
+      validate(need(!is.na(input$Site), "Error: Please select a station."))
+      selectedDataFG <- NRSfgz %>% 
+        dplyr::filter(.data$StationName %in% input$Site,
+                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+        droplevels()
+    }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    
+    ts3 <- reactive({
+      
+      scale <- dplyr::if_else(input$scaler3, "Actual", "Percent")
+      
+      p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
+      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") + 
+        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+                       legend.position = "none")
+      p1 + p2 + patchwork::plot_layout(widths = c(3,1))
+    }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
+    
+    output$timeseries3 <- renderPlot({
+      ts3()
+    }, height = function() {length(unique(selectedDataFG()$StationName)) * 200}) 
+    
     #   }
     # })
     
