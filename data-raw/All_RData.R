@@ -1,14 +1,4 @@
 ## script for all RData 
-## Aim to change all source calls to planktonr functions
-# library(planktonr)
-
-
-# load("~/GitHub/IMOS_BioOceanObserver/R/sysdata.rda")
-
-# rm("CPRfgp", "CPRfgz", "CPRinfo", "datCPRp", "datCPRz",
-   # "datNRSm", "datNRSp", "datNRSz", "daynightp", "daynightz",
-   # "LTnuts", "NRSfgp", "NRSfgz", "NRSinfo", "Nuts", "Pico", "Pigs",
-   # "PolCPR", "PolNRS", "stip", "stiz")
 
 # NRS indices data
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z")
@@ -23,15 +13,33 @@ datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
   tidyr::pivot_longer(-c(.data$Year_Local:.data$StationCode), names_to = 'Parameters', values_to = 'Values')
 
 # CPR time series data
-datCPRz <- planktonr::pr_get_Indices("CPR", "Z")
-datCPRp <- planktonr::pr_get_Indices("CPR", "P")
-datCPRw <- planktonr::pr_get_Indices("CPR", "W") # just PCI atm
+datCPRz <- planktonr::pr_get_Indices("CPR", "Z") %>% 
+  tidyr::drop_na(BioRegion) %>% 
+  dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
+  droplevels()
+
+datCPRp <- planktonr::pr_get_Indices("CPR", "P") %>% 
+  tidyr::drop_na(BioRegion) %>% 
+  dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
+  droplevels()
+
+datCPRw <- planktonr::pr_get_Indices("CPR", "W")  %>% # just PCI atm
+  tidyr::drop_na(BioRegion) %>% 
+  dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
+  droplevels()
 
 # FG time series data
 NRSfgz <- planktonr::pr_get_FuncGroups("NRS", "Z")
 NRSfgp <- planktonr::pr_get_FuncGroups("NRS", "P")
-CPRfgz <- planktonr::pr_get_FuncGroups("CPR", "Z")
-CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P")
+
+CPRfgz <- planktonr::pr_get_FuncGroups("CPR", "Z") %>% 
+  tidyr::drop_na(BioRegion) %>% 
+  dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
+  droplevels()
+CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P") %>% 
+  tidyr::drop_na(BioRegion) %>% 
+  dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
+  droplevels()
 
 # BGC Environmental variables data
 Nuts <- planktonr::pr_get_NRSChemistry()
@@ -51,6 +59,7 @@ daynightp <- planktonr::pr_get_DayNight("P")
 PolNRS <- planktonr::pr_get_PolicyData("NRS")
 PolCPR <- planktonr::pr_get_PolicyData("CPR")
 PolLTM <- planktonr::pr_get_PolicyData("LTM")
+
 NRSinfo <- planktonr::pr_get_PolicyInfo("NRS")
 CPRinfo <- planktonr::pr_get_PolicyInfo("CPR")
 
@@ -72,7 +81,7 @@ usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts,
                   overwrite = TRUE, internal = TRUE)
 
 ## files for SDMs (this will only work for Claire at the moment)
-listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
-files <- paste("C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps/", listsdm, sep = "")
-file.copy(from=files, to="inst/app/www")
+# listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
+# files <- paste("C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps/", listsdm, sep = "")
+# file.copy(from=files, to="inst/app/www")
 
