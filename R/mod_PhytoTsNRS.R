@@ -12,22 +12,30 @@ mod_PhytoTsNRS_ui <- function(id){
   tagList(
     sidebarLayout(
       fPlanktonSidebar(id = id, panel_id = "NRSpts", input = input, dat = datNRSp),
+      # fPLanktonPanel(id = id, panel_id = "NRSpts"),
       mainPanel(
-        tabsetPanel(id = "NRSpts",
+        tabsetPanel(id = "NRSpts", type = "pills",
                     tabPanel("Trend Analysis", value = 1,
                              h6(textOutput(nsPhytoTsNRS("PlotExp1"), container = span)),
-                             plotOutput(nsPhytoTsNRS("timeseries1"), height = "auto") %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
+                             plotOutput(nsPhytoTsNRS("timeseries1"), height = "auto") %>%
+                               shinycssloaders::withSpinner(color="#0dc5c1"),
+                             div(style="display:inline-block; float:right; width:40%",
+                                 fDownloadData(id,"downloadPlot1", "Plot"),
+                                 fDownloadData(id,"downloadData1", "Data"))
                     ),
                     tabPanel("Climatologies", value = 2,
-                             h6(textOutput(nsPhytoTsNRS("PlotExp2"), container = span)),  
-                             plotOutput(nsPhytoTsNRS("timeseries2"), height = 800) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
+                             h6(textOutput(nsPhytoTsNRS("PlotExp2"), container = span)),
+                             plotOutput(nsPhytoTsNRS("timeseries2"), height = 800) %>%
+                               shinycssloaders::withSpinner(color="#0dc5c1"),
+                             fDownloadData(id,"downloadPlot2", "Plot"),
+                             fDownloadData(id,"downloadData2", "Data")
                     ),
                     tabPanel("Functional groups", value = 3,
-                             h6(textOutput(nsPhytoTsNRS("PlotExp3"), container = span)),  
-                             plotOutput(nsPhytoTsNRS("timeseries3"), height = "auto") %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
+                             h6(textOutput(nsPhytoTsNRS("PlotExp3"), container = span)),
+                             plotOutput(nsPhytoTsNRS("timeseries3"), height = "auto") %>%
+                               shinycssloaders::withSpinner(color="#0dc5c1"),
+                             fDownloadData(id,"downloadPlot3", "Plot"),
+                             fDownloadData(id,"downloadData3", "Data")
                     )
         )
       )
@@ -42,9 +50,8 @@ mod_PhytoTsNRS_server <- function(id){
   moduleServer(id, function(input, output, session, NRSpts){
     
     # Sidebar ----------------------------------------------------------
-    
     # observeEvent({input$NRSpt == 1 | input$NRSpt == 2}, {
-    selectedData <- reactive({
+    selectedData <- reactive({ #TODO - This reactive encompasses things from 1/2 AND 3. Can we split them?
       req(input$Site)
       req(input$parameter)
       validate(need(!is.na(input$Site), "Error: Please select a station."))
@@ -57,7 +64,7 @@ mod_PhytoTsNRS_server <- function(id){
         droplevels()
       
     }) %>% bindCache(input$parameter,input$Site, input$DatesSlide[1], input$DatesSlide[2])
-    # }) 
+    # })
     
     output$plotmap <- renderPlot({ 
       planktonr::pr_plot_NRSmap(selectedData())
@@ -79,9 +86,7 @@ mod_PhytoTsNRS_server <- function(id){
     observeEvent({input$NRSpts == 1}, {
       
       gg_out1 <- reactive({
-        print("Tab 1")  
         if (is.null(datNRSp$StationCode)) {return(NULL)}
-        
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
         
         p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
@@ -95,10 +100,9 @@ mod_PhytoTsNRS_server <- function(id){
         gg_out1()
       }, height = function() {length(unique(selectedData()$StationName)) * 200}) 
       
-      
       # Download -------------------------------------------------------
-      output$downloadData1 <- fDownloadDataServer(input, selectedData()) # Download csv of data
-      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1()) # Download figure
+      output$downloadData1 <- fDownloadDataServer(input, selectedData(), "Trend") # Download csv of data
+      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Trend") # Download figure
     }) 
     
     # Climatologies -----------------------------------------------------------
@@ -109,31 +113,29 @@ mod_PhytoTsNRS_server <- function(id){
       gg_out2 <- reactive({
         print("Tab 2")  
         if (is.null(datNRSp$StationCode)) {return(NULL)}
+        
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
+        titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
         
         p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "NRS", trans = trans) + 
           ggplot2::theme(legend.position = "none")
-        
         p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) + 
           ggplot2::theme(legend.position = "none", axis.title.y = ggplot2::element_blank())
-        
         p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) + 
           ggplot2::theme(axis.title.y = ggplot2::element_blank(), legend.position = "bottom")
-        
-        titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
         
         p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect") + 
           patchwork::plot_annotation(title = titleplot)
         
-      }) %>% bindCache(input$parameter,input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
       output$timeseries2 <- renderPlot({
         gg_out2()
       }) 
       
       # Download -------------------------------------------------------
-      output$downloadData2 <- fDownloadDataServer(input, selectedData()) # Download csv of data
-      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2()) # Download figure
+      output$downloadData2 <- fDownloadDataServer(input, selectedData(), "Climate") # Download csv of data
+      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2(), "Climate") # Download figure
     })
     
     # Functional groups -------------------------------------------------------
@@ -152,8 +154,6 @@ mod_PhytoTsNRS_server <- function(id){
       
       gg_out3 <- reactive({
         
-        print("Tab 3")
-        
         if (is.null(NRSfgp$StationCode)) {return(NULL)}
         scale <- dplyr::if_else(input$scaler3, "Percent", "Actual")
         
@@ -169,8 +169,8 @@ mod_PhytoTsNRS_server <- function(id){
       }, height = function() {length(unique(selectedData()$StationName)) * 200}) 
       
       # Download -------------------------------------------------------
-      output$downloadData3 <- fDownloadDataServer(input, selectedDataFG()) # Download csv of data
-      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3()) # Download figure
+      output$downloadData3 <- fDownloadDataServer(input, selectedDataFG(), "FuncGroup") # Download csv of data
+      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3(), "FuncGroup") # Download figure
       
     })
     
