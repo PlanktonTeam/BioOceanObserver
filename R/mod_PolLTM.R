@@ -21,7 +21,11 @@ mod_PolLTM_ui <- function(id){
                 h6(textOutput(nsPolLTM("PlotExp1"), container = span)),
                 h6(verbatimTextOutput(nsPolLTM("PlotExp5"))),
                 plotOutput(nsPolLTM("timeseriesLTM"), height = 1000) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
-                h6(verbatimTextOutput(nsPolLTM("PlotExp3")))
+                h6(verbatimTextOutput(nsPolLTM("PlotExp3")),
+                   div(style="display:inline-block; float:right; width:60%",
+                       fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+                       fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+                       fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action")))
       )
     )
   )
@@ -114,7 +118,7 @@ mod_PolLTM_server <- function(id){
       patchwork::area(6,1,6,3)
     )
     
-    output$timeseriesLTM <- renderPlot({
+    output$gg_out1 <- reactive({
       
       p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrate_umolL", Survey = "LTM", trans = "identity", col = "aquamarine4", labels = "no")
       p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "Phosphate_umolL", Survey = "LTM", trans = "identity", col = "darkorange3", labels = "no") 
@@ -128,7 +132,15 @@ mod_PolLTM_server <- function(id){
         patchwork::plot_annotation(title = input$SiteLTM)  +
         ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
                        plot.title = ggplot2::element_text(hjust = 0.5)) 
-      
-    }) %>% bindCache(input$SiteLTM)
+   
+    }) %>% bindCache(input$Site)
     
+    output$timeseries1 <- renderPlot({
+      gg_out1()
+    })
+    
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, outputs(), "Policy") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Policy") # Download figure
+      
   })}

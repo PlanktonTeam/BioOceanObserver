@@ -22,7 +22,11 @@ mod_PolCPR_ui <- function(id){
                 h6(textOutput(nsPolCPR("PlotExp1"), container = span)),
                 h6(verbatimTextOutput(nsPolCPR("PlotExp5"))),
                 plotOutput(nsPolCPR("timeseries1"), height = 1000) %>% shinycssloaders::withSpinner(color="#0dc5c1"),
-                h6(verbatimTextOutput(nsPolCPR("PlotExp3")))
+                h6(verbatimTextOutput(nsPolCPR("PlotExp3")),
+                   div(style="display:inline-block; float:right; width:60%",
+                       fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+                       fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+                       fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action")))
       )
     )
   )
@@ -104,7 +108,7 @@ mod_PolCPR_server <- function(id){
       patchwork::area(7,1,7,3)
     )
     
-    output$timeseries1 <- renderPlot({
+    gg_out1 <- reactive({
       
       p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "BiomassIndex_mgm3", Survey = 'CPR', 
                                    trans = "log10", col = "cornflowerblue", labels = "no")
@@ -137,5 +141,13 @@ mod_PolCPR_server <- function(id){
                        plot.title = element_text(hjust = 0.5))
       
     }) %>% bindCache(input$Site)
+    
+    output$timeseries1 <- renderPlot({
+      gg_out1()
+    })
+    
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, outputs(), "Policy") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Policy") # Download figure
     
   })}

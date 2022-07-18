@@ -15,7 +15,7 @@ app_ui <- function(request) {
                                      bootswatch = "flatly",
                                      # primary = "#2C3E50"
                                      "border-width" = "5px",
-                                     "border-color" = "red",
+                                     # "border-color" = "red",
                                      "enable-rounded" = TRUE), #https://rstudio.github.io/bslib/articles/bslib.html#custom
              selected = "Phytoplankton", 
              tabPanel("Welcome",
