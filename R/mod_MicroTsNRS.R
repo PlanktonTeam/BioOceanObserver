@@ -89,7 +89,7 @@ mod_MicroTsNRS_server <- function(id){
                # SampleDepth_m = dplyr::if_else(stringr::str_detect("WC", SampleDepth_m),
                #                                "WC",
                #                                as.character(round(as.numeric(.data$SampleDepth_m)/5,0)*5))
-               ) %>%
+        ) %>%
         droplevels()
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
@@ -109,7 +109,7 @@ mod_MicroTsNRS_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({ 
-     planktonr::pr_plot_NRSmap(selectedData())
+      planktonr::pr_plot_NRSmap(selectedData())
     }) %>% bindCache(input$Site)
     
     # Add text information 
@@ -130,7 +130,7 @@ mod_MicroTsNRS_server <- function(id){
     
     # Plot Trends -------------------------------------------------------------
     
-      ts1 <- reactive({
+    ts1 <- reactive({
       
       if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
@@ -144,9 +144,9 @@ mod_MicroTsNRS_server <- function(id){
       p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
       p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
-
+      
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
-
+      
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     output$timeseries1 <- renderPlot({

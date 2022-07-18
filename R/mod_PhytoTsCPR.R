@@ -12,25 +12,7 @@ mod_PhytoTsCPR_ui <- function(id){
   tagList(
     sidebarLayout(
       fPlanktonSidebar(id = id, panel_id = "CPRpts", input = input, dat = datCPRp),
-      mainPanel(
-        tabsetPanel(id = "CPRpts",
-                    tabPanel("Trend Analysis", value = 1,
-                             h6(textOutput(nsPhytoTsCPR("PlotExp1"), container = span)),  
-                             plotOutput(nsPhytoTsCPR("timeseries1")) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
-                    ),
-                    tabPanel("Climatologies", value = 1,
-                             h6(textOutput(nsPhytoTsCPR("PlotExp2"), container = span)),  
-                             plotOutput(nsPhytoTsCPR("timeseries2"), height = 800) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
-                    ),
-                    tabPanel("Functional groups", value = 2,
-                             h6(textOutput(nsPhytoTsCPR("PlotExp3"), container = span)),  
-                             plotOutput(nsPhytoTsCPR("timeseries3")) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
-                    )
-        )
-      )
+      fPLanktonPanel(id = id, panel_id = "CPRpts")
     )
   )
 }
@@ -106,7 +88,7 @@ mod_PhytoTsCPR_server <- function(id){
     # Climatologies -----------------------------------------------------------
     
     output$timeseries2 <- renderPlot({
-     
+      
       trans <- dplyr::if_else(input$scaler1, "log10", "identity")
       
       if (identical(input$region, "")) return(NULL)

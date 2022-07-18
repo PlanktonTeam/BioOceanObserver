@@ -12,22 +12,7 @@ mod_ZooTsCPR_ui <- function(id){
   tagList(
     sidebarLayout(
       fPlanktonSidebar(id = id, panel_id = "CPRzts", input = input, dat = datCPRz),
-      mainPanel(
-        tabsetPanel(id = "CPRzts",
-                    tabPanel("Trend Analysis", value = 1,
-                             h6(textOutput(nsZooTsCPR("PlotExp1"), container = span)),  
-                             plotOutput(nsZooTsCPR("timeseries1"), height = "auto") %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                    ),
-                    tabPanel("Climatologies", value = 1,
-                             h6(textOutput(nsZooTsCPR("PlotExp2"), container = span)),  
-                             plotOutput(nsZooTsCPR("timeseries2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                    ),
-                    tabPanel("Functional groups", value = 2,
-                             h6(textOutput(nsZooTsCPR("PlotExp3"), container = span)),  
-                             plotOutput(nsZooTsCPR("timeseries3"), height = "auto") %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                    )
-        )
-      )
+      fPLanktonPanel(id = id, panel_id = "CPRzts"),
     )
   )
 }
