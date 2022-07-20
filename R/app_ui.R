@@ -17,7 +17,7 @@ app_ui <- function(request) {
                                      "border-width" = "5px",
                                      # "border-color" = "red",
                                      "enable-rounded" = TRUE), #https://rstudio.github.io/bslib/articles/bslib.html#custom
-             selected = "Phytoplankton", 
+             selected = "Welcome", 
              tabPanel("Welcome",
                       sidebarLayout(
                         sidebarPanel(
@@ -30,8 +30,8 @@ app_ui <- function(request) {
                             We aim to enhance the availability and understanding of biological data and make it 
                             accessible to broader and non-specialist audiences in order to accelerate the next 
                             generation of scientific insights."),
-                          p("Data was sourced from Australia’s ",tags$a(href="https://imos.org.au","Integrated Marine Observing System (IMOS)"),
-                            " – IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). 
+                          p("Data was sourced from Australia's ",tags$a(href="https://imos.org.au","Integrated Marine Observing System (IMOS)"),
+                            " - IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). 
                             It is operated by a consortium of institutions as an unincorporated joint venture, with 
                             the University of Tasmania as Lead Agent."),
                           h3("Code"),
