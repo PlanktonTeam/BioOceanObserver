@@ -17,7 +17,7 @@ app_ui <- function(request) {
                                      "border-width" = "5px",
                                      # "border-color" = "red",
                                      "enable-rounded" = TRUE), #https://rstudio.github.io/bslib/articles/bslib.html#custom
-             selected = "Phytoplankton", 
+             selected = "Welcome", 
              tabPanel("Welcome",
                       sidebarLayout(
                         sidebarPanel(
