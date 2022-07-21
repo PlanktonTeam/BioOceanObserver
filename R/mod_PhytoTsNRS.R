@@ -85,10 +85,9 @@ mod_PhytoTsNRS_server <- function(id){
     # Climatologies -----------------------------------------------------------
 
     # Plot abundance spectra by species
-    observeEvent({input$NRSpt == 2}, {
+    observeEvent({input$NRSpts == 2}, {
 
       gg_out2 <- reactive({
-        print("Tab 2")
         if (is.null(datNRSp$StationCode)) {return(NULL)}
 
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
@@ -116,7 +115,7 @@ mod_PhytoTsNRS_server <- function(id){
     })
 
     # Functional groups -------------------------------------------------------
-    observeEvent({input$NRSpt == 3}, {
+    observeEvent({input$NRSpts == 3}, {
 
       selectedDataFG <- reactive({
         req(input$Site)
@@ -150,6 +149,5 @@ mod_PhytoTsNRS_server <- function(id){
       output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3(), "FuncGroup") # Download figure
 
     })
-    
   })
 }
