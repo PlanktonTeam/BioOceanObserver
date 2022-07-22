@@ -125,7 +125,7 @@ mod_PolCPR_server <- function(id){
               " and sampling is ongoing.", " Approximately ", format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
               " nautical miles has been towed in this region. The ", input$Site, " bioregion is characterised by ", 
               unique(stationData()$Features), sep = ""),
-        width = 80, simplify = FALSE)
+        width = 120, simplify = FALSE)
       BioRegionSummary2 <- sapply(BioRegionSummary, paste, collapse = "\n")
       
       

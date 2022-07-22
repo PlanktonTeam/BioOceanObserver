@@ -59,8 +59,8 @@ app_ui <- function(request) {
              tabPanel("Microbes",
                       tabsetPanel(id = 'mic', type = "pills",
                                   tabPanel(value = "mts", "Time Series NRS", mod_MicroTsNRS_ui("MicroTsNRS_ui_1")),
-                                  tabPanel("Diversity"),
-                                  tabPanel("Composition")
+                                  # tabPanel("Diversity"),
+                                  # tabPanel("Composition")
                       )),
              tabPanel("Phytoplankton",
                       tabsetPanel(id = 'phyto', type = "pills",
@@ -73,14 +73,15 @@ app_ui <- function(request) {
                                   tabPanel(value = "zts", "Time Series NRS", mod_ZooTsNRS_ui("ZooTsNRS_ui_1")),
                                   tabPanel(value = "ztscpr", "Time Series CPR", mod_ZooTsCPR_ui("ZooTsCPR_ui_1")),
                                   tabPanel(value = "dist", "Distributions", mod_ZooSpatial_ui("ZooSpatial_ui_1")),
-                                  tabPanel(value = "SA", "Spatial Analysis")
+                                  # tabPanel(value = "SA", "Spatial Analysis")
                       )),
              tabPanel("Larval Fish",
                       tabsetPanel(id = 'fish', type = "pills",
                                   tabPanel("Time Series",
                                            img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")),
                                   tabPanel("Spatial Analysis",
-                                           img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")))),
+                                           img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")),
+                                  )),
              tabPanel("Environmental Data",
                       tabsetPanel(id = 'env', type = "pills",
                                   tabPanel(value = "bgc", "NRS BGC Nutrients", mod_NutrientsBGC_ui("NutrientsBGC_ui_1")),

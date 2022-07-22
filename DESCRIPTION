@@ -15,7 +15,7 @@ Imports:
     lubridate,
     magrittr,
     patchwork,
-    planktonr (>= 0.0.0.9000),
+    planktonr (>= 0.1.0.0000),
     rlang,
     shiny (>= 1.6.0),
     shinycssloaders,
@@ -39,5 +39,5 @@ Language: en-US
 Depends: 
     R (>= 2.10)
 Remotes: 
-    PlanktonTeam/planktonr
+    github::PlanktonTeam/planktonr
 VignetteBuilder: knitr

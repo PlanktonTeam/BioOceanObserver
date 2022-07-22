@@ -44,7 +44,7 @@ CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P") %>%
 
 # BGC Environmental variables data
 Nuts <- planktonr::pr_get_NRSChemistry()
-Pigs <- planktonr::pr_get_NRSPigments()
+Pigs <- planktonr::pr_get_NRSPigments(Format = "binned")
 Pico <- planktonr::pr_get_NRSPico()
 LTnuts <- planktonr::pr_get_LTnuts()
 
