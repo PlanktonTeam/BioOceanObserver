@@ -74,14 +74,14 @@ PMapData <- planktonr::pr_get_ProgressMap(c("NRS", "CPR"))
 
 
 PMapDatan <- dplyr::bind_rows(planktonr::pr_get_Indices("NRS", "Z"), planktonr::pr_get_Indices("NRS", "P")) %>% 
-  filter(.data$Parameters == "ZoopAbundance_m3" | .data$Parameters == "PhytoAbundance_CellsL") %>% 
+  dplyr::filter(.data$Parameters == "ZoopAbundance_m3" | .data$Parameters == "PhytoAbundance_CellsL") %>% 
   tidyr::pivot_wider(names_from = .data$Parameters, values_from = .data$Values) %>% 
   dplyr::rename(Name = .data$StationName) %>% 
   dplyr::select(-.data$StationCode) %>% 
   dplyr::mutate(Survey = "NRS")
 
 PMapDatac <- dplyr::bind_rows(planktonr::pr_get_Indices("CPR", "Z"), planktonr::pr_get_Indices("CPR", "P")) %>% 
-  filter(.data$Parameters == "ZoopAbundance_m3" | .data$Parameters == "PhytoAbundance_Cellsm3") %>% 
+  dplyr::filter(.data$Parameters == "ZoopAbundance_m3" | .data$Parameters == "PhytoAbundance_Cellsm3") %>% 
   tidyr::pivot_wider(names_from = .data$Parameters, values_from = .data$Values) %>% 
   dplyr::mutate(PhytoAbundance_Cellsm3 = .data$PhytoAbundance_Cellsm3/1e3, 
                 Survey = "CPR") %>% 
@@ -92,7 +92,7 @@ PMapData2 <- dplyr::bind_rows(PMapDatan, PMapDatac) %>%
   dplyr::select(-c(.data$Year_Local, .data$Month_Local , .data$tz))
   
   # add data to sysdata.rda
-  usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts, 
+usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts, 
                     PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, 
                     datCPRz, datCPRp, datCPRw,
                     datNRSz, datNRSp, datNRSm, datNRSw,
