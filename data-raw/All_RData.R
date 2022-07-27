@@ -13,17 +13,17 @@ datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
   tidyr::pivot_longer(-c(.data$Year_Local:.data$StationCode), names_to = 'Parameters', values_to = 'Values')
 
 # CPR time series data
-datCPRz <- planktonr::pr_get_Indices("CPR", "Z") %>% 
+datCPRz <- planktonr::pr_get_Indices("CPR", "Z", join = "st_nearest_feature") %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
   droplevels()
 
-datCPRp <- planktonr::pr_get_Indices("CPR", "P") %>% 
+datCPRp <- planktonr::pr_get_Indices("CPR", "P", join = "st_nearest_feature") %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
   droplevels()
 
-datCPRw <- planktonr::pr_get_Indices("CPR", "W")  %>% # just PCI atm
+datCPRw <- planktonr::pr_get_Indices("CPR", "W", join = "st_nearest_feature")  %>% # just PCI atm
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
   droplevels()
@@ -32,11 +32,11 @@ datCPRw <- planktonr::pr_get_Indices("CPR", "W")  %>% # just PCI atm
 NRSfgz <- planktonr::pr_get_FuncGroups("NRS", "Z")
 NRSfgp <- planktonr::pr_get_FuncGroups("NRS", "P")
 
-CPRfgz <- planktonr::pr_get_FuncGroups("CPR", "Z") %>% 
+CPRfgz <- planktonr::pr_get_FuncGroups("CPR", "Z", join = "st_nearest_feature") %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
   droplevels()
-CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P") %>% 
+CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P", join = "st_nearest_feature") %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
   droplevels()
@@ -57,7 +57,7 @@ daynightp <- planktonr::pr_get_DayNight("P")
 
 # Policy data
 PolNRS <- planktonr::pr_get_PolicyData("NRS")
-PolCPR <- planktonr::pr_get_PolicyData("CPR")
+PolCPR <- planktonr::pr_get_PolicyData("CPR", join = "st_nearest_feature")
 PolLTM <- planktonr::pr_get_PolicyData("LTM")
 
 NRSinfo <- planktonr::pr_get_PolicyInfo("NRS")
