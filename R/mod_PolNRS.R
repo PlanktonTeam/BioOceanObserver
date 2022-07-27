@@ -133,7 +133,7 @@ mod_PolNRS_server <- function(id){
               ". The station has been sampled since ", stationData()$StationStartDate, " ", stationData()$now,
               ". ", input$Site, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, 
               " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = ""), 
-        width = 80, simplify = FALSE)
+        width = 120, simplify = FALSE)
       StationSummary2 <- sapply(StationSummary, paste, collapse = "\n")
       
       patchwork::wrap_elements(

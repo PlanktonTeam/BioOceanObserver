@@ -17,7 +17,7 @@ app_ui <- function(request) {
                                      "border-width" = "5px",
                                      # "border-color" = "red",
                                      "enable-rounded" = TRUE), #https://rstudio.github.io/bslib/articles/bslib.html#custom
-             selected = "Phytoplankton", 
+             selected = "Welcome", 
              tabPanel("Welcome",
                       sidebarLayout(
                         sidebarPanel(
@@ -30,8 +30,8 @@ app_ui <- function(request) {
                             We aim to enhance the availability and understanding of biological data and make it 
                             accessible to broader and non-specialist audiences in order to accelerate the next 
                             generation of scientific insights."),
-                          p("Data was sourced from Australia’s ",tags$a(href="https://imos.org.au","Integrated Marine Observing System (IMOS)"),
-                            " – IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). 
+                          p("Data was sourced from Australia's ",tags$a(href="https://imos.org.au","Integrated Marine Observing System (IMOS)"),
+                            " - IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). 
                             It is operated by a consortium of institutions as an unincorporated joint venture, with 
                             the University of Tasmania as Lead Agent."),
                           h3("Code"),
@@ -59,8 +59,8 @@ app_ui <- function(request) {
              tabPanel("Microbes",
                       tabsetPanel(id = 'mic', type = "pills",
                                   tabPanel(value = "mts", "Time Series NRS", mod_MicroTsNRS_ui("MicroTsNRS_ui_1")),
-                                  tabPanel("Diversity"),
-                                  tabPanel("Composition")
+                                  # tabPanel("Diversity"),
+                                  # tabPanel("Composition")
                       )),
              tabPanel("Phytoplankton",
                       tabsetPanel(id = 'phyto', type = "pills",
@@ -73,14 +73,15 @@ app_ui <- function(request) {
                                   tabPanel(value = "zts", "Time Series NRS", mod_ZooTsNRS_ui("ZooTsNRS_ui_1")),
                                   tabPanel(value = "ztscpr", "Time Series CPR", mod_ZooTsCPR_ui("ZooTsCPR_ui_1")),
                                   tabPanel(value = "dist", "Distributions", mod_ZooSpatial_ui("ZooSpatial_ui_1")),
-                                  tabPanel(value = "SA", "Spatial Analysis")
+                                  # tabPanel(value = "SA", "Spatial Analysis")
                       )),
              tabPanel("Larval Fish",
                       tabsetPanel(id = 'fish', type = "pills",
                                   tabPanel("Time Series",
                                            img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")),
                                   tabPanel("Spatial Analysis",
-                                           img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")))),
+                                           img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")),
+                                  )),
              tabPanel("Environmental Data",
                       tabsetPanel(id = 'env', type = "pills",
                                   tabPanel(value = "bgc", "NRS BGC Nutrients", mod_NutrientsBGC_ui("NutrientsBGC_ui_1")),

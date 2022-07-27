@@ -34,14 +34,12 @@ fPlanktonSidebar <- function(id, panel_id, input, dat){
       shiny::selectInput(inputId = ns("parameter"), 
                          label = 'Select a parameter', 
                          choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), 
-                         selected = selectedVar)
-    ),
+                         selected = selectedVar)),
     shiny::conditionalPanel(
       condition = paste0("input.", panel_id, " == 3"), 
       shiny::checkboxInput(inputId = ns("scaler3"), 
                            label = strong("Change the plot scale to percent"), 
-                           value = FALSE)
-    ),
+                           value = FALSE)),
     shiny::absolutePanel(
       shiny::plotOutput(ns("plotmap")),
       shiny::checkboxGroupInput(inputId = ns(idSite), 
@@ -77,7 +75,7 @@ fPLanktonPanel <- function(id, panel_id){
                          div(style="display:inline-block; float:right; width:60%",
                              fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                              fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
-                             fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action"))
+                             fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
                 ),
                 tabPanel("Climatologies", value = 2,
                          h6(textOutput(ns("PlotExp2"), container = span)),  
@@ -86,7 +84,7 @@ fPLanktonPanel <- function(id, panel_id){
                          div(style="display:inline-block; float:right; width:60%",
                              fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
                              fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
-                             fButtons(id, button_id = "downloadCode2", label = "Code", Type = "Action"))
+                             fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
                 ),
                 tabPanel("Functional groups", value = 3,
                          h6(textOutput(ns("PlotExp3"), container = span)),  
@@ -95,7 +93,7 @@ fPLanktonPanel <- function(id, panel_id){
                          div(style="display:inline-block; float:right; width:60%",
                              fButtons(id, button_id = "downloadPlot3", label = "Plot", Type = "Download"),
                              fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
-                             fButtons(id, button_id = "downloadCode3", label = "Code", Type = "Action"))
+                             fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
                 )
     )
   )
@@ -142,7 +140,7 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
       if (gg_prefix == "Policy"){
         paste0(gg_prefix, "_", format(Sys.time(), "%Y%m%d"), ".csv")
       } else{
-        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d"), ".csv")
+        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".csv")
       }
     },
     content = function(file) {
@@ -159,9 +157,9 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
   downloadPlot <- downloadHandler(
     filename = function() {
       if (gg_prefix == "Policy"){
-        paste0(gg_prefix, "_", format(Sys.time(), "%Y%m%d"), ".png")
+        paste0(gg_prefix, "_", input$Site, "_", format(Sys.time(), "%Y%m%d"), ".png")
       } else{
-        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d"), ".png")
+        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png")
       }
     },
     content = function(file) {
