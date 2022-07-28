@@ -146,6 +146,7 @@ mod_PolNRS_server <- function(id){
         p3 + p4 + p5 + patchwork::plot_layout(design = layout1) +
         patchwork::plot_annotation(title = input$Site) & 
         ggplot2::theme(title = element_text(size = 20, face = "bold"),
+                       axis.title = element_text(size = 10, face = "plain"),
                        plot.title = element_text(hjust = 0.5))
       
     }) %>% bindCache(input$Site)

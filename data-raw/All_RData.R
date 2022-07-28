@@ -2,8 +2,8 @@
 library(tidyverse)
 
 # NRS indices data
-datNRSz <- planktonr::pr_get_Indices("NRS", "Z")
-datNRSp <- planktonr::pr_get_Indices("NRS", "P")
+datNRSz <- planktonr::pr_get_Indices("NRS", "Z") 
+datNRSp <- planktonr::pr_get_Indices("NRS", "P") 
 datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
 datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
   tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
@@ -43,10 +43,10 @@ CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P", join = "st_nearest_feature") 
   droplevels()
 
 # BGC Environmental variables data
-Nuts <- planktonr::pr_get_NRSChemistry()
-Pigs <- planktonr::pr_get_NRSPigments(Format = "binned")
-Pico <- planktonr::pr_get_NRSPico()
-LTnuts <- planktonr::pr_get_LTnuts()
+Nuts <- planktonr::pr_get_NRSChemistry() %>% planktonr::pr_remove_outliers(2)
+Pigs <- planktonr::pr_get_NRSPigments(Format = "binned") %>% planktonr::pr_remove_outliers(2)
+Pico <- planktonr::pr_get_NRSPico() %>% planktonr::pr_remove_outliers(2)
+LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
 
 # STI data
 stiz <- planktonr::pr_get_STI("Z")
@@ -57,9 +57,9 @@ daynightz <- planktonr::pr_get_DayNight("Z")
 daynightp <- planktonr::pr_get_DayNight("P")
 
 # Policy data
-PolNRS <- planktonr::pr_get_PolicyData("NRS")
-PolCPR <- planktonr::pr_get_PolicyData("CPR", join = "st_nearest_feature")
-PolLTM <- planktonr::pr_get_PolicyData("LTM")
+PolNRS <- planktonr::pr_get_PolicyData("NRS") %>% planktonr::pr_remove_outliers(2)
+PolCPR <- planktonr::pr_get_PolicyData("CPR", join = "st_nearest_feature") %>% planktonr::pr_remove_outliers(2)
+PolLTM <- planktonr::pr_get_PolicyData("LTM") %>% planktonr::pr_remove_outliers(2)
 
 NRSinfo <- planktonr::pr_get_PolicyInfo("NRS")
 CPRinfo <- planktonr::pr_get_PolicyInfo("CPR")
