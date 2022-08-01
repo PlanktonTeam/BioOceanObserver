@@ -66,12 +66,10 @@ CPRinfo <- planktonr::pr_get_PolicyInfo("CPR")
 
 # Species distribution data
 fMapDataz <- planktonr::pr_get_FreqMap("Z")
-
 fMapDatap <- planktonr::pr_get_FreqMap("P")
 
 # Progress Map
 PMapData <- planktonr::pr_get_ProgressMap(c("NRS", "CPR"))
-
 
 PMapDatan <- dplyr::bind_rows(planktonr::pr_get_Indices("NRS", "Z"), planktonr::pr_get_Indices("NRS", "P")) %>% 
   dplyr::filter(.data$Parameters == "ZoopAbundance_m3" | .data$Parameters == "PhytoAbundance_CellsL") %>% 
