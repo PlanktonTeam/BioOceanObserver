@@ -15,15 +15,17 @@ mod_PolLTM_ui <- function(id){
         shinydashboard::menuSubItem(text = "Find out more about the NRS stations here", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki/National-Reference-Stations"),
         shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
         plotOutput(nsPolLTM("plotmap")),
-        radioButtons(inputId = nsPolLTM("SiteLTM"), label = "Select a station", choices = unique(sort(LTnuts$StationName)), selected = "Port Hacking"),
-        fDownloadData(id, "Data"),
-        fDownloadPlot(id, "Plot")
+        radioButtons(inputId = nsPolLTM("SiteLTM"), label = "Select a station", choices = unique(sort(PolLTM$StationName)), selected = "Port Hacking")
       ),
       mainPanel(id = "EOV paramters from Long Term Monitoring", 
                 h6(textOutput(nsPolLTM("PlotExp1"), container = span)),
                 h6(verbatimTextOutput(nsPolLTM("PlotExp5"))),
-                plotOutput(nsPolLTM("timeseriesLTM"), height = 1000) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
-                h6(verbatimTextOutput(nsPolLTM("PlotExp3")))
+                plotOutput(nsPolLTM("timeseries1"), height = 1000) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
+                h6(verbatimTextOutput(nsPolLTM("PlotExp3")),
+                   div(style="display:inline-block; float:right; width:60%",
+                       fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+                       fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+                       fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action")))
       )
     )
   )
@@ -116,7 +118,7 @@ mod_PolLTM_server <- function(id){
       patchwork::area(6,1,6,3)
     )
     
-    output$timeseriesLTM <- renderPlot({
+    gg_out1 <- reactive({
       
       p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrate_umolL", Survey = "LTM", trans = "identity", col = "aquamarine4", labels = "no")
       p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "Phosphate_umolL", Survey = "LTM", trans = "identity", col = "darkorange3", labels = "no") 
@@ -129,8 +131,17 @@ mod_PolLTM_server <- function(id){
         patchwork::plot_layout(design = layout1) &
         patchwork::plot_annotation(title = input$SiteLTM)  +
         ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
+                       axis.title = ggplot2::element_text(size = 10, face = "plain"),
                        plot.title = ggplot2::element_text(hjust = 0.5)) 
-      
-    }) %>% bindCache(input$SiteLTM)
+   
+    }) %>% bindCache(input$Site)
     
+    output$timeseries1 <- renderPlot({
+      gg_out1()
+    })
+    
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, outputs(), "Policy") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Policy") # Download figure
+      
   })}

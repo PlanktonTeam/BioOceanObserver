@@ -17,14 +17,16 @@ mod_PolCPR_ui <- function(id){
         plotOutput(nsPolCPR("plotmap")),
         h6("Note there is very little data in the North and North-west regions"),
         radioButtons(inputId = nsPolCPR("Site"), label = "Select a bioregion", choices = unique(sort(PolCPR$BioRegion)), selected = "Temperate East"),
-        fDownloadData(id, "Data"),
-        fDownloadPlot(id, "Plot")
       ),
       mainPanel(id = "EOV Biomass by CPR", 
                 h6(textOutput(nsPolCPR("PlotExp1"), container = span)),
                 h6(verbatimTextOutput(nsPolCPR("PlotExp5"))),
                 plotOutput(nsPolCPR("timeseries1"), height = 1000) %>% shinycssloaders::withSpinner(color="#0dc5c1"),
-                h6(verbatimTextOutput(nsPolCPR("PlotExp3")))
+                h6(verbatimTextOutput(nsPolCPR("PlotExp3")),
+                   div(style="display:inline-block; float:right; width:60%",
+                       fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+                       fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+                       fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action")))
       )
     )
   )
@@ -106,7 +108,7 @@ mod_PolCPR_server <- function(id){
       patchwork::area(7,1,7,3)
     )
     
-    output$timeseries1 <- renderPlot({
+    gg_out1 <- reactive({
       
       p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "BiomassIndex_mgm3", Survey = 'CPR', 
                                    trans = "log10", col = "cornflowerblue", labels = "no")
@@ -123,7 +125,7 @@ mod_PolCPR_server <- function(id){
               " and sampling is ongoing.", " Approximately ", format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
               " nautical miles has been towed in this region. The ", input$Site, " bioregion is characterised by ", 
               unique(stationData()$Features), sep = ""),
-        width = 80, simplify = FALSE)
+        width = 120, simplify = FALSE)
       BioRegionSummary2 <- sapply(BioRegionSummary, paste, collapse = "\n")
       
       
@@ -136,8 +138,17 @@ mod_PolCPR_server <- function(id){
         patchwork::plot_layout(design = layout1) +
         patchwork::plot_annotation(title = input$Site) & 
         ggplot2::theme(title = element_text(size = 20, face = "bold"),
+                       axis.title = element_text(size = 10, face = "plain"),
                        plot.title = element_text(hjust = 0.5))
       
     }) %>% bindCache(input$Site)
+    
+    output$timeseries1 <- renderPlot({
+      gg_out1()
+    })
+    
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, outputs(), "Policy") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Policy") # Download figure
     
   })}

@@ -12,25 +12,7 @@ mod_PhytoTsCPR_ui <- function(id){
   tagList(
     sidebarLayout(
       fPlanktonSidebar(id = id, panel_id = "CPRpts", input = input, dat = datCPRp),
-      mainPanel(
-        tabsetPanel(id = "CPRpts",
-                    tabPanel("Trend Analysis", value = 1,
-                             h6(textOutput(nsPhytoTsCPR("PlotExp1"), container = span)),  
-                             plotOutput(nsPhytoTsCPR("timeseries1")) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
-                    ),
-                    tabPanel("Climatologies", value = 1,
-                             h6(textOutput(nsPhytoTsCPR("PlotExp2"), container = span)),  
-                             plotOutput(nsPhytoTsCPR("timeseries2"), height = 800) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
-                    ),
-                    tabPanel("Functional groups", value = 2,
-                             h6(textOutput(nsPhytoTsCPR("PlotExp3"), container = span)),  
-                             plotOutput(nsPhytoTsCPR("timeseries3")) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
-                    )
-        )
-      )
+      fPLanktonPanel(id = id, panel_id = "CPRpts")
     )
   )
 }
@@ -85,100 +67,119 @@ mod_PhytoTsCPR_server <- function(id){
     
     
     # Plot Trends -------------------------------------------------------------
-    
-    ts1 <- reactive({
+    observeEvent({input$CPRpts == 1}, {
       
-      trans <- dplyr::if_else(input$scaler1, "log10", "identity")
+      gg_out1 <- reactive({
+        trans <- dplyr::if_else(input$scaler1, "log10", "identity")
+        
+        p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "CPR", method = "lm", trans = trans)
+        p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "CPR", method = "loess", trans = trans) + 
+          ggplot2::theme(axis.title.y = ggplot2::element_blank())
+        
+        p1 + p2 + patchwork::plot_layout(widths = c(3,1))
+        
+      }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
       
-      p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "CPR", method = "lm", trans = trans)
-      p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "CPR", method = "loess", trans = trans) + 
-        ggplot2::theme(axis.title.y = ggplot2::element_blank())
+      output$timeseries1 <- renderPlot({
+        gg_out1()
+      }, height = function() {length(unique(selectedData()$BioRegion)) * 200}) 
       
-      p1 + p2 + patchwork::plot_layout(widths = c(3,1))
       
-    }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
-    
-    output$timeseries1 <- renderPlot({
-      ts1()
-    }, height = function() {length(unique(selectedData()$BioRegion)) * 200}) 
-    
+      # Download -------------------------------------------------------
+      output$downloadData1 <- fDownloadButtonServer(input, selectedData(), "Trend") # Download csv of data
+      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Trend") # Download figure
+    })
     
     # Climatologies -----------------------------------------------------------
     
-    output$timeseries2 <- renderPlot({
-     
-      trans <- dplyr::if_else(input$scaler1, "log10", "identity")
+    # Plot abundance spectra by species
+    observeEvent({input$CPRpts == 2}, {
       
-      if (identical(input$region, "")) return(NULL)
-      if (identical(input$parameter, "")) return(NULL)
+      gg_out2 <- reactive({
+        
+        trans <- dplyr::if_else(input$scaler1, "log10", "identity")
+        
+        if (identical(input$region, "")) return(NULL)
+        if (identical(input$parameter, "")) return(NULL)
+        
+        p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "CPR", trans = trans) + 
+          ggplot2::theme(legend.position = "none",
+                         axis.title.y = ggplot2::element_blank())
+        
+        p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Month", trans = trans) + 
+          ggplot2::theme(legend.position = "bottom",
+                         axis.title.y = ggplot2::element_blank())
+        
+        p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Year", trans = trans) + 
+          ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+                         legend.position = "bottom")
+        
+        titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
+        
+        p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect") + patchwork::plot_annotation(
+          title = titleplot)
+        
+        
+      }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
       
-      p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "CPR", trans = trans) + 
-        ggplot2::theme(legend.position = "none",
-                       axis.title.y = ggplot2::element_blank())
+      # Functional groups -------------------------------------------------------
       
-      p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Month", trans = trans) + 
-        ggplot2::theme(legend.position = "bottom",
-                       axis.title.y = ggplot2::element_blank())
+      output$timeseries2 <- renderPlot({
+        gg_out2()
+      })
       
-      p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Year", trans = trans) + 
-        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                       legend.position = "bottom")
-      
-      titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
-      
-      p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect") + patchwork::plot_annotation(
-        title = titleplot)
-      
-      
-    }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
+      # Download -------------------------------------------------------
+      output$downloadData2 <- fDownloadButtonServer(input, selectedData(), "Climate") # Download csv of data
+      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2(), "Climate") # Download figure
+    })
     
     # Functional groups -------------------------------------------------------
-    
-    selectedDataFG <- reactive({
-      req(input$region)
-      validate(need(!is.na(input$region), "Error: Please select a bioregion"))
+    observeEvent({input$CPRpts == 3}, {
       
-      selectedDataFG <- CPRfgp %>% 
-        dplyr::filter(.data$BioRegion %in% input$region,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-        droplevels()
-    }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2])
-    
-    shiny::exportTestValues(
-      PhytoFGCPR = {ncol(selectedDataFG())},
-      PhytoFGCPRRows = {nrow(selectedDataFG()) > 0},
-      PhytoFGCPRYearisNumeric = {class(selectedDataFG()$Year_Local)},
-      PhytoFGCPRMonthisNumeric = {class(selectedDataFG()$Month_Local)},
-      PhytoFGCPRDateisDate = {class(selectedDataFG()$SampleTime_Local)},
-      PhytoFGCPRRegionisFactor = {class(selectedDataFG()$BioRegion)},
-      PhytoFGCPRParametersisChr = {class(selectedDataFG()$Parameters)},
-      PhytoFGCPRValuesisNumeric = {class(selectedDataFG()$Values)}
-    )
-    
-    ts3 <- reactive({
+      selectedDataFG <- reactive({
+        req(input$region)
+        validate(need(!is.na(input$region), "Error: Please select a bioregion"))
+        
+        selectedDataFG <- CPRfgp %>% 
+          dplyr::filter(.data$BioRegion %in% input$region,
+                        dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+          droplevels()
+      }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2])
       
-      if (is.null(CPRfgp$BioRegion)) {  
-        return(NULL)
-      }
+      shiny::exportTestValues(
+        PhytoFGCPR = {ncol(selectedDataFG())},
+        PhytoFGCPRRows = {nrow(selectedDataFG()) > 0},
+        PhytoFGCPRYearisNumeric = {class(selectedDataFG()$Year_Local)},
+        PhytoFGCPRMonthisNumeric = {class(selectedDataFG()$Month_Local)},
+        PhytoFGCPRDateisDate = {class(selectedDataFG()$SampleTime_Local)},
+        PhytoFGCPRRegionisFactor = {class(selectedDataFG()$BioRegion)},
+        PhytoFGCPRParametersisChr = {class(selectedDataFG()$Parameters)},
+        PhytoFGCPRValuesisNumeric = {class(selectedDataFG()$Values)}
+      )
       
-      scale <- dplyr::if_else(input$scaler3, "Actual", "Percent")
+      gg_out3 <- reactive({
+        
+        if (is.null(CPRfgp$BioRegion)) {  
+          return(NULL)
+        }
+        
+        scale <- dplyr::if_else(input$scaler3, "Actual", "Percent")
+        
+        p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
+        p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month")
+        
+        p1 + p2 + patchwork::plot_layout(widths = c(3,1))
+        
+      }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
-      p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
-      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month")
+      output$timeseries3 <- renderPlot({
+        gg_out3()
+      }, height = function() {length(unique(selectedDataFG()$BioRegion)) * 200}) 
       
-      p1 + p2 + patchwork::plot_layout(widths = c(3,1))
+      # Download -------------------------------------------------------
+      output$downloadData3 <- fDownloadButtonServer(input, selectedDataFG(), "FuncGroup") # Download csv of data
+      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3(), "FuncGroup") # Download figure
       
-    }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
-    
-    output$timeseries3 <- renderPlot({
-      ts3()
-    }, height = function() {length(unique(selectedDataFG()$BioRegion)) * 200})     
-    
-    # Download -------------------------------------------------------
-    # Downloadable csv of selected dataset ----
-    output$downloadData <- fDownloadDataServer(input, selectedData())
-    
-    # Download figure
-    output$downloadPlot <- fDownloadPlotServer(input, ts3())
+    })
   })
 }

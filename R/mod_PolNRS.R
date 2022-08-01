@@ -15,15 +15,17 @@ mod_PolNRS_ui <- function(id){
         shinydashboard::menuSubItem(text = "Find out more about the NRS stations here", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki/National-Reference-Stations"),
         shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
         plotOutput(nsPolNRS("plotmap")),
-        radioButtons(inputId = nsPolNRS("Site"), label = "Select a station", choices = unique(sort(PolNRS$StationName)), selected = "Maria Island"),
-        fDownloadData(id, "Data"),
-        fDownloadPlot(id, "Plot")
+        radioButtons(inputId = nsPolNRS("Site"), label = "Select a station", choices = unique(sort(PolNRS$StationName)), selected = "Maria Island")
       ),
       mainPanel(id = "EOV Biomass by NRS", 
                 h6(textOutput(nsPolNRS("PlotExp1"), container = span)),
                 # h6(verbatimTextOutput(nsPolNRS("PlotExp5"))),
                 plotOutput(nsPolNRS("timeseries1"), height = 1600) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
-                h6(verbatimTextOutput(nsPolNRS("PlotExp3")))
+                h6(verbatimTextOutput(nsPolNRS("PlotExp3")),
+                   div(style="display:inline-block; float:right; width:60%",
+                       fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+                       fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+                       fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action")))
       )
     )
   )
@@ -111,7 +113,8 @@ mod_PolNRS_server <- function(id){
       patchwork::area(11,1,11,3)
     )
     
-    output$timeseries1 <- renderPlot({
+    
+    gg_out1 <- reactive({
       
       p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Biomass_mgm3", trans = "log10", col = "cornflowerblue", labels = "no") 
       p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = "darkolivegreen4") 
@@ -130,7 +133,7 @@ mod_PolNRS_server <- function(id){
               ". The station has been sampled since ", stationData()$StationStartDate, " ", stationData()$now,
               ". ", input$Site, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, 
               " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = ""), 
-        width = 80, simplify = FALSE)
+        width = 120, simplify = FALSE)
       StationSummary2 <- sapply(StationSummary, paste, collapse = "\n")
       
       patchwork::wrap_elements(
@@ -143,8 +146,17 @@ mod_PolNRS_server <- function(id){
         p3 + p4 + p5 + patchwork::plot_layout(design = layout1) +
         patchwork::plot_annotation(title = input$Site) & 
         ggplot2::theme(title = element_text(size = 20, face = "bold"),
+                       axis.title = element_text(size = 10, face = "plain"),
                        plot.title = element_text(hjust = 0.5))
       
     }) %>% bindCache(input$Site)
+    
+    output$timeseries1 <- renderPlot({
+      gg_out1()
+    })
+    
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, outputs(), "Policy") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Policy") # Download figure
     
   })}

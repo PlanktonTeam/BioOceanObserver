@@ -12,14 +12,16 @@ app_ui <- function(request) {
              title = div(img(src = "www/logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observatory"),
              windowTitle = "The Biological Ocean Observatory",
              theme = bslib::bs_theme(version = 5, 
-                                     bootswatch = "flatly"), #https://rstudio.github.io/bslib/articles/bslib.html#custom
+                                     bootswatch = "flatly",
+                                     # primary = "#2C3E50"
+                                     "border-width" = "5px",
+                                     # "border-color" = "red",
+                                     "enable-rounded" = TRUE), #https://rstudio.github.io/bslib/articles/bslib.html#custom
              selected = "Welcome", 
-             # footer = column(12, "\u00A9 2021 Jason Everett (UQ, UNSW, CSIRO) and Claire Davies (CSIRO)"), # \u00A9 is equivalent to © 
              tabPanel("Welcome",
-                      # titlePanel("Welcome to The Biological Ocean Observatory"),
                       sidebarLayout(
                         sidebarPanel(
-                          tags$style(".well {background-color:white;}"),
+                          # tags$style(".well {background-color:grey;}"),
                           img(src = "www/BOO_Hex2.png", width = "95%")),
                         mainPanel(
                           h2("Welcome to The Biological Ocean Observatory"),
@@ -28,8 +30,8 @@ app_ui <- function(request) {
                             We aim to enhance the availability and understanding of biological data and make it 
                             accessible to broader and non-specialist audiences in order to accelerate the next 
                             generation of scientific insights."),
-                          p("Data was sourced from Australia’s ",tags$a(href="https://imos.org.au","Integrated Marine Observing System (IMOS)"),
-                          " – IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). 
+                          p("Data was sourced from Australia's ",tags$a(href="https://imos.org.au","Integrated Marine Observing System (IMOS)"),
+                            " - IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). 
                             It is operated by a consortium of institutions as an unincorporated joint venture, with 
                             the University of Tasmania as Lead Agent."),
                           h3("Code"),
@@ -43,44 +45,45 @@ app_ui <- function(request) {
                             data uptake to solve real world problems."),
                           h3("The IMOS plankton team is on facebook"),
                           p("Like or follow us @", tags$a(href="https://www.facebook.com/imosaustralianplanktonsurvey", "IMOS plankton team on facebook")
-                        )))),
+                          )))),
              tabPanel("Snapshot",
                       fluidPage(
                         value = "snap", mod_Snapshot_ui("Snapshot_ui_1"))
              ),
              tabPanel("Policy",
-                      tabsetPanel(id = 'pol',
+                      tabsetPanel(id = 'pol', type = "pills",
                                   tabPanel(value = "nrs", "National Reference Stations", mod_PolNRS_ui("PolNRS_ui_1")),
                                   tabPanel(value = "cpr", "CPR - bioregions", mod_PolCPR_ui("PolCPR_ui_1")),
                                   tabPanel(value = 'LTM', "Long term monitoring", mod_PolLTM_ui("PolLTM_ui_1"))
                       )),
              tabPanel("Microbes",
-                      tabsetPanel(id = 'mic',
+                      tabsetPanel(id = 'mic', type = "pills",
                                   tabPanel(value = "mts", "Time Series NRS", mod_MicroTsNRS_ui("MicroTsNRS_ui_1")),
-                                  tabPanel("Diversity"),
-                                  tabPanel("Composition")
-                                 )),
+                                  # tabPanel("Diversity"),
+                                  # tabPanel("Composition")
+                      )),
              tabPanel("Phytoplankton",
-                      tabsetPanel(id = 'phyto',
+                      tabsetPanel(id = 'phyto', type = "pills",
                                   tabPanel(value = "pts", "Time Series NRS", mod_PhytoTsNRS_ui("PhytoTsNRS_ui_1")),
                                   tabPanel(value = "ptscpr", "Time Series CPR", mod_PhytoTsCPR_ui("PhytoTsCPR_ui_1")),
                                   tabPanel(value = "distp", "Distributions", mod_PhytoSpatial_ui("PhytoSpatial_ui_1"))
                       )),
              tabPanel("Zooplankton",
-                      tabsetPanel(id = 'zoo',
+                      tabsetPanel(id = 'zoo', type = "pills",
                                   tabPanel(value = "zts", "Time Series NRS", mod_ZooTsNRS_ui("ZooTsNRS_ui_1")),
                                   tabPanel(value = "ztscpr", "Time Series CPR", mod_ZooTsCPR_ui("ZooTsCPR_ui_1")),
                                   tabPanel(value = "dist", "Distributions", mod_ZooSpatial_ui("ZooSpatial_ui_1")),
-                                  tabPanel(value = "SA", "Spatial Analysis")
-                                  )),
+                                  # tabPanel(value = "SA", "Spatial Analysis")
+                      )),
              tabPanel("Larval Fish",
-                      tabsetPanel(id = 'fish',
+                      tabsetPanel(id = 'fish', type = "pills",
                                   tabPanel("Time Series",
                                            img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")),
                                   tabPanel("Spatial Analysis",
-                                           img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")))),
+                                           img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")),
+                                  )),
              tabPanel("Environmental Data",
-                      tabsetPanel(id = 'env',
+                      tabsetPanel(id = 'env', type = "pills",
                                   tabPanel(value = "bgc", "NRS BGC Nutrients", mod_NutrientsBGC_ui("NutrientsBGC_ui_1")),
                                   tabPanel(value = "pigs", "NRS BGC Pigments", mod_PigmentsBGC_ui("PigmentsBGC_ui_1")),
                                   tabPanel(value = "water", "NRS BGC Water", mod_WaterBGC_ui("WaterBGC_ui_1")),
@@ -130,13 +133,13 @@ golem_add_external_resources <- function(){
     # for example, you can add shinyalert::useShinyalert() 
     
     # Script for CSIRO branding tab ----
-     tags$script(type="text/javascript",
-                 src="https://www.csiro.au/themes/default/js/csirotab.min.js"),
+    # tags$script(type="text/javascript",
+                # src="https://www.csiro.au/themes/default/js/csirotab.min.js"),
     # Google fonts ----
     tags$link(href="https://fonts.googleapis.com/css?family=Open+Sans",
               rel="stylesheet"),
     tags$link(href="https://fonts.googleapis.com/css?family=Montserrat",
               rel="stylesheet")
-    )
+  )
 }
 

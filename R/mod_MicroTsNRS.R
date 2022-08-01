@@ -41,9 +41,7 @@ mod_MicroTsNRS_ui <- function(id){
         ),
         absolutePanel(
           plotOutput(nsMicroTsNRS("plotmap")),
-          checkboxGroupInput(inputId = nsMicroTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSm$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala")),
-          fDownloadData(id, "Data"),
-          fDownloadPlot(id, "Plot")
+          checkboxGroupInput(inputId = nsMicroTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSm$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala"))
         )
       ),
       mainPanel(
@@ -91,7 +89,7 @@ mod_MicroTsNRS_server <- function(id){
                # SampleDepth_m = dplyr::if_else(stringr::str_detect("WC", SampleDepth_m),
                #                                "WC",
                #                                as.character(round(as.numeric(.data$SampleDepth_m)/5,0)*5))
-               ) %>%
+        ) %>%
         droplevels()
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
@@ -111,7 +109,7 @@ mod_MicroTsNRS_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({ 
-     planktonr::pr_plot_NRSmap(selectedData())
+      planktonr::pr_plot_NRSmap(selectedData())
     }) %>% bindCache(input$Site)
     
     # Add text information 
@@ -132,7 +130,7 @@ mod_MicroTsNRS_server <- function(id){
     
     # Plot Trends -------------------------------------------------------------
     
-      ts1 <- reactive({
+    ts1 <- reactive({
       
       if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
@@ -146,9 +144,9 @@ mod_MicroTsNRS_server <- function(id){
       p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
       p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
-
+      
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
-
+      
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     output$timeseries1 <- renderPlot({
@@ -233,29 +231,8 @@ mod_MicroTsNRS_server <- function(id){
       
     }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
-    # Downloads ---------------------------------------------------------------
-    
-    # Table of selected dataset ----
-    output$table <- renderTable({
-      # datasetInput()
-    })
     
     # Download -------------------------------------------------------
-    #Downloadable csv of selected dataset ----
-    output$downloadData <- downloadHandler(
-      filename = function() {
-        paste0(tools::file_path_sans_ext(input$ycol),"_", format(Sys.time(), "%Y%m%dT%H%M%S"), ".csv")
-      },
-      content = function(file) {
-        vroom::vroom_write(selectedData(), file, delim = ",")
-      })
     
-    
-    # Download figure
-    # output$downloadPlot <- downloadHandler(
-    #   filename = function() {paste(input$ycol, '.png', sep='') },
-    #   content = function(file) {
-    #     ggsave(file, plot = plotInput(), device = "png")
-    #   })
   })
 }

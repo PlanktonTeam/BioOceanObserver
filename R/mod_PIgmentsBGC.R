@@ -53,13 +53,14 @@ mod_PigmentsBGC_server <- function(id){
       req(input$date)
       validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
+      
       Pigs %>%
         filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$Parameters %in% input$parameter) %>%
-          mutate(name = as.factor(.data$Parameters),
-                 SampleDepth_m = round(.data$SampleDepth_m, -1)) %>%
-          tidyr::drop_na() 
+        dplyr::mutate(name = as.factor(.data$Parameters),
+                      SampleDepth_m = round(.data$SampleDepth_m, -1)) %>%
+        tidyr::drop_na() 
     }) %>% bindCache(input$station, input$parameter, input$date)
     
     shiny::exportTestValues(
@@ -75,7 +76,7 @@ mod_PigmentsBGC_server <- function(id){
       PigsBGCValuesisNumeric = {class(selected()$Values)}
     )
     
-  
+    
     # Create timeseries object the plotOutput function is expecting
     output$plot <- renderPlot({
       
@@ -96,10 +97,6 @@ mod_PigmentsBGC_server <- function(id){
     output$PlotExp <- renderText({
       "A plot of selected nutrient Parameters from the NRS as timeseries at analysed depths"
     }) 
-    
-    # create table output
-    output$table <- DT::renderDataTable(
-      selected() ) 
     
   })
 }

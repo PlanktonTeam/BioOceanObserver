@@ -28,52 +28,104 @@ fPlanktonSidebar <- function(id, panel_id, input, dat){
   shiny::sidebarPanel(
     shiny::conditionalPanel(
       condition = paste0("input.", panel_id, " == 1 | input.", panel_id, " == 2"), 
-      # Select whether to overlay smooth trend line 
       shiny::checkboxInput(inputId = ns("scaler1"), 
                            label = strong("Change the plot scale to log10"), 
                            value = FALSE),
       shiny::selectInput(inputId = ns("parameter"), 
                          label = 'Select a parameter', 
                          choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), 
-                         selected = selectedVar)
-    ),
-    # browser(),
+                         selected = selectedVar)),
     shiny::conditionalPanel(
       condition = paste0("input.", panel_id, " == 3"), 
-      # Select whether to overlay smooth trend line
       shiny::checkboxInput(inputId = ns("scaler3"), 
                            label = strong("Change the plot scale to percent"), 
-                           value = FALSE)
-    ),
+                           value = FALSE)),
     shiny::absolutePanel(
       shiny::plotOutput(ns("plotmap")),
       shiny::checkboxGroupInput(inputId = ns(idSite), 
                                 label = "Select a station", 
                                 choices = choices, 
                                 selected = selectedSite),
-      shiny::sliderInput(ns("DatesSlide"), "Dates:", min = as.POSIXct('2009-01-01 00:00',
-                                                                      format = "%Y-%m-%d %H:%M",
-                                                                      tz = "Australia/Hobart"), max = Sys.time(), 
+      shiny::sliderInput(ns("DatesSlide"), 
+                         "Dates:", 
+                         min = as.POSIXct('2009-01-01 00:00',
+                                          format = "%Y-%m-%d %H:%M",
+                                          tz = "Australia/Hobart"), 
+                         max = Sys.time(), 
                          value = c(as.POSIXct('2009-01-01 00:00',
                                               format = "%Y-%m-%d %H:%M",
                                               tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d"),
-      fDownloadData(id, "Data"),
-      fDownloadPlot(id, "Plot")
       
     )
   )
 }
 
 
-
-
-#' Download Data
-#'
-#' @noRd 
-fDownloadData <- function(id, label) {
+#' Generic BOO Plankton Panel
+#' 
+#' @noRd
+fPLanktonPanel <- function(id, panel_id){
   ns <- NS(id)
-  tagList(
-    downloadButton(ns("downloadData"), label = label),
+  mainPanel(
+    tabsetPanel(id = panel_id, type = "pills",
+                tabPanel("Trend Analysis", value = 1,
+                         h6(textOutput(ns("PlotExp1"), container = span)),
+                         plotOutput(ns("timeseries1"), height = "auto") %>% 
+                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                         div(style="display:inline-block; float:right; width:60%",
+                             fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+                             fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+                             fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
+                ),
+                tabPanel("Climatologies", value = 2,
+                         h6(textOutput(ns("PlotExp2"), container = span)),  
+                         plotOutput(ns("timeseries2"), height = 800) %>% 
+                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                         div(style="display:inline-block; float:right; width:60%",
+                             fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
+                             fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
+                             fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
+                ),
+                tabPanel("Functional groups", value = 3,
+                         h6(textOutput(ns("PlotExp3"), container = span)),  
+                         plotOutput(ns("timeseries3"), height = "auto") %>% 
+                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                         div(style="display:inline-block; float:right; width:60%",
+                             fButtons(id, button_id = "downloadPlot3", label = "Plot", Type = "Download"),
+                             fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
+                             fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
+                )
+    )
+  )
+}
+
+
+
+#' Download Button
+#' 
+#' @noRd
+fButtons <- function(id, button_id, label, Type = "Download") {
+  ns <- NS(id)
+  
+  shiny::tagList(
+    if (Type == "Download"){
+      shiny::downloadButton(ns(button_id), label = label,  class = "btn-danger; btn-lg", #style = "width:48%"
+      )
+    } else if (Type == "Action"){
+      
+      if (stringr::str_detect(id, "NRS")){
+        # ws <- "window.open('http://google.com', '_blank')"
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/NRS_ts.html')"
+      } else if (stringr::str_detect(id, "CPR")){
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/CPR_ts.html')"
+      } else {
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/index.html')"
+      }
+      
+      shiny::actionButton(ns(button_id), label = label,  class = "btn-danger; btn-lg", 
+                          icon = shiny::icon("file-code"),
+                          onclick = wsite)
+    }
   )
 }
 
@@ -81,39 +133,186 @@ fDownloadData <- function(id, label) {
 #' Download Data - Server Side
 #'
 #' @noRd 
-fDownloadDataServer <- function(input, dat) {
+fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
   
   downloadData <- shiny::downloadHandler(
     filename = function() {
-      paste0(input$ycol,"_", format(Sys.time(), "%Y%m%d"), ".csv")
+      if (gg_prefix == "Policy"){
+        paste0(gg_prefix, "_", format(Sys.time(), "%Y%m%d"), ".csv")
+      } else{
+        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".csv")
+      }
     },
     content = function(file) {
-      vroom::vroom_write(dat, file, delim = ",")
+      vroom::vroom_write(input_dat, file, delim = ",")
     })
   return(downloadData)
 }
 
 
-
-#' Download Plot
-#'
-#' @noRd 
-fDownloadPlot <- function(id, label) {
-  ns <- NS(id)
-  tagList(
-    downloadButton(ns("downloadPlot"), label = label),
-  )
-}
-
 #' Download Plot - Server Side
 #'
 #' @noRd 
-fDownloadPlotServer <- function(input, gg_id) {
+fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
   downloadPlot <- downloadHandler(
     filename = function() {
-      paste0(input$parameter,"_", format(Sys.time(), "%Y%m%d"), ".png")
+      if (gg_prefix == "Policy"){
+        paste0(gg_prefix, "_", input$Site, "_", format(Sys.time(), "%Y%m%d"), ".png")
+      } else{
+        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png")
+      }
     },
     content = function(file) {
       ggsave(file, plot = gg_id, device = "png", dpi = 500)
     })
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Generic BOO Plamkton Server
+# 
+# @noRd
+# fPLanktonPanelServer <- function(ns, panel_id, input){
+# 
+#   dat1 <- datNRSp
+#   dat3 <- NRSfgp
+#   
+#   # Variable for CPR or NRS 
+#   NRS <- 1
+#   
+#   # observeEvent({input$NRSpt == 1 | input$NRSpt == 2}, {
+#   selectedData <- reactive({ #TODO - This reactive encompasses things from 1/2 AND 3. Can we split them?
+#     req(input$Site)
+#     req(input$parameter)
+#     validate(need(!is.na(input$Site), "Error: Please select a station."))
+#     validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
+# 
+#     selectedData <- dat1 %>%
+#       dplyr::filter(.data$StationName %in% input$Site,
+#                     .data$Parameters %in% input$parameter,
+#                     dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+#       droplevels()
+# 
+#   }) %>% bindCache(input$parameter,input$Site, input$DatesSlide[1], input$DatesSlide[2])
+#   # })
+# 
+#   output$plotmap <- renderPlot({
+#     planktonr::pr_plot_NRSmap(selectedData())
+#   }) %>% bindCache(input$Site)
+# 
+#   # add text information
+#   output$PlotExp1 <- renderText({
+#     "A plot of selected phytoplantkon Parameters from the NRS around Australia, as a time series and a monthly climatology by station."
+#   })
+#   output$PlotExp2 <- renderText({
+#     "A plot of selected indicies from the NRS around Australia, as a time series, a monthly climatology and an annual mean"
+#   })
+#   output$PlotExp3 <- renderText({
+#     "A plot of functional groups from the light microscope phytoplankton counts from the NRS around Australia, as a time series and a monthly climatology"
+#   })
+# 
+# 
+#   # Plot Trends -------------------------------------------------------------
+#   observeEvent({input$NRSpts == 1}, {
+# 
+#     gg_out1 <- reactive({
+#       if (is.null(datNRSp$StationCode)) {return(NULL)}
+#       trans <- dplyr::if_else(input$scaler1, "log10", "identity")
+# 
+#       p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
+#       p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
+#         ggplot2::theme(axis.title.y = ggplot2::element_blank())
+#       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
+# 
+#     }) %>% bindCache(input$parameter,input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+# 
+#     output$timeseries1 <- renderPlot({
+#       gg_out1()
+#     }, height = function() {length(unique(selectedData()$StationName)) * 200})
+# 
+#     # Download -------------------------------------------------------
+#     output$downloadData1 <- fButtonsServer(input, selectedData(), "Trend") # Download csv of data
+#     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Trend") # Download figure
+#   })
+# 
+#   # Climatologies -----------------------------------------------------------
+# 
+#   # Plot abundance spectra by species
+#   observeEvent({input$NRSpt == 2}, {
+# 
+#     gg_out2 <- reactive({
+#       print("Tab 2")
+#       if (is.null(datNRSp$StationCode)) {return(NULL)}
+# 
+#       trans <- dplyr::if_else(input$scaler1, "log10", "identity")
+#       titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
+# 
+#       p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "NRS", trans = trans) +
+#         ggplot2::theme(legend.position = "none")
+#       p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) +
+#         ggplot2::theme(legend.position = "none", axis.title.y = ggplot2::element_blank())
+#       p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) +
+#         ggplot2::theme(axis.title.y = ggplot2::element_blank(), legend.position = "bottom")
+# 
+#       p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect") +
+#         patchwork::plot_annotation(title = titleplot)
+# 
+#     }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+# 
+#     output$timeseries2 <- renderPlot({
+#       gg_out2()
+#     })
+# 
+#     # Download -------------------------------------------------------
+#     output$downloadData2 <- fButtonsServer(input, selectedData(), "Climate") # Download csv of data
+#     output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2(), "Climate") # Download figure
+#   })
+# 
+#   # Functional groups -------------------------------------------------------
+#   observeEvent({input$NRSpt == 3}, {
+# 
+#     selectedDataFG <- reactive({
+#       req(input$Site)
+#       validate(need(!is.na(input$Site), "Error: Please select a station."))
+# 
+#       selectedDataFG <- NRSfgp %>%
+#         dplyr::filter(.data$StationName %in% input$Site,
+#                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+#         droplevels()
+# 
+#     })%>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
+# 
+#     gg_out3 <- reactive({
+# 
+#       if (is.null(NRSfgp$StationCode)) {return(NULL)}
+#       scale <- dplyr::if_else(input$scaler3, "Percent", "Actual")
+# 
+#       p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
+#       p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") +
+#         ggplot2::theme(axis.title.y = ggplot2::element_blank(), legend.position = "none")
+#       p1 + p2 + patchwork::plot_layout(widths = c(3,1))
+# 
+#     }) %>% bindCache(input$Site, input$scaler3, input$DatesSlide[1], input$DatesSlide[2])
+# 
+#     output$timeseries3 <- renderPlot({
+#       gg_out3()
+#     }, height = function() {length(unique(selectedData()$StationName)) * 200})
+# 
+#     # Download -------------------------------------------------------
+#     output$downloadData3 <- fButtonsServer(input, selectedDataFG(), "FuncGroup") # Download csv of data
+#     output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3(), "FuncGroup") # Download figure
+# 
+#   })
+# 
+# }
+
