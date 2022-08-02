@@ -30,8 +30,17 @@ mod_ZooSpatial_ui <- function(id){
       tabsetPanel(id = "NRSspat",
         tabPanel("Observation maps", value = 1, 
                  h6(textOutput(nsZooSpatial("DistMapExp"), container = span)),
-                 plotOutput(nsZooSpatial("plot2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                 ),
+                 fluidRow(
+                   column(width = 6,
+                          leaflet::leafletOutput(nsZooSpatial("plot2a"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
+                          leaflet::leafletOutput(nsZooSpatial("plot2c"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                   ),
+                   column(width = 6,
+                          leaflet::leafletOutput(nsZooSpatial("plot2b"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
+                          leaflet::leafletOutput(nsZooSpatial("plot2d"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                   )
+                 )
+        ),
         tabPanel("Species Distribution maps", value = 2, 
                  h6(textOutput(nsZooSpatial("SDMsMapExp"), container = span)),
                  plotOutput(nsZooSpatial("SDMs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
@@ -56,7 +65,7 @@ mod_ZooSpatial_server <- function(id){
     moduleServer( id, function(input, output, session, NRSspat){
     # Subset data
       
-      selectedZS <- reactive({
+      plotlist <- reactive({
         
         req(input$species)
         validate(need(!is.na(input$species), "Error: Please select a species"))
@@ -64,12 +73,13 @@ mod_ZooSpatial_server <- function(id){
         selectedZS <- fMapDataz %>% 
           dplyr::mutate(Taxon = dplyr::if_else(.data$Taxon == 'Taxon', input$species, .data$Taxon)) %>%
           dplyr::filter(.data$Taxon %in% input$species) %>%
-          dplyr::mutate(freqfac = factor(.data$freqfac, levels = c("Absent", "Seen in 25%",'50%', '75%', "100 % of Samples"))) %>%
           dplyr::arrange(.data$freqfac)
+        
+        plotlist <- planktonr::pr_plot_FreqMap(selectedZS, species = input$species, interactive = TRUE)
         
       }) %>% bindCache(input$species)
       
-      shiny::exportTestValues(
+    shiny::exportTestValues(
         ZooSpatial = {ncol(selectedZS())},
         ZooSpatialRows = {nrow(selectedZS()) > 0},
         ZooSpatialLatisNumeric = {class(selectedZS()$Lat)},
@@ -100,14 +110,32 @@ mod_ZooSpatial_server <- function(id){
       # select initial map  ------------------------------------------------------------------------------
       
     # Create dot map of distribution
-    output$plot2 <- renderPlot({
     
-              plot2 <- planktonr::pr_plot_FreqMap(selectedZS())
-              plot2
-        
+      output$plot2a <- leaflet::renderLeaflet({
+    
+          plotlist()[[1]]
+
     }) %>% bindCache(input$species)
     
-    # add SDM if it is available
+      output$plot2b <- leaflet::renderLeaflet({
+        
+        plotlist()[[2]]
+        
+      }) %>% bindCache(input$species)
+      
+      output$plot2c <- leaflet::renderLeaflet({
+        
+        plotlist()[[3]]
+        
+      }) %>% bindCache(input$species)
+      
+      output$plot2d <- leaflet::renderLeaflet({
+        
+        plotlist()[[4]]
+        
+      }) %>% bindCache(input$species)
+      
+      # add SDM if it is available
     output$SDMs <- renderImage({
 
       speciesName <- stringr::str_replace_all(input$species1, " ", "")
