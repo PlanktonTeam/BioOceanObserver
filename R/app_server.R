@@ -29,7 +29,7 @@ app_server <- function( input, output, session ) {
       if(input$navbar == "Snapshot") {
         mod_Snapshot_server("Snapshot_ui_1") 
       }
-      if(input$navbar == "Policy") {
+      if(input$navbar == "EOVs") {
         mod_PolNRS_server("PolNRS_ui_1")
       }
       if(input$navbar == "Microbes") {

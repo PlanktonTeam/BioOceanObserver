@@ -50,7 +50,7 @@ app_ui <- function(request) {
                       fluidPage(
                         value = "snap", mod_Snapshot_ui("Snapshot_ui_1"))
              ),
-             tabPanel("Policy",
+             tabPanel("EOVs",
                       tabsetPanel(id = 'pol', type = "pills",
                                   tabPanel(value = "nrs", "National Reference Stations", mod_PolNRS_ui("PolNRS_ui_1")),
                                   tabPanel(value = "cpr", "CPR - bioregions", mod_PolCPR_ui("PolCPR_ui_1")),
