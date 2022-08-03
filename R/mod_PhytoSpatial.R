@@ -34,11 +34,14 @@ mod_PhytoSpatial_ui <- function(id){
                    column(width = 6,
                           leaflet::leafletOutput(nsPhytoSpatial("plot2a"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
                           leaflet::leafletOutput(nsPhytoSpatial("plot2c"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                   ),
+                          ),
                    column(width = 6,
                           leaflet::leafletOutput(nsPhytoSpatial("plot2b"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
                           leaflet::leafletOutput(nsPhytoSpatial("plot2d"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
                    )
+                 ),
+                 column(width = 6, br(), 
+                        plotOutput(nsPhytoSpatial("plot2e"), height = 50)
                  )
          ),        
         #tabPanel("Species Distribution maps", value = 2, 
@@ -131,6 +134,12 @@ mod_PhytoSpatial_server <- function(id){
       output$plot2d <- leaflet::renderLeaflet({
         
         plotlist()[[4]]
+        
+      }) %>% bindCache(input$species)
+      
+      output$plot2e <- renderPlot({
+        
+        legendPlot
         
       }) %>% bindCache(input$species)
       

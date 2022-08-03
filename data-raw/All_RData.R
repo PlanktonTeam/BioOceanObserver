@@ -68,6 +68,25 @@ CPRinfo <- planktonr::pr_get_PolicyInfo("CPR")
 fMapDataz <- planktonr::pr_get_FreqMap("Z")
 fMapDatap <- planktonr::pr_get_FreqMap("P")
 
+legdat <- data.frame(
+  text = c("Absent", "Seen in 25%", "50%", "75%", "100 % of Samples","Absent", "Seen in 25%", "50%", "75%", "100 % of Samples"),
+  colnames = c('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'),
+  size = c(1,5,5,5,5,1,5,5,5,5),
+  yt = c(1.2,1.2,1.2,1.2,1.2),
+  xt = c(1,2,3,4,5),
+  x = c(1,2,3,4,5,1,2,3,4,5),
+  y = c(1.1,1.1,1.1,1.1,1.1,1,1,1,1,1)
+)
+
+legendPlot <- ggplot2::ggplot() +
+  ggplot2::geom_point(data = legdat, ggplot2::aes(x, y, size = size, colour = colnames)) +
+  ggplot2::scale_color_manual(values = c("lightblue1", "skyblue3", "dodgerblue2", "blue1", "navyblue", "#CCFFCC", "#99FF99", "#669933", "#009900", "#006600")) + 
+  ggplot2::geom_text(data = legdat, ggplot2::aes(x= xt, y= yt, label = text)) +
+  ggplot2::geom_text(ggplot2::aes(x= c(5.5,5.5), y= c(1.1,1), label = c("NRS", "CPR"))) +
+  ggplot2::theme_void() +
+  ggplot2::theme(legend.position = 'none')
+legendPlot
+
 # Progress Map
 PMapData <- planktonr::pr_get_ProgressMap(c("NRS", "CPR"))
 
@@ -90,7 +109,8 @@ PMapData2 <- dplyr::bind_rows(PMapDatan, PMapDatac) %>%
   dplyr::select(-c(.data$Year_Local, .data$Month_Local , .data$tz))
   
   # add data to sysdata.rda
-usethis::use_data(Nuts, Pigs, fMapDataz, fMapDatap, Pico, LTnuts, 
+usethis::use_data(Nuts, Pigs, Pico, LTnuts, 
+                  fMapDataz, fMapDatap, legendPlot,
                     PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, 
                     datCPRz, datCPRp, datCPRw,
                     datNRSz, datNRSp, datNRSm, datNRSw,
