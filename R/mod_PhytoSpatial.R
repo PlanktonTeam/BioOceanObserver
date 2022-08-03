@@ -16,7 +16,7 @@ mod_PhytoSpatial_ui <- function(id){
       conditionalPanel(
         condition="input.NRSspatp == 1",  
       #Species selector
-      selectizeInput(inputId = nsPhytoSpatial('species'), label = "Select a phytoplankton species", choices = unique(stip$Species),
+      selectizeInput(inputId = nsPhytoSpatial('species'), label = "Select a phytoplankton species", choices = unique(fMapDatap$Taxon),
                      selected = "Tripos furca")
       ),
       conditionalPanel(
@@ -30,12 +30,21 @@ mod_PhytoSpatial_ui <- function(id){
       tabsetPanel(id = "NRSspatp",
         tabPanel("Observation maps", value = 1, 
                  h6(textOutput(nsPhytoSpatial("DistMapExp"), container = span)),
-                 plotOutput(nsPhytoSpatial("plot2"), height = 800) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                 ),
-        tabPanel("Species Distribution maps", value = 2, 
-                 h6(textOutput(nsPhytoSpatial("SDMsMapExp"), container = span))#,
- #                plotOutput(nsPhytoSpatial("SDMs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-        ),
+                 fluidRow(
+                   column(width = 6,
+                          leaflet::leafletOutput(nsPhytoSpatial("plot2a"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
+                          leaflet::leafletOutput(nsPhytoSpatial("plot2c"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                   ),
+                   column(width = 6,
+                          leaflet::leafletOutput(nsPhytoSpatial("plot2b"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
+                          leaflet::leafletOutput(nsPhytoSpatial("plot2d"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                   )
+                 )
+         ),        
+        #tabPanel("Species Distribution maps", value = 2, 
+ #                 h6(textOutput(nsPhytoSpatial("SDMsMapExp"), container = span))#,
+ #                 plotOutput(nsPhytoSpatial("SDMs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+ #        ),
         tabPanel("Species Temperature Index graphs", value = 2, 
                  h6(textOutput(nsPhytoSpatial("STIsExp"), container = span)),
                  plotOutput(nsPhytoSpatial("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
@@ -56,7 +65,7 @@ mod_PhytoSpatial_server <- function(id){
     moduleServer( id, function(input, output, session, NRSspatp){
     # Subset data
       
-      selectedZS <- reactive({
+      plotlist <- reactive({
         
         req(input$species)
         validate(need(!is.na(input$species), "Error: Please select a species"))
@@ -64,9 +73,10 @@ mod_PhytoSpatial_server <- function(id){
         selectedZS <- fMapDatap %>%
           dplyr::mutate(Taxon = dplyr::if_else(.data$Taxon == 'Taxon', input$species, .data$Taxon)) %>%
           dplyr::filter(.data$Taxon == input$species) %>%
-          dplyr::mutate(freqfac = factor(.data$freqfac, levels = c("Absent", "Seen in 25%",'50%', '75%', "100 % of Samples"))) %>%
           dplyr::arrange(.data$freqfac)
-
+        
+        plotlist <- planktonr::pr_plot_FreqMap(selectedZS, species = input$species, interactive = TRUE)
+        
       }) %>% bindCache(input$species)
       
       shiny::exportTestValues(
@@ -100,24 +110,41 @@ mod_PhytoSpatial_server <- function(id){
       # select initial map  ------------------------------------------------------------------------------
       
     # Create dot map of distribution
-    output$plot2 <- renderPlot({
-    
-              plot2 <- planktonr::pr_plot_FreqMap(selectedZS())
-              plot2
-
-    }) %>% bindCache(input$species)
-    
-    # add SDM if it is available
-    output$SDMs <- renderImage({
-
-      speciesName <- stringr::str_replace_all(input$species1, " ", "")
-      filename <- paste("inst/app/www/SDMTweGAM_", speciesName, ".png", sep = "")
-
-      list(src = filename,
-           height = 500, #width = 600,
-           alt = 'Species Distribution Map not available')
-
-    }, deleteFile = FALSE)
+      output$plot2a <- leaflet::renderLeaflet({
+        
+        plotlist()[[1]]
+        
+      }) %>% bindCache(input$species)
+      
+      output$plot2b <- leaflet::renderLeaflet({
+        
+        plotlist()[[2]]
+        
+      }) %>% bindCache(input$species)
+      
+      output$plot2c <- leaflet::renderLeaflet({
+        
+        plotlist()[[3]]
+        
+      }) %>% bindCache(input$species)
+      
+      output$plot2d <- leaflet::renderLeaflet({
+        
+        plotlist()[[4]]
+        
+      }) %>% bindCache(input$species)
+      
+    # # add SDM if it is available
+    # output$SDMs <- renderImage({
+    # 
+    #   speciesName <- stringr::str_replace_all(input$species1, " ", "")
+    #   filename <- paste("inst/app/www/SDMTweGAM_", speciesName, ".png", sep = "")
+    # 
+    #   list(src = filename,
+    #        height = 500, #width = 600,
+    #        alt = 'Species Distribution Map not available')
+    # 
+    # }, deleteFile = FALSE)
 
     # STI plot -----------------------------------------------------------------------------------------
     # Subset data
