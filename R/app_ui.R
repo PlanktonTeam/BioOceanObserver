@@ -66,13 +66,13 @@ app_ui <- function(request) {
                       tabsetPanel(id = 'phyto', type = "pills",
                                   tabPanel(value = "pts", "Time Series NRS", mod_PhytoTsNRS_ui("PhytoTsNRS_ui_1")),
                                   tabPanel(value = "ptscpr", "Time Series CPR", mod_PhytoTsCPR_ui("PhytoTsCPR_ui_1")),
-                                  tabPanel(value = "distp", "Distributions", mod_PhytoSpatial_ui("PhytoSpatial_ui_1"))
+                                  tabPanel(value = "distp", "Species information", mod_PhytoSpatial_ui("PhytoSpatial_ui_1"))
                       )),
              tabPanel("Zooplankton",
                       tabsetPanel(id = 'zoo', type = "pills",
                                   tabPanel(value = "zts", "Time Series NRS", mod_ZooTsNRS_ui("ZooTsNRS_ui_1")),
                                   tabPanel(value = "ztscpr", "Time Series CPR", mod_ZooTsCPR_ui("ZooTsCPR_ui_1")),
-                                  tabPanel(value = "dist", "Distributions", mod_ZooSpatial_ui("ZooSpatial_ui_1")),
+                                  tabPanel(value = "dist", "Species information", mod_ZooSpatial_ui("ZooSpatial_ui_1")),
                                   # tabPanel(value = "SA", "Spatial Analysis")
                       )),
              tabPanel("Larval Fish",

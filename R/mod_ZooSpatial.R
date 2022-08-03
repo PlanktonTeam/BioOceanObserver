@@ -41,10 +41,10 @@ mod_ZooSpatial_ui <- function(id){
                    )
                  )
         ),
-        tabPanel("Species Distribution maps", value = 2, 
-                 h6(textOutput(nsZooSpatial("SDMsMapExp"), container = span)),
-                 plotOutput(nsZooSpatial("SDMs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-        ),
+        # tabPanel("Species Distribution maps", value = 2, 
+        #          h6(textOutput(nsZooSpatial("SDMsMapExp"), container = span)),
+        #          plotOutput(nsZooSpatial("SDMs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+        # ),
         tabPanel("Species Temperature Index graphs", value = 2, 
                  h6(textOutput(nsZooSpatial("STIsExp"), container = span)),
                  plotOutput(nsZooSpatial("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
@@ -135,17 +135,17 @@ mod_ZooSpatial_server <- function(id){
         
       }) %>% bindCache(input$species)
       
-      # add SDM if it is available
-    output$SDMs <- renderImage({
-
-      speciesName <- stringr::str_replace_all(input$species1, " ", "")
-      filename <- paste("inst/app/www/SDMTweGAM_", speciesName, ".png", sep = "")
-
-      list(src = filename,
-           height = 500, #width = 600,
-           alt = 'Species Distribution Map not available')
-
-    }, deleteFile = FALSE)
+    #   # add SDM if it is available
+    # output$SDMs <- renderImage({
+    # 
+    #   speciesName <- stringr::str_replace_all(input$species1, " ", "")
+    #   filename <- paste("inst/app/www/SDMTweGAM_", speciesName, ".png", sep = "")
+    # 
+    #   list(src = filename,
+    #        height = 500, #width = 600,
+    #        alt = 'Species Distribution Map not available')
+    # 
+    # }, deleteFile = FALSE)
 
     # STI plot -----------------------------------------------------------------------------------------
     # Subset data
