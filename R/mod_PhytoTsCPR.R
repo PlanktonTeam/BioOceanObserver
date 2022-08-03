@@ -78,7 +78,7 @@ mod_PhytoTsCPR_server <- function(id){
         
         p1 + p2 + patchwork::plot_layout(widths = c(3,1))
         
-      }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
+      }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
       output$timeseries1 <- renderPlot({
         gg_out1()
@@ -120,7 +120,7 @@ mod_PhytoTsCPR_server <- function(id){
           title = titleplot)
         
         
-      }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler)
+      }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
       # Functional groups -------------------------------------------------------
       
@@ -170,7 +170,7 @@ mod_PhytoTsCPR_server <- function(id){
         
         p1 + p2 + patchwork::plot_layout(widths = c(3,1))
         
-      }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
       
       output$timeseries3 <- renderPlot({
         gg_out3()
