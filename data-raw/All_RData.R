@@ -71,7 +71,7 @@ fMapDatap <- planktonr::pr_get_FreqMap("P")
 legdat <- data.frame(
   text = c("Absent", "Seen in 25%", "50%", "75%", "100 % of Samples","Absent", "Seen in 25%", "50%", "75%", "100 % of Samples"),
   colnames = c('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'),
-  size = c(1,5,5,5,5,1,5,5,5,5),
+  size = c(2,5,5,5,5,1,5,5,5,5),
   yt = c(1.2,1.2,1.2,1.2,1.2),
   xt = c(1,2,3,4,5),
   x = c(1,2,3,4,5,1,2,3,4,5),
