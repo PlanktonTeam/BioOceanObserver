@@ -22,14 +22,14 @@ mod_PolCPR_ui <- function(id){
                 h6(textOutput(nsPolCPR("PlotExp1"), container = span)),
                 h6(verbatimTextOutput(nsPolCPR("PlotExp5"))),
                 plotOutput(nsPolCPR("timeseries1"), height = 1000) %>% shinycssloaders::withSpinner(color="#0dc5c1"),
-                h6(verbatimTextOutput(nsPolCPR("PlotExp3")),
-                   div(style="display:inline-block; float:right; width:60%",
+                # h6(verbatimTextOutput(nsPolCPR("PlotExp3")),
+                    div(style="display:inline-block; float:right; width:60%",
                        fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                        fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                        fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action")))
       )
     )
-  )
+  # )
 }
 
 #' Policy Server Functions
@@ -90,13 +90,13 @@ mod_PolCPR_server <- function(id){
       They are chosen based on impact of the measurement and the feasiblity to take consistent measurements.
       They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment"
     }) 
-    output$PlotExp3 <- renderText({
-      paste(" Zooplankton biomass at", input$Site, "is", info()[1,1], info()[1,2],  "\n",
-            "Phytoplankton carbon biomass at", input$Site, "is", info()[2,1], info()[2,2], "\n",
-            "Copepod diversity at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
-            "Phytoplankton diveristy at", input$Site, "is", info()[4,1], info()[4,2])
-    }) 
-    
+    # output$PlotExp3 <- renderText({
+    #   paste(" Zooplankton biomass at", input$Site, "is", info()[1,1], info()[1,2],  "\n",
+    #         "Phytoplankton carbon biomass at", input$Site, "is", info()[2,1], info()[2,2], "\n",
+    #         "Copepod diversity at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
+    #         "Phytoplankton diveristy at", input$Site, "is", info()[4,1], info()[4,2])
+    # }) 
+    # 
     # Plot Trends -------------------------------------------------------------
     layout1 <- c(
       patchwork::area(1,1,1,3),  # Text

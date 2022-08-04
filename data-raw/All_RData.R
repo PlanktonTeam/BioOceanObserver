@@ -43,7 +43,9 @@ CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P", join = "st_nearest_feature") 
   droplevels()
 
 # BGC Environmental variables data
-Nuts <- planktonr::pr_get_NRSChemistry() %>% planktonr::pr_remove_outliers(2)
+Nuts <- planktonr::pr_get_NRSChemistry() %>% 
+  dplyr::filter(Parameters != "SecchiDepth_m") %>% 
+  planktonr::pr_remove_outliers(2)
 Pigs <- planktonr::pr_get_NRSPigments(Format = "binned") %>% planktonr::pr_remove_outliers(2)
 Pico <- planktonr::pr_get_NRSPico() %>% planktonr::pr_remove_outliers(2)
 LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
