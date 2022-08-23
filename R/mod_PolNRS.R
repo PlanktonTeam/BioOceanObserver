@@ -21,14 +21,14 @@ mod_PolNRS_ui <- function(id){
                 h6(textOutput(nsPolNRS("PlotExp1"), container = span)),
                 # h6(verbatimTextOutput(nsPolNRS("PlotExp5"))),
                 plotOutput(nsPolNRS("timeseries1"), height = 1600) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
-                h6(verbatimTextOutput(nsPolNRS("PlotExp3")),
+                # h6(verbatimTextOutput(nsPolNRS("PlotExp3")),
                    div(style="display:inline-block; float:right; width:60%",
                        fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                        fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                        fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action")))
       )
     )
-  )
+  # )
 }
 
 #' Policy Server Functions
@@ -87,15 +87,15 @@ mod_PolNRS_server <- function(id){
       They are chosen based on impact of the measurement and the feasiblity to take consistent measurements.
       They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment"
     }) 
-    output$PlotExp3 <- renderText({
-      paste("Zooplankton biomass at", input$Site, "is", info()[1,1], info()[1,2],  "\n",
-            "Phytoplankton carbon biomass at", input$Site, "is", info()[2,1], info()[2,2],  "\n",
-            "Copepod diversity at", input$Site, "is", info()[4,1], info()[4,2],  "\n",
-            "Phytoplankton diveristy at", input$Site, "is", info()[5,1], info()[5,2],  "\n",
-            "Surface temperature at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
-            "Surface chlorophyll at", input$Site, "is", info()[7,1], info()[7,2],  "\n",
-            "Surface salinity at", input$Site, "is", info()[6,1], info()[6,2])
-    }) 
+    # output$PlotExp3 <- renderText({
+    #   paste("Zooplankton biomass at", input$Site, "is", info()[1,1], info()[1,2],  "\n",
+    #         "Phytoplankton carbon biomass at", input$Site, "is", info()[2,1], info()[2,2],  "\n",
+    #         "Copepod diversity at", input$Site, "is", info()[4,1], info()[4,2],  "\n",
+    #         "Phytoplankton diveristy at", input$Site, "is", info()[5,1], info()[5,2],  "\n",
+    #         "Surface temperature at", input$Site, "is", info()[3,1], info()[3,2],  "\n",
+    #         "Surface chlorophyll at", input$Site, "is", info()[7,1], info()[7,2],  "\n",
+    #         "Surface salinity at", input$Site, "is", info()[6,1], info()[6,2])
+    # }) 
     
     # Plot Trends -------------------------------------------------------------
     layout1 <- c(

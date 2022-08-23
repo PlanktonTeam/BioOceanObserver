@@ -21,14 +21,14 @@ mod_PolLTM_ui <- function(id){
                 h6(textOutput(nsPolLTM("PlotExp1"), container = span)),
                 h6(verbatimTextOutput(nsPolLTM("PlotExp5"))),
                 plotOutput(nsPolLTM("timeseries1"), height = 1000) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
-                h6(verbatimTextOutput(nsPolLTM("PlotExp3")),
+                # h6(verbatimTextOutput(nsPolLTM("PlotExp3")),
                    div(style="display:inline-block; float:right; width:60%",
                        fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                        fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                        fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action")))
       )
     )
-  )
+  # )
 }
 
 #' Policy Server Functions
@@ -92,13 +92,13 @@ mod_PolLTM_server <- function(id){
       They are chosen based on impact of the measurement and the feasiblity to take consistent measurements.
       They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment"
     }) 
-    output$PlotExp3 <- renderText({
-      paste(" Nitrate concentration at", input$SiteLTM, "is", info()[1,1], info()[1,2],  "\n",
-            "Phosphate concentration at", input$SiteLTM, "is", info()[2,1], info()[2,2],  "\n",
-            "Silicate concentration", input$SiteLTM, "is", info()[4,1], info()[4,2],  "\n",
-            "Temperature at", input$SiteLTM, "is", info()[5,1], info()[5,2],  "\n",
-            "Salinity at", input$SiteLTM, "is", info()[3,1], info()[3,2],  "\n")
-    }) 
+    # output$PlotExp3 <- renderText({
+    #   paste(" Nitrate concentration at", input$SiteLTM, "is", info()[1,1], info()[1,2],  "\n",
+    #         "Phosphate concentration at", input$SiteLTM, "is", info()[2,1], info()[2,2],  "\n",
+    #         "Silicate concentration", input$SiteLTM, "is", info()[4,1], info()[4,2],  "\n",
+    #         "Temperature at", input$SiteLTM, "is", info()[5,1], info()[5,2],  "\n",
+    #         "Salinity at", input$SiteLTM, "is", info()[3,1], info()[3,2],  "\n")
+    # }) 
     output$PlotExp5 <- renderText({
       paste("STation Name:", input$SiteLTM, "\n",
             input$SiteLTM, " National Reference Station is located at ", round(stationData()$Latitude,2), "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ".", "\n",
@@ -134,7 +134,7 @@ mod_PolLTM_server <- function(id){
                        axis.title = ggplot2::element_text(size = 10, face = "plain"),
                        plot.title = ggplot2::element_text(hjust = 0.5)) 
    
-    }) %>% bindCache(input$Site)
+    }) %>% bindCache(input$SiteLTM)
     
     output$timeseries1 <- renderPlot({
       gg_out1()
