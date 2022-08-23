@@ -35,8 +35,8 @@ mod_MoorBGC_server <- function(id){
         df <- data.frame(SampleDate = seq.Date(to = lubridate::ceiling_date(Sys.Date(), "year"),
                                                from = lubridate::ceiling_date(Sys.Date() - lubridate::years(noYear), "year"),
                                                by = "day")) %>% 
-              dplyr::mutate(TIME = lubridate::yday(SampleDate), 
-                            year = lubridate::year(SampleDate)) %>% 
+              dplyr::mutate(TIME = lubridate::yday(.data$SampleDate), 
+                            year = lubridate::year(.data$SampleDate)) %>% 
               dplyr::inner_join(df %>% dplyr::filter(StationName %in% Station), by = 'TIME') %>%
               unique()
     }
@@ -56,7 +56,7 @@ mod_MoorBGC_server <- function(id){
       ggplot2::geom_raster(ggplot2::aes(x = .data$SampleDate, y = .data$DEPTH, fill = .data$CLIM), interpolate = TRUE) +
       ggplot2::scale_fill_viridis_c(option = 'plasma', name = legtit) +
       ggplot2::scale_color_viridis_c(option = 'plasma', name = legtit) +
-      ggplot2::facet_wrap(~ StationName, scales = 'free', ncol = 1) +
+      ggplot2::facet_wrap(~ .data$StationName, scales = 'free', ncol = 1) +
       ggplot2::scale_y_reverse(expand=c(0,0)) +
       #ggplot2::scale_x_continuous(breaks = labbreak, labels = years, expand=c(0,0)) +
       ggplot2::scale_x_date(breaks = '1 year', expand=c(0,0)) +
@@ -74,7 +74,7 @@ mod_MoorBGC_server <- function(id){
       df <- data.frame(SampleDate = seq.Date(to = lubridate::ceiling_date(Sys.Date(), "year"),
                                                   from = lubridate::ceiling_date(Sys.Date() - lubridate::years(noYear), "year"),
                                                   by = "day")) %>% 
-        dplyr::mutate(DOY = lubridate::yday(SampleDate)) %>% 
+        dplyr::mutate(DOY = lubridate::yday(.data$SampleDate)) %>% 
         dplyr::inner_join(MooringTS %>% dplyr::filter(StationName %in% Station), by = 'DOY') %>%
         dplyr::select(-c(.data$DOY)) %>%
         tidyr::pivot_wider(c(.data$SampleDate, .data$StationName, .data$StationCode), names_from = 'Names', values_from = 'CLIM') 
@@ -82,11 +82,11 @@ mod_MoorBGC_server <- function(id){
       
     pr_plot_MoorTS <- function(df){
       
-      plot <- ggplot2::ggplot(df, ggplot2::aes(x = SampleDate)) +
-        ggplot2::geom_line(ggplot2::aes(y = Surface, colour = 'Surface')) +
-        ggplot2::geom_line(ggplot2::aes(y = MLD, colour = 'MLD')) +
-        ggplot2::geom_line(ggplot2::aes(y = Bottom, colour = 'Bottom')) +
-        ggplot2::facet_wrap(~ StationName, scales = "free", ncol = 1) +
+      plot <- ggplot2::ggplot(df, ggplot2::aes(x = .data$SampleDate)) +
+        ggplot2::geom_line(ggplot2::aes(y = .data$Surface, colour = 'Surface')) +
+        ggplot2::geom_line(ggplot2::aes(y = .data$MLD, colour = 'MLD')) +
+        ggplot2::geom_line(ggplot2::aes(y = .data$Bottom, colour = 'Bottom')) +
+        ggplot2::facet_wrap(~ .data$StationName, scales = "free", ncol = 1) +
         ggplot2::scale_color_manual(name = 'Depth', values = c('dark blue', 'blue', 'light blue')) +
         ggplot2::scale_x_date(breaks = '1 year') +
         ggplot2::labs(y = planktonr::pr_relabel("Temperature_degC", style = 'ggplot'), x = 'Years') +
