@@ -1,5 +1,17 @@
 {
   "export": {
-
+    "MicroTsNRS_ui_1-MicroTs": 9,
+    "MicroTsNRS_ui_1-MicroTsCodeisChr": "character",
+    "MicroTsNRS_ui_1-MicroTsDateisDate": [
+      "POSIXct",
+      "POSIXt"
+    ],
+    "MicroTsNRS_ui_1-MicroTsDepthisNumeric": "numeric",
+    "MicroTsNRS_ui_1-MicroTsMonthisNumeric": "numeric",
+    "MicroTsNRS_ui_1-MicroTsParametersisChr": "character",
+    "MicroTsNRS_ui_1-MicroTsRows": true,
+    "MicroTsNRS_ui_1-MicroTsStationisFactor": "factor",
+    "MicroTsNRS_ui_1-MicroTsValuesisNumeric": "numeric",
+    "MicroTsNRS_ui_1-MicroTsYearisNumeric": "NULL"
   }
 }

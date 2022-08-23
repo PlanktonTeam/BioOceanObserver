@@ -1,29 +1,37 @@
 {
   "export": {
-    "ZooSpatial_ui_1-ZooSpatial": 6,
+    "ZooSpatial_ui_1-ZooSpatial": null,
     "ZooSpatial_ui_1-ZooSpatialFreqisFactor": "NULL",
-    "ZooSpatial_ui_1-ZooSpatialLatisNumeric": "numeric",
-    "ZooSpatial_ui_1-ZooSpatialLongisNumeric": "numeric",
-    "ZooSpatial_ui_1-ZooSpatialRows": true,
-    "ZooSpatial_ui_1-ZooSpatialSeasonisChr": "character",
-    "ZooSpatial_ui_1-ZooSpatialTaxonisChr": "character",
-    "ZooSpatial_ui_1-ZooSpatialfreqsampisNumeric": "numeric",
-    "ZooTsCPR_ui_1-ZtsCPR": 6,
-    "ZooTsCPR_ui_1-ZtsCPRDateisDate": "Date",
+    "ZooSpatial_ui_1-ZooSpatialLatisNumeric": "NULL",
+    "ZooSpatial_ui_1-ZooSpatialLongisNumeric": "NULL",
+    "ZooSpatial_ui_1-ZooSpatialRows": [
+
+    ],
+    "ZooSpatial_ui_1-ZooSpatialSeasonisChr": "NULL",
+    "ZooSpatial_ui_1-ZooSpatialTaxonisChr": "NULL",
+    "ZooSpatial_ui_1-ZooSpatialfreqsampisNumeric": "NULL",
+    "ZooTsCPR_ui_1-ZtsCPR": 10,
+    "ZooTsCPR_ui_1-ZtsCPRDateisDate": [
+      "POSIXct",
+      "POSIXt"
+    ],
     "ZooTsCPR_ui_1-ZtsCPRMonthisNumeric": "numeric",
+    "ZooTsCPR_ui_1-ZtsCPRParametersisChr": "character",
     "ZooTsCPR_ui_1-ZtsCPRRegionisFactor": "factor",
     "ZooTsCPR_ui_1-ZtsCPRRows": true,
     "ZooTsCPR_ui_1-ZtsCPRValuesisNumeric": "numeric",
     "ZooTsCPR_ui_1-ZtsCPRYearisNumeric": "numeric",
-    "ZooTsCPR_ui_1-ZtsCPRparametersisChr": "character",
-    "ZooTsNRS_ui_1-ZtsNRS": 7,
+    "ZooTsNRS_ui_1-ZtsNRS": 10,
     "ZooTsNRS_ui_1-ZtsNRSCodeisChr": "character",
-    "ZooTsNRS_ui_1-ZtsNRSDateisDate": "Date",
+    "ZooTsNRS_ui_1-ZtsNRSDateisDate": [
+      "POSIXct",
+      "POSIXt"
+    ],
     "ZooTsNRS_ui_1-ZtsNRSMonthisNumeric": "numeric",
+    "ZooTsNRS_ui_1-ZtsNRSParametersisChr": "character",
     "ZooTsNRS_ui_1-ZtsNRSRows": true,
     "ZooTsNRS_ui_1-ZtsNRSStationisFactor": "factor",
     "ZooTsNRS_ui_1-ZtsNRSValuesisNumeric": "numeric",
-    "ZooTsNRS_ui_1-ZtsNRSYearisNumeric": "numeric",
-    "ZooTsNRS_ui_1-ZtsNRSparametersisChr": "character"
+    "ZooTsNRS_ui_1-ZtsNRSYearisNumeric": "numeric"
   }
 }

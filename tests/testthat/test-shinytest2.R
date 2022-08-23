@@ -39,6 +39,8 @@ test_that("Initial status of Env Data", {
   app <- AppDriver$new(name = "Env Data")
   app$set_inputs(navbar = "Environmental Data", wait_ = FALSE) # test nuts
   app$set_inputs(env = "pigs", wait_ = FALSE) # test pigs
+  app$set_inputs(env = "water", wait_ = FALSE) # test water
+  app$set_inputs(env = "moor", wait_ = FALSE) # test moorings
   app$expect_values(export = TRUE)
 })
 
