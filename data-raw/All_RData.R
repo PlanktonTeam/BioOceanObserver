@@ -59,7 +59,9 @@ daynightz <- planktonr::pr_get_DayNight("Z")
 daynightp <- planktonr::pr_get_DayNight("P")
 
 # Policy data
-PolNRS <- planktonr::pr_get_PolicyData("NRS") %>% planktonr::pr_remove_outliers(2)
+PolNRS <- planktonr::pr_get_PolicyData("NRS") %>% 
+  dplyr::filter(!StationCode %in% c('NIN', 'ESP')) %>% 
+  planktonr::pr_remove_outliers(2)
 PolCPR <- planktonr::pr_get_PolicyData("CPR", join = "st_nearest_feature") %>% planktonr::pr_remove_outliers(2)
 PolLTM <- planktonr::pr_get_PolicyData("LTM") %>% planktonr::pr_remove_outliers(2)
 
@@ -109,19 +111,83 @@ PMapDatac <- dplyr::bind_rows(planktonr::pr_get_Indices("CPR", "Z"), planktonr::
 
 PMapData2 <- dplyr::bind_rows(PMapDatan, PMapDatac) %>% 
   dplyr::select(-c(.data$Year_Local, .data$Month_Local , .data$tz))
+
+## Using the Long Time Series Moorings Products
+## NRS climatologies
+
+library(tidync)
+library(planktonr)
+
+#TODO when these are accessible from AODN, make into a real planktonr function and change file path
+pr_get_mooringTS <- function(Stations, Depth, Names){
+  if(Stations == 'PHB'){
+    file <- tidync::tidync(file.path("data-raw/LMTS", "PH100_CLIM.nc"))
+  } else {
+    file <- tidync::tidync(file.path("data-raw/LMTS", paste0("NRS", Stations, "_CLIM.nc")))
+  }
   
-  # add data to sysdata.rda
+  out <- file %>%
+    tidync::hyper_filter(DEPTH = DEPTH == Depth, 
+                         TIME = index < 366) %>% # ignoring leap years
+    tidync::hyper_tibble() %>%
+    dplyr::rename(DOY = .data$TIME) %>%
+    dplyr::mutate(StationCode = Stations, 
+                  Names = Names)
+
+}
+
+Stations <- planktonr::pr_get_NRSStation() %>%
+  dplyr::select(.data$StationCode) %>%
+  dplyr::filter(!.data$StationCode %in% c('NIN', 'ESP', 'PH4'))
+Stations <- rep(Stations$StationCode, 3)
+
+Depths <- c(rep(1, 7), 
+            32, 24, 21, 8, 11, 20, 28, # mean MLD
+            80, 100, 50, 20, 20, 60, 100) # max depth of sampling
+
+Names <- c(rep('Surface', 7),
+           rep('MLD', 7),
+           rep('Bottom', 7))
+
+MooringTS <- purrr::pmap_dfr(list(Stations, Depths, Names), pr_get_mooringTS) %>%
+  planktonr::pr_add_StationName() %>%
+  planktonr::pr_reorder()
+
+pr_get_mooringClim <- function(Stations){
+  if(Stations == 'PHB'){
+    file <- tidync::tidync(file.path("data-raw/LMTS", "PH100_CLIM.nc"))
+  } else {
+    file <- tidync::tidync(file.path("data-raw/LMTS", paste0("NRS", Stations, "_CLIM.nc")))
+  }
+  
+  df <- tidync::hyper_tibble(file) %>%
+    dplyr::mutate(StationCode = Stations)
+}  
+
+MooringClim <- purrr::map_dfr(Stations, pr_get_mooringClim) %>%
+  planktonr::pr_add_StationName() %>%
+  planktonr::pr_reorder()
+
+# add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, Pico, LTnuts, 
                   fMapDataz, fMapDatap, legendPlot,
-                    PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, 
-                    datCPRz, datCPRp, datCPRw,
-                    datNRSz, datNRSp, datNRSm, datNRSw,
-                    NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-                    stiz, stip, daynightz, daynightp, PMapData2,
-                    overwrite = TRUE, internal = TRUE)
+                  MooringTS, MooringClim,
+                  PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, 
+                  datCPRz, datCPRp, datCPRw,
+                  datNRSz, datNRSp, datNRSm, datNRSw,
+                  NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
+                  stiz, stip, daynightz, daynightp, PMapData2,
+                  overwrite = TRUE, internal = TRUE)
 
 ## files for SDMs (this will only work for Claire at the moment)
 # listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
 # files <- paste("C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps/", listsdm, sep = "")
 # file.copy(from=files, to="inst/app/www")
 
+
+
+
+
+
+
+  

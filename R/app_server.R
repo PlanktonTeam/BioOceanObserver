@@ -101,4 +101,10 @@ app_server <- function( input, output, session ) {
         mod_WaterBGC_server("WaterBGC_ui_1")
       }
     })
+    
+    observeEvent(input$env, {
+      if(input$env == "moor"){
+        mod_MoorBGC_server("MoorBGC_ui_1")
+      }
+    })
 }
