@@ -49,22 +49,38 @@ mod_MicroTsNRS_ui <- function(id){
                     tabPanel("Trend Analysis", value=1, 
                              h6(textOutput(nsMicroTsNRS("PlotExp1"), container = span)),
                              plotOutput(nsMicroTsNRS("timeseries1"), height = "auto") %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
+                               shinycssloaders::withSpinner(color="#0dc5c1"),
+                             div(style="display:inline-block; float:right; width:60%",
+                                 fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+                                 fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+                                 fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
                     ),
                     tabPanel("Climatologies", value=1,
                              h6(textOutput(nsMicroTsNRS("PlotExp2"), container = span)),
                              plotOutput(nsMicroTsNRS("timeseries2")) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
+                               shinycssloaders::withSpinner(color="#0dc5c1"),
+                             div(style="display:inline-block; float:right; width:60%",
+                             fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
+                             fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
+                             fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
                     ),
                     tabPanel("Trend analysis by depth", value=2,
                              h6(textOutput(nsMicroTsNRS("PlotExp3"), container = span)),  
                              plotOutput(nsMicroTsNRS("timeseries3"), height = 1000) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
+                               shinycssloaders::withSpinner(color="#0dc5c1"),
+                             div(style="display:inline-block; float:right; width:60%",
+                                 fButtons(id, button_id = "downloadPlot3", label = "Plot", Type = "Download"),
+                                 fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
+                                 fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
                     ),
                     tabPanel("Cell counts vs Indices", value=3,
                              h6(textOutput(nsMicroTsNRS("PlotExp4"), container = span)),  
                              plotOutput(nsMicroTsNRS("timeseries4")) %>% 
-                               shinycssloaders::withSpinner(color="#0dc5c1")
+                               shinycssloaders::withSpinner(color="#0dc5c1"),
+                             div(style="display:inline-block; float:right; width:60%",
+                                 fButtons(id, button_id = "downloadPlot4", label = "Plot", Type = "Download"),
+                                 fButtons(id, button_id = "downloadData4", label = "Data", Type = "Download"),
+                                 fButtons(id, button_id = "downloadCode4", label = "R Code Example", Type = "Action"))
                     )
         )
       )
@@ -155,6 +171,10 @@ mod_MicroTsNRS_server <- function(id){
       gg_out1()
     }, height = function() {length(unique(selectedData()$StationName)) * 200}) 
     
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData(), "Trend") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Trend") # Download figure
+    
     })
     
     
@@ -163,7 +183,7 @@ mod_MicroTsNRS_server <- function(id){
     # Plot abundance spectra by species
     observeEvent({input$NRSmts == 1}, {
       
-      output$timeseries2 <- renderPlot({
+      gg_out2 <- reactive({
       
       if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
@@ -189,13 +209,20 @@ mod_MicroTsNRS_server <- function(id){
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
+      output$timeseries2 <- renderPlot({
+        gg_out2()
+      })
+      
+      # Download -------------------------------------------------------
+      output$downloadData2 <- fDownloadButtonServer(input, selectedData(), "Climate") # Download csv of data
+      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2(), "Climate") # Download figure
     })
     
     # Plots by depths ---------------------------------------------------------
     
     observeEvent({input$NRSmts == 2}, {
       
-      output$timeseries3 <- renderPlot({
+    gg_out3 <-  reactive({  
       
       trend <-  input$smoother
       
@@ -209,6 +236,14 @@ mod_MicroTsNRS_server <- function(id){
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$smoother, input$scaler1)
     
+    output$timeseries3 <- renderPlot({
+      gg_out3()
+    })
+    
+      # Download -------------------------------------------------------
+      output$downloadData3 <- fDownloadButtonServer(input, selectedData(), "Enviro") # Download csv of data
+      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3(), "Enviro") # Download figure
+
     })
     
     # Plots by Parameters ---------------------------------------------------------
@@ -228,7 +263,7 @@ mod_MicroTsNRS_server <- function(id){
       
     }) %>% bindCache(input$p1, input$p2, input$Site)
     
-    output$timeseries4 <- renderPlot({
+    gg_out4 <- reactive({
       x <- rlang::sym(colnames(selectedData1()[, 5]))
       y <- rlang::sym(colnames(selectedData1()[, 4]))
       
@@ -241,8 +276,14 @@ mod_MicroTsNRS_server <- function(id){
       
     }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
+    output$timeseries4 <- renderPlot({
+      gg_out4()
     })
+    
     # Download -------------------------------------------------------
+    output$downloadData4 <- fDownloadButtonServer(input, selectedData1(), "Compare") # Download csv of data
+    output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4(), "Compare") # Download figure
     
   })
-}
+  })
+  }

@@ -99,6 +99,25 @@ fPLanktonPanel <- function(id, panel_id){
   )
 }
 
+#' Generic BOO Environmental Panel
+#' 
+#' @noRd
+fEnviroPanel <- function(id){
+  ns <- NS(id)
+  mainPanel(
+    tabsetPanel(type = "pills",
+                tabPanel("Trend Analysis", value = 1,
+                         h6(textOutput(ns("PlotExp"), container = span)),
+                         plotOutput(ns("timeseries1")) %>% 
+                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                         div(style="display:inline-block; float:right; width:60%",
+                             fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+                             fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+                             fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
+                )
+    )
+  )
+}
 
 
 #' Download Button

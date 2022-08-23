@@ -24,10 +24,7 @@ mod_WaterBGC_ui <- function(id){
         # Select whether to overlay smooth trend line
         #selectizeInput(inputId = nsWaterBGC("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
       ),
-      mainPanel(
-        h6(textOutput(nsWaterBGC("PlotExp"), container = span)),
-        plotOutput(nsWaterBGC("plot"), height = 'auto') %>% withSpinner(color="#0dc5c1")
-      )
+      fEnviroPanel(id = id)
     )
   )
 }
@@ -71,7 +68,7 @@ mod_WaterBGC_server <- function(id){
     )
     
     # Create timeseries object the plotOutput function is expecting
-    ts1 <-  reactive({
+    gg_out1 <-  reactive({
       
       p1 <- planktonr::pr_plot_Trends(selected(), Trend = "Raw", Survey = "NRS", method = "lm", trans = 'identity')
       p2 <- planktonr::pr_plot_Trends(selected(), Trend = "Month", Survey = "NRS", method = "loess", trans = 'identity') +
@@ -80,11 +77,15 @@ mod_WaterBGC_server <- function(id){
       
     }) %>% bindCache(input$station, input$Parameter, input$date, input$smoother)
     
-    output$plot <- renderPlot({
-      ts1()
+    output$timeseries1 <- renderPlot({
+      gg_out1()
     }, height = function() {length(unique(selected()$StationName)) * 200})
     
-      # add a map in sidebar
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, selected(), "water") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "water") # Download figure
+    
+    # add a map in sidebar
     output$plotmap <- renderPlot({ 
       
       planktonr::pr_plot_NRSmap(selected())
