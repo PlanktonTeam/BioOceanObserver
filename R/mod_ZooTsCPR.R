@@ -153,7 +153,7 @@ mod_ZooTsCPR_server <- function(id){
                          legend.position = "none")
         p1 + p2 + patchwork::plot_layout(widths = c(3,1))
         
-      }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
       
       output$timeseries3 <- renderPlot({
         gg_out3()

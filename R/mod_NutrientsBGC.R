@@ -25,12 +25,9 @@ mod_NutrientsBGC_ui <- function(id){
         # Select whether to overlay smooth trend line
         selectizeInput(inputId = nsNutrientsBGC("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
       ),
-      mainPanel(
-        h6(textOutput(nsNutrientsBGC("PlotExp"), container = span)),
-        plotOutput(nsNutrientsBGC("plot"), height = 1000) %>% withSpinner(color="#0dc5c1")
+      fEnviroPanel(id = id)
       )
     )
-  )
 }
 
 #' NutrientsBGC Server Functions
@@ -76,13 +73,21 @@ mod_NutrientsBGC_server <- function(id){
     )
     
     # Create timeseries object the plotOutput function is expecting
-    output$plot <- renderPlot({
+    gg_out1 <- reactive({
       
       trend <-  input$smoother
       
       planktonr::pr_plot_Enviro(selected(), Trend = trend)
       
     }) %>% bindCache(input$station, input$parameter, input$date, input$smoother)
+    
+    output$timeseries1 <- renderPlot({
+      gg_out1()
+    })
+    
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, selected(), "Nuts") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Nuts") # Download figure
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 
