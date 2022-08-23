@@ -130,7 +130,9 @@ mod_MicroTsNRS_server <- function(id){
     
     # Plot Trends -------------------------------------------------------------
     
-    ts1 <- reactive({
+    observeEvent({input$NRSmts == 1}, {
+      
+      gg_out1 <- reactive({
       
       if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
@@ -150,18 +152,18 @@ mod_MicroTsNRS_server <- function(id){
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     output$timeseries1 <- renderPlot({
-      ts1()
+      gg_out1()
     }, height = function() {length(unique(selectedData()$StationName)) * 200}) 
     
-    # output$timeseries1_ui <- renderUI({
-    #   plotOutput("timeseries1", height = function() {length(unique(selectedData()$StationName)) * 200})
-    # })
+    })
     
     
     # Climatologies -----------------------------------------------------------
     
     # Plot abundance spectra by species
-    output$timeseries2 <- renderPlot({
+    observeEvent({input$NRSmts == 1}, {
+      
+      output$timeseries2 <- renderPlot({
       
       if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
         return(NULL)
@@ -182,14 +184,18 @@ mod_MicroTsNRS_server <- function(id){
       
       #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple"))
       
-      p1 + p2 + p3 + patchwork::plot_layout(widths = c(3,1,3), guides = "collect")
+      p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
       
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
+    })
+    
     # Plots by depths ---------------------------------------------------------
     
-    output$timeseries3 <- renderPlot({
+    observeEvent({input$NRSmts == 2}, {
+      
+      output$timeseries3 <- renderPlot({
       
       trend <-  input$smoother
       
@@ -203,9 +209,13 @@ mod_MicroTsNRS_server <- function(id){
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$smoother, input$scaler1)
     
+    })
+    
     # Plots by Parameters ---------------------------------------------------------
     
-    selectedData1 <- reactive({
+    observeEvent({input$NRSmts == 3}, {
+      
+      selectedData1 <- reactive({
       req(input$Site)
       req(input$p1)
       validate(need(!is.na(input$Site), "Error: Please select a station."))
@@ -231,7 +241,7 @@ mod_MicroTsNRS_server <- function(id){
       
     }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
-    
+    })
     # Download -------------------------------------------------------
     
   })

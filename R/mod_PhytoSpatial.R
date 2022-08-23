@@ -13,18 +13,8 @@ mod_PhytoSpatial_ui <- function(id){
   
   tagList(
     sidebarPanel(
-      conditionalPanel(
-        condition="input.NRSspatp == 1",  
-      #Species selector
-      selectizeInput(inputId = nsPhytoSpatial('species'), label = "Select a phytoplankton species", choices = unique(fMapDatap$Taxon),
-                     selected = "Tripos furca")
-      ),
-      conditionalPanel(
-        condition="input.NRSspatp == 2",  
-        # Species selector
-        selectizeInput(inputId = nsPhytoSpatial('species1'), label = "Select a phytoplankton species", choices = unique(stip$Species), 
-                       selected = "Tripos furca")
-      )
+        selectizeInput(inputId = nsPhytoSpatial('species'), label = "Select a phytoplankton species", choices = unique(fMapDatap$Taxon), 
+                        selected = "Tripos furca")
     ),
     mainPanel(
       tabsetPanel(id = "NRSspatp",
@@ -52,7 +42,7 @@ mod_PhytoSpatial_ui <- function(id){
                  h6(textOutput(nsPhytoSpatial("STIsExp"), container = span)),
                  plotOutput(nsPhytoSpatial("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
         ),
-        tabPanel("Species Diurnal Behviour", value = 2, 
+        tabPanel("Species Diurnal Behviour", value = 3, 
                  h6(textOutput(nsPhytoSpatial("SDBsExp"), container = span)),
                  plotOutput(nsPhytoSpatial("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
         )
@@ -83,14 +73,14 @@ mod_PhytoSpatial_server <- function(id){
       }) %>% bindCache(input$species)
       
       shiny::exportTestValues(
-        PhytoSpatial = {ncol(selectedZS())},
-        PhytoSpatialRows = {nrow(selectedZS()) > 0},
-        PhytoSpatialLatisNumeric = {class(selectedZS()$Lat)},
-        PhytoSpatialLongisNumeric = {class(selectedZS()$Long)},
-        PhytoSpatialFreqisFactor = {class(selectedZS()$Freqfac)},
-        PhytoSpatialSeasonisChr = {class(selectedZS()$Season)},
-        PhytoSpatialTaxonisChr = {class(selectedZS()$Taxon)},
-        PhytoSpatialfreqsampisNumeric = {class(selectedZS()$freqsamp)}
+        PhytoSpatial = {ncol(plotlist())},
+        PhytoSpatialRows = {nrow(plotlist()) > 0},
+        PhytoSpatialLatisNumeric = {class(plotlist()$Lat)},
+        PhytoSpatialLongisNumeric = {class(plotlist()$Long)},
+        PhytoSpatialFreqisFactor = {class(plotlist()$Freqfac)},
+        PhytoSpatialSeasonisChr = {class(plotlist()$Season)},
+        PhytoSpatialTaxonisChr = {class(plotlist()$Taxon)},
+        PhytoSpatialfreqsampisNumeric = {class(plotlist()$freqsamp)}
       )
       
       # add text information ------------------------------------------------------------------------------
@@ -113,36 +103,40 @@ mod_PhytoSpatial_server <- function(id){
       # select initial map  ------------------------------------------------------------------------------
       
     # Create dot map of distribution
-      output$plot2a <- leaflet::renderLeaflet({
+      observeEvent({input$NRSspatp == 1}, {
         
-        plotlist()[[1]]
+        output$plot2a <- leaflet::renderLeaflet({
         
-      }) %>% bindCache(input$species)
-      
-      output$plot2b <- leaflet::renderLeaflet({
+          plotlist()[[1]]
+          
+        }) %>% bindCache(input$species)
         
-        plotlist()[[2]]
+        output$plot2b <- leaflet::renderLeaflet({
+          
+          plotlist()[[2]]
+          
+        }) %>% bindCache(input$species)
         
-      }) %>% bindCache(input$species)
-      
-      output$plot2c <- leaflet::renderLeaflet({
+        output$plot2c <- leaflet::renderLeaflet({
+          
+          plotlist()[[3]]
+          
+        }) %>% bindCache(input$species)
         
-        plotlist()[[3]]
+        output$plot2d <- leaflet::renderLeaflet({
+          
+          plotlist()[[4]]
+          
+        }) %>% bindCache(input$species)
         
-      }) %>% bindCache(input$species)
-      
-      output$plot2d <- leaflet::renderLeaflet({
+        output$plot2e <- renderPlot({
+          
+          legendPlot
+          
+        }) %>% bindCache(input$species)
         
-        plotlist()[[4]]
+      })
         
-      }) %>% bindCache(input$species)
-      
-      output$plot2e <- renderPlot({
-        
-        legendPlot
-        
-      }) %>% bindCache(input$species)
-      
     # # add SDM if it is available
     # output$SDMs <- renderImage({
     # 
@@ -158,15 +152,17 @@ mod_PhytoSpatial_server <- function(id){
     # STI plot -----------------------------------------------------------------------------------------
     # Subset data
     
-    selectedSTI <- reactive({
+      observeEvent({input$NRSspatp == 2}, {
+        
+        selectedSTI <- reactive({
       
-      req(input$species1)
-      validate(need(!is.na(input$species1), "Error: Please select a species"))
+      req(input$species)
+      validate(need(!is.na(input$species), "Error: Please select a species"))
       
       selectedSTI <- stip %>% 
-        dplyr::filter(.data$Species %in% input$species1) 
+        dplyr::filter(.data$Species %in% input$species) 
       
-    }) %>% bindCache(input$species1)
+    }) %>% bindCache(input$species)
     
     # sti plot
     output$STIs <- renderPlot({
@@ -178,20 +174,24 @@ mod_PhytoSpatial_server <- function(id){
       plotsti <- planktonr::pr_plot_STI(selectedSTI())
       plotsti
 
-    }) %>% bindCache(input$species1)
+    }) %>% bindCache(input$species)
+      
+    })
     
     # daynight plot -----------------------------------------------------------------------------------------
     # Subset data
     
-    selecteddn <- reactive({
+      observeEvent({input$NRSspatp == 3}, {
+        
+        selecteddn <- reactive({
       
-      req(input$species1)
-      validate(need(!is.na(input$species1), "Error: Please select a species"))
+      req(input$species)
+      validate(need(!is.na(input$species), "Error: Please select a species"))
       
       selecteddn <- daynightp %>% 
-        dplyr::filter(.data$Species %in% input$species1) 
+        dplyr::filter(.data$Species %in% input$species) 
       
-    }) %>% bindCache(input$species1)
+    }) %>% bindCache(input$species)
     
     # sti plot
     output$DNs <- renderPlot({
@@ -203,7 +203,10 @@ mod_PhytoSpatial_server <- function(id){
       plotdn <- planktonr::pr_plot_DayNight(selecteddn())
       plotdn
       
-    }) %>% bindCache(input$species1)
+    }) %>% bindCache(input$species)
+    
+      })
+      
 
         # speciesName <- stringr::str_replace_all(Species, " ", "")
     # filename <- paste("inst/app/www/SDMTweGAM_", speciesName, ".png", sep = "")

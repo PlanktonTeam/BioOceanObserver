@@ -13,18 +13,8 @@ mod_ZooSpatial_ui <- function(id){
   
   tagList(
     sidebarPanel(
-      conditionalPanel(
-        condition="input.NRSspat == 1",  
-        # Species selector
       selectizeInput(inputId = nsZooSpatial('species'), label = "Select a zooplankton species", choices = unique(fMapDataz$Taxon), 
                      selected = "Acartia danae")
-      ),
-      conditionalPanel(
-        condition="input.NRSspat == 2",  
-        # Species selector
-        selectizeInput(inputId = nsZooSpatial('species1'), label = "Select a copepod species", choices = unique(stiz$Species), 
-                       selected = "Acartia danae")
-      )
     ),
     mainPanel(
       tabsetPanel(id = "NRSspat",
@@ -49,7 +39,7 @@ mod_ZooSpatial_ui <- function(id){
                  h6(textOutput(nsZooSpatial("STIsExp"), container = span)),
                  plotOutput(nsZooSpatial("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
         ),
-        tabPanel("Species Diurnal Behviour", value = 2, 
+        tabPanel("Species Diurnal Behviour", value = 3, 
                  h6(textOutput(nsZooSpatial("SDBsExp"), container = span)),
                  plotOutput(nsZooSpatial("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
         )
@@ -80,14 +70,14 @@ mod_ZooSpatial_server <- function(id){
       }) %>% bindCache(input$species)
       
     shiny::exportTestValues(
-        ZooSpatial = {ncol(selectedZS())},
-        ZooSpatialRows = {nrow(selectedZS()) > 0},
-        ZooSpatialLatisNumeric = {class(selectedZS()$Lat)},
-        ZooSpatialLongisNumeric = {class(selectedZS()$Long)},
-        ZooSpatialFreqisFactor = {class(selectedZS()$Freqfac)},
-        ZooSpatialSeasonisChr = {class(selectedZS()$Season)},
-        ZooSpatialTaxonisChr = {class(selectedZS()$Taxon)},
-        ZooSpatialfreqsampisNumeric = {class(selectedZS()$freqsamp)}
+        ZooSpatial = {ncol(plotlist())},
+        ZooSpatialRows = {nrow(plotlist()) > 0},
+        ZooSpatialLatisNumeric = {class(plotlist()$Lat)},
+        ZooSpatialLongisNumeric = {class(plotlist()$Long)},
+        ZooSpatialFreqisFactor = {class(plotlist()$Freqfac)},
+        ZooSpatialSeasonisChr = {class(plotlist()$Season)},
+        ZooSpatialTaxonisChr = {class(plotlist()$Taxon)},
+        ZooSpatialfreqsampisNumeric = {class(plotlist()$freqsamp)}
       )
       
       # add text information ------------------------------------------------------------------------------
@@ -111,7 +101,9 @@ mod_ZooSpatial_server <- function(id){
       
     # Create dot map of distribution
     
-      output$plot2a <- leaflet::renderLeaflet({
+      observeEvent({input$NRSspat == 1}, {
+        
+        output$plot2a <- leaflet::renderLeaflet({
     
           plotlist()[[1]]
 
@@ -135,6 +127,8 @@ mod_ZooSpatial_server <- function(id){
         
       }) %>% bindCache(input$species)
       
+      })
+      
     #   # add SDM if it is available
     # output$SDMs <- renderImage({
     # 
@@ -150,15 +144,17 @@ mod_ZooSpatial_server <- function(id){
     # STI plot -----------------------------------------------------------------------------------------
     # Subset data
     
-    selectedSTI <- reactive({
+      observeEvent({input$NRSspat == 2}, {
+        
+        selectedSTI <- reactive({
       
-      req(input$species1)
-      validate(need(!is.na(input$species1), "Error: Please select a species"))
+      req(input$species)
+      validate(need(!is.na(input$species), "Error: Please select a species"))
       
-      selectedSTI <- stiz %>% dplyr::rename(sst = .data$SST) %>% 
-        dplyr::filter(.data$Species %in% input$species1) 
+      selectedSTI <- stiz %>% 
+        dplyr::filter(.data$Species %in% input$species) 
       
-    }) %>% bindCache(input$species1)
+    }) %>% bindCache(input$species)
     
     # sti plot
     output$STIs <- renderPlot({
@@ -170,20 +166,24 @@ mod_ZooSpatial_server <- function(id){
       plotsti <- planktonr::pr_plot_STI(selectedSTI())
       plotsti
 
-    }) %>% bindCache(input$species1)
+    }) %>% bindCache(input$species)
+      
+    })
     
     # daynight plot -----------------------------------------------------------------------------------------
     # Subset data
     
-    selecteddn <- reactive({
+      observeEvent({input$NRSspat == 3}, {
+        
+        selecteddn <- reactive({
       
-      req(input$species1)
-      validate(need(!is.na(input$species1), "Error: Please select a species"))
+      req(input$species)
+      validate(need(!is.na(input$species), "Error: Please select a species"))
       
       selecteddn <- daynightz %>% 
-        dplyr::filter(.data$Species %in% input$species1) 
+        dplyr::filter(.data$Species %in% input$species) 
       
-    }) %>% bindCache(input$species1)
+    }) %>% bindCache(input$species)
     
     # sti plot
     output$DNs <- renderPlot({
@@ -195,7 +195,9 @@ mod_ZooSpatial_server <- function(id){
       plotdn <- planktonr::pr_plot_DayNight(selecteddn())
       plotdn
       
-    }) %>% bindCache(input$species1)
+    }) %>% bindCache(input$species)
+    
+      })
 
         # speciesName <- stringr::str_replace_all(Species, " ", "")
     # filename <- paste("inst/app/www/SDMTweGAM_", speciesName, ".png", sep = "")

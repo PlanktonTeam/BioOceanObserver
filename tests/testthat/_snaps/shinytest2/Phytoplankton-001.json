@@ -1,31 +1,36 @@
 {
   "export": {
-    "PhytoSpatial_ui_1-PhytoSpatial": 6,
+    "PhytoSpatial_ui_1-PhytoSpatial": null,
     "PhytoSpatial_ui_1-PhytoSpatialFreqisFactor": "NULL",
-    "PhytoSpatial_ui_1-PhytoSpatialLatisNumeric": "numeric",
-    "PhytoSpatial_ui_1-PhytoSpatialLongisNumeric": "numeric",
-    "PhytoSpatial_ui_1-PhytoSpatialRows": true,
-    "PhytoSpatial_ui_1-PhytoSpatialSeasonisChr": "character",
-    "PhytoSpatial_ui_1-PhytoSpatialTaxonisChr": "character",
-    "PhytoSpatial_ui_1-PhytoSpatialfreqsampisNumeric": "numeric",
+    "PhytoSpatial_ui_1-PhytoSpatialLatisNumeric": "NULL",
+    "PhytoSpatial_ui_1-PhytoSpatialLongisNumeric": "NULL",
+    "PhytoSpatial_ui_1-PhytoSpatialRows": [
+
+    ],
+    "PhytoSpatial_ui_1-PhytoSpatialSeasonisChr": "NULL",
+    "PhytoSpatial_ui_1-PhytoSpatialTaxonisChr": "NULL",
+    "PhytoSpatial_ui_1-PhytoSpatialfreqsampisNumeric": "NULL",
     "PhytoTsCPR_ui_1-PhytoFGCPR": 6,
     "PhytoTsCPR_ui_1-PhytoFGCPRDateisDate": [
       "POSIXct",
       "POSIXt"
     ],
     "PhytoTsCPR_ui_1-PhytoFGCPRMonthisNumeric": "numeric",
+    "PhytoTsCPR_ui_1-PhytoFGCPRParametersisChr": "factor",
     "PhytoTsCPR_ui_1-PhytoFGCPRRegionisFactor": "factor",
-    "PhytoTsCPR_ui_1-PhytoFGCPRRows": false,
+    "PhytoTsCPR_ui_1-PhytoFGCPRRows": true,
     "PhytoTsCPR_ui_1-PhytoFGCPRValuesisNumeric": "numeric",
     "PhytoTsCPR_ui_1-PhytoFGCPRYearisNumeric": "numeric",
-    "PhytoTsCPR_ui_1-PhytoFGCPRparametersisChr": "factor",
-    "PhytoTsCPR_ui_1-PhytoTsCPR": 6,
-    "PhytoTsCPR_ui_1-PhytoTsCPRDateisDate": "Date",
+    "PhytoTsCPR_ui_1-PhytoTsCPR": 10,
+    "PhytoTsCPR_ui_1-PhytoTsCPRDateisDate": [
+      "POSIXct",
+      "POSIXt"
+    ],
     "PhytoTsCPR_ui_1-PhytoTsCPRMonthisNumeric": "numeric",
+    "PhytoTsCPR_ui_1-PhytoTsCPRParametersisChr": "character",
     "PhytoTsCPR_ui_1-PhytoTsCPRRegionisFactor": "factor",
     "PhytoTsCPR_ui_1-PhytoTsCPRRows": true,
     "PhytoTsCPR_ui_1-PhytoTsCPRValuesisNumeric": "numeric",
-    "PhytoTsCPR_ui_1-PhytoTsCPRYearisNumeric": "numeric",
-    "PhytoTsCPR_ui_1-PhytoTsCPRparametersisChr": "character"
+    "PhytoTsCPR_ui_1-PhytoTsCPRYearisNumeric": "numeric"
   }
 }
