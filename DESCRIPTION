@@ -17,10 +17,13 @@ Imports:
     patchwork,
     planktonr (>= 0.1.0.0000),
     rlang,
+    rnaturalearth,
     shiny (>= 1.6.0),
     shinycssloaders,
     shinydashboard,
+    shinythemes,
     stringr,
+    thinkr,
     tidyr,
     vroom
 Encoding: UTF-8
