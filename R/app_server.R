@@ -2,7 +2,7 @@
 #' 
 #' @param input,output,session Internal Parameters for {shiny}. 
 #'     DO NOT REMOVE.
-#' @import shiny
+#' @import shiny patchwork
 #' @importFrom rlang .data
 #' @importFrom stats sd
 #' @importFrom utils write.table 
