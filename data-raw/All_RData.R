@@ -51,8 +51,8 @@ Pico <- planktonr::pr_get_NRSPico() %>% planktonr::pr_remove_outliers(2)
 LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
 
 # STI data
-stiz <- planktonr::pr_get_STI("Z")
-stip <- planktonr::pr_get_STI("P")
+stiz <- planktonr::pr_get_STIdata("Z")
+stip <- planktonr::pr_get_STIdata("P")
 
 # Day-Night data (from CPR only)
 daynightz <- planktonr::pr_get_DayNight("Z")
