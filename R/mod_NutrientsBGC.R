@@ -83,7 +83,7 @@ mod_NutrientsBGC_server <- function(id){
     
     output$timeseries1 <- renderPlot({
       gg_out1()
-    })
+    }, height = function() {length(unique(selected()$SampleDepth_m)) * 200})
     
     # Download -------------------------------------------------------
     output$downloadData1 <- fDownloadButtonServer(input, selected(), "Nuts") # Download csv of data
