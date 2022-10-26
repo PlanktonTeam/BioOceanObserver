@@ -87,7 +87,7 @@ mod_PigmentsBGC_server <- function(id){
       
       gg_out1()
       
-    }) 
+    }, height = function() {length(unique(selected()$SampleDepth_m)) * 200}) 
     
     # Download -------------------------------------------------------
     output$downloadData1 <- fDownloadButtonServer(input, selected(), "Pigs") # Download csv of data

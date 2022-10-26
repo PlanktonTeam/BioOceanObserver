@@ -29,6 +29,9 @@ mod_ZooSpatial_ui <- function(id){
                           leaflet::leafletOutput(nsZooSpatial("plot2b"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
                           leaflet::leafletOutput(nsZooSpatial("plot2d"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
                    )
+                 ),
+                 column(width = 6, br(), 
+                        plotOutput(nsZooSpatial("plot2e"), height = 50)
                  )
         ),
         # tabPanel("Species Distribution maps", value = 2, 
@@ -127,8 +130,13 @@ mod_ZooSpatial_server <- function(id){
         
       }) %>% bindCache(input$species)
       
-      })
+      output$plot2e <- renderPlot({
+        
+        legendPlot
+        
+      }) %>% bindCache(input$species)
       
+    })  
     #   # add SDM if it is available
     # output$SDMs <- renderImage({
     # 

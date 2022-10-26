@@ -51,9 +51,24 @@ Pigs <- planktonr::pr_get_NRSPigments(Format = "binned") %>% planktonr::pr_remov
 Pico <- planktonr::pr_get_NRSPico() %>% planktonr::pr_remove_outliers(2)
 LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
 
+# get Sat data
+# These can take a long time to run depending on the number of locations
+# These do not need to be available to the APP but should be in the DAP collection and planktonr
+# #TODO add function to remove the data that already has products matched.
+# res_spat <- 10
+# SSTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_GHRSST(pr = 'sea_surface_temperature')
+# ALTsat <- planktonr::pr_get_DataLocs("NRS") %>% 
+#   dplyr::filter(lubridate::year(Date) < 2020) %>% planktonr::pr_match_Altimetry(pr = 'GSLA') # TODO files only go until 2021_05
+# CHLsat <- planktonr::pr_get_DataLocs("NRS") %>% 
+#   dplyr::filter(Date > as.Date("2002-07-01")) %>% planktonr::pr_match_MODIS(pr = 'chl_oc3')
+
+# SatData <- SSTsat %>% 
+#   dplyr::left_join(ALTsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) %>% 
+#   dplyr::left_join(CHLsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) 
+
 # STI data
-stiz <- planktonr::pr_get_STI("Z")
-stip <- planktonr::pr_get_STI("P")
+stiz <- planktonr::pr_get_STIdata("Z")
+stip <- planktonr::pr_get_STIdata("P")
 
 # Day-Night data (from CPR only)
 daynightz <- planktonr::pr_get_DayNight("Z")
@@ -87,7 +102,7 @@ legendPlot <- ggplot2::ggplot() +
   ggplot2::geom_point(data = legdat, ggplot2::aes(x, y, size = size, colour = colnames)) +
   ggplot2::scale_color_manual(values = c("lightblue1", "skyblue3", "dodgerblue2", "blue1", "navyblue", "#CCFFCC", "#99FF99", "#669933", "#009900", "#006600")) + 
   ggplot2::geom_text(data = legdat, ggplot2::aes(x= xt, y= yt, label = text)) +
-  ggplot2::geom_text(ggplot2::aes(x= c(5.5,5.5), y= c(1.1,1), label = c("NRS", "CPR"))) +
+  ggplot2::geom_text(ggplot2::aes(x= c(5.5,5.5), y= c(1.1,1), label = c("CPR", "NRS"))) +
   ggplot2::theme_void() +
   ggplot2::theme(legend.position = 'none')
 legendPlot
@@ -192,12 +207,39 @@ save(Nuts, Pigs, Pico, LTnuts,
      stiz, stip, daynightz, daynightp, PMapData2,
      file='sysdata.rda')
 
-## files for SDMs (this will only work for Claire at the moment)
-# listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
-# files <- paste("C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps/", listsdm, sep = "")
-# file.copy(from=files, to="inst/app/www")
-
-
+# Write to csv to save onto the DAP
+# write_csv(Nuts, "Nuts.csv")
+# write_csv(Pigs,  "Pigs.csv")
+# write_csv(Pico,  "Pico.csv")
+# write_csv(LTnuts,    "LTnuts.csv") 
+# write_csv(fMapDataz,  "fMapDataz.csv")
+# write_csv(fMapDatap,  "fMapDatap.csv")
+# write_csv(legendPlot, "legendPlot.csv")
+# write_csv(MooringTS,  "MooringTS.csv")
+# write_csv(MooringClim, "MooringClim.csv")
+# write_csv(PolNRS, "PolNRS.csv")
+# write_csv(PolCPR,  "PolCPR.csv")
+# write_csv(PolLTM,  "PolLTM.csv")
+# write_csv(NRSinfo,  "NRSinfo.csv")
+# write_csv(CPRinfo,  "CPRinfo.csv")
+# write_csv(datCPRz,  "datCPRz.csv")
+# write_csv(datCPRp,  "datCPRp.csv")
+# write_csv(datCPRw, "datCPRw.csv") 
+# write_csv(datNRSz,  "datNRSz.csv")
+# write_csv(datNRSp,  "datNRSp.csv")
+# write_csv(datNRSm,  "datNRSm.csv")
+# write_csv(datNRSw, "datNRSw.csv")
+# write_csv(NRSfgz,  "NRSfgz.csv")
+# write_csv(NRSfgp,  "NRSfgp.csv")
+# write_csv(CPRfgz,  "CPRfgz.csv")
+# write_csv(CPRfgp,  "CPRfgp.csv")
+# write_csv(PMapData, "PMapData.csv")
+# write_csv(stiz,  "stiz.csv")
+# write_csv(stip,  "stip.csv")
+# write_csv(daynightz,  "daynightz.csv")
+# write_csv(daynightp,  "daynightp.csv")
+# write_csv(PMapData2, "PMapData2.csv")
+# write_csv(SatData, "SatData.csv")
 
 
 
