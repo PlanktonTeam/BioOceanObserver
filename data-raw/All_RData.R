@@ -1,5 +1,6 @@
 ## script for all RData 
 library(tidyverse)
+library(planktonr)
 
 # NRS indices data
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z") 
@@ -168,16 +169,28 @@ MooringClim <- purrr::map_dfr(Stations, pr_get_mooringClim) %>%
   planktonr::pr_add_StationName() %>%
   planktonr::pr_reorder()
 
-# add data to sysdata.rda
-usethis::use_data(Nuts, Pigs, Pico, LTnuts, 
-                  fMapDataz, fMapDatap, legendPlot,
-                  MooringTS, MooringClim,
-                  PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, 
-                  datCPRz, datCPRp, datCPRw,
-                  datNRSz, datNRSp, datNRSm, datNRSw,
-                  NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-                  stiz, stip, daynightz, daynightp, PMapData2,
-                  overwrite = TRUE, internal = TRUE)
+# # add data to sysdata.rda
+# usethis::use_data(Nuts, Pigs, Pico, LTnuts, 
+#                   fMapDataz, fMapDatap, legendPlot,
+#                   MooringTS, MooringClim,
+#                   PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, 
+#                   datCPRz, datCPRp, datCPRw,
+#                   datNRSz, datNRSp, datNRSm, datNRSw,
+#                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
+#                   stiz, stip, daynightz, daynightp, PMapData2,
+#                   overwrite = TRUE, internal = TRUE)
+
+# Save data to ./data/sysdata.rda
+if (!file.exists("./data")) dir.create(file.path("./", "data"))
+save(Nuts, Pigs, Pico, LTnuts, 
+     fMapDataz, fMapDatap, legendPlot,
+     MooringTS, MooringClim,
+     PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo,
+     datCPRz, datCPRp, datCPRw,
+     datNRSz, datNRSp, datNRSm, datNRSw,
+     NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
+     stiz, stip, daynightz, daynightp, PMapData2,
+     file='sysdata.rda')
 
 ## files for SDMs (this will only work for Claire at the moment)
 # listsdm <- list.files(path = "C:/Users/dav649/Documents/GitHub/SDMs/SDM_maps")
