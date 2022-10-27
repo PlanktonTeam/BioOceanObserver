@@ -105,7 +105,7 @@ legendPlot <- ggplot2::ggplot() +
   ggplot2::geom_text(ggplot2::aes(x= c(5.5,5.5), y= c(1.1,1), label = c("CPR", "NRS"))) +
   ggplot2::theme_void() +
   ggplot2::theme(legend.position = 'none')
-legendPlot
+# legendPlot
 
 # Progress Map
 PMapData <- planktonr::pr_get_ProgressMap(c("NRS", "CPR"))

@@ -8,9 +8,6 @@ golem::detach_all_attached()
 # Document and reload your package
 golem::document_and_reload()
 
-
-# Load global data
-load("./data/sysdata.rda")
 # Run the application
 run_app()
 
