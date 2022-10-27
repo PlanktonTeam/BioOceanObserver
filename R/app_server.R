@@ -17,11 +17,11 @@
 #' @importFrom shinycssloaders withSpinner
 #' @noRd
 
-# Load local data
-source("./loadData.R", local = T)
-
 app_server <- function( input, output, session ) {
   # Your application server logic 
+  
+  # Load local data
+  source("./loadData.R", local = T)
   
   ## global options and themes can go here
   theme_set(theme_bw(base_size = 12) + theme(legend.position = "bottom")) 
