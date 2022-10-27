@@ -5,6 +5,9 @@
 #' @import shiny
 #' @noRd
 
+# Load local data
+source("./loadData.R", local = T)
+
 app_ui <- function(request) {
   # Your application UI logic 
   navbarPage(golem_add_external_resources(), # Leave this function for adding external resources
