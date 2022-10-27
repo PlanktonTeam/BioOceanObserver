@@ -18,7 +18,7 @@
 #' @noRd
 
 # Load local data
-load("./data/sysdata.rda")
+source("./loadData.R", local = T)
 
 app_server <- function( input, output, session ) {
   # Your application server logic 
