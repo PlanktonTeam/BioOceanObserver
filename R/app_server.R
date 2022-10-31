@@ -16,6 +16,9 @@
 #' @importFrom tidyr drop_na
 #' @importFrom shinycssloaders withSpinner
 #' @noRd
+
+load("data_local/sysdata.rda")
+
 app_server <- function( input, output, session ) {
   # Your application server logic 
   
