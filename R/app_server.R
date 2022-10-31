@@ -17,6 +17,10 @@
 #' @importFrom shinycssloaders withSpinner
 #' @noRd
 #' 
+
+# Load data
+load(file='data/sysdata.rda')
+
 app_server <- function( input, output, session ) {
   # Your application server logic 
   
