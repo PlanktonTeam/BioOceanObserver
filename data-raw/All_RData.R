@@ -207,6 +207,33 @@ save(Nuts, Pigs, Pico, LTnuts,
      stiz, stip, daynightz, daynightp, PMapData2,
      file='sysdata.rda')
 
+# add data to sysdata.rda
+# usethis::use_data(Nuts, Pigs, Pico, LTnuts,
+#                   fMapDataz, fMapDatap, legendPlot,
+#                   MooringTS, MooringClim,
+#                   PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo,
+#                   datCPRz, datCPRp, datCPRw,
+#                   datNRSz, datNRSp, datNRSm, datNRSw,
+#                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
+#                   stiz, stip, daynightz, daynightp, PMapData2,
+#                   overwrite = TRUE, internal = TRUE)
+
+usethis::use_data(Nuts,
+                  overwrite = TRUE, internal = TRUE)
+
+# save data to data/sysdata.rda
+datapath <- "data/sysdata.rda"
+if (!file.exists("data")) dir.create("data")
+save(Nuts, Pigs, Pico, LTnuts, 
+      fMapDataz, fMapDatap, legendPlot,
+      MooringTS, MooringClim,
+      PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo,
+      datCPRz, datCPRp, datCPRw,
+      datNRSz, datNRSp, datNRSm, datNRSw,
+      NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
+      stiz, stip, daynightz, daynightp, PMapData2, 
+      file = datapath)
+
 # Write to csv to save onto the DAP
 # write_csv(Nuts, "Nuts.csv")
 # write_csv(Pigs,  "Pigs.csv")
