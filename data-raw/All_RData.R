@@ -184,17 +184,18 @@ MooringClim <- purrr::map_dfr(Stations, pr_get_mooringClim) %>%
   planktonr::pr_reorder()
 
 # add data to sysdata.rda
-# usethis::use_data(Nuts, Pigs, Pico, LTnuts, 
-#                   fMapDataz, fMapDatap, legendPlot,
-#                   MooringTS, MooringClim,
-#                   PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, 
-#                   datCPRz, datCPRp, datCPRw,
-#                   datNRSz, datNRSp, datNRSm, datNRSw,
-#                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-#                   stiz, stip, daynightz, daynightp, PMapData2,
-#                   overwrite = TRUE, internal = TRUE)
+usethis::use_data(Nuts, Pigs, Pico, LTnuts,
+                  fMapDataz, fMapDatap, legendPlot,
+                  MooringTS, MooringClim,
+                  PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo,
+                  datCPRz, datCPRp, datCPRw,
+                  datNRSz, datNRSp, datNRSm, datNRSw,
+                  NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
+                  stiz, stip, daynightz, daynightp, PMapData2,
+                  overwrite = TRUE, internal = TRUE)
 
-usethis::use_data(Nuts)
+# usethis::use_data(Nuts,
+#                   overwrite = TRUE, internal = TRUE)
 
 save(Nuts, Pigs, Pico, LTnuts, 
       fMapDataz, fMapDatap, legendPlot,
