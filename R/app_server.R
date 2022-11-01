@@ -17,7 +17,11 @@
 #' @importFrom shinycssloaders withSpinner
 #' @noRd
 
-source("loadData.R", local = T)
+datapath <- "./data/sysdata.rda"
+if (file.exists(datapath)) {
+  print(paste0("Loading data from ", datapath))
+  load(datapath)
+}
 
 app_server <- function( input, output, session ) {
   # Your application server logic 
