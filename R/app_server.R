@@ -19,6 +19,7 @@
 
 datapath <- "./data/sysdata.rda"
 if (file.exists(datapath)) {
+  print(getwd())
   print(paste0("Loading data from ", datapath))
   load(datapath)
 }
