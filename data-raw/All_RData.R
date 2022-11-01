@@ -1,5 +1,6 @@
 ## script for all RData 
 library(tidyverse)
+library(planktonr)
 
 # NRS indices data
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z") 
@@ -11,7 +12,7 @@ datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
                                          .data$MLDsal_m < .data$MLDtemp_m ~ .data$MLDsal_m,
                                          TRUE ~ NA_real_)) %>%
   dplyr::select(-c(.data$MLDtemp_m, .data$MLDsal_m)) %>%
-  tidyr::pivot_longer(-c(.data$Year_Local:.data$StationCode), names_to = 'Parameters', values_to = 'Values')
+  tidyr::pivot_longer(-c(Year_Local:StationCode), names_to = 'Parameters', values_to = 'Values')
 
 # CPR time series data
 datCPRz <- planktonr::pr_get_Indices("CPR", "Z", join = "st_nearest_feature") %>% 
@@ -57,13 +58,15 @@ LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
 # res_spat <- 10
 # SSTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_GHRSST(pr = 'sea_surface_temperature')
 # ALTsat <- planktonr::pr_get_DataLocs("NRS") %>% 
-#   dplyr::filter(lubridate::year(Date) < 2020) %>% planktonr::pr_match_Altimetry(pr = 'GSLA') # TODO files only go until 2021_05
-# CHLsat <- planktonr::pr_get_DataLocs("NRS") %>% 
+#    dplyr::filter(lubridate::year(Date) < 2020) %>% planktonr::pr_match_Altimetry(pr = 'GSLA') # TODO files only go until 2021_05
+# CHLsat <- planktonr::pr_get_DataLocs("NRS") %>%
 #   dplyr::filter(Date > as.Date("2002-07-01")) %>% planktonr::pr_match_MODIS(pr = 'chl_oc3')
 
-# SatData <- SSTsat %>% 
-#   dplyr::left_join(ALTsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) %>% 
-#   dplyr::left_join(CHLsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) 
+# SatData <- SSTsat %>%
+#   dplyr::left_join(ALTsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) %>%
+#   dplyr::left_join(CHLsat, by = c("Latitude", "Longitude", "Year", "Month", "Day"))
+
+write_csv(SatData, "SatDataNRS.csv")
 
 # STI data
 stiz <- planktonr::pr_get_STIdata("Z")
@@ -110,22 +113,23 @@ legendPlot
 PMapData <- planktonr::pr_get_ProgressMap(c("NRS", "CPR"))
 
 PMapDatan <- dplyr::bind_rows(planktonr::pr_get_Indices("NRS", "Z"), planktonr::pr_get_Indices("NRS", "P")) %>% 
-  dplyr::filter(.data$Parameters == "ZoopAbundance_m3" | .data$Parameters == "PhytoAbundance_CellsL") %>% 
-  tidyr::pivot_wider(names_from = .data$Parameters, values_from = .data$Values) %>% 
-  dplyr::rename(Name = .data$StationName) %>% 
-  dplyr::select(-.data$StationCode) %>% 
+  dplyr::filter(Parameters == "ZoopAbundance_m3" | Parameters == "PhytoAbundance_CellsL") %>% 
+  tidyr::pivot_wider(names_from = Parameters, values_from = Values) %>% 
+  dplyr::rename(Name = StationName) %>% 
+  dplyr::select(-StationCode) %>% 
   dplyr::mutate(Survey = "NRS")
 
 PMapDatac <- dplyr::bind_rows(planktonr::pr_get_Indices("CPR", "Z"), planktonr::pr_get_Indices("CPR", "P")) %>% 
-  dplyr::filter(.data$Parameters == "ZoopAbundance_m3" | .data$Parameters == "PhytoAbundance_Cellsm3") %>% 
-  tidyr::pivot_wider(names_from = .data$Parameters, values_from = .data$Values) %>% 
-  dplyr::mutate(PhytoAbundance_Cellsm3 = .data$PhytoAbundance_Cellsm3/1e3, 
+  dplyr::filter(Parameters == "ZoopAbundance_m3" | Parameters == "PhytoAbundance_Cellsm3") %>% 
+  tidyr::drop_na(Values) %>%
+  tidyr::pivot_wider(names_from = Parameters, values_from = Values) %>% 
+  dplyr::mutate(PhytoAbundance_Cellsm3 = PhytoAbundance_Cellsm3/1e3, 
                 Survey = "CPR") %>% 
-  dplyr::rename(PhytoAbundance_CellsL = .data$PhytoAbundance_Cellsm3, 
-                Name = .data$BioRegion)
+  dplyr::rename(PhytoAbundance_CellsL = PhytoAbundance_Cellsm3, 
+                Name = BioRegion)
 
 PMapData2 <- dplyr::bind_rows(PMapDatan, PMapDatac) %>% 
-  dplyr::select(-c(.data$Year_Local, .data$Month_Local , .data$tz))
+  dplyr::select(-c(Year_Local,Month_Local , tz))
 
 ## Using the Long Time Series Moorings Products
 ## NRS climatologies
