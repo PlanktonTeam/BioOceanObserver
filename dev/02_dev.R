@@ -27,6 +27,7 @@ usethis::use_package( "shinythemes")
 usethis::use_package( "stringr")
 usethis::use_package( "thinkr")
 usethis::use_package( "tidyr")
+usethis::use_package( "httr")
 usethis::use_pipe()
 
 # usethis::use_dev_package("planktonr", type = "Imports", remote = "PlanktonTeam/planktonr@AddShinyFuncs")

@@ -2,6 +2,7 @@
 
 export("%>%")
 export(run_app)
+import(httr)
 import(patchwork)
 import(shiny)
 importFrom(dplyr,filter)

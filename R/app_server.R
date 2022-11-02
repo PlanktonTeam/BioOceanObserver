@@ -2,7 +2,7 @@
 #' 
 #' @param input,output,session Internal Parameters for {shiny}. 
 #'     DO NOT REMOVE.
-#' @import shiny
+#' @import shiny httr
 #' @import patchwork
 #' @importFrom rlang .data
 #' @importFrom stats sd
@@ -18,13 +18,14 @@
 #' @noRd
 
 # Load up-to-date data
+
 fileURL <- "https://data-cbr.it.csiro.au/files/sc-opendap-work/work/fileserver_tests/imosboo/data/sysdata.rda"
 tryCatch({
   tmp <- tempfile(fileext='.rda')   
-  GET(fileURL, write_disk(tmp))
+  httr::GET(fileURL, write_disk(tmp))
   load(tmp)
 }, error = function(e) { 
-  print("Error accessing up-to-date data")
+  "Building the imosboo package using built in sysdata.rda. If this message appears when running the app, the data being served is not up-to-date."
 }) 
 
 app_server <- function( input, output, session ) {
