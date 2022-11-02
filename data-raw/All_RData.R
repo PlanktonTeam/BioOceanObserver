@@ -66,7 +66,7 @@ LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
 #   dplyr::left_join(ALTsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) %>%
 #   dplyr::left_join(CHLsat, by = c("Latitude", "Longitude", "Year", "Month", "Day"))
 
-write_csv(SatData, "SatDataNRS.csv")
+# write_csv(SatData, "SatDataNRS.csv")
 
 # STI data
 stiz <- planktonr::pr_get_STIdata("Z")
@@ -187,55 +187,29 @@ MooringClim <- purrr::map_dfr(Stations, pr_get_mooringClim) %>%
   planktonr::pr_add_StationName() %>%
   planktonr::pr_reorder()
 
-# # add data to sysdata.rda
-# usethis::use_data(Nuts, Pigs, Pico, LTnuts, 
-#                   fMapDataz, fMapDatap, legendPlot,
-#                   MooringTS, MooringClim,
-#                   PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, 
-#                   datCPRz, datCPRp, datCPRw,
-#                   datNRSz, datNRSp, datNRSm, datNRSw,
-#                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-#                   stiz, stip, daynightz, daynightp, PMapData2,
-#                   overwrite = TRUE, internal = TRUE)
-
-# Save data to ./data/sysdata.rda
-if (!file.exists("./data")) dir.create(file.path("./", "data"))
-save(Nuts, Pigs, Pico, LTnuts, 
-     fMapDataz, fMapDatap, legendPlot,
-     MooringTS, MooringClim,
-     PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo,
-     datCPRz, datCPRp, datCPRw,
-     datNRSz, datNRSp, datNRSm, datNRSw,
-     NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-     stiz, stip, daynightz, daynightp, PMapData2,
-     file='sysdata.rda')
-
 # add data to sysdata.rda
-# usethis::use_data(Nuts, Pigs, Pico, LTnuts,
-#                   fMapDataz, fMapDatap, legendPlot,
-#                   MooringTS, MooringClim,
-#                   PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo,
-#                   datCPRz, datCPRp, datCPRw,
-#                   datNRSz, datNRSp, datNRSm, datNRSw,
-#                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-#                   stiz, stip, daynightz, daynightp, PMapData2,
-#                   overwrite = TRUE, internal = TRUE)
-
-usethis::use_data(Nuts,
+usethis::use_data(Nuts, Pigs, Pico, LTnuts,
+                  fMapDataz, fMapDatap, legendPlot,
+                  MooringTS, MooringClim,
+                  PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo,
+                  datCPRz, datCPRp, datCPRw,
+                  datNRSz, datNRSp, datNRSm, datNRSw,
+                  NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
+                  stiz, stip, daynightz, daynightp, PMapData2,
                   overwrite = TRUE, internal = TRUE)
 
-# save data to data/sysdata.rda
-datapath <- "data/sysdata.rda"
-if (!file.exists("data")) dir.create("data")
-save(Nuts, Pigs, Pico, LTnuts, 
-      fMapDataz, fMapDatap, legendPlot,
-      MooringTS, MooringClim,
-      PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo,
-      datCPRz, datCPRp, datCPRw,
-      datNRSz, datNRSp, datNRSm, datNRSw,
-      NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-      stiz, stip, daynightz, daynightp, PMapData2, 
-      file = datapath)
+# # save data to sc server (note temporary path)
+# datapath <- "https://data-cbr.it.csiro.au/files/sc-opendap-work/work/fileserver_tests/imosboo/data"
+# if (!file.exists("data")) dir.create("data")
+# save(Nuts, Pigs, Pico, LTnuts, 
+#       fMapDataz, fMapDatap, legendPlot,
+#       MooringTS, MooringClim,
+#       PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo,
+#       datCPRz, datCPRp, datCPRw,
+#       datNRSz, datNRSp, datNRSm, datNRSw,
+#       NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
+#       stiz, stip, daynightz, daynightp, PMapData2, 
+#       file = datapath)
 
 # Write to csv to save onto the DAP
 # write_csv(Nuts, "Nuts.csv")
