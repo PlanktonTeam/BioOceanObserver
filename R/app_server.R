@@ -17,12 +17,15 @@
 #' @importFrom shinycssloaders withSpinner
 #' @noRd
 
-datapath <- "./data/sysdata.rda"
-if (file.exists(datapath)) {
-  print(getwd())
-  print(paste0("Loading data from ", datapath))
-  load(datapath)
-}
+# Load up-to-date data
+fileURL <- "https://data-cbr.it.csiro.au/files/sc-opendap-work/work/fileserver_tests/imosboo/data/sysdata.rda"
+tryCatch({
+  tmp <- tempfile(fileext='.rda')   
+  GET(fileURL, write_disk(tmp))
+  load(tmp)
+}, error = function(e) { 
+  print("Error accessing up-to-date data")
+}) 
 
 app_server <- function( input, output, session ) {
   # Your application server logic 
