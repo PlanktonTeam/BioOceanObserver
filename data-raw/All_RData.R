@@ -57,10 +57,8 @@ LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
 # #TODO add function to remove the data that already has products matched.
 # res_spat <- 10
 # SSTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_GHRSST(pr = 'sea_surface_temperature')
-# ALTsat <- planktonr::pr_get_DataLocs("NRS") %>% 
-#    dplyr::filter(lubridate::year(Date) < 2020) %>% planktonr::pr_match_Altimetry(pr = 'GSLA') # TODO files only go until 2021_05
-# CHLsat <- planktonr::pr_get_DataLocs("NRS") %>%
-#   dplyr::filter(Date > as.Date("2002-07-01")) %>% planktonr::pr_match_MODIS(pr = 'chl_oc3')
+# ALTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_Altimetry(pr = 'GSLA') 
+# CHLsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_MODIS(pr = 'chl_oc3')
 
 # SatData <- SSTsat %>%
 #   dplyr::left_join(ALTsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) %>%
