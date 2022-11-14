@@ -52,7 +52,7 @@ mod_PhytoTsCPR_server <- function(id){
     
     output$plotmap <- renderPlot({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
       planktonr::pr_plot_CPRmap(selectedData())
-    }) %>% bindCache(input$region)
+    }, bg = "transparent") %>% bindCache(input$region)
     
     # add text information 
     output$PlotExp1 <- renderText({

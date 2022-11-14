@@ -81,7 +81,7 @@ mod_PolCPR_server <- function(id){
     # Sidebar Map
     output$plotmap <- renderPlot({ 
       planktonr::pr_plot_CPRmap(selectedData())
-    }) %>% bindCache(input$Site)
+    }, bg = "transparent") %>% bindCache(input$Site)
     
     # Add text information 
     output$PlotExp1 <- renderText({
