@@ -138,7 +138,7 @@ mod_MoorBGC_server <- function(id){
       
       planktonr::pr_plot_NRSmap(selectedClim())
       
-    }) %>% bindCache(input$station)
+    }, bg = "transparent") %>% bindCache(input$station)
     
     # add climate plot
     gg_out1 <- reactive({ 

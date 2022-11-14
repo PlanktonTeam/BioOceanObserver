@@ -83,7 +83,7 @@ mod_PolLTM_server <- function(id){
     # Sidebar Map
     output$plotmap <- renderPlot({ 
       planktonr::pr_plot_NRSmap(selectedDataLTM())
-    }) %>% bindCache(input$SiteLTM)
+    }, bg = "transparent") %>% bindCache(input$SiteLTM)
     
     # Add text information 
     output$PlotExp1 <- renderText({
