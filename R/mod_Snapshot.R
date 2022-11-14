@@ -12,7 +12,8 @@ mod_Snapshot_ui <- function(id){
   nsSnap <- NS(id)
   tagList(
     fluidRow(
-      leaflet::leafletOutput(nsSnap("progplot"), height = 800))
+      leaflet::leafletOutput(nsSnap("progplot"), height = 800) %>% 
+        shinycssloaders::withSpinner())
   )
 }
 
