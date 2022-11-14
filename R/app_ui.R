@@ -14,16 +14,17 @@ app_ui <- function(request) {
              theme = bslib::bs_theme(version = 5, 
                                      bootswatch = "flatly",
                                      # primary = "#2C3E50"
-                                     "border-width" = "5px",
+                                     "border-width" = "0px",
                                      # "border-color" = "red",
                                      "enable-rounded" = TRUE), #https://rstudio.github.io/bslib/articles/bslib.html#custom
              selected = "Welcome", 
              tabPanel("Welcome",
-                      sidebarLayout(
-                        sidebarPanel(
-                          # tags$style(".well {background-color:grey;}"),
+                      
+                      fluidPage(
+                        fluidRow(
+                          column(4,
                           img(src = "www/BOO_Hex2.png", width = "95%")),
-                        mainPanel(
+                          column(8,
                           h2("Welcome to The Biological Ocean Observatory"),
                           p("The goal of this site is to Integrate, Analyse and Visualise data collected by the", 
                             tags$a(href="https://imos.org.au","Integrated Marine Observing System (IMOS)"),". 
@@ -45,7 +46,7 @@ app_ui <- function(request) {
                             data uptake to solve real world problems."),
                           h3("The IMOS plankton team is on facebook"),
                           p("Like or follow us @", tags$a(href="https://www.facebook.com/imosaustralianplanktonsurvey", "IMOS plankton team on facebook")
-                          )))),
+                          ))))),
              tabPanel("Snapshot",
                       fluidPage(
                         value = "snap", mod_Snapshot_ui("Snapshot_ui_1"))
