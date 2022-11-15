@@ -158,8 +158,8 @@ Stations <- planktonr::pr_get_NRSStation() %>%
   dplyr::filter(!.data$StationCode %in% c('NIN', 'ESP', 'PH4'))
 Stations <- rep(Stations$StationCode, 3)
 
-Depths <- c(rep(1, 7), 
-            32, 24, 21, 8, 11, 20, 28, # mean MLD
+Depths <- c(rep(0, 7), 
+            32, 24, 20, 8, 10, 20, 28, # mean MLD
             80, 100, 50, 20, 20, 60, 100) # max depth of sampling
 
 Names <- c(rep('Surface', 7),
