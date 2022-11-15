@@ -1,5 +1,4 @@
 ## script for all RData 
-library(tidyverse)
 library(planktonr)
 
 # NRS indices data
@@ -11,8 +10,9 @@ datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
   dplyr::mutate(MLD_m = dplyr::case_when(.data$MLDtemp_m <= .data$MLDsal_m ~ .data$MLDtemp_m,
                                          .data$MLDsal_m < .data$MLDtemp_m ~ .data$MLDsal_m,
                                          TRUE ~ NA_real_)) %>%
-  dplyr::select(-c(.data$MLDtemp_m, .data$MLDsal_m)) %>%
-  tidyr::pivot_longer(-c(Year_Local:StationCode), names_to = 'Parameters', values_to = 'Values')
+  dplyr::select(-c(MLDtemp_m, MLDsal_m)) %>%
+  tidyr::pivot_longer(-c("TripCode", "Year_Local", "Month_Local", "SampleTime_Local", "tz", "Latitude", "Longitude", "StationName", "StationCode"), 
+                      names_to = 'Parameters', values_to = 'Values')
 
 # CPR time series data
 datCPRz <- planktonr::pr_get_Indices("CPR", "Z", join = "st_nearest_feature") %>% 
@@ -64,7 +64,7 @@ LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
 #   dplyr::left_join(ALTsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) %>%
 #   dplyr::left_join(CHLsat, by = c("Latitude", "Longitude", "Year", "Month", "Day"))
 
-write_csv(SatData, "SatDataNRS.csv")
+# readr::write_csv(SatData, "SatDataNRS.csv")
 
 # STI data
 stiz <- planktonr::pr_get_STIdata("Z")
@@ -132,8 +132,6 @@ PMapData2 <- dplyr::bind_rows(PMapDatan, PMapDatac) %>%
 ## Using the Long Time Series Moorings Products
 ## NRS climatologies
 
-library(tidync)
-library(planktonr)
 
 #TODO when these are accessible from AODN, make into a real planktonr function and change file path
 pr_get_mooringTS <- function(Stations, Depth, Names){
