@@ -9,7 +9,8 @@ app_ui <- function(request) {
   # Your application UI logic 
   navbarPage(golem_add_external_resources(), # Leave this function for adding external resources
              id = "navbar",  
-             title = div(img(src = "www/logo.png", style="margin-top: -10px; padding-right:5px;padding-bottom:2px", height = 40), "The Biological Ocean Observer"),
+             # title = shiny::a(shiny::img(src = "www/NP-logo-hvit_engelsk.png", height = 90, style = "padding-right:10px; margin-top:-10px; margin-bottom:-10px"), "Weddell Sea Phase 2"),
+             title = div(img(src = "www/logo.png", style="margin-top:-10px; padding-right:5px; padding-bottom:2px", height = 40), "The Biological Ocean Observer"),
              windowTitle = "The Biological Ocean Observer",
              theme = bslib::bs_theme(version = 5, 
                                      bootswatch = "flatly",
@@ -38,12 +39,12 @@ app_ui <- function(request) {
                             We welcome collaborators and pull requests are gratefully accepted."),
                                  shiny::br(),
                                  shiny::br(),
-                            shiny::HTML("This tool was originally conceived and developed by Dr Jason Everett (UQ/CSIRO/UNSW) 
+                                 shiny::HTML("This tool was originally conceived and developed by Dr Jason Everett (UQ/CSIRO/UNSW) 
                             and Claire Davies (CSIRO). Jason is a biological oceanographer and Claire is a plankton 
                             ecologist. Both have a strong interest in open data science and encouraging increased 
                             data uptake to solve real world problems."),
                                  shiny::h3("Citation"),
-                                 shiny::HTML("If you use this app in any publication, please cite as <br> <i>'Davies, Claire; Everett, Jason; Ord, Louise (2022): IMOS Biological Ocean Observer - Shiny APP. v3. CSIRO. Service Collection. <a href = http://hdl.handle.net/102.100.100/447365?index=1>http://hdl.handle.net/102.100.100/447365?index=1</a></i>."),
+                                 shiny::HTML("If you use this app in any publication, please cite as: <br> <i>'Davies, Claire; Everett, Jason; Ord, Louise (2022): IMOS Biological Ocean Observer - Shiny APP. v3. CSIRO. Service Collection. <a href = http://hdl.handle.net/102.100.100/447365?index=1>http://hdl.handle.net/102.100.100/447365?index=1</a></i>."),
                                  shiny::br(),
                                  shiny::br(),
                                  shiny::HTML("All of the analysis and plotting contained in this application are powered by the <i>planktonr</i> package: <br>
@@ -54,6 +55,8 @@ app_ui <- function(request) {
                                  shiny::HTML("'<i>Data was sourced from Australia’s Integrated Marine Observing System (IMOS) – IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). It is operated by a consortium of institutions as an unincorporated joint venture, with the University of Tasmania as Lead Agent'.</i>"),
                                  shiny::br(),
                                  shiny::HTML("For more information about acknowledging IMOS, see <a href = https://imos.org.au/acknowledging-us> here</a>."),
+                                 shiny::h3("Licencing"),
+                                 shiny::HTML("The code for this application is published under an <a href = 'https://github.com/PlanktonTeam/IMOS_BioOceanObserver/blob/master/LICENSE'> MIT licence</a>")
                           )))),
              tabPanel("Snapshot",
                       fluidPage(
@@ -101,14 +104,6 @@ app_ui <- function(request) {
                       fluidPage(
                         value = "help", mod_help_ui("help_ui_1"))
              ),
-                      navbarMenu("", icon = icon("question-circle"),
-                        #tabPanel("Help", icon = icon("question")),
-                        tabPanel(actionLink("help_keyboard", "Keyboard shortcuts", icon = icon("keyboard"))),
-                        tabPanel("About", uiOutput("help_about"), icon = icon("info")),
-                        tabPanel(tags$a("", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki", target = "_blank",
-                                        list(icon("globe"), "Documentation"))),
-                        tabPanel(tags$a("", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/issues", target = "_blank",
-                                        list(icon("github"), "Report issue")))),
              navbarMenu("", icon = icon("share-alt"),
                         tabPanel(tags$a("", href = "https://twitter.com/intent/tweet?url=https%3A%2F%2Fjaseeverett.shinyapps.io%2FIMOS_BioOceanObserver&text=Check%20out%20the%20fantastic%20new%20IMOS%20Biological%20Ocean%20Obervatory%20being%20developed", target = "_blank",
                                         list(icon("twitter"), "Twitter"))),
