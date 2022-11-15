@@ -36,7 +36,7 @@ app_ui <- function(request) {
                                  shiny::br(),
                                  shiny::HTML("This project is entirely open source, as are all the IMOS data underlying it. All the 
                             code for this tool are freely available on <a href='https://github.com/PlanktonTeam/IMOS_BioOceanObserver'>GitHub</a>. 
-                            We welcome collaborators and pull requests are gratefully accepted."),
+                            We welcome collaborators and pull requests are gratefully accepted. If you encounter a problem with this website, please <a href='https://github.com/PlanktonTeam/IMOS_BioOceanObserver/issues'>log an issue</a>."),
                                  shiny::br(),
                                  shiny::br(),
                                  shiny::HTML("This tool was originally conceived and developed by Dr Jason Everett (UQ/CSIRO/UNSW) 
@@ -50,13 +50,12 @@ app_ui <- function(request) {
                                  shiny::HTML("All of the analysis and plotting contained in this application are powered by the <i>planktonr</i> package: <br>
                                       <i>Everett J, Davies C (2022). planktonr: Analysis and visualisation of plankton data. R package version 0.1.1.0000, <a href = https://github.com/PlanktonTeam/planktonr>https://github.com/PlanktonTeam/planktonr</a>.</i>"),
                                  shiny::h3("Acknowledging IMOS Data"),
-                                 shiny::HTML("This application is developed using IMOS data, and therefore you are also required to clearly acknowledge the source material by including the following statement in any publications:"),
+                                 shiny::HTML("This application is developed using IMOS data, and therefore you are also required to <a href = https://imos.org.au/acknowledging-us> clearly acknowledge</a> the source material by including the following statement in any publications:"),
                                  shiny::br(),
                                  shiny::HTML("'<i>Data was sourced from Australia’s Integrated Marine Observing System (IMOS) – IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). It is operated by a consortium of institutions as an unincorporated joint venture, with the University of Tasmania as Lead Agent'.</i>"),
                                  shiny::br(),
-                                 shiny::HTML("For more information about acknowledging IMOS, see <a href = https://imos.org.au/acknowledging-us> here</a>."),
                                  shiny::h3("Licencing"),
-                                 shiny::HTML("The code for this application is published under an <a href = 'https://github.com/PlanktonTeam/IMOS_BioOceanObserver/blob/master/LICENSE'> MIT licence</a>")
+                                 shiny::HTML("The code for this application is published under an <a href = 'https://github.com/PlanktonTeam/IMOS_BioOceanObserver/blob/master/LICENSE'> MIT licence</a>.")
                           )))),
              tabPanel("Snapshot",
                       fluidPage(
