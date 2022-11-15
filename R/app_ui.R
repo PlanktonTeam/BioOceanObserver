@@ -97,8 +97,12 @@ app_ui <- function(request) {
                                   tabPanel(value = "pigs", "NRS BGC Pigments", mod_PigmentsBGC_ui("PigmentsBGC_ui_1")),
                                   tabPanel(value = "water", "NRS BGC Water", mod_WaterBGC_ui("WaterBGC_ui_1")),
                                   tabPanel(value = 'moor', "NRS Moorings", mod_MoorBGC_ui("MoorBGC_ui_1")))),
-             navbarMenu("", icon = icon("question-circle"),
-                        tabPanel("Help", icon = icon("question")),
+             tabPanel("Help",
+                      fluidPage(
+                        value = "help", mod_help_ui("help_ui_1"))
+             ),
+                      navbarMenu("", icon = icon("question-circle"),
+                        #tabPanel("Help", icon = icon("question")),
                         tabPanel(actionLink("help_keyboard", "Keyboard shortcuts", icon = icon("keyboard"))),
                         tabPanel("About", uiOutput("help_about"), icon = icon("info")),
                         tabPanel(tags$a("", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki", target = "_blank",

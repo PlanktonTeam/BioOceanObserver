@@ -45,6 +45,10 @@ app_server <- function( input, output, session ) {
       if(input$navbar == "Environmental Data") {
         mod_NutrientsBGC_server("NutrientsBGC_ui_1")
       }
+      
+      if(input$navbar == "Help") {
+        mod_help_server("help_ui_1")
+      }
     })
       
 
