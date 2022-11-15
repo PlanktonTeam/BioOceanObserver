@@ -31,7 +31,6 @@ mod_PhytoTsCPR_server <- function(id){
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       selectedData <- datCPRp %>% 
-        mutate(BioRegion = factor(.data$BioRegion, levels = c("Coral Sea", "Temperate East", "South-west", "South-east"))) %>%
         dplyr::filter(.data$BioRegion %in% input$region,
                       .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
@@ -52,7 +51,7 @@ mod_PhytoTsCPR_server <- function(id){
     
     output$plotmap <- renderPlot({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
       planktonr::pr_plot_CPRmap(selectedData())
-    }) %>% bindCache(input$region)
+    }, bg = "transparent") %>% bindCache(input$region)
     
     # add text information 
     output$PlotExp1 <- renderText({

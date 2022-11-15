@@ -126,7 +126,7 @@ mod_MicroTsNRS_server <- function(id){
     # Sidebar Map
     output$plotmap <- renderPlot({ 
       planktonr::pr_plot_NRSmap(selectedData())
-    }) %>% bindCache(input$Site)
+    }, bg = "transparent") %>% bindCache(input$Site)
     
     # Add text information 
     output$PlotExp1 <- renderText({

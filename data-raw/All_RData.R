@@ -1,5 +1,4 @@
 ## script for all RData 
-library(tidyverse)
 library(planktonr)
 
 # NRS indices data
@@ -11,8 +10,9 @@ datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
   dplyr::mutate(MLD_m = dplyr::case_when(.data$MLDtemp_m <= .data$MLDsal_m ~ .data$MLDtemp_m,
                                          .data$MLDsal_m < .data$MLDtemp_m ~ .data$MLDsal_m,
                                          TRUE ~ NA_real_)) %>%
-  dplyr::select(-c(.data$MLDtemp_m, .data$MLDsal_m)) %>%
-  tidyr::pivot_longer(-c(Year_Local:StationCode), names_to = 'Parameters', values_to = 'Values')
+  dplyr::select(-c(MLDtemp_m, MLDsal_m)) %>%
+  tidyr::pivot_longer(-c("TripCode", "Year_Local", "Month_Local", "SampleTime_Local", "tz", "Latitude", "Longitude", "StationName", "StationCode"), 
+                      names_to = "Parameters", values_to = "Values")
 
 # CPR time series data
 datCPRz <- planktonr::pr_get_Indices("CPR", "Z", join = "st_nearest_feature") %>% 
@@ -56,15 +56,15 @@ LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
 # These do not need to be available to the APP but should be in the DAP collection and planktonr
 # #TODO add function to remove the data that already has products matched.
 # res_spat <- 10
-# SSTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_GHRSST(pr = 'sea_surface_temperature')
-# ALTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_Altimetry(pr = 'GSLA') 
-# CHLsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_MODIS(pr = 'chl_oc3')
+# SSTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_GHRSST(pr = "sea_surface_temperature")
+# ALTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_Altimetry(pr = "GSLA") 
+# CHLsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_MODIS(pr = "chl_oc3")
 
 # SatData <- SSTsat %>%
 #   dplyr::left_join(ALTsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) %>%
 #   dplyr::left_join(CHLsat, by = c("Latitude", "Longitude", "Year", "Month", "Day"))
 
-write_csv(SatData, "SatDataNRS.csv")
+# readr::write_csv(SatData, "SatDataNRS.csv")
 
 # STI data
 stiz <- planktonr::pr_get_STIdata("Z")
@@ -76,7 +76,7 @@ daynightp <- planktonr::pr_get_DayNight("P")
 
 # Policy data
 PolNRS <- planktonr::pr_get_PolicyData("NRS") %>% 
-  dplyr::filter(!StationCode %in% c('NIN', 'ESP')) %>% 
+  dplyr::filter(!StationCode %in% c("NIN", "ESP")) %>% 
   planktonr::pr_remove_outliers(2)
 PolCPR <- planktonr::pr_get_PolicyData("CPR", join = "st_nearest_feature") %>% planktonr::pr_remove_outliers(2)
 PolLTM <- planktonr::pr_get_PolicyData("LTM") %>% planktonr::pr_remove_outliers(2)
@@ -90,7 +90,7 @@ fMapDatap <- planktonr::pr_get_FreqMap("P")
 
 legdat <- data.frame(
   text = c("Absent", "Seen in 25%", "50%", "75%", "100 % of Samples","Absent", "Seen in 25%", "50%", "75%", "100 % of Samples"),
-  colnames = c('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'),
+  colnames = c("a", "b", "c", "d", "e", "f", "g", "h", "i", "j"),
   size = c(2,5,5,5,5,1,5,5,5,5),
   yt = c(1.2,1.2,1.2,1.2,1.2),
   xt = c(1,2,3,4,5),
@@ -101,43 +101,22 @@ legdat <- data.frame(
 legendPlot <- ggplot2::ggplot() +
   ggplot2::geom_point(data = legdat, ggplot2::aes(x, y, size = size, colour = colnames)) +
   ggplot2::scale_color_manual(values = c("lightblue1", "skyblue3", "dodgerblue2", "blue1", "navyblue", "#CCFFCC", "#99FF99", "#669933", "#009900", "#006600")) + 
-  ggplot2::geom_text(data = legdat, ggplot2::aes(x= xt, y= yt, label = text)) +
-  ggplot2::geom_text(ggplot2::aes(x= c(5.5,5.5), y= c(1.1,1), label = c("CPR", "NRS"))) +
+  ggplot2::geom_text(data = legdat, ggplot2::aes(x = xt, y = yt, label = text)) +
+  ggplot2::geom_text(ggplot2::aes(x = c(5.5,5.5), y = c(1.1,1), label = c("CPR", "NRS"))) +
   ggplot2::theme_void() +
-  ggplot2::theme(legend.position = 'none')
-legendPlot
+  ggplot2::theme(legend.position = "none")
 
-# Progress Map
-PMapData <- planktonr::pr_get_ProgressMap(c("NRS", "CPR"))
 
-PMapDatan <- dplyr::bind_rows(planktonr::pr_get_Indices("NRS", "Z"), planktonr::pr_get_Indices("NRS", "P")) %>% 
-  dplyr::filter(Parameters == "ZoopAbundance_m3" | Parameters == "PhytoAbundance_CellsL") %>% 
-  tidyr::pivot_wider(names_from = Parameters, values_from = Values) %>% 
-  dplyr::rename(Name = StationName) %>% 
-  dplyr::select(-StationCode) %>% 
-  dplyr::mutate(Survey = "NRS")
-
-PMapDatac <- dplyr::bind_rows(planktonr::pr_get_Indices("CPR", "Z"), planktonr::pr_get_Indices("CPR", "P")) %>% 
-  dplyr::filter(Parameters == "ZoopAbundance_m3" | Parameters == "PhytoAbundance_Cellsm3") %>% 
-  tidyr::drop_na(Values) %>%
-  tidyr::pivot_wider(names_from = Parameters, values_from = Values) %>% 
-  dplyr::mutate(PhytoAbundance_Cellsm3 = PhytoAbundance_Cellsm3/1e3, 
-                Survey = "CPR") %>% 
-  dplyr::rename(PhytoAbundance_CellsL = PhytoAbundance_Cellsm3, 
-                Name = BioRegion)
-
-PMapData2 <- dplyr::bind_rows(PMapDatan, PMapDatac) %>% 
-  dplyr::select(-c(Year_Local,Month_Local , tz))
+## Progress Map
+PMapData <- planktonr::pr_get_ProgressMapData(c("NRS", "CPR"))
+PMapData2 <- planktonr::pr_get_ProgressMapData(c("NRS", "CPR"), interactive = TRUE) #%>% dplyr::filter(Survey == "CPR" & Name == "Southern Ocean Region")
 
 ## Using the Long Time Series Moorings Products
 ## NRS climatologies
 
-library(tidync)
-library(planktonr)
-
 #TODO when these are accessible from AODN, make into a real planktonr function and change file path
 pr_get_mooringTS <- function(Stations, Depth, Names){
-  if(Stations == 'PHB'){
+  if(Stations == "PHB"){
     file <- tidync::tidync(file.path("data-raw/LMTS", "PH100_CLIM.nc"))
   } else {
     file <- tidync::tidync(file.path("data-raw/LMTS", paste0("NRS", Stations, "_CLIM.nc")))
@@ -155,23 +134,23 @@ pr_get_mooringTS <- function(Stations, Depth, Names){
 
 Stations <- planktonr::pr_get_NRSStation() %>%
   dplyr::select(.data$StationCode) %>%
-  dplyr::filter(!.data$StationCode %in% c('NIN', 'ESP', 'PH4'))
+  dplyr::filter(!.data$StationCode %in% c("NIN", "ESP", "PH4"))
 Stations <- rep(Stations$StationCode, 3)
 
 Depths <- c(rep(0, 7), 
             32, 24, 20, 8, 10, 20, 28, # mean MLD
             80, 100, 50, 20, 20, 60, 100) # max depth of sampling
 
-Names <- c(rep('Surface', 7),
-           rep('MLD', 7),
-           rep('Bottom', 7))
+Names <- c(rep("Surface", 7),
+           rep("MLD", 7),
+           rep("Bottom", 7))
 
 MooringTS <- purrr::pmap_dfr(list(Stations, Depths, Names), pr_get_mooringTS) %>%
   planktonr::pr_add_StationName() %>%
   planktonr::pr_reorder()
 
 pr_get_mooringClim <- function(Stations){
-  if(Stations == 'PHB'){
+  if(Stations == "PHB"){
     file <- tidync::tidync(file.path("data-raw/LMTS", "PH100_CLIM.nc"))
   } else {
     file <- tidync::tidync(file.path("data-raw/LMTS", paste0("NRS", Stations, "_CLIM.nc")))

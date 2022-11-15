@@ -94,7 +94,7 @@ mod_NutrientsBGC_server <- function(id){
       
       planktonr::pr_plot_NRSmap(selected())
       
-    }) %>% bindCache(input$station)
+    }, bg = "transparent") %>% bindCache(input$station)
     
     # add text information 
     output$PlotExp <- renderText({

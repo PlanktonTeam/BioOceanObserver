@@ -45,7 +45,7 @@ mod_PhytoTsNRS_server <- function(id){
 
     output$plotmap <- renderPlot({
       planktonr::pr_plot_NRSmap(selectedData())
-    }) %>% bindCache(input$Site)
+    }, bg = "transparent") %>% bindCache(input$Site)
 
     # add text information
     output$PlotExp1 <- renderText({
