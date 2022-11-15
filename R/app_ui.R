@@ -31,16 +31,14 @@ app_ui <- function(request) {
                             We aim to enhance the availability and understanding of biological data and make it 
                             accessible to broader and non-specialist audiences in order to accelerate the next 
                             generation of scientific insights."),
-                                 shiny::HTML("Data was sourced from Australia's <a href='https://imos.org.au'> Integrated Marine Observing System (IMOS)</a>,
-                             - IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). 
-                            It is operated by a consortium of institutions as an unincorporated joint venture, with 
-                            the University of Tasmania as Lead Agent."),
-                                 h3("Code"),
-                                 p("This project is entirely open source, as are all the IMOS data underlying it. All the 
-                            code for this tool are freely available on GitHub. We welcome collaborators and pull 
-                            requests are gratefully accepted."),
-                                 h3("Who we are"),
-                                 p("This tool was originally conceived and developed by Dr Jason Everett (UQ/CSIRO/UNSW) 
+                                 shiny::br(),
+                                 shiny::br(),
+                                 shiny::HTML("This project is entirely open source, as are all the IMOS data underlying it. All the 
+                            code for this tool are freely available on <a href='https://github.com/PlanktonTeam/IMOS_BioOceanObserver'>GitHub</a>. 
+                            We welcome collaborators and pull requests are gratefully accepted."),
+                                 shiny::br(),
+                                 shiny::br(),
+                            shiny::HTML("This tool was originally conceived and developed by Dr Jason Everett (UQ/CSIRO/UNSW) 
                             and Claire Davies (CSIRO). Jason is a biological oceanographer and Claire is a plankton 
                             ecologist. Both have a strong interest in open data science and encouraging increased 
                             data uptake to solve real world problems."),
@@ -56,9 +54,7 @@ app_ui <- function(request) {
                                  shiny::HTML("'<i>Data was sourced from Australia’s Integrated Marine Observing System (IMOS) – IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). It is operated by a consortium of institutions as an unincorporated joint venture, with the University of Tasmania as Lead Agent'.</i>"),
                                  shiny::br(),
                                  shiny::HTML("For more information about acknowledging IMOS, see <a href = https://imos.org.au/acknowledging-us> here</a>."),
-                                 h3("The IMOS plankton team is on facebook"),
-                                 p("Like or follow us @", tags$a(href="https://www.facebook.com/imosaustralianplanktonsurvey", "IMOS plankton team on facebook")
-                                 ))))),
+                          )))),
              tabPanel("Snapshot",
                       fluidPage(
                         value = "snap", mod_Snapshot_ui("Snapshot_ui_1"))
