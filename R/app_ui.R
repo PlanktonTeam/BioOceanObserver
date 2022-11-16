@@ -19,11 +19,10 @@ app_ui <- function(request) {
                                      "enable-rounded" = TRUE), #https://rstudio.github.io/bslib/articles/bslib.html#custom
              selected = "Welcome", 
              tabPanel("Welcome",
-                      
                       fluidPage(
                         fluidRow(
                           column(4,
-                                 img(src = "www/BOO_Hex2.png", width = "95%")),
+                                 img(src = "www/BOO_Hex.png", width = "95%")),
                           column(8,
                                  shiny::h2("Welcome to The Biological Ocean Observer"),
                                  shiny::HTML("The goal of this site is to Integrate, Analyse and Visualise data collected by the 
