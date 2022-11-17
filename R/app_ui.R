@@ -100,10 +100,9 @@ app_ui <- function(request) {
                       )),
              tabPanel("Larval Fish",
                       tabsetPanel(id = 'fish', type = "pills",
-                                  tabPanel("Time Series",
-                                           img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")),
-                                  tabPanel("Spatial Analysis",
-                                           img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")),
+                                  # tabPanel("Time Series",
+                                  #          img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")),
+                                  tabPanel(value = "fspat", "Spatial Analysis", mod_LFishSpatial_ui("LFishSpatial_1"))
                       )),
              tabPanel("Environmental Data",
                       tabsetPanel(id = 'env', type = "pills",

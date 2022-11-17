@@ -12,44 +12,46 @@ mod_PhytoSpatial_ui <- function(id){
   nsPhytoSpatial <- NS(id)
   
   tagList(
-    sidebarPanel(
-      selectizeInput(inputId = nsPhytoSpatial('species'), label = "Select a phytoplankton species", choices = unique(fMapDatap$Taxon), 
-                     selected = "Tripos furca")
-    ),
-    mainPanel(
-      tabsetPanel(id = "NRSspatp",
-                  tabPanel("Observation maps", value = 1, 
-                           h6(textOutput(nsPhytoSpatial("DistMapExp"), container = span)),
-                           fluidRow(
-                             column(width = 6,
-                                    leaflet::leafletOutput(nsPhytoSpatial("plot2a"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
-                                    leaflet::leafletOutput(nsPhytoSpatial("plot2c"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
+    sidebarLayout(
+      sidebarPanel(
+        selectizeInput(inputId = nsPhytoSpatial('species'), label = "Select a phytoplankton species", choices = unique(fMapDatap$Taxon), 
+                       selected = "Tripos furca")
+      ),
+      mainPanel(
+        tabsetPanel(id = "NRSspatp",
+                    tabPanel("Observation maps", value = 1, 
+                             h6(textOutput(nsPhytoSpatial("DistMapExp"), container = span)),
+                             fluidRow(
+                               column(width = 6,
+                                      leaflet::leafletOutput(nsPhytoSpatial("plot2a"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
+                                      leaflet::leafletOutput(nsPhytoSpatial("plot2c"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                               ),
+                               column(width = 6,
+                                      leaflet::leafletOutput(nsPhytoSpatial("plot2b"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
+                                      leaflet::leafletOutput(nsPhytoSpatial("plot2d"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                               )
                              ),
-                             column(width = 6,
-                                    leaflet::leafletOutput(nsPhytoSpatial("plot2b"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
-                                    leaflet::leafletOutput(nsPhytoSpatial("plot2d"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                             column(width = 6, br(), 
+                                    plotOutput(nsPhytoSpatial("plot2e"), height = 50)
                              )
-                           ),
-                           column(width = 6, br(), 
-                                  plotOutput(nsPhytoSpatial("plot2e"), height = 50)
-                           )
-                  ),        
-                  #tabPanel("Species Distribution maps", value = 2, 
-                  #                 h6(textOutput(nsPhytoSpatial("SDMsMapExp"), container = span))#,
-                  #                 plotOutput(nsPhytoSpatial("SDMs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                  #        ),
-                  tabPanel("Species Temperature Index graphs", value = 2, 
-                           h6(textOutput(nsPhytoSpatial("STIsExp"), container = span)),
-                           plotOutput(nsPhytoSpatial("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                  ),
-                  tabPanel("Species Diurnal Behviour", value = 3, 
-                           h6(textOutput(nsPhytoSpatial("SDBsExp"), container = span)),
-                           plotOutput(nsPhytoSpatial("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                  ),
-                  tabPanel("Species Details", value = 4, 
-                           shiny::h2("Phytoplankton Species Information"),
-                           shiny::dataTableOutput(nsPhytoSpatial("DataTable")),
-                  ),
+                    ),        
+                    #tabPanel("Species Distribution maps", value = 2, 
+                    #                 h6(textOutput(nsPhytoSpatial("SDMsMapExp"), container = span))#,
+                    #                 plotOutput(nsPhytoSpatial("SDMs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                    #        ),
+                    tabPanel("Species Temperature Index graphs", value = 2, 
+                             h6(textOutput(nsPhytoSpatial("STIsExp"), container = span)),
+                             plotOutput(nsPhytoSpatial("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                    ),
+                    tabPanel("Species Diurnal Behviour", value = 3, 
+                             h6(textOutput(nsPhytoSpatial("SDBsExp"), container = span)),
+                             plotOutput(nsPhytoSpatial("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                    ),
+                    tabPanel("Species Details", value = 4, 
+                             shiny::h2("Phytoplankton Species Information"),
+                             shiny::dataTableOutput(nsPhytoSpatial("DataTable")),
+                    ),
+        )
       )
     )
   )
