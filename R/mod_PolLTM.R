@@ -18,7 +18,8 @@ mod_PolLTM_ui <- function(id){
       mainPanel(id = "EOV paramters from Long Term Monitoring", 
                 h6(htmlOutput(nsPolLTM("PlotExp1"), container = span)),
                 h6(verbatimTextOutput(nsPolLTM("PlotExp5"))),
-                plotOutput(nsPolLTM("timeseries1"), height = 1000) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
+                plotOutput(nsPolLTM("timeseries1"), height = 1000) %>% 
+                  shinycssloaders::withSpinner(color="#0dc5c1"), 
                 # h6(verbatimTextOutput(nsPolLTM("PlotExp3")),
                 div(style="display:inline-block; float:right; width:60%",
                     fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),

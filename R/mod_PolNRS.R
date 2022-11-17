@@ -18,7 +18,8 @@ mod_PolNRS_ui <- function(id){
       mainPanel(id = "EOV Biomass by NRS", 
                 h6(htmlOutput(nsPolNRS("PlotExp1"), container = span)),
                 # h6(verbatimTextOutput(nsPolNRS("PlotExp5"))),
-                plotOutput(nsPolNRS("timeseries1"), height = 1600) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
+                plotOutput(nsPolNRS("timeseries1"), height = 1600) %>% 
+                  shinycssloaders::withSpinner(color="#0dc5c1"), 
                 # h6(verbatimTextOutput(nsPolNRS("PlotExp3")),
                    div(style="display:inline-block; float:right; width:60%",
                        fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
