@@ -166,11 +166,11 @@ MooringClim <- purrr::map_dfr(Stations, pr_get_mooringClim) %>%
 
 
 # Get Species Info for each Taxa
-SpInfoP <- pr_get_SpeciesInfo(Type = "P")
-SpInfoZ <- pr_get_SpeciesInfo(Type = "Z")
+SpInfoP <- planktonr::pr_get_SpeciesInfo(Type = "P")
+SpInfoZ <- planktonr::pr_get_SpeciesInfo(Type = "Z")
 
 # Get Larval Fish Data 
-LFData <- pr_get_LFData()
+LFData <- planktonr::pr_get_LFData()
 
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, Pico, LTnuts,
@@ -183,9 +183,6 @@ usethis::use_data(Nuts, Pigs, Pico, LTnuts,
                   stiz, stip, daynightz, daynightp, PMapData2,
                   SpInfoP, SpInfoZ, LFData,
                   overwrite = TRUE, internal = TRUE)
-
-# usethis::use_data(Nuts,
-#                   overwrite = TRUE, internal = TRUE)
 
 save(Nuts, Pigs, Pico, LTnuts, 
      fMapDataz, fMapDatap, legendPlot,
