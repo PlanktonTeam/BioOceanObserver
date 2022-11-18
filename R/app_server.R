@@ -27,27 +27,41 @@ app_server <- function( input, output, session ) {
 ## only run if selected by tab - this should be home page for each Tab level
     ### Snapshot page
     observeEvent(input$navbar, {
-      if(input$navbar == "Snapshot") {
-        mod_Snapshot_server("Snapshot_ui_1") 
+      
+      if(input$navbar == "Home") {
+        mod_home_server("Home_ui_1") 
       }
+      
+      # if(input$navbar == "Snapshot") {
+      #   mod_Snapshot_server("Snapshot_ui_1") 
+      # }
+      # 
       if(input$navbar == "EOVs") {
         mod_PolNRS_server("PolNRS_ui_1")
       }
+      
       if(input$navbar == "Microbes") {
         mod_MicroTsNRS_server("MicroTsNRS_ui_1")
       }
-      if(input$navbar == "Zooplankton") {
-        mod_ZooTsNRS_server("ZooTsNRS_ui_1")
-      }
+      
       if(input$navbar == "Phytoplankton") {
         mod_PhytoTsNRS_server("PhytoTsNRS_ui_1")
       }
+      
+      if(input$navbar == "Zooplankton") {
+        mod_ZooTsNRS_server("ZooTsNRS_ui_1")
+      }
+
+      if(input$navbar == "Larval Fish") {
+        mod_LFishSpatial_server("LFishSpatial_1")
+      }
+      
       if(input$navbar == "Environmental Data") {
         mod_NutrientsBGC_server("NutrientsBGC_ui_1")
       }
       
-      if(input$navbar == "Help") {
-        mod_help_server("help_ui_1")
+      if(input$navbar == "Information") {
+        mod_info_server("info_ui_1")
       }
     })
       

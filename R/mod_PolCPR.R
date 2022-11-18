@@ -12,16 +12,15 @@ mod_PolCPR_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        shinydashboard::menuSubItem(text = "Find out more about the BioRegions here", href = "https://soe.environment.gov.au/theme/marine-environment/topic/2016/marine-regions"),
-        shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
         plotOutput(nsPolCPR("plotmap")),
         h6("Note there is very little data in the North and North-west regions"),
         radioButtons(inputId = nsPolCPR("Site"), label = "Select a bioregion", choices = unique(sort(PolCPR$BioRegion)), selected = "Temperate East"),
       ),
       mainPanel(id = "EOV Biomass by CPR", 
-                h6(textOutput(nsPolCPR("PlotExp1"), container = span)),
+                h6(htmlOutput(nsPolCPR("PlotExp1"), container = span)),
                 h6(verbatimTextOutput(nsPolCPR("PlotExp5"))),
-                plotOutput(nsPolCPR("timeseries1"), height = 1000) %>% shinycssloaders::withSpinner(color="#0dc5c1"),
+                plotOutput(nsPolCPR("timeseries1"), height = 1000) %>% 
+                  shinycssloaders::withSpinner(color="#0dc5c1"),
                 # h6(verbatimTextOutput(nsPolCPR("PlotExp3")),
                     div(style="display:inline-block; float:right; width:60%",
                        fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
@@ -84,11 +83,11 @@ mod_PolCPR_server <- function(id){
     }, bg = "transparent") %>% bindCache(input$Site)
     
     # Add text information 
-    output$PlotExp1 <- renderText({
-      "Biomass and diversity are the Essential Ocean Variables (EOVs) for plankton. 
+    output$PlotExp1 <- renderUI({
+      shiny::HTML("Biomass and diversity are the <a href = 'https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441'>Essential Ocean Variables (EOVs)</a> for plankton. 
       These are the important variables that scientists have identified to monitor our oceans.
       They are chosen based on impact of the measurement and the feasiblity to take consistent measurements.
-      They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment"
+      They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment.")
     }) 
     # output$PlotExp3 <- renderText({
     #   paste(" Zooplankton biomass at", input$Site, "is", info()[1,1], info()[1,2],  "\n",
@@ -98,14 +97,15 @@ mod_PolCPR_server <- function(id){
     # }) 
     # 
     # Plot Trends -------------------------------------------------------------
+    #t, l, b, r
     layout1 <- c(
-      patchwork::area(1,1,1,3),  # Text
-      patchwork::area(2,1,2,1),  # Header
-      patchwork::area(3,1,3,3),
-      patchwork::area(4,1,4,3),
-      patchwork::area(5,1,5,1),  # Header
-      patchwork::area(6,1,6,3),
-      patchwork::area(7,1,7,3)
+      patchwork::area(1,1,2,3),  # Text
+      patchwork::area(3,1,3,3),  # Header
+      patchwork::area(4,1,5,3),
+      patchwork::area(6,1,7,3),
+      patchwork::area(8,1,8,3),  # Header
+      patchwork::area(9,1,10,3),
+      patchwork::area(11,1,12,3)
     )
     
     gg_out1 <- reactive({
@@ -125,7 +125,7 @@ mod_PolCPR_server <- function(id){
               " and sampling is ongoing.", " Approximately ", format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
               " nautical miles has been towed in this region. The ", input$Site, " bioregion is characterised by ", 
               unique(stationData()$Features), sep = ""),
-        width = 120, simplify = FALSE)
+        width = 100, simplify = FALSE)
       BioRegionSummary2 <- sapply(BioRegionSummary, paste, collapse = "\n")
       
       
@@ -138,7 +138,8 @@ mod_PolCPR_server <- function(id){
         patchwork::plot_layout(design = layout1) +
         patchwork::plot_annotation(title = input$Site) & 
         ggplot2::theme(title = element_text(size = 20, face = "bold"),
-                       axis.title = element_text(size = 10, face = "plain"),
+                       axis.title = element_text(size = 12, face = "plain"),
+                       axis.text =  element_text(size = 10, face = "plain"),
                        plot.title = element_text(hjust = 0.5))
       
     }) %>% bindCache(input$Site)

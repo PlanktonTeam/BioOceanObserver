@@ -12,15 +12,14 @@ mod_PolNRS_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        shinydashboard::menuSubItem(text = "Find out more about the NRS stations here", href = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver/wiki/National-Reference-Stations"),
-        shinydashboard::menuSubItem(text = "Find out more about EOVs here", href = "https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441"),
         plotOutput(nsPolNRS("plotmap")),
         radioButtons(inputId = nsPolNRS("Site"), label = "Select a station", choices = unique(sort(PolNRS$StationName)), selected = "Maria Island")
       ),
       mainPanel(id = "EOV Biomass by NRS", 
-                h6(textOutput(nsPolNRS("PlotExp1"), container = span)),
+                h6(htmlOutput(nsPolNRS("PlotExp1"), container = span)),
                 # h6(verbatimTextOutput(nsPolNRS("PlotExp5"))),
-                plotOutput(nsPolNRS("timeseries1"), height = 1600) %>% shinycssloaders::withSpinner(color="#0dc5c1"), 
+                plotOutput(nsPolNRS("timeseries1"), height = 1600) %>% 
+                  shinycssloaders::withSpinner(color="#0dc5c1"), 
                 # h6(verbatimTextOutput(nsPolNRS("PlotExp3")),
                    div(style="display:inline-block; float:right; width:60%",
                        fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
@@ -80,11 +79,11 @@ mod_PolNRS_server <- function(id){
     }, bg = "transparent") %>% bindCache(input$Site)
     
     # Add text information 
-    output$PlotExp1 <- renderText({
-      "Biomass and diversity are the Essential Ocean Variables (EOVs) for plankton. 
+    output$PlotExp1 <- renderUI({
+      shiny::HTML("Biomass and diversity are the <a href = 'https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441'>Essential Ocean Variables (EOVs)</a> for plankton. 
       These are the important variables that scientists have identified to monitor our oceans.
       They are chosen based on impact of the measurement and the feasiblity to take consistent measurements.
-      They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment"
+      They are commonly measured by observing systems and frequently used in policy making and input into reporting such as State of Environment.")
     }) 
     # output$PlotExp3 <- renderText({
     #   paste("Zooplankton biomass at", input$Site, "is", info()[1,1], info()[1,2],  "\n",
@@ -99,17 +98,17 @@ mod_PolNRS_server <- function(id){
     # Plot Trends -------------------------------------------------------------
     layout1 <- c(
       #t, l, b, r
-      patchwork::area(1,1,1,3),
-      patchwork::area(2,1,2,1), # Header
-      patchwork::area(3,1,3,3),
-      patchwork::area(4,1,4,3),
-      patchwork::area(5,1,5,1), # Header
-      patchwork::area(6,1,6,3),
-      patchwork::area(7,1,7,3),
-      patchwork::area(8,1,8,1), # Header
-      patchwork::area(9,1,9,3),
-      patchwork::area(10,1,10,3),
-      patchwork::area(11,1,11,3)
+      patchwork::area(1,1,2,3),
+      patchwork::area(3,1,3,3), # Biomass Header
+      patchwork::area(4,1,5,3),
+      patchwork::area(6,1,7,3),
+      patchwork::area(8,1,8,3), # Diversity Header
+      patchwork::area(9,1,10,3),
+      patchwork::area(11,1,12,3),
+      patchwork::area(13,1,13,3), # Physical Header 
+      patchwork::area(14,1,15,3),
+      patchwork::area(16,1,17,3),
+      patchwork::area(18,1,19,3)
     )
     
     
@@ -132,7 +131,7 @@ mod_PolNRS_server <- function(id){
               ". The station has been sampled since ", stationData()$StationStartDate, " ", stationData()$now,
               ". ", input$Site, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, 
               " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = ""), 
-        width = 120, simplify = FALSE)
+        width = 100, simplify = FALSE)
       StationSummary2 <- sapply(StationSummary, paste, collapse = "\n")
       
       patchwork::wrap_elements(
@@ -145,7 +144,8 @@ mod_PolNRS_server <- function(id){
         p3 + p4 + p5 + patchwork::plot_layout(design = layout1) +
         patchwork::plot_annotation(title = input$Site) & 
         ggplot2::theme(title = element_text(size = 20, face = "bold"),
-                       axis.title = element_text(size = 10, face = "plain"),
+                       axis.title = element_text(size = 12, face = "plain"),
+                       axis.text =  element_text(size = 10, face = "plain"),
                        plot.title = element_text(hjust = 0.5))
       
     }) %>% bindCache(input$Site)
