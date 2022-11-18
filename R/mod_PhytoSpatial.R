@@ -47,10 +47,6 @@ mod_PhytoSpatial_ui <- function(id){
                              h6(textOutput(nsPhytoSpatial("SDBsExp"), container = span)),
                              plotOutput(nsPhytoSpatial("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
-                    tabPanel("Species Details", value = 4, 
-                             shiny::h2("Phytoplankton Species Information"),
-                             shiny::dataTableOutput(nsPhytoSpatial("DataTable")),
-                    ),
         )
       )
     )
@@ -110,35 +106,24 @@ mod_PhytoSpatial_server <- function(id){
     
     # Create dot map of distribution
     observeEvent({input$NRSspatp == 1}, {
-      
       output$plot2a <- leaflet::renderLeaflet({
-        
         plotlist()[[1]]
-        
       }) %>% bindCache(input$species)
       
       output$plot2b <- leaflet::renderLeaflet({
-        
         plotlist()[[2]]
-        
       }) %>% bindCache(input$species)
       
       output$plot2c <- leaflet::renderLeaflet({
-        
         plotlist()[[3]]
-        
       }) %>% bindCache(input$species)
       
       output$plot2d <- leaflet::renderLeaflet({
-        
         plotlist()[[4]]
-        
       }) %>% bindCache(input$species)
       
       output$plot2e <- renderPlot({
-        
         legendPlot
-        
       }) %>% bindCache(input$species)
       
     })
@@ -224,13 +209,7 @@ mod_PhytoSpatial_server <- function(id){
     #     ggplot2::theme_void()
     # })
     
-    observeEvent({input$NRSspatp == 4}, {
-      output$DataTable <- shiny::renderDataTable(
-        SpInfoP, 
-        options = list(
-          pageLength = 250))
-    })
-    
+   
   })
 }
 

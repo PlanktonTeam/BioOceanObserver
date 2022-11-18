@@ -12,7 +12,10 @@ mod_LFishSpatial_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
+        shiny::HTML("This data originates from......"),
         selectizeInput(inputId = nsLFishSpatial("species"), label = "Select larval fish", choices = unique(LFData$Species2))
+        #TODO Add a link to the worms site of the form https://www.marinespecies.org/aphia.php?p=taxdetails&id=110045
+        
       ),
       mainPanel(
         leaflet::leafletOutput(nsLFishSpatial("LFMap"), width = "100%") %>% 
@@ -36,7 +39,7 @@ mod_LFishSpatial_server <- function(id){
       req(input$species)
       validate(need(!is.na(input$species), "Error: Please select a species"))
       
-      pr_plot_LarvalFishDist(LFData, SpeciesName = "Acanthuridae_37437900", interactive = TRUE)
+      planktonr::pr_plot_LarvalFishDist(LFData, SpeciesName = input$species, interactive = TRUE)
       
     }) %>% bindCache(input$species)
     

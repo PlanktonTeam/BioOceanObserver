@@ -7,10 +7,10 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
-mod_help_ui <- function(id){
-  ns <- NS(id)
+mod_info_ui <- function(id){
+  nsInfo <- NS(id)
   shiny::tagList(
-    tabsetPanel(id = "help",# type = "pills",
+    tabsetPanel(id = "info",# type = "pills",
                 tabPanel("Frequently Asked Questions", value = 1,
                          shiny::fluidPage(
                            shiny::h2(shiny::strong()), 
@@ -56,6 +56,7 @@ mod_help_ui <- function(id){
                 ),
                 tabPanel("References", value = 4,
                          shiny::fluidPage(
+                           shiny::h3("References"),
                            shiny::h5("To further understand the data, collection methods etc."),
                            shiny::HTML("<li>Eriksen RS, Davies CH, Bonham P, Coman FE, Edgar S, McEnnulty FR, McLeod D, Miller MJ, Rochester W, Slotwinski A, Tonks ML, Uribe-Palomino J and Richardson AJ (2019). <em>Australia’s Long-Term Plankton Observations: The Integrated Marine Observing System National Reference Station Network</em>. Front. Mar. Sci. 6:161. doi: 10.3389/fmars.2019.00161. <a href = https://www.frontiersin.org/articles/10.3389/fmars.2019.00161/full target = _blank> Website</a>."),
                            shiny::HTML("<li>A.J. Richardson, A.W. Walne, A.W.G. John, T.D. Jonas, J.A. Lindley, D.W. Sims, D. Stevens, M. Witt, (2006). <em>Using continuous plankton recorder data</em>. Progress in Oceanography, 68.1, doi: 10.1016/j.pocean.2005.09.011. <a href = https://www.sciencedirect.com/science/article/pii/S0079661105001424?via%3Dihub target = _blank> Website</a>."),
@@ -63,11 +64,10 @@ mod_help_ui <- function(id){
                            shiny::HTML("<li>IMOS Continuous PLankton Recorder Survey website. <a href = https://imos.org.au/facilities/shipsofopportunity/auscontinuousplanktonrecorder target = _blank> Website</a>."),
                            
                            shiny::h5("These references have used this data"),
-                           shiny::HTML("<li>Richardson A.J, Eriksen R, Moltmann T, Hodgson-Johnston I, Wallis J.R. (2020). <em>State and Trends of Australia’s Ocean Report</em>. Integrated Marine Observing System (IMOS). <a href = https://www.imosoceanreport.org.au/about/ target = _blank> Website</a>.")
-                         )
-                ),
-                tabPanel("Package citations", value = 5,
-                         shiny::fluidPage(
+                           shiny::HTML("<li>Richardson A.J, Eriksen R, Moltmann T, Hodgson-Johnston I, Wallis J.R. (2020). <em>State and Trends of Australia’s Ocean Report</em>. Integrated Marine Observing System (IMOS). <a href = https://www.imosoceanreport.org.au/about/ target = _blank> Website</a>."),
+                           shiny::br(),
+                           shiny::br(),
+                           shiny::h3("Package citations"),
                            shiny::h5("This Web App is possible thanks to the following packages"),
                            shiny::HTML("<li>Chang W, Cheng J, Allaire J, Sievert C, Schloerke B, Xie Y, Allen J, McPherson J, Dipert A, Borges B (2022). <em>shiny: Web Application Framework for R</em>. R package version 1.7.2, <a href = https://CRAN.R-project.org/package=shiny target = _blank> Website</a>."),
                            shiny::HTML("<li>Fay C, Guyader V, Rochette S, Girard C (2022). <em>golem: A Framework for Robust Shiny Applications</em>. R package version 0.3.3, <a href = https://CRAN.R-project.org/package=golem target = _blank> Website</a>.<br>"),
@@ -91,22 +91,46 @@ mod_help_ui <- function(id){
                            shiny::HTML("<li>Henry L, Wickham H (2022). <em>tidyselect: Select from a Set of Strings</em>. R package version 1.1.2, <a href = https://CRAN.R-project.org/package=tidyselect target = _blank> Website</a>.")
                          ),
                 ),
-  )
+                
+                tabPanel("Phytoplankton Species Details", value = 5, 
+                         shiny::h2("Phytoplankton Species Information"),
+                         shiny::dataTableOutput(nsInfo("PDataTable")),
+                ),
+                tabPanel("Zooplankton Species Details", value = 6, 
+                         shiny::h2("Zooplankton Species Information"),
+                         shiny::dataTableOutput(nsInfo("ZDataTable")),
+                ),
+    )
   )
 }
-    
+
 #' Help Server Functions
 #'
 #' @noRd 
-mod_help_server <- function(id){
+mod_info_server <- function(id){
   moduleServer( id, function(input, output, session){
-    ns <- session$ns
- 
+    
+    observeEvent({input$NRSspatp == 5}, {
+      output$PDataTable <- shiny::renderDataTable(
+        SpInfoP, 
+        options = list(
+          pageLength = 250))
+    })
+    
+    observeEvent({input$NRSspatz == 6}, {
+      output$ZDataTable <- shiny::renderDataTable(
+        SpInfoZ, 
+        options = list(
+          pageLength = 250))
+    })
+    
+    
+    
   })
 }
-    
+
 ## To be copied in the UI
-# mod_Help_ui("Help_1")
-    
+# mod_info_ui("Info_1")
+
 ## To be copied in the server
-# mod_Help_server("Help_1")
+# mod_info_server("Info_1")
