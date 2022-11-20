@@ -29,13 +29,9 @@ app_server <- function( input, output, session ) {
     observeEvent(input$navbar, {
       
       if(input$navbar == "Home") {
-        mod_home_server("Home_ui_1") 
+        mod_home_server("home_1") 
       }
       
-      # if(input$navbar == "Snapshot") {
-      #   mod_Snapshot_server("Snapshot_ui_1") 
-      # }
-      # 
       if(input$navbar == "EOVs") {
         mod_PolNRS_server("PolNRS_ui_1")
       }
@@ -61,7 +57,7 @@ app_server <- function( input, output, session ) {
       }
       
       if(input$navbar == "Information") {
-        mod_info_server("info_ui_1")
+        mod_info_server("info_1")
       }
     })
       
