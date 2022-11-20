@@ -18,14 +18,8 @@ app_ui <- function(request) {
                                      # "border-color" = "red",
                                      "enable-rounded" = TRUE), #https://rstudio.github.io/bslib/articles/bslib.html#custom
              selected = "Home", 
-             tabPanel("Home",
-                      fluidPage(
-                        value = "home", mod_home_ui("home_ui_1"))
+             tabPanel("Home", mod_home_ui("home_1")
              ),
-             # tabPanel("Snapshot",
-             #          fluidPage(
-             #            value = "snap", mod_Snapshot_ui("Snapshot_ui_1"))
-             # ),
              tabPanel("EOVs",
                       tabsetPanel(id = 'pol', type = "pills",
                                   tabPanel(value = "nrs", "National Reference Stations", mod_PolNRS_ui("PolNRS_ui_1")),
@@ -65,7 +59,7 @@ app_ui <- function(request) {
                                   tabPanel(value = 'moor', "NRS Moorings", mod_MoorBGC_ui("MoorBGC_ui_1")))),
              tabPanel("Information",
                       fluidPage(
-                        value = "info", mod_info_ui("info_ui_1"))
+                        value = "info", mod_info_ui("info_1"))
              ),
              navbarMenu("", icon = icon("share-alt"),
                         tabPanel(tags$a("", href = "https://twitter.com/intent/tweet?url=https%3A%2F%2Fjaseeverett.shinyapps.io%2FIMOS_BioOceanObserver&text=Check%20out%20the%20fantastic%20new%20IMOS%20Biological%20Ocean%20Obervatory%20being%20developed", target = "_blank",

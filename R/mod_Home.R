@@ -9,6 +9,7 @@
 #' @importFrom shiny NS tagList 
 mod_home_ui <- function(id){
   nsHome <- NS(id)
+  
   tagList(
     tabsetPanel(id = "home",# type = "pills",
                 tabPanel("Welcome", value = 1,
@@ -86,6 +87,11 @@ mod_home_ui <- function(id){
                 
                 tabPanel("Sampling Summary", value = 4,
                          # Add plots to highlight species etc.
+                         # Add number of species found
+                         # Last one found....
+                         # Species accumulation curve...
+                         # Add fun facts
+                         # Add papers
                 ),
                 
                 
@@ -102,13 +108,21 @@ mod_home_ui <- function(id){
 #' @noRd 
 mod_home_server <- function(id){
   moduleServer( id, function(input, output, session){
-    ns <- session$ns
+    ns <- session$nsHome
+    
+    
+    observeEvent({input$home == 2}, {
+      output$progplot <- leaflet::renderLeaflet({
+        planktonr::pr_plot_ProgressMap(PMapData2, interactive = TRUE)
+      })
+    })
+    
     
   })
 }
 
 ## To be copied in the UI
-# mod_Home_ui("Home_1")
+# mod_home_ui("home_1")
 
 ## To be copied in the server
-# mod_Home_server("Home_1")
+# mod_home_server("home_1")
