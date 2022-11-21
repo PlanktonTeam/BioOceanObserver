@@ -1,10 +1,15 @@
 ## script for all RData 
 library(planktonr)
 
+# Trip Data
+datNRSTrip <- pr_get_NRSTrips(Type = c("P", "Z"))
+datCPRTrip <- pr_get_CPRTrips()
+
 # NRS indices data
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z") 
 datNRSp <- planktonr::pr_get_Indices("NRS", "P") 
 datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
+
 datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
   tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
   dplyr::mutate(MLD_m = dplyr::case_when(.data$MLDtemp_m <= .data$MLDsal_m ~ .data$MLDtemp_m,
@@ -172,6 +177,14 @@ SpInfoZ <- planktonr::pr_get_SpeciesInfo(Type = "Z")
 # Get Larval Fish Data 
 LFData <- planktonr::pr_get_LFData()
 
+
+# Get Taxa Accumulation Info
+PSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "P")
+PSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Z")
+ZSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "Z")
+ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Z")
+
+
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, Pico, LTnuts,
                   fMapDataz, fMapDatap, legendPlot,
@@ -181,7 +194,8 @@ usethis::use_data(Nuts, Pigs, Pico, LTnuts,
                   datNRSz, datNRSp, datNRSm, datNRSw,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
                   stiz, stip, daynightz, daynightp, PMapData2,
-                  SpInfoP, SpInfoZ, LFData,
+                  SpInfoP, SpInfoZ, LFData, datNRSTrip, datCPRTrip,
+                  PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
                   overwrite = TRUE, internal = TRUE)
 
 save(Nuts, Pigs, Pico, LTnuts, 
@@ -192,7 +206,8 @@ save(Nuts, Pigs, Pico, LTnuts,
      datNRSz, datNRSp, datNRSm, datNRSw,
      NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
      stiz, stip, daynightz, daynightp, PMapData2, 
-     SpInfoP, SpInfoZ,
+     SpInfoP, SpInfoZ, datNRSTrip, datCPRTrip,
+     PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
      file = "data/sysdata.rda")
 
 # Write to csv to save onto the DAP

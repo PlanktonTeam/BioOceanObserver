@@ -18,11 +18,11 @@ mod_MicroTsNRS_ui <- function(id){
         #   checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE)
         # ),
         conditionalPanel(
-          condition="input.NRSmts == 2", 
+          condition = "input.NRSmts == 2", 
           selectizeInput(inputId = nsMicroTsNRS("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
         ),
         conditionalPanel(
-          condition="input.NRSmts == 2 | input.NRSmts == 1", 
+          condition = "input.NRSmts == 1 | input.NRSmts == 2", 
           checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE),
           sliderInput(nsMicroTsNRS("DatesSlide"), "Dates:", min = as.POSIXct('2009-01-01 00:00',
                                                                              format = "%Y-%m-%d %H:%M",
@@ -33,13 +33,14 @@ mod_MicroTsNRS_ui <- function(id){
           selectInput(inputId = nsMicroTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSm$Parameters), style = "simple"), selected = "Bacterial_Richness"),
         ),
         conditionalPanel(
-          condition="input.NRSmts == 3", 
+          condition = "input.NRSmts == 3", 
           selectInput(inputId = nsMicroTsNRS("p1"), label = 'Select an x parameter', choices = planktonr::pr_relabel(unique(datNRSm$Parameters), style = "simple"), selected = "Eukaryote_Chlorophyll_Index"),
           selectInput(inputId = nsMicroTsNRS("p2"), label = 'Select a y parameter', 
                       choices = planktonr::pr_relabel(c("Prochlorococcus_CellsmL", "Synecochoccus_CellsmL", "Picoeukaryotes_CellsmL"), 
                                                       style = "simple"), selected = "Prochlorococcus_CellsmL")
         ),
-        absolutePanel(
+        conditionalPanel(
+          condition = "input.NRSmts == 1 | input.NRSmts == 2 | input.NRSmts == 3", 
           plotOutput(nsMicroTsNRS("plotmap")),
           checkboxGroupInput(inputId = nsMicroTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSm$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala"))
         )

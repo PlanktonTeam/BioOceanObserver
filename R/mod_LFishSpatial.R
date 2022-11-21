@@ -10,22 +10,20 @@
 mod_LFishSpatial_ui <- function(id){
   nsLFishSpatial <- NS(id)
   tagList(
-    sidebarLayout(
-      sidebarPanel(
-        shiny::HTML("This data originates from......"),
-        selectizeInput(inputId = nsLFishSpatial("species"), label = "Select larval fish", choices = unique(LFData$Species2))
-        #TODO Add a link to the worms site of the form https://www.marinespecies.org/aphia.php?p=taxdetails&id=110045
-        
-      ),
-      mainPanel(
-        leaflet::leafletOutput(nsLFishSpatial("LFMap"), width = "100%") %>% 
+    shiny::fluidPage(    
+      shiny::fluidRow(
+        # shiny::column(width = 3, shiny::HTML("<strong>Select Larval Fish:</strong>")),
+        shiny::column(width = 6, offset = 6,
+                      selectizeInput(inputId = nsLFishSpatial("species"), label = NULL, choices = unique(LFData$Species2), width = "100%"),
+        )),
+      shiny::fluidRow(
+        leaflet::leafletOutput(nsLFishSpatial("LFMap"), width = "100%", height = "700px") %>% 
           shinycssloaders::withSpinner(color="#0dc5c1"),
-        
-        )
+      ),
     )
   )
 }
-    
+
 #' LFishSpatial Server Functions
 #'
 #' @noRd 
@@ -33,27 +31,53 @@ mod_LFishSpatial_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     
-    
-    LFMapr <- reactive({
+    LFDatar <- reactive({
       
-      req(input$species)
-      validate(need(!is.na(input$species), "Error: Please select a species"))
+      dat <- LFData %>%
+        dplyr::filter(.data$Species2 == input$species & .data$Count > 0) %>% 
+        dplyr::distinct(.data$Latitude, .data$Longitude, .keep_all = TRUE)
       
-      planktonr::pr_plot_LarvalFishDist(LFData, SpeciesName = input$species, interactive = TRUE)
-      
+      return(dat)
     }) %>% bindCache(input$species)
     
-    
+    # Render basemap
     output$LFMap <- leaflet::renderLeaflet({
-      LFMapr()
-    }) %>% bindCache(input$species)
+      
+      leaflet::leaflet(LFData %>% 
+                         dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
+        leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
+        leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%
+        leaflet::addCircleMarkers(lng = ~ Longitude,
+                                  lat = ~ Latitude,
+                                  color = "grey",
+                                  opacity = 1,
+                                  fillOpacity = 1,
+                                  radius = 2)
+      
+    })
     
- 
+    
+    # Add points for chosen larval fish
+    leaflet::observe({
+      
+      leaflet::leafletProxy("LFMap", data = LFDatar()) %>%
+        leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%
+        leaflet::removeMarker(layerId = "Present") %>%
+        leaflet::addCircleMarkers(data = LFDatar(), 
+                                  lng = ~ Longitude,
+                                  lat = ~ Latitude,
+                                  color = "blue",
+                                  opacity = 1,
+                                  fillOpacity = 1,
+                                  radius = 5,
+                                  layerId = "Present")
+    })
+    
   })
 }
-    
+
 ## To be copied in the UI
 # mod_LFishSpatial_ui("LFishSpatial_1")
-    
+
 ## To be copied in the server
 # mod_LFishSpatial_server("LFishSpatial_1")

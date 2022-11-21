@@ -1,6 +1,6 @@
 Package: imosboo
 Title: Visualisation of IMOS biological data
-Version: 0.0.0.9000
+Version: 0.0.1.0000
 Authors@R: c(person('Claire H.', 'Davies', email = 'claire.davies@csiro.au', role = c('cre', 'aut')),
              person('Jason D.', 'Everett', email = 'jase.everett@gmail.com', role = 'aut'))
 Description: A visualisation tool for IMOS biologial data.
@@ -15,7 +15,7 @@ Imports:
     lubridate,
     magrittr,
     patchwork,
-    planktonr (>= 0.1.2.0000),
+    planktonr (>= 0.1.5.0000),
     rlang,
     rnaturalearth,
     shiny (>= 1.6.0),

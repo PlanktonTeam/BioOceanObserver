@@ -27,7 +27,6 @@ mod_PolNRS_ui <- function(id){
                        fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action")))
       )
     )
-  # )
 }
 
 #' Policy Server Functions
