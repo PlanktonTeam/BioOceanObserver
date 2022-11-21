@@ -162,8 +162,7 @@ mod_PhytoSpatial_server <- function(id){
           need(nrow(selectedSTI()) > 20, "Not enough data for this copepod species")
         )
         
-        plotsti <- planktonr::pr_plot_STI(selectedSTI())
-        plotsti
+        planktonr::pr_plot_STI(selectedSTI())
         
       }) %>% bindCache(input$species)
       
@@ -191,8 +190,7 @@ mod_PhytoSpatial_server <- function(id){
           need(length(unique(selecteddn()$daynight)) == 2 | nrow(selecteddn()) > 20, "Not enough data for this copepod species to plot")
         )
         
-        plotdn <- planktonr::pr_plot_DayNight(selecteddn())
-        plotdn
+        planktonr::pr_plot_DayNight(selecteddn())
         
       }) %>% bindCache(input$species)
       

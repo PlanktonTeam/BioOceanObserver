@@ -34,13 +34,7 @@ fPlanktonSidebar <- function(id, panel_id, input, dat){
       shiny::selectInput(inputId = ns("parameter"), 
                          label = 'Select a parameter', 
                          choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), 
-                         selected = selectedVar)),
-    shiny::conditionalPanel(
-      condition = paste0("input.", panel_id, " == 3"), 
-      shiny::checkboxInput(inputId = ns("scaler3"), 
-                           label = strong("Change the plot scale to percent"), 
-                           value = FALSE)),
-    shiny::absolutePanel(
+                         selected = selectedVar),
       shiny::plotOutput(ns("plotmap")),
       shiny::checkboxGroupInput(inputId = ns(idSite), 
                                 label = "Select a station", 
@@ -55,7 +49,12 @@ fPlanktonSidebar <- function(id, panel_id, input, dat){
                          value = c(as.POSIXct('2009-01-01 00:00',
                                               format = "%Y-%m-%d %H:%M",
                                               tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d"),
-      
+    ),
+    shiny::conditionalPanel(
+      condition = paste0("input.", panel_id, " == 3"), 
+      shiny::checkboxInput(inputId = ns("scaler3"), 
+                           label = strong("Change the plot scale to percent"), 
+                           value = FALSE),
     )
   )
 }
@@ -105,17 +104,13 @@ fPLanktonPanel <- function(id, panel_id){
 fEnviroPanel <- function(id){
   ns <- NS(id)
   mainPanel(
-    tabsetPanel(type = "pills",
-                tabPanel("Trend Analysis", value = 1,
-                         h6(textOutput(ns("PlotExp"), container = span)),
-                         plotOutput(ns("timeseries1")) %>% 
-                           shinycssloaders::withSpinner(color="#0dc5c1"),
-                         div(style="display:inline-block; float:right; width:60%",
-                             fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
-                             fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
-                             fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
-                )
-    )
+    h6(textOutput(ns("PlotExp"), container = span)),
+    plotOutput(ns("timeseries1")) %>% 
+      shinycssloaders::withSpinner(color="#0dc5c1"),
+    div(style="display:inline-block; float:right; width:60%",
+        fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+        fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+        fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
   )
 }
 
