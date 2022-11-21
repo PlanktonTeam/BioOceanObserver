@@ -82,21 +82,36 @@ mod_home_ui <- function(id){
                            shinycssloaders::withSpinner()
                 ),
                 tabPanel("Sampling Status", value = 3,
-                         # Add Gant Chart
+                         plotOutput(nsHome("gantt"), height = 700) %>% 
+                           shinycssloaders::withSpinner(color="#0dc5c1")
                 ),
                 
                 tabPanel("Sampling Summary", value = 4,
                          # Add plots to highlight species etc.
-                         # Add number of species found
-                         # Last one found....
-                         # Species accumulation curve...
-                         # Add fun facts
-                         # Add papers
+                         shiny::h3("What functional groups do we commonly see?"),
+                         # shiny::fluidRow(
+                         # shiny::column(2),
+                         # shiny::column(8, 
+                         plotOutput(nsHome("TaxaPie")) %>% 
+                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                         # shiny::column(2),
+                         shiny::h3("How many taxa are we identifying?"),
+                         plotOutput(nsHome("SpAccum"), height = 700) %>% 
+                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                         shiny::br(),
+                         shiny::br(),  
+                         shiny::h3("Fun Facts"),
+                         shiny::h6("(Refresh the page for a different one)"),
+                         shiny::textOutput(nsHome("Fact")),
+                         shiny::br(),
+                         shiny::br(),  
+                         shiny::h3("IMOS Plankton Paper"),
+                         shiny::h6("(Refresh the page for a different one)"),
+                         shiny::textOutput(nsHome("Paper")),
+                         shiny::br(),
+                         shiny::br()
+                         
                 ),
-                
-                
-                
-                
                 
     ) 
     
@@ -107,7 +122,7 @@ mod_home_ui <- function(id){
 #'
 #' @noRd 
 mod_home_server <- function(id){
-  moduleServer( id, function(input, output, session){
+  moduleServer(id, function(input, output, session){
     ns <- session$nsHome
     
     
@@ -118,9 +133,100 @@ mod_home_server <- function(id){
     })
     
     
-  })
-}
-
+    observeEvent({input$home == 3}, {
+      
+      output$gantt <- shiny::renderPlot({
+        ggCPR <- planktonr::pr_plot_Gantt(datCPRTrip, Survey = "CPR")
+        ggNRS <- planktonr::pr_plot_Gantt(datNRSTRip, Survey = "NRS")
+        
+        p <- patchwork::wrap_plots(ggCPR, ggNRS, ncol = 1) &
+          ggplot2::theme(text = ggplot2::element_text(size = 16, face = "bold"))
+        return(p)
+      })
+    })
+    
+    
+    observeEvent({input$home == 4}, {
+      
+      output$SpAccum <- shiny::renderPlot({
+        p1 <- planktonr::pr_plot_TaxaAccum(PSpNRSAccum, Survey = "NRS", Type = "P")
+        p2 <- planktonr::pr_plot_TaxaAccum(ZSpNRSAccum, Survey = "NRS", Type = "Z")
+        p3 <- planktonr::pr_plot_TaxaAccum(PSpCPRAccum, Survey = "CPR", Type = "P")
+        p4 <- planktonr::pr_plot_TaxaAccum(ZSpCPRAccum, Survey = "CPR", Type = "Z")
+        
+        p <- patchwork::wrap_plots(p1, p2, p3, p4, ncol = 2) &
+          ggplot2::theme(text = ggplot2::element_text(size = 16, face = "bold"))
+        return(p)
+      })
+      
+      output$Paper <- shiny::renderText({
+        planktonr::pr_get_Papers()
+      })
+      
+      output$Fact <- shiny::renderText({
+        planktonr::pr_get_Facts()
+      })
+      
+      output$TaxaPie <- shiny::renderPlot({
+        
+        p1 <- ggplot2::ggplot(data = NRSfgp %>% dplyr::group_by(Parameters) %>% dplyr::summarise(mean = mean(Values, na.rm = TRUE)), 
+                              ggplot2::aes(x = "", y = mean, fill = Parameters)) +
+          ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
+          ggplot2::coord_polar("y", start = 0) +
+          ggplot2::theme_void() +  # remove background, grid, numeric labels
+          ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) + 
+          ggplot2::scale_fill_brewer(palette = "Set1") +
+          ggplot2::guides(fill = ggplot2::guide_legend(title = "Phytoplankton", nrow = 2, title.position = "top", title.hjust = 0.5, title.theme = ggplot2::element_text(face = "bold"))) +
+          ggplot2::ggtitle("NRS")
+        
+        p2 <- ggplot2::ggplot(data = CPRfgp %>% dplyr::group_by(Parameters) %>% dplyr::summarise(mean = mean(Values, na.rm = TRUE)), 
+                              ggplot2::aes(x = "", y = mean, fill = Parameters)) +
+          ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
+          ggplot2::coord_polar("y", start = 0) +
+          ggplot2::theme_void() +  # remove background, grid, numeric labels
+          ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) + 
+          ggplot2::scale_fill_brewer(palette = "Set1") +
+          ggplot2::guides(fill = ggplot2::guide_legend(title = "Phytoplankton", nrow = 2, title.position = "top", title.hjust = 0.5, title.theme = ggplot2::element_text(face = "bold"))) +
+          ggplot2::ggtitle("CPR")
+        
+        p3 <- ggplot2::ggplot(data = NRSfgz %>% dplyr::group_by(Parameters) %>% dplyr::summarise(mean = mean(Values, na.rm = TRUE)), 
+                              ggplot2::aes(x = "", y = mean, fill = Parameters)) +
+          ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
+          ggplot2::coord_polar("y", start = 0) +
+          ggplot2::theme_void() +  # remove background, grid, numeric labels
+          ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) + 
+          ggplot2::scale_fill_brewer(palette = "Set1") +
+          ggplot2::guides(fill = ggplot2::guide_legend(title = "Zooplankton", nrow = 2, title.position = "top", title.hjust = 0.5, title.theme = ggplot2::element_text(face = "bold"))) +
+          ggplot2::ggtitle("NRS")
+        
+        p4 <- ggplot2::ggplot(data = CPRfgz %>% dplyr::group_by(Parameters) %>% dplyr::summarise(mean = mean(Values, na.rm = TRUE)), 
+                              ggplot2::aes(x = "", y = mean, fill = Parameters)) +
+          ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
+          ggplot2::coord_polar("y", start = 0) +
+          ggplot2::theme_void() +  # remove background, grid, numeric labels
+          ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) + 
+          ggplot2::scale_fill_brewer(palette = "Set1") +
+          ggplot2::guides(fill = ggplot2::guide_legend(title = "Zooplankton", 
+                                                       nrow = 2, 
+                                                       title.position = "top", 
+                                                       title.hjust = 0.5, 
+                                                       title.theme = ggplot2::element_text(face = "bold"))) +
+          ggplot2::ggtitle("CPR")
+        
+        p <- (patchwork::wrap_plots(p1, p2, guides = "collect", ncol = 2) &
+                ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = element_text(face = "bold"))) | 
+          (patchwork::wrap_plots(p3, p4, guides = "collect", ncol = 2) &
+             ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = element_text(face = "bold")))
+        
+        return(p)
+        
+        
+      })
+      
+    })
+  }
+  
+  )}  
 ## To be copied in the UI
 # mod_home_ui("home_1")
 
