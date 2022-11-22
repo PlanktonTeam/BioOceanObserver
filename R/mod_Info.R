@@ -91,12 +91,34 @@ mod_info_ui <- function(id){
                            shiny::HTML("<li>Henry L, Wickham H (2022). <em>tidyselect: Select from a Set of Strings</em>. R package version 1.1.2, <a href = https://CRAN.R-project.org/package=tidyselect target = _blank> Website</a>.")
                          ),
                 ),
-                
-                tabPanel("Phytoplankton Species Details", value = 5, 
+                tabPanel("Sampling Details", value = 5,
+                         shiny::fluidPage(
+                           shiny::h3("NRS"),
+                           shiny::dataTableOutput(nsInfo("NRSDataTable")),
+                           shiny::h3("Zooplankton"),
+                           shiny::h5("Zooplankton is collected with a Heron drop net sampling only on the descent, 60cm diameter, 100 micron mesh net. This is a depth integrated sample analysed by light microscopy"),
+                           shiny::h3("Phytoplankton"),
+                           shiny::h5("Equal volumes of water are collected from all niskin bottles (0-50m) to make up a 1L composite sample for phytoplankton analysis using light microscopy."),
+                           shiny::h3("Nutrients & Salinity"),
+                           shiny::h5("Duplicate samples are taken from each niskin bottle (0-50m), DAR and YON samples are only 0 - 20m. 
+                                     PHB also collects at 75 and 100m. MAI at 60, 70 & 80m"),
+                           shiny::h3("Carbon"),
+                           shiny::h5("DIC & alkalinity samples are taken from each niskin bottle (0-50m), DAR and YON samples are only 0 - 20m. 
+                                     PHB also collects at 60, 75 & 100m. MAI at 70 & 80m"),                         
+                           shiny::h3("TSS"),
+                           shiny::h5("Triplicate samples (~4L) and a blank of surface water"),                         
+                           shiny::h3("Pigments"),
+                           shiny::h5("Duplicate samples (~4L) from surface water and the lower WQM (~20m)"),                         
+                           shiny::h3("Microbial & Picoplankton"),
+                           shiny::h5("Samples (~2L microbes, ~50-100 uL Picoplankton) are taken from each niskin bottle (0-50m), DAR and YON samples are only 0 - 20m. 
+                                     PHB also collects at 75 and 100m. MAI at 70 & 80m.")
+                           )
+                ),
+                tabPanel("Phytoplankton Species Details", value = 6, 
                          shiny::h2("Phytoplankton Species Information"),
                          shiny::dataTableOutput(nsInfo("PDataTable")),
                 ),
-                tabPanel("Zooplankton Species Details", value = 6, 
+                tabPanel("Zooplankton Species Details", value = 7, 
                          shiny::h2("Zooplankton Species Information"),
                          shiny::dataTableOutput(nsInfo("ZDataTable")),
                 ),
@@ -110,21 +132,24 @@ mod_info_ui <- function(id){
 mod_info_server <- function(id){
   moduleServer( id, function(input, output, session){
     
-    observeEvent({input$NRSspatp == 5}, {
+    observeEvent({input$Info == 5}, {
+      output$NRSDataTable <- shiny::renderDataTable(
+        NRSStation)
+    })
+
+        observeEvent({input$Info == 6}, {
       output$PDataTable <- shiny::renderDataTable(
         SpInfoP, 
         options = list(
           pageLength = 250))
     })
     
-    observeEvent({input$NRSspatz == 6}, {
+    observeEvent({input$Info == 7}, {
       output$ZDataTable <- shiny::renderDataTable(
         SpInfoZ, 
         options = list(
           pageLength = 250))
     })
-    
-    
     
   })
 }

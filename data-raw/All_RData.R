@@ -1,9 +1,14 @@
 ## script for all RData 
 library(planktonr)
+library(tidyverse)
 
 # Trip Data
-datNRSTrip <- pr_get_NRSTrips(Type = c("P", "Z"))
-datCPRTrip <- pr_get_CPRTrips()
+datNRSTrip <- planktonr::pr_get_NRSTrips(Type = c("P", "Z"))
+datCPRTrip <- planktonr::pr_get_CPRTrips()
+NRSStation <- planktonr::pr_get_NRSStation() %>% 
+  dplyr::filter(ProjectName == 'NRS') %>% 
+  dplyr::select(-c('IMCRA', 'IMCRA_PB', 'ProjectName')) %>% 
+  dplyr::arrange(desc(Latitude))
 
 # NRS indices data
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z") 
@@ -138,7 +143,7 @@ pr_get_mooringTS <- function(Stations, Depth, Names){
 }
 
 Stations <- planktonr::pr_get_NRSStation() %>%
-  dplyr::select(.data$StationCode) %>%
+  dplyr::select('StationCode') %>%
   dplyr::filter(!.data$StationCode %in% c("NIN", "ESP", "PH4"))
 Stations <- rep(Stations$StationCode, 3)
 
@@ -189,7 +194,7 @@ ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Z")
 usethis::use_data(Nuts, Pigs, Pico, LTnuts,
                   fMapDataz, fMapDatap, legendPlot,
                   MooringTS, MooringClim,
-                  PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo,
+                  PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, NRSStation,
                   datCPRz, datCPRp, datCPRw,
                   datNRSz, datNRSp, datNRSm, datNRSw,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
@@ -201,7 +206,7 @@ usethis::use_data(Nuts, Pigs, Pico, LTnuts,
 save(Nuts, Pigs, Pico, LTnuts, 
      fMapDataz, fMapDatap, legendPlot,
      MooringTS, MooringClim,
-     PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo,
+     PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, NRSStation,
      datCPRz, datCPRp, datCPRw,
      datNRSz, datNRSp, datNRSm, datNRSw,
      NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
