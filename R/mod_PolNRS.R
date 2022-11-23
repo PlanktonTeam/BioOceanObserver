@@ -110,18 +110,45 @@ mod_PolNRS_server <- function(id){
       patchwork::area(18,1,19,3)
     )
     
+    layout2 <- c(
+      #t, l, b, r
+      patchwork::area(1,1,2,3),
+      patchwork::area(3,1,3,3), # Biomass Header
+      patchwork::area(4,1,5,3),
+      patchwork::area(6,1,7,3),
+      patchwork::area(8,1,8,3), # Diversity Header
+      patchwork::area(9,1,10,3),
+      patchwork::area(11,1,12,3),
+      patchwork::area(13,1,13,3), # Physical Header 
+      patchwork::area(14,1,15,3),
+      patchwork::area(16,1,17,3),
+      patchwork::area(18,1,19,3),
+      patchwork::area(20,1,20,3),  # Biochemistry Header 
+      patchwork::area(21,1,22,3), # O2
+      patchwork::area(23,1,24,3), # NH4
+      patchwork::area(25,1,26,3), # NO2
+      patchwork::area(27,1,28,3), # NO3
+      patchwork::area(29,1,30,3)  # 02
+    )
     
     gg_out1 <- reactive({
       
-      p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Biomass_mgm3", trans = "log10", col = "cornflowerblue", labels = "no") 
-      p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = "darkolivegreen4") 
+      p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Biomass_mgm3", trans = "log10", col = col12[1], labels = "no") 
+      p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col12[2]) 
       
-      p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonCopepodDiversity", trans = "log10", col = "cornflowerblue", labels = "no") 
-      p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", trans = "log10", col = "darkolivegreen4")
+      p3 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonCopepodDiversity", trans = "log10", col = col12[3], labels = "no") 
+      p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col12[4])
       
-      p3 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDTemperature_degC", trans = "identity", col = "darkviolet", labels = "no")
-      p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "PigmentChla_mgm3", trans = "log10", col = "darkgoldenrod", labels = "no") 
-      p5 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDSalinity_PSU", trans = "identity", col = "darkred")
+      p5 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDTemperature_degC", trans = "identity", col = col12[5], labels = "no")
+      p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "PigmentChla_mgm3", trans = "log10", col = col12[6], labels = "no") 
+      p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDSalinity_PSU", trans = "identity", col = col12[7])
+      
+      p8 <- planktonr::pr_plot_EOV(outputs(), EOV = "Ammonium_umolL", trans = "identity", col = col12[8], labels = "no")
+      p9 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrate_umolL", trans = "identity", col = col12[9], labels = "no")
+      p10 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrite_umolL", trans = "identity", col = col12[10], labels = "no")
+      p11 <- planktonr::pr_plot_EOV(outputs(), EOV = "Phosphate_umolL", trans = "log10", col = col12[11], labels = "no") 
+      p12 <- planktonr::pr_plot_EOV(outputs(), EOV = "Oxygen_umolL", trans = "identity", col = col12[12])
+      
       
       StationSummary <- strwrap(
         paste("The ", input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), 
@@ -138,9 +165,11 @@ mod_PolNRS_server <- function(id){
         grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20)) +
         p1 + p2 + 
         grid::textGrob("Diversity EOVs", gp = grid::gpar(fontsize=20)) + 
-        p6 + p7 + 
+        p3 + p4 + 
         grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20)) + 
-        p3 + p4 + p5 + patchwork::plot_layout(design = layout1) +
+        p5 + p6 + p7 + patchwork::plot_layout(design = layout1) +
+        grid::textGrob("Biochemical EOVs", gp = grid::gpar(fontsize=20)) + 
+        p8 + p9 + p10 + p11 + p12 + patchwork::plot_layout(design = layout2) +
         patchwork::plot_annotation(title = input$Site) & 
         ggplot2::theme(title = element_text(size = 20, face = "bold"),
                        axis.title = element_text(size = 12, face = "plain"),
