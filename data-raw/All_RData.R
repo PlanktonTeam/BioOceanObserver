@@ -2,6 +2,11 @@
 library(planktonr)
 library(tidyverse)
 
+## Set up colours for the app
+col12 <- RColorBrewer::brewer.pal(12, "Paired") %>% 
+  stringr::str_replace("#FFFF99", "#000000") # Replace yellow with black
+
+
 # Trip Data
 datNRSTrip <- planktonr::pr_get_NRSTrips(Type = c("P", "Z"))
 datCPRTrip <- planktonr::pr_get_CPRTrips()
@@ -25,17 +30,17 @@ datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
                       names_to = "Parameters", values_to = "Values")
 
 # CPR time series data
-datCPRz <- planktonr::pr_get_Indices("CPR", "Z", join = "st_nearest_feature") %>% 
+datCPRz <- planktonr::pr_get_Indices("CPR", "Z", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
   droplevels()
 
-datCPRp <- planktonr::pr_get_Indices("CPR", "P", join = "st_nearest_feature") %>% 
+datCPRp <- planktonr::pr_get_Indices("CPR", "P", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
   droplevels()
 
-datCPRw <- planktonr::pr_get_Indices("CPR", "W", join = "st_nearest_feature")  %>% # just PCI atm
+datCPRw <- planktonr::pr_get_Indices("CPR", "W", near_dist_km = 250)  %>% # just PCI atm
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
   droplevels()
@@ -44,11 +49,11 @@ datCPRw <- planktonr::pr_get_Indices("CPR", "W", join = "st_nearest_feature")  %
 NRSfgz <- planktonr::pr_get_FuncGroups("NRS", "Z")
 NRSfgp <- planktonr::pr_get_FuncGroups("NRS", "P")
 
-CPRfgz <- planktonr::pr_get_FuncGroups("CPR", "Z", join = "st_nearest_feature") %>% 
+CPRfgz <- planktonr::pr_get_FuncGroups("CPR", "Z", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
   droplevels()
-CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P", join = "st_nearest_feature") %>% 
+CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
   droplevels()
@@ -88,8 +93,10 @@ daynightp <- planktonr::pr_get_DayNight("P")
 PolNRS <- planktonr::pr_get_PolicyData("NRS") %>% 
   dplyr::filter(!StationCode %in% c("NIN", "ESP")) %>% 
   planktonr::pr_remove_outliers(2)
-PolCPR <- planktonr::pr_get_PolicyData("CPR", join = "st_nearest_feature") %>% planktonr::pr_remove_outliers(2)
-PolLTM <- planktonr::pr_get_PolicyData("LTM") %>% planktonr::pr_remove_outliers(2)
+PolCPR <- planktonr::pr_get_PolicyData("CPR", near_dist_km = 250) %>% 
+  planktonr::pr_remove_outliers(2)
+PolLTM <- planktonr::pr_get_PolicyData("LTM") %>% 
+  planktonr::pr_remove_outliers(2)
 
 NRSinfo <- planktonr::pr_get_PolicyInfo("NRS")
 CPRinfo <- planktonr::pr_get_PolicyInfo("CPR")
@@ -201,7 +208,7 @@ usethis::use_data(Nuts, Pigs, Pico, LTnuts,
                   stiz, stip, daynightz, daynightp, PMapData2,
                   SpInfoP, SpInfoZ, LFData, datNRSTrip, datCPRTrip,
                   PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
-                  overwrite = TRUE, internal = TRUE)
+                  col12, overwrite = TRUE, internal = TRUE)
 
 save(Nuts, Pigs, Pico, LTnuts, 
      fMapDataz, fMapDatap, legendPlot,
@@ -213,7 +220,7 @@ save(Nuts, Pigs, Pico, LTnuts,
      stiz, stip, daynightz, daynightp, PMapData2, 
      SpInfoP, SpInfoZ, datNRSTrip, datCPRTrip,
      PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
-     file = "data/sysdata.rda")
+     col12, file = "data/sysdata.rda")
 
 # Write to csv to save onto the DAP
 # write_csv(Nuts, "Nuts.csv")
