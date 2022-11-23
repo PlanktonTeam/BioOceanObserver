@@ -125,8 +125,8 @@ legendPlot <- ggplot2::ggplot() +
 
 
 ## Progress Map
-PMapData <- planktonr::pr_get_ProgressMapData(c("NRS", "CPR"))
-PMapData2 <- planktonr::pr_get_ProgressMapData(c("NRS", "CPR"), interactive = TRUE) #%>% dplyr::filter(Survey == "CPR" & Name == "Southern Ocean Region")
+PMapData <- planktonr::pr_get_ProgressMapData(c("NRS", "CPR"), interactive = FALSE, near_dist_km = 250)
+PMapData2 <- planktonr::pr_get_ProgressMapData(c("NRS", "CPR"), interactive = TRUE, near_dist_km = 250)
 
 ## Using the Long Time Series Moorings Products
 ## NRS climatologies
