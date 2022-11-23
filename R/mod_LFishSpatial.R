@@ -58,7 +58,7 @@ mod_LFishSpatial_server <- function(id){
     
     
     # Add points for chosen larval fish
-    leaflet::observe({
+    observe({
       
       leaflet::leafletProxy("LFMap", data = LFDatar()) %>%
         leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%
