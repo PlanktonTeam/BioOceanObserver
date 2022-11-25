@@ -12,18 +12,16 @@ mod_MicroTsNRS_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        # conditionalPanel(
-        #   condition="input.NRSmts == 1",  
-        #   # Select whether to overlay smooth trend line 
-        #   checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE)
-        # ),
         conditionalPanel(
-          condition = "input.NRSmts == 2", 
-          selectizeInput(inputId = nsMicroTsNRS("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
+          condition="input.NRSmts == 1",
+          checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE)
+        ),
+        conditionalPanel(
+          condition = "input.NRSmts == 2",
+                  selectizeInput(inputId = nsMicroTsNRS("interp"), label = strong("Interpolate data?"), choices = c("Yes", "No"), selected = "Yes")
         ),
         conditionalPanel(
           condition = "input.NRSmts == 1 | input.NRSmts == 2", 
-          checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE),
           sliderInput(nsMicroTsNRS("DatesSlide"), "Dates:", min = as.POSIXct('2009-01-01 00:00',
                                                                              format = "%Y-%m-%d %H:%M",
                                                                              tz = "Australia/Hobart"), max = Sys.time(), 
@@ -36,8 +34,8 @@ mod_MicroTsNRS_ui <- function(id){
           condition = "input.NRSmts == 3", 
           selectInput(inputId = nsMicroTsNRS("p1"), label = 'Select an x parameter', choices = planktonr::pr_relabel(unique(datNRSm$Parameters), style = "simple"), selected = "Eukaryote_Chlorophyll_Index"),
           selectInput(inputId = nsMicroTsNRS("p2"), label = 'Select a y parameter', 
-                      choices = planktonr::pr_relabel(c("Prochlorococcus_CellsmL", "Synecochoccus_CellsmL", "Picoeukaryotes_CellsmL"), 
-                                                      style = "simple"), selected = "Prochlorococcus_CellsmL")
+                      choices = planktonr::pr_relabel(c("Prochlorococcus_cellsmL", "Synecochoccus_cellsmL", "Picoeukaryotes_cellsmL"), 
+                                                      style = "simple"), selected = "Prochlorococcus_cellsmL")
         ),
         conditionalPanel(
           condition = "input.NRSmts == 1 | input.NRSmts == 2 | input.NRSmts == 3", 
@@ -67,7 +65,7 @@ mod_MicroTsNRS_ui <- function(id){
                     ),
                     tabPanel("Trend analysis by depth", value=2,
                              h6(textOutput(nsMicroTsNRS("PlotExp3"), container = span)),  
-                             plotOutput(nsMicroTsNRS("timeseries3"), height = 1000) %>% 
+                             plotOutput(nsMicroTsNRS("timeseries3"), height = 'auto') %>% 
                                shinycssloaders::withSpinner(color="#0dc5c1"),
                              div(style="display:inline-block; float:right; width:60%",
                                  fButtons(id, button_id = "downloadPlot3", label = "Plot", Type = "Download"),
@@ -137,7 +135,8 @@ mod_MicroTsNRS_server <- function(id){
       "A plot of selected indices from the NRS around Australia, as a time series, a monthly climatology and an annual mean averaged across all depths."
     }) 
     output$PlotExp3 <- renderText({
-      "A plot of microbial indices from the NRS around Australia, as a time series and a monthly climatology by depth"
+      "A plot of microbial indices from the NRS around Australia, as a time series and a monthly climatology by depth. 
+      If interpolated the dots represent interpolate data points, if raw data is used the dots represent actual samples"
     }) 
     output$PlotExp4 <- renderText({
       "A plot of microbial indices against abundance measure from the NRS around Australia"
@@ -223,23 +222,31 @@ mod_MicroTsNRS_server <- function(id){
     
     observeEvent({input$NRSmts == 2}, {
       
-    gg_out3 <-  reactive({  
+      selectedDataDepth <- reactive({
+        selectedDataDepth <- selectedData() %>% 
+          tidyr::drop_na() %>%
+          dplyr::mutate(SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'month')) %>%
+          planktonr::pr_remove_outliers(2) %>%
+          droplevels() %>%
+          planktonr::pr_reorder()
+        
+      }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
-      trend <-  input$smoother
+      gg_out3 <-  reactive({  
       
-      if(input$scaler1){
-        trans <- "log10"
-      } else {
-        trans <- "identity"
-      }
-      
-      planktonr::pr_plot_Enviro(selectedData(), Trend = trend, trans = trans)
-      
-    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$smoother, input$scaler1)
+        interp <-  input$interp
+        
+        if(interp == 'Yes'){
+          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), Interpolation = TRUE)
+        } else {
+          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), Interpolation = FALSE)
+        }
+        
+      }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$interp)
     
     output$timeseries3 <- renderPlot({
       gg_out3()
-    })
+    }, height = function() {length(unique(selectedDataDepth()$StationName)) * 200})
     
       # Download -------------------------------------------------------
       output$downloadData3 <- fDownloadButtonServer(input, selectedData(), "Enviro") # Download csv of data

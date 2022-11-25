@@ -54,6 +54,7 @@ app_ui <- function(request) {
              tabPanel("Environmental Data",
                       tabsetPanel(id = 'env', type = "pills",
                                   tabPanel(value = "bgc", "NRS BGC Nutrients", mod_NutrientsBGC_ui("NutrientsBGC_ui_1")),
+                                  tabPanel(value = "pico", "NRS BGC Picoplankton", mod_PicoBGC_ui("PicoBGC_ui_1")),
                                   tabPanel(value = "pigs", "NRS BGC Pigments", mod_PigmentsBGC_ui("PigmentsBGC_ui_1")),
                                   tabPanel(value = "water", "NRS BGC Water", mod_WaterBGC_ui("WaterBGC_ui_1")),
                                   tabPanel(value = 'moor', "NRS Moorings", mod_MoorBGC_ui("MoorBGC_ui_1")))),
