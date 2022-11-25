@@ -59,11 +59,10 @@ CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P", near_dist_km = 250) %>%
   droplevels()
 
 # BGC Environmental variables data
-Nuts <- planktonr::pr_get_NRSChemistry() %>% 
-  dplyr::filter(Parameters != "SecchiDepth_m") %>% 
-  planktonr::pr_remove_outliers(2)
+Nuts <- planktonr::pr_get_NRSEnvContour('Chemistry') %>% 
+  dplyr::filter(Parameters != "SecchiDepth_m") 
 Pigs <- planktonr::pr_get_NRSPigments(Format = "binned") %>% planktonr::pr_remove_outliers(2)
-Pico <- planktonr::pr_get_NRSPico() %>% planktonr::pr_remove_outliers(2)
+Pico <- planktonr::pr_get_NRSEnvContour('Pico')
 LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
 
 # get Sat data
@@ -192,7 +191,7 @@ LFData <- planktonr::pr_get_LFData()
 
 # Get Taxa Accumulation Info
 PSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "P")
-PSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Z")
+PSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "P")
 ZSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "Z")
 ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Z")
 
