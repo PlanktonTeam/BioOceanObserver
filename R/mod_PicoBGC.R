@@ -1,4 +1,4 @@
-#' NutrientsBGC UI Function
+#' PicoBGC UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,33 +7,33 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
-mod_NutrientsBGC_ui <- function(id){
-  nsNutrientsBGC <- NS(id)
+mod_PicoBGC_ui <- function(id){
+  nsPicoBGC <- NS(id)
   
   tagList(
     sidebarLayout(
       sidebarPanel(
-        plotOutput(nsNutrientsBGC("plotmap")),
+        plotOutput(nsPicoBGC("plotmap")),
         # station selector
-        checkboxGroupInput(inputId = nsNutrientsBGC('station'), label = "Select a station", choices = unique(sort(Nuts$StationName)), selected = 'Port Hacking'),
+        checkboxGroupInput(inputId = nsPicoBGC('station'), label = "Select a station", choices = unique(sort(Pico$StationName)), selected = 'Port Hacking'),
         # Date selector
-        sliderInput(nsNutrientsBGC("date"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
+        sliderInput(nsPicoBGC("date"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
                     value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
         # select parameter
-        selectizeInput(inputId = nsNutrientsBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(Nuts$Parameters), style = "simple"), selected = 'Silicate_umolL', multiple = FALSE),
-        #selectizeInput(inputId = nsNutrientsBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
-        # Select whether to interpolate
-        selectizeInput(inputId = nsNutrientsBGC("interp"), label = strong("Interpolate data?"), choices = c("Yes", "No"), selected = "Yes")
+        selectizeInput(inputId = nsPicoBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(Pico$Parameters), style = "simple"), selected = 'Prochlorococcus_cellsmL', multiple = FALSE),
+        #selectizeInput(inputId = nsPicoBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
+        # Select whether to interpolate or not
+        selectizeInput(inputId = nsPicoBGC("interp"), label = strong("Interpolate data"), choices = c("Yes", "No"), selected = "Yes")
       ),
       fEnviroPanel(id = id)
-      )
     )
+  )
 }
 
-#' NutrientsBGC Server Functions
+#' PicoBGC Server Functions
 #'
 #' @noRd 
-mod_NutrientsBGC_server <- function(id){
+mod_PicoBGC_server <- function(id){
   moduleServer( id, function(input, output, session){
     #     select depths
     
@@ -43,14 +43,14 @@ mod_NutrientsBGC_server <- function(id){
       validate(need(!is.na(input$station), "Error: Please select a station."))
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       # updateSelectizeInput(session, "depth", "Select a depth", server = TRUE, 
-      #                      choices = NRSBGCNutrients[NRSBGCNutrients$Station %in% input$station & NRSBGCNutrients$name %in% input$parameter,]$SampleDepth_m)
+      #                      choices = NRSBGCPico[NRSBGCPico$Station %in% input$station & NRSBGCPico$name %in% input$parameter,]$SampleDepth_m)
     })
     
     selected <- reactive({
       req(input$date)
       validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
-      Nuts %>%
+      Pico %>%
         filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$Parameters %in% input$parameter) %>%
@@ -59,16 +59,16 @@ mod_NutrientsBGC_server <- function(id){
     }) %>% bindCache(input$station, input$parameter, input$date)
     
     shiny::exportTestValues(
-      NutrientsBGC = {ncol(selected())},
-      NutrientsBGCRows = {nrow(selected()) > 0},
-      NutrientsBGCProjectisChr = {class(selected()$Project)},
-      NutrientsBGCMonthisNumeric = {class(selected()$Month_Local)},
-      NutrientsBGCDepthisNumeric = {class(selected()$SampleDepth_m)},
-      NutrientsBGCDateisDate = {class(selected()$SampleTime_Local)},
-      NutrientsBGCStationisFactor = {class(selected()$StationName)},
-      NutrientsBGCCodeisChr = {class(selected()$StationCode)},
-      NutrientsBGCParametersisChr = {class(selected()$Parameters)},
-      NutrientsBGCValuesisNumeric = {class(selected()$Values)}
+      PicoBGC = {ncol(selected())},
+      PicoBGCRows = {nrow(selected()) > 0},
+      PicoBGCProjectisChr = {class(selected()$Project)},
+      PicoBGCMonthisNumeric = {class(selected()$Month_Local)},
+      PicoBGCDepthisNumeric = {class(selected()$SampleDepth_m)},
+      PicoBGCDateisDate = {class(selected()$SampleTime_Local)},
+      PicoBGCStationisFactor = {class(selected()$StationName)},
+      PicoBGCCodeisChr = {class(selected()$StationCode)},
+      PicoBGCParametersisChr = {class(selected()$Parameters)},
+      PicoBGCValuesisNumeric = {class(selected()$Values)}
     )
     
     # Create timeseries object the plotOutput function is expecting
@@ -89,8 +89,8 @@ mod_NutrientsBGC_server <- function(id){
     }, height = function() {length(unique(selected()$StationName)) * 200})
     
     # Download -------------------------------------------------------
-    output$downloadData1 <- fDownloadButtonServer(input, selected(), "Nuts") # Download csv of data
-    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Nuts") # Download figure
+    output$downloadData1 <- fDownloadButtonServer(input, selected(), "Pico") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Pico") # Download figure
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 
@@ -101,7 +101,7 @@ mod_NutrientsBGC_server <- function(id){
     
     # add text information 
     output$PlotExp <- renderText({
-      "A plot of nutrients from the NRS around Australia, as a time series and a monthly climatology by depth. 
+      "A plot of picoplankton from the NRS around Australia, as a time series and a monthly climatology by depth. 
       If interpolated the dots represent interpolated data points, if raw data is used the dots represent actual samples"
     }) 
     

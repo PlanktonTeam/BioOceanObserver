@@ -112,6 +112,12 @@ app_server <- function( input, output, session ) {
     })
     
     observeEvent(input$env, {
+      if(input$env == "pico"){
+        mod_PicoBGC_server("PicoBGC_ui_1")
+      }
+    })
+    
+    observeEvent(input$env, {
       if(input$env == "water"){
         mod_WaterBGC_server("WaterBGC_ui_1")
       }
