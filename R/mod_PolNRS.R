@@ -97,38 +97,38 @@ mod_PolNRS_server <- function(id){
     # Plot Trends -------------------------------------------------------------
     layout1 <- c(
       #t, l, b, r
-      patchwork::area(1,1,2,3),
-      patchwork::area(3,1,3,3), # Biomass Header
-      patchwork::area(4,1,5,3),
-      patchwork::area(6,1,7,3),
-      patchwork::area(8,1,8,3), # Diversity Header
-      patchwork::area(9,1,10,3),
-      patchwork::area(11,1,12,3),
-      patchwork::area(13,1,13,3), # Physical Header 
-      patchwork::area(14,1,15,3),
-      patchwork::area(16,1,17,3),
-      patchwork::area(18,1,19,3)
+      patchwork::area(1,1,3,3),
+      patchwork::area(4,1,4,3), # Biomass Header
+      patchwork::area(5,1,6,3),
+      patchwork::area(7,1,8,3),
+      patchwork::area(9,1,9,3), # Diversity Header
+      patchwork::area(10,1,11,3),
+      patchwork::area(12,1,13,3),
+      patchwork::area(14,1,14,3), # Physical Header 
+      patchwork::area(15,1,16,3),
+      patchwork::area(17,1,18,3),
+      patchwork::area(19,1,20,3)
     )
     
     layout2 <- c(
       #t, l, b, r
-      patchwork::area(1,1,2,3),
-      patchwork::area(3,1,3,3), # Biomass Header
-      patchwork::area(4,1,5,3),
-      patchwork::area(6,1,7,3),
-      patchwork::area(8,1,8,3), # Diversity Header
-      patchwork::area(9,1,10,3),
-      patchwork::area(11,1,12,3),
-      patchwork::area(13,1,13,3), # Physical Header 
-      patchwork::area(14,1,15,3),
-      patchwork::area(16,1,17,3),
-      patchwork::area(18,1,19,3),
-      patchwork::area(20,1,20,3),  # Biochemistry Header 
-      patchwork::area(21,1,22,3), # O2
-      patchwork::area(23,1,24,3), # NH4
-      patchwork::area(25,1,26,3), # NO2
-      patchwork::area(27,1,28,3), # NO3
-      patchwork::area(29,1,30,3)  # 02
+      patchwork::area(1,1,3,3),
+      patchwork::area(4,1,4,3), # Biomass Header
+      patchwork::area(5,1,6,3),
+      patchwork::area(7,1,8,3),
+      patchwork::area(9,1,9,3), # Diversity Header
+      patchwork::area(10,1,11,3),
+      patchwork::area(12,1,13,3),
+      patchwork::area(14,1,14,3), # Physical Header 
+      patchwork::area(15,1,16,3),
+      patchwork::area(17,1,18,3),
+      patchwork::area(19,1,20,3),
+      patchwork::area(21,1,21,3),  # Biochemistry Header 
+      patchwork::area(22,1,23,3), # O2
+      patchwork::area(24,1,25,3), # NH4
+      patchwork::area(26,1,27,3), # NO2
+      patchwork::area(28,1,29,3), # NO3
+      patchwork::area(30,1,30,3)  # 02
     )
     
     gg_out1 <- reactive({
