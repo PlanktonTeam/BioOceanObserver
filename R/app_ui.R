@@ -48,7 +48,8 @@ app_ui <- function(request) {
              tabPanel("Larval Fish",
                       tabsetPanel(id = 'fish', type = "pills",
                                   tabPanel(value = "fspat", "Spatial", mod_LFishSpatial_ui("LFishSpatial_1")),
-                                  tabPanel(value = "fseas", "Seasonal", mod_LFishSeason_ui("LFishSeason_1"))
+                                  tabPanel(value = "fseas", "Seasonal", mod_LFishSeason_ui("LFishSeason_1")),
+                                  tabPanel(value = "fdata", "Species Data", mod_LFishData_ui("LFishData_1")),
                       )),
              tabPanel("Environmental Data",
                       tabsetPanel(id = 'env', type = "pills",

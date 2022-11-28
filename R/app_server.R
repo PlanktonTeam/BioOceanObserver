@@ -64,9 +64,9 @@ app_server <- function( input, output, session ) {
   
   ## Run when changing page within tab
   
-
-# EOVs --------------------------------------------------------------------
-
+  
+  # EOVs --------------------------------------------------------------------
+  
   observeEvent(input$pol, {
     
     ### Policy CPR time series data  
@@ -80,13 +80,13 @@ app_server <- function( input, output, session ) {
     
   })
   
-
-# Microbes ----------------------------------------------------------------
-
   
-
-# Phytoplankton -----------------------------------------------------------
-
+  # Microbes ----------------------------------------------------------------
+  
+  
+  
+  # Phytoplankton -----------------------------------------------------------
+  
   observeEvent(input$phyto, {
     
     ### Phytoplankton CPR time series data  
@@ -118,20 +118,23 @@ app_server <- function( input, output, session ) {
   })
   
   
-
-# Larval Fish -------------------------------------------------------------
-
+  
+  # Larval Fish -------------------------------------------------------------
+  
   # Season Larval Fish
   observeEvent(input$fish, {
     if(input$fish == "fseas"){
       mod_LFishSeason_server("LFishSeason_1")
     }
+    if(input$fish == "fdata"){
+      mod_LFishData_server("LFishData_1")
+    }
   })
   
   
-
-# Environmental -----------------------------------------------------------
-
+  
+  # Environmental -----------------------------------------------------------
+  
   observeEvent(input$env, {
     
     ### Pigments 
