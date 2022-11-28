@@ -93,7 +93,7 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("Sampling Details", value = 5,
                          shiny::fluidPage(
-                           shiny::h3("NRS"),
+                           shiny::h2("NRS"),
                            shiny::dataTableOutput(nsInfo("NRSDataTable")),
                            shiny::h3("Zooplankton"),
                            shiny::h5("Zooplankton is collected with a Heron drop net sampling only on the descent, 60cm diameter, 100 micron mesh net. This is a depth integrated sample analysed by light microscopy"),
@@ -108,17 +108,27 @@ mod_info_ui <- function(id){
                            shiny::h3("TSS"),
                            shiny::h5("Triplicate samples (~4L) and a blank of surface water"),                         
                            shiny::h3("Pigments"),
-                           shiny::h5("Duplicate samples (~4L) from surface water and the lower WQM (~20m)"),                         
+                           shiny::h5("Duplicate samples (~4L) from surface water and the lower WQM (~20m). Prior to July 2017 water column samples were taken, these have been excluded here."),                         
                            shiny::h3("Microbial & Picoplankton"),
                            shiny::h5("Samples (~2L microbes, ~50-100 uL Picoplankton) are taken from each niskin bottle (0-50m), DAR and YON samples are only 0 - 20m. 
-                                     PHB also collects at 75 and 100m. MAI at 70 & 80m.")
+                                     PHB also collects at 75 and 100m. MAI at 70 & 80m. Prior to July 2017 water column samples were taken, these have been excluded here."),
+                           shiny::h2("CPR"),
+                           shiny::dataTableOutput(nsInfo("CPRDataTable")),
+                           shiny::h3("PCI"),
+                           shiny::h5("Phytoplankton colour index is counted on every segment towed"),
+                           shiny::h3("Phytoplankton"),
+                           shiny::h5("Phytoplankton is counted by light microscopy as a field of view count (0-20) on the silk. Every 4th segment is counted."),
+                           shiny::h3("Zooplankton"),
+                           shiny::h5("Zooplankton is washed into a bogorov tray and counted by light microscopy.Every 4th segment is counted"),
+                           shiny::h3("Biomass Index"),
+                           shiny::h5("After counting the sample is dried at 60 degrees for 24 hours and weighed for biomass.")
                            )
                 ),
-                tabPanel("Phytoplankton Species Details", value = 6, 
+                tabPanel("Phytoplankton Species Details", value = 7, 
                          shiny::h2("Phytoplankton Species Information"),
                          shiny::dataTableOutput(nsInfo("PDataTable")),
                 ),
-                tabPanel("Zooplankton Species Details", value = 7, 
+                tabPanel("Zooplankton Species Details", value = 8, 
                          shiny::h2("Zooplankton Species Information"),
                          shiny::dataTableOutput(nsInfo("ZDataTable")),
                 ),
@@ -134,17 +144,37 @@ mod_info_server <- function(id){
     
     observeEvent({input$Info == 5}, {
       output$NRSDataTable <- shiny::renderDataTable(
-        NRSStation)
+        NRSStation %>% dplyr::mutate(EndDate = dplyr::case_when(StationCode %in% c('NIN', 'ESP') ~ "2012-03-01",
+                                                                StationCode == 'PH4' ~ '2009-02-24')) %>% 
+          dplyr::select(StationCode:StationStartDate, EndDate, dplyr::everything()) %>% 
+          dplyr::rename(Code = StationCode, Station = StationName, State = StateCode, "Start Date" = StationStartDate, "End Date" = EndDate, "Water Depth (m)" = StationDepth_m,
+                        "Sampling Effort" = SamplingEffort, Region = ManagementRegion)
+        )
     })
-
-        observeEvent({input$Info == 6}, {
+    observeEvent({input$Info == 6}, {
+      output$CPRDataTable <- shiny::renderDataTable(
+        datCPRTrip %>% 
+          dplyr::group_by(BioRegion) %>% 
+          dplyr::summarise(StartDate = min(SampleTime_Local, na.rm = TRUE),
+                          EndDate = max(SampleTime_Local, na.rm = TRUE),
+                          MilesTowed = dplyr::n() * 5,
+                          SamplesCounted = round(dplyr::n()/4,0),
+                          .groups = 'drop') %>% 
+          dplyr::rename("Start Date" = StartDate, "End Date" = EndDate, "Miles Towed" = MilesTowed, "Samples Counted" = SamplesCounted) %>% 
+          dplyr::mutate(Project = ifelse(BioRegion == "Southern Ocean Region", "SO-CPR / AusCPR", "AusCPR"),
+                        Institution = ifelse(BioRegion == "Southern Ocean Region", "AAD / CSIRO", "CSIRO"))
+          
+      )
+    })
+    
+        observeEvent({input$Info == 7}, {
       output$PDataTable <- shiny::renderDataTable(
         SpInfoP, 
         options = list(
           pageLength = 250))
     })
     
-    observeEvent({input$Info == 7}, {
+    observeEvent({input$Info == 8}, {
       output$ZDataTable <- shiny::renderDataTable(
         SpInfoZ, 
         options = list(

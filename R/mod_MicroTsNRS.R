@@ -36,8 +36,7 @@ mod_MicroTsNRS_ui <- function(id){
           condition = "input.NRSmts == 3", 
           selectInput(inputId = nsMicroTsNRS("p1"), label = 'Select an x parameter', choices = planktonr::pr_relabel(unique(datNRSm$Parameters), style = "simple"), selected = "Eukaryote_Chlorophyll_Index"),
           selectInput(inputId = nsMicroTsNRS("p2"), label = 'Select a y parameter', 
-                      choices = planktonr::pr_relabel(c("Prochlorococcus_cellsmL", "Synecochoccus_cellsmL", "Picoeukaryotes_cellsmL"), 
-                                                      style = "simple"), selected = "Prochlorococcus_cellsmL")
+                      choices = planktonr::pr_relabel(unique(Pico$Parameters), style = "simple"), selected = "Prochlorococcus_cellsmL")
         ),
         conditionalPanel(
           condition = "input.NRSmts == 1 | input.NRSmts == 2 | input.NRSmts == 3", 
@@ -102,12 +101,8 @@ mod_MicroTsNRS_server <- function(id){
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$Parameters %in% input$ycol,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-        mutate(name = as.factor(.data$Parameters),
-               # SampleDepth_m = dplyr::if_else(stringr::str_detect("WC", SampleDepth_m),
-               #                                "WC",
-               #                                as.character(round(as.numeric(.data$SampleDepth_m)/5,0)*5))
-        ) %>%
-        droplevels()
+      droplevels() %>% 
+      mutate(name = as.factor(.data$Parameters))
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
@@ -269,7 +264,7 @@ mod_MicroTsNRS_server <- function(id){
       selectedData1 <- datNRSm %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$Parameters %in% c(input$p1, input$p2)) %>%
-        tidyr::pivot_wider(c(.data$StationName, .data$SampleDepth_m, .data$SampleTime_Local), names_from = .data$Parameters, values_from = .data$Values, values_fn = mean)
+        tidyr::pivot_wider(c("StationName", "SampleDepth_m", "SampleTime_Local"), names_from = "Parameters", values_from = "Values", values_fn = mean)
       
     }) %>% bindCache(input$p1, input$p2, input$Site)
     
