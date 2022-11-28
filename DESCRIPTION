@@ -15,7 +15,7 @@ Imports:
     lubridate,
     magrittr,
     patchwork,
-    planktonr (>= 0.1.6.0000),
+    planktonr (>= 0.2.0),
     rlang,
     rnaturalearth,
     shiny (>= 1.6.0),
