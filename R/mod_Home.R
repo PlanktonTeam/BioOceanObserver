@@ -96,7 +96,7 @@ mod_home_ui <- function(id){
                            shinycssloaders::withSpinner(color="#0dc5c1"),
                          # shiny::column(2),
                          shiny::h3("How many taxa are we identifying?"),
-                         plotOutput(nsHome("SpAccum"), height = 700) %>% 
+                         plotOutput(nsHome("SpAccum")) %>% 
                            shinycssloaders::withSpinner(color="#0dc5c1"),
                          shiny::br(),
                          shiny::br(),  
@@ -149,13 +149,14 @@ mod_home_server <- function(id){
     observeEvent({input$home == 4}, {
       
       output$SpAccum <- shiny::renderPlot({
-        p1 <- planktonr::pr_plot_TaxaAccum(PSpNRSAccum, Survey = "NRS", Type = "P")
-        p2 <- planktonr::pr_plot_TaxaAccum(ZSpNRSAccum, Survey = "NRS", Type = "Z")
-        p3 <- planktonr::pr_plot_TaxaAccum(PSpCPRAccum, Survey = "CPR", Type = "P")
+        p1 <- planktonr::pr_plot_TaxaAccum(PSpNRSAccum, Survey = "NRS", Type = "P") 
+        p2 <- planktonr::pr_plot_TaxaAccum(PSpCPRAccum, Survey = "CPR", Type = "P")
+        p3 <- planktonr::pr_plot_TaxaAccum(ZSpNRSAccum, Survey = "NRS", Type = "Z")
         p4 <- planktonr::pr_plot_TaxaAccum(ZSpCPRAccum, Survey = "CPR", Type = "Z")
         
-        p <- patchwork::wrap_plots(p1, p2, p3, p4, ncol = 2) &
-          ggplot2::theme(text = ggplot2::element_text(size = 16, face = "bold"))
+        p <- patchwork::wrap_plots(p1, p2, p3, p4, ncol = 4) &
+          ggplot2::theme(text = ggplot2::element_text(size = 16, face = "bold"),
+                         aspect.ratio = 1) 
         return(p)
       })
       

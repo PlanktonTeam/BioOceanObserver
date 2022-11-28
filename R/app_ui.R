@@ -47,9 +47,8 @@ app_ui <- function(request) {
                       )),
              tabPanel("Larval Fish",
                       tabsetPanel(id = 'fish', type = "pills",
-                                  # tabPanel("Time Series",
-                                  #          img(src = "www/FishComingSoon.png", width = "40%", style="display: block; margin-left: auto; margin-right: auto;")),
-                                  tabPanel(value = "fspat", "Spatial Analysis", mod_LFishSpatial_ui("LFishSpatial_1"))
+                                  tabPanel(value = "fspat", "Spatial", mod_LFishSpatial_ui("LFishSpatial_1")),
+                                  tabPanel(value = "fseas", "Seasonal", mod_LFishSeason_ui("LFishSeason_1"))
                       )),
              tabPanel("Environmental Data",
                       tabsetPanel(id = 'env', type = "pills",
@@ -57,7 +56,8 @@ app_ui <- function(request) {
                                   tabPanel(value = "pico", "NRS BGC Picoplankton", mod_PicoBGC_ui("PicoBGC_ui_1")),
                                   tabPanel(value = "pigs", "NRS BGC Pigments", mod_PigmentsBGC_ui("PigmentsBGC_ui_1")),
                                   tabPanel(value = "water", "NRS BGC Water", mod_WaterBGC_ui("WaterBGC_ui_1")),
-                                  tabPanel(value = 'moor', "NRS Moorings", mod_MoorBGC_ui("MoorBGC_ui_1")))),
+                                  tabPanel(value = 'moor', "NRS Moorings", mod_MoorBGC_ui("MoorBGC_ui_1"))
+                      )),
              tabPanel("Information",
                       fluidPage(
                         value = "info", mod_info_ui("info_1"))

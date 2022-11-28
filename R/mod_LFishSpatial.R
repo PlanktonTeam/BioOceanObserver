@@ -38,6 +38,7 @@ mod_LFishSpatial_server <- function(id){
         dplyr::distinct(.data$Latitude, .data$Longitude, .keep_all = TRUE)
       
       return(dat)
+      
     }) %>% bindCache(input$species)
     
     # Render basemap
@@ -62,7 +63,7 @@ mod_LFishSpatial_server <- function(id){
       
       leaflet::leafletProxy("LFMap", data = LFDatar()) %>%
         leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%
-        leaflet::removeMarker(layerId = "Present") %>%
+        leaflet::clearGroup("Present") %>%
         leaflet::addCircleMarkers(data = LFDatar(), 
                                   lng = ~ Longitude,
                                   lat = ~ Latitude,
@@ -70,7 +71,7 @@ mod_LFishSpatial_server <- function(id){
                                   opacity = 1,
                                   fillOpacity = 1,
                                   radius = 5,
-                                  layerId = "Present")
+                                  group = "Present")
     })
     
   })

@@ -23,109 +23,141 @@ app_server <- function( input, output, session ) {
   ## global options and themes can go here
   theme_set(theme_bw(base_size = 12) + theme(legend.position = "bottom")) 
   options(na.action = "na.omit")
-
-## only run if selected by tab - this should be home page for each Tab level
-    ### Snapshot page
-    observeEvent(input$navbar, {
-      
-      if(input$navbar == "Home") {
-        mod_home_server("home_1") 
-      }
-      
-      if(input$navbar == "EOVs") {
-        mod_PolNRS_server("PolNRS_ui_1")
-      }
-      
-      if(input$navbar == "Microbes") {
-        mod_MicroTsNRS_server("MicroTsNRS_ui_1")
-      }
-      
-      if(input$navbar == "Phytoplankton") {
-        mod_PhytoTsNRS_server("PhytoTsNRS_ui_1")
-      }
-      
-      if(input$navbar == "Zooplankton") {
-        mod_ZooTsNRS_server("ZooTsNRS_ui_1")
-      }
-
-      if(input$navbar == "Larval Fish") {
-        mod_LFishSpatial_server("LFishSpatial_1")
-      }
-      
-      if(input$navbar == "Environmental Data") {
-        mod_NutrientsBGC_server("NutrientsBGC_ui_1")
-      }
-      
-      if(input$navbar == "Information") {
-        mod_info_server("info_1")
-      }
-    })
-      
-
-## Run when changing page within tab
-    ### Policy CPR time series data
-    observeEvent(input$pol, {
-      if(input$pol == "cpr"){
-        mod_PolCPR_server("PolCPR_ui_1")
-      }
-    })
+  
+  ## only run if selected by tab - this should be home page for each Tab level
+  ### Snapshot page
+  observeEvent(input$navbar, {
     
-    observeEvent(input$pol, {
-      if(input$pol == "LTM"){
-        mod_PolLTM_server("PolLTM_ui_1")
-      }
-    })
+    if(input$navbar == "Home") {
+      mod_home_server("home_1") 
+    }
+    
+    if(input$navbar == "EOVs") {
+      mod_PolNRS_server("PolNRS_ui_1")
+    }
+    
+    if(input$navbar == "Microbes") {
+      mod_MicroTsNRS_server("MicroTsNRS_ui_1")
+    }
+    
+    if(input$navbar == "Phytoplankton") {
+      mod_PhytoTsNRS_server("PhytoTsNRS_ui_1")
+    }
+    
+    if(input$navbar == "Zooplankton") {
+      mod_ZooTsNRS_server("ZooTsNRS_ui_1")
+    }
+    
+    if(input$navbar == "Larval Fish") {
+      mod_LFishSpatial_server("LFishSpatial_1")
+    }
+    
+    if(input$navbar == "Environmental Data") {
+      mod_NutrientsBGC_server("NutrientsBGC_ui_1")
+    }
+    
+    if(input$navbar == "Information") {
+      mod_info_server("info_1")
+    }
+  })
+  
+  
+  ## Run when changing page within tab
+  
 
-        ### Zooplankton CPR time series data
-    observeEvent(input$zoo, {
-      if(input$zoo == "ztscpr"){
-        mod_ZooTsCPR_server("ZooTsCPR_ui_1")
-      }
-    })
+# EOVs --------------------------------------------------------------------
+
+  observeEvent(input$pol, {
     
-    ### Phytoplankton CPR time series data
-    observeEvent(input$phyto, {
-      if(input$phyto == "ptscpr"){
-        mod_PhytoTsCPR_server("PhytoTsCPR_ui_1")
-      }
-    })
+    ### Policy CPR time series data  
+    if(input$pol == "cpr"){
+      mod_PolCPR_server("PolCPR_ui_1")
+    }
     
-    ### Zooplankton Spatial data  
-    observeEvent(input$zoo, {
-      if(input$zoo == "dist"){
-        mod_ZooSpatial_server("ZooSpatial_ui_1")
-      }
-    })
+    if(input$pol == "LTM"){
+      mod_PolLTM_server("PolLTM_ui_1")
+    }
+    
+  })
+  
+
+# Microbes ----------------------------------------------------------------
+
+  
+
+# Phytoplankton -----------------------------------------------------------
+
+  observeEvent(input$phyto, {
+    
+    ### Phytoplankton CPR time series data  
+    if(input$phyto == "ptscpr"){
+      mod_PhytoTsCPR_server("PhytoTsCPR_ui_1")
+    }
     
     ### Phytoplankton Spatial data  
-    observeEvent(input$phyto, {
-      if(input$phyto == "distp"){
-        mod_PhytoSpatial_server("PhytoSpatial_ui_1")
-      }
-    })
- 
-    ### Zooplankton Env data  
-    observeEvent(input$env, {
-        if(input$env == "pigs"){
-          mod_PigmentsBGC_server("PigmentsBGC_ui_1")
-        }
-    })
+    if(input$phyto == "distp"){
+      mod_PhytoSpatial_server("PhytoSpatial_ui_1")
+    }
     
-    observeEvent(input$env, {
-      if(input$env == "pico"){
-        mod_PicoBGC_server("PicoBGC_ui_1")
-      }
-    })
+  })
+  
+  
+  # Zooplankton -------------------------------------------------------------
+  
+  observeEvent(input$zoo, {
     
-    observeEvent(input$env, {
-      if(input$env == "water"){
-        mod_WaterBGC_server("WaterBGC_ui_1")
-      }
-    })
+    ### Zooplankton CPR time series data
+    if(input$zoo == "ztscpr"){
+      mod_ZooTsCPR_server("ZooTsCPR_ui_1")
+    }
     
-    observeEvent(input$env, {
-      if(input$env == "moor"){
-        mod_MoorBGC_server("MoorBGC_ui_1")
-      }
-    })
+    ### Zooplankton Spatial data  
+    if(input$zoo == "dist"){
+      mod_ZooSpatial_server("ZooSpatial_ui_1")
+    }
+  })
+  
+  
+
+# Larval Fish -------------------------------------------------------------
+
+  # Season Larval Fish
+  observeEvent(input$fish, {
+    if(input$fish == "fseas"){
+      mod_LFishSeason_server("LFishSeason_1")
+    }
+  })
+  
+  
+
+# Environmental -----------------------------------------------------------
+
+  observeEvent(input$env, {
+    
+    ### Pigments 
+    if(input$env == "pigs"){
+      mod_PigmentsBGC_server("PigmentsBGC_ui_1")
+    }
+  })
+  
+  # Picoplankton
+  observeEvent(input$env, {
+    if(input$env == "pico"){
+      mod_PicoBGC_server("PicoBGC_ui_1")
+    }
+  })
+  
+  # Nutrient data
+  observeEvent(input$env, {
+    if(input$env == "water"){
+      mod_WaterBGC_server("WaterBGC_ui_1")
+    }
+  })
+  
+  # Moorings
+  observeEvent(input$env, {
+    if(input$env == "moor"){
+      mod_MoorBGC_server("MoorBGC_ui_1")
+    }
+  })
 }

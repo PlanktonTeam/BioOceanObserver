@@ -28,7 +28,9 @@ mod_MicroTsNRS_ui <- function(id){
                       value = c(as.POSIXct('2009-01-01 00:00',
                                            format = "%Y-%m-%d %H:%M",
                                            tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d"),
-          selectInput(inputId = nsMicroTsNRS("ycol"), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSm$Parameters), style = "simple"), selected = "Bacterial_Richness"),
+          selectInput(inputId = nsMicroTsNRS("ycol"), label = 'Select a parameter', 
+                      choices = planktonr::pr_relabel(unique(datNRSm$Parameters), 
+                                                      style = "simple"), selected = "Bacterial_Richness"),
         ),
         conditionalPanel(
           condition = "input.NRSmts == 3", 
