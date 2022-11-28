@@ -108,17 +108,19 @@ mod_info_ui <- function(id){
                            shiny::h3("TSS"),
                            shiny::h5("Triplicate samples (~4L) and a blank of surface water"),                         
                            shiny::h3("Pigments"),
-                           shiny::h5("Duplicate samples (~4L) from surface water and the lower WQM (~20m)"),                         
+                           shiny::h5("Duplicate samples (~4L) from surface water and the lower WQM (~20m). Prior to July 2017 water column samples were taken, these have been excluded here."),                         
                            shiny::h3("Microbial & Picoplankton"),
                            shiny::h5("Samples (~2L microbes, ~50-100 uL Picoplankton) are taken from each niskin bottle (0-50m), DAR and YON samples are only 0 - 20m. 
-                                     PHB also collects at 75 and 100m. MAI at 70 & 80m.")
+                                     PHB also collects at 75 and 100m. MAI at 70 & 80m. Prior to July 2017 water column samples were taken, these have been excluded here."),
+                           shiny::h3("CPR"),
+                           shiny::dataTableOutput(nsInfo("CPRDataTable"))
                            )
                 ),
-                tabPanel("Phytoplankton Species Details", value = 6, 
+                tabPanel("Phytoplankton Species Details", value = 7, 
                          shiny::h2("Phytoplankton Species Information"),
                          shiny::dataTableOutput(nsInfo("PDataTable")),
                 ),
-                tabPanel("Zooplankton Species Details", value = 7, 
+                tabPanel("Zooplankton Species Details", value = 8, 
                          shiny::h2("Zooplankton Species Information"),
                          shiny::dataTableOutput(nsInfo("ZDataTable")),
                 ),
@@ -134,17 +136,39 @@ mod_info_server <- function(id){
     
     observeEvent({input$Info == 5}, {
       output$NRSDataTable <- shiny::renderDataTable(
-        NRSStation)
+        NRSStation %>% dplyr::mutate(EndDate = dplyr::case_when(StationCode %in% c('NIN', 'ESP') ~ "2012-03-01",
+                                                                StationCode == 'PH4' ~ '2009-02-24')) %>% 
+          dplyr::select(StationCode:StationStartDate, EndDate, dplyr::everything()) %>% 
+          dplyr::rename(Code = StationCode, Station = StationName, State = StateCode, "Start Date" = StationStartDate, "End Date" = EndDate, "Water Depth (m)" = StationDepth_m,
+                        "Sampling Effort" = SamplingEffort, Region = ManagementRegion)
+        )
     })
-
-        observeEvent({input$Info == 6}, {
+    observeEvent({input$Info == 6}, {
+      output$CPRDataTable <- shiny::renderDataTable(
+        CPR <- datCPRTrip %>% 
+          dplyr::group_by(Route, StartPort, EndPort, Region) %>% 
+          dplyr::summarise(StartDate = min(SampleTime_Local, na.rm = TRUE),
+                          EndDate = max(SampleTime_Local, na.rm = TRUE),
+                          BioRegion = toString(sort(unique(BioRegion))),
+                          .groups = 'drop') %>% 
+          dplyr::mutate(StartPort = dplyr::case_when(StartPort == 'AB' ~ "Great Australian Bight",
+                                                     StartPort == 'AD' ~ "Adelaide",
+                                                     StartPort == 'BR' ~ "Brisbane",
+                                                     StartPort == 'SY' ~ "Sydney",
+                                                     StartPort == 'ME' ~ "Melbourne"
+                                                     ))
+          
+      )
+    })
+    
+        observeEvent({input$Info == 7}, {
       output$PDataTable <- shiny::renderDataTable(
         SpInfoP, 
         options = list(
           pageLength = 250))
     })
     
-    observeEvent({input$Info == 7}, {
+    observeEvent({input$Info == 8}, {
       output$ZDataTable <- shiny::renderDataTable(
         SpInfoZ, 
         options = list(
