@@ -1,7 +1,7 @@
 #' BOO Plankton Sidebar
 #'
 #' @noRd 
-fPlanktonSidebar <- function(id, panel_id, input, dat){
+fPlanktonSidebar <- function(id, panel_id, dat){
   ns <- NS(id)
   
   if (stringr::str_detect(id, "NRS") == TRUE){ # NRS

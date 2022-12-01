@@ -9,6 +9,7 @@ Imports:
     bslib,
     config (>= 0.3.1),
     dplyr,
+    DT,
     ggplot2,
     golem (>= 0.3.1),
     leaflet,
@@ -17,13 +18,9 @@ Imports:
     patchwork,
     planktonr (>= 0.2.0),
     rlang,
-    rnaturalearth,
     shiny (>= 1.6.0),
     shinycssloaders,
-    shinydashboard,
-    shinythemes,
     stringr,
-    thinkr,
     tidyr,
     vroom
 Encoding: UTF-8

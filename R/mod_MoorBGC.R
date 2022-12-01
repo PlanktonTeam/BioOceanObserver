@@ -42,7 +42,7 @@ mod_MoorBGC_server <- function(id){
                                                by = "day")) %>% 
               dplyr::mutate(TIME = lubridate::yday(.data$SampleDate), 
                             year = lubridate::year(.data$SampleDate)) %>% 
-              dplyr::inner_join(df %>% dplyr::filter(StationName %in% Station), by = 'TIME') %>%
+              dplyr::inner_join(df %>% dplyr::filter(.data$StationName %in% Station), by = 'TIME') %>%
               unique()
     }
     
@@ -80,9 +80,9 @@ mod_MoorBGC_server <- function(id){
                                                   from = lubridate::ceiling_date(Sys.Date() - lubridate::years(noYear), "year"),
                                                   by = "day")) %>% 
         dplyr::mutate(DOY = lubridate::yday(.data$SampleDate)) %>% 
-        dplyr::inner_join(MooringTS %>% dplyr::filter(StationName %in% Station), by = 'DOY') %>%
-        dplyr::select(-c(.data$DOY)) %>%
-        tidyr::pivot_wider(c(.data$SampleDate, .data$StationName, .data$StationCode), names_from = 'Names', values_from = 'CLIM') 
+        dplyr::inner_join(MooringTS %>% dplyr::filter(.data$StationName %in% Station), by = "DOY") %>%
+        dplyr::select(-"DOY") %>%
+        tidyr::pivot_wider(c(.data$SampleDate, .data$StationName, .data$StationCode), names_from = "Names", values_from = "CLIM") 
     }
       
     pr_plot_MoorTS <- function(df){
