@@ -111,14 +111,14 @@ mod_PolCPR_server <- function(id){
     gg_out1 <- reactive({
       
       p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "BiomassIndex_mgm3", Survey = 'CPR', 
-                                   trans = "log10", col = "cornflowerblue", labels = "no")
+                                   trans = "log10", col = col12[2], labels = "no")
       p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgm3", Survey = 'CPR', 
-                                   trans = "log10", col = "darkolivegreen4") 
+                                   trans = "log10", col = col12[4]) 
       
       p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonCopepodDiversity", Survey = 'CPR', 
-                                   trans = "log10", col = "cornflowerblue", labels = "no") #check these col names with new indices data from AODN
+                                   trans = "log10", col = col12[1], labels = "no") #check these col names with new indices data from AODN
       p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', 
-                                   trans = "log10", col = "darkolivegreen4")
+                                   trans = "log10", col = col12[3])
       
       BioRegionSummary <- strwrap(
         paste("The CPR has been sampling in the ", input$Site," bioregion since ", min(stationData()$SampleStartDate), 

@@ -23,7 +23,7 @@ mod_NutrientsBGC_ui <- function(id){
         selectizeInput(inputId = nsNutrientsBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(Nuts$Parameters), style = "simple"), selected = 'Silicate_umolL', multiple = FALSE),
         #selectizeInput(inputId = nsNutrientsBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
         # Select whether to interpolate
-        selectizeInput(inputId = nsNutrientsBGC("interp"), label = strong("Interpolate data?"), choices = c("Yes", "No"), selected = "Yes")
+        selectizeInput(inputId = nsNutrientsBGC("interp"), label = strong("Interpolate data?"), choices = c("Interpolate", "Raw data", "Interpolate with gap filling"), selected = "Interpolate")
       ),
       fEnviroPanel(id = id)
       )
@@ -76,10 +76,12 @@ mod_NutrientsBGC_server <- function(id){
       
       interp <-  input$interp
       
-      if(interp == 'Yes'){
-        planktonr::pr_plot_NRSEnvContour(selected(), Interpolation = TRUE)
+      if(interp == 'Interpolate'){
+        planktonr::pr_plot_NRSEnvContour(selected(), Interpolation = TRUE, Fill_NA = FALSE)
+      } else if (interp == 'Interpolate with gap filling'){
+        planktonr::pr_plot_NRSEnvContour(selected(), Interpolation = TRUE, Fill_NA = TRUE, maxGap = 3)
       } else {
-        planktonr::pr_plot_NRSEnvContour(selected(), Interpolation = FALSE)
+        planktonr::pr_plot_NRSEnvContour(selected(), Interpolation = FALSE, Fill_NA = FALSE)
       }
       
     }) %>% bindCache(input$station, input$parameter, input$date, input$interp)
@@ -101,8 +103,8 @@ mod_NutrientsBGC_server <- function(id){
     
     # add text information 
     output$PlotExp <- renderText({
-      "A plot of nutrients from the NRS around Australia, as a time series and a monthly climatology by depth. 
-      If interpolated the dots represent interpolated data points, if raw data is used the dots represent actual samples"
+      "A contour plot of nutrients from the NRS around Australia, as a time series and a monthly climatology by depth. 
+      If raw data is used the dots represent actual samples"
     }) 
     
   })

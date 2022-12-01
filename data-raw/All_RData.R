@@ -209,17 +209,17 @@ usethis::use_data(Nuts, Pigs, Pico, LTnuts,
                   PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
                   col12, overwrite = TRUE, internal = TRUE)
 
-save(Nuts, Pigs, Pico, LTnuts, 
-     fMapDataz, fMapDatap, legendPlot,
-     MooringTS, MooringClim,
-     PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, NRSStation,
-     datCPRz, datCPRp, datCPRw,
-     datNRSz, datNRSp, datNRSm, datNRSw,
-     NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-     stiz, stip, daynightz, daynightp, PMapData2, 
-     SpInfoP, SpInfoZ, datNRSTrip, datCPRTrip,
-     PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
-     col12, file = "data/sysdata.rda")
+# save(Nuts, Pigs, Pico, LTnuts, 
+#      fMapDataz, fMapDatap, legendPlot,
+#      MooringTS, MooringClim,
+#      PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, NRSStation,
+#      datCPRz, datCPRp, datCPRw,
+#      datNRSz, datNRSp, datNRSm, datNRSw,
+#      NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
+#      stiz, stip, daynightz, daynightp, PMapData2, 
+#      SpInfoP, SpInfoZ, datNRSTrip, datCPRTrip,
+#      PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
+#      col12, file = "data/sysdata.rda")
 
 # Write to csv to save onto the DAP
 # write_csv(Nuts, "Nuts.csv")

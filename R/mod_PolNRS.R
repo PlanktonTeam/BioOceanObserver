@@ -133,11 +133,11 @@ mod_PolNRS_server <- function(id){
     
     gg_out1 <- reactive({
       
-      p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Biomass_mgm3", trans = "log10", col = col12[1], labels = "no") 
-      p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col12[2]) 
+      p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Biomass_mgm3", trans = "log10", col = col12[2], labels = "no") 
+      p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col12[4]) 
       
-      p3 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonCopepodDiversity", trans = "log10", col = col12[3], labels = "no") 
-      p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col12[4])
+      p3 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonCopepodDiversity", trans = "log10", col = col12[1], labels = "no") 
+      p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col12[3])
       
       p5 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDTemperature_degC", trans = "identity", col = col12[5], labels = "no")
       p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "PigmentChla_mgm3", trans = "log10", col = col12[6], labels = "no") 
