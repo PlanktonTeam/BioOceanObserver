@@ -18,7 +18,7 @@ mod_MicroTsNRS_ui <- function(id){
         ),
         conditionalPanel(
           condition = "input.NRSmts == 2",
-                  selectizeInput(inputId = nsMicroTsNRS("interp"), label = strong("Interpolate data?"), choices = c("Yes", "No"), selected = "Yes")
+                  selectizeInput(inputId = nsMicroTsNRS("interp"), label = strong("Interpolate data?"), choices = c("Interpolate", "Raw data", "Interpolate with gap filling"), selected = "Interpolate")
         ),
         conditionalPanel(
           condition = "input.NRSmts == 1 | input.NRSmts == 2", 
@@ -132,8 +132,8 @@ mod_MicroTsNRS_server <- function(id){
       "A plot of selected indices from the NRS around Australia, as a time series, a monthly climatology and an annual mean averaged across all depths."
     }) 
     output$PlotExp3 <- renderText({
-      "A plot of microbial indices from the NRS around Australia, as a time series and a monthly climatology by depth. 
-      If interpolated the dots represent interpolate data points, if raw data is used the dots represent actual samples"
+      "A contour plot of microbial indices from the NRS around Australia, as a time series and a monthly climatology by depth. 
+      If raw data is used the dots represent actual samples"
     }) 
     output$PlotExp4 <- renderText({
       "A plot of microbial indices against abundance measure from the NRS around Australia"
@@ -233,10 +233,12 @@ mod_MicroTsNRS_server <- function(id){
       
         interp <-  input$interp
         
-        if(interp == 'Yes'){
-          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), Interpolation = TRUE)
+        if(interp == 'Interpolate'){
+          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), Interpolation = TRUE, Fill_NA = FALSE)
+        } else if (interp == 'Interpolate with gap filling'){
+          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), Interpolation = TRUE, Fill_NA = TRUE, maxGap = 3)
         } else {
-          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), Interpolation = FALSE)
+          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), Interpolation = FALSE, Fill_NA = FALSE)
         }
         
       }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$interp)
