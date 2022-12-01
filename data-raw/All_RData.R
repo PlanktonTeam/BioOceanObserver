@@ -78,7 +78,7 @@ LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
 #   dplyr::left_join(ALTsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) %>%
 #   dplyr::left_join(CHLsat, by = c("Latitude", "Longitude", "Year", "Month", "Day"))
 
-# readr::write_csv(SatData, "SatDataNRS.csv")
+# readr::write_csv(SatData, file.path("data-raw","SatDataNRS.csv"))
 
 # STI data
 stiz <- planktonr::pr_get_STIdata("Z")
