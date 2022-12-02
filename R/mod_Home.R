@@ -220,9 +220,9 @@ mod_home_server <- function(id){
           ggplot2::ggtitle("CPR")
         
         p <- (patchwork::wrap_plots(p1, p2, guides = "collect", ncol = 2) &
-                ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = element_text(face = "bold"))) | 
+                ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = ggplot2::element_text(face = "bold"))) | 
           (patchwork::wrap_plots(p3, p4, guides = "collect", ncol = 2) &
-             ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = element_text(face = "bold")))
+             ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = ggplot2::element_text(face = "bold")))
         
         return(p)
         

@@ -51,10 +51,10 @@ mod_NutrientsBGC_server <- function(id){
       validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       Nuts %>%
-        filter(.data$StationName %in% input$station,
+        dplyr::filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$Parameters %in% input$parameter) %>%
-        mutate(name = as.factor(.data$Parameters)) %>%
+        dplyr::mutate(name = as.factor(.data$Parameters)) %>%
         tidyr::drop_na() 
     }) %>% bindCache(input$station, input$parameter, input$date)
     

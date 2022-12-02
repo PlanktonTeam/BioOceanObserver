@@ -121,10 +121,10 @@ mod_LFishSeason_server <- function(id){
     
     # Add points for chosen larval fish by season
     observe({
-      LFLeaflet_obs(sdf = LFDatar() %>% filter(.data$Season == "Summer"), name = "LFMapSum")
-      LFLeaflet_obs(sdf = LFDatar() %>% filter(.data$Season == "Autumn"), name = "LFMapAut")
-      LFLeaflet_obs(sdf = LFDatar() %>% filter(.data$Season == "Winter"), name = "LFMapWin")
-      LFLeaflet_obs(sdf = LFDatar() %>% filter(.data$Season == "Spring"), name = "LFMapSpr")
+      LFLeaflet_obs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "Summer"), name = "LFMapSum")
+      LFLeaflet_obs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "Autumn"), name = "LFMapAut")
+      LFLeaflet_obs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "Winter"), name = "LFMapWin")
+      LFLeaflet_obs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "Spring"), name = "LFMapSpr")
       
     })
     

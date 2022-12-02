@@ -177,7 +177,7 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
       }
     },
     content = function(file) {
-      ggsave(file, plot = gg_id, device = "png", dpi = 500)
+      ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500)
     })
 }
 
