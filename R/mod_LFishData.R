@@ -39,8 +39,8 @@ mod_LFishData_server <- function(id){
       dat <- LFData %>% 
         dplyr::filter(input$species == .data$Species2 & .data$Count > 0) %>% 
         dplyr::arrange(.data$SampleTime_Local) %>% 
-        dplyr::select(c("Project", "Latitude", "Longitude", "SampleTime_Local", "SampleDepth_m",
-                        "Temperature_degC", "Salinity_psu", "Volume_m3", "Vessel", "TowType",
+        dplyr::select(c("Project", "Latitude", "Longitude", "SampleTime_Local", "SampleDepth_m", "Count",
+                        "Abundance_1000m3", "Temperature_degC", "Salinity_psu", "Volume_m3", "Vessel", "TowType",
                         "GearMesh_um", "Bathymetry_m")) %>% 
         dplyr::mutate(Temperature_degC = round(.data$Temperature_degC, digits = 1),
                       Salinity_psu = round(.data$Salinity_psu, digits = 2),
@@ -51,6 +51,7 @@ mod_LFishData_server <- function(id){
                       GearMesh_um = as.factor(.data$GearMesh_um)) %>% 
         dplyr::rename("SampleTime (Local)" = "SampleTime_Local",
                       "Sample Depth (m)" = "SampleDepth_m",
+                      "Abundance (1000 m\u00b3)" = "Abundance_1000m3",
                       "Temperature (\u2103)" = "Temperature_degC",
                       "Salinity" = "Salinity_psu",
                       "Volume (m\u00b3)" = "Volume_m3",
