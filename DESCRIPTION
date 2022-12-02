@@ -12,6 +12,7 @@ Imports:
     DT,
     ggplot2,
     golem (>= 0.3.1),
+    htmltools,
     leaflet,
     lubridate,
     magrittr,
