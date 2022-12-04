@@ -70,7 +70,7 @@ mod_home_ui <- function(id){
                                     shiny::h3("Acknowledging IMOS Data"),
                                     shiny::HTML("This application is developed using IMOS data, and therefore you are also required to <a href = 'https://imos.org.au/acknowledging-us', target = '_blank'> clearly acknowledge</a> the source material by including the following statement in any publications:"),
                                     shiny::br(),
-                                    shiny::HTML("'<i>Data was sourced from Australia’s Integrated Marine Observing System (IMOS) – IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). It is operated by a consortium of institutions as an unincorporated joint venture, with the University of Tasmania as Lead Agent'.</i>"),
+                                    shiny::HTML("'<i>Data was sourced from Australia's Integrated Marine Observing System (IMOS) - IMOS is enabled by the National Collaborative Research Infrastructure Strategy (NCRIS). It is operated by a consortium of institutions as an unincorporated joint venture, with the University of Tasmania as Lead Agent'.</i>"),
                                     shiny::br(),
                                     shiny::h3("Licencing"),
                                     shiny::HTML("The code for this application is published under an <a href = 'https://github.com/PlanktonTeam/IMOS_BioOceanObserver/blob/master/LICENSE', target = '_blank'> MIT licence</a>."),
@@ -137,7 +137,7 @@ mod_home_server <- function(id){
       
       output$gantt <- shiny::renderPlot({
         ggCPR <- planktonr::pr_plot_Gantt(datCPRTrip, Survey = "CPR")
-        ggNRS <- planktonr::pr_plot_Gantt(datNRSTRip, Survey = "NRS")
+        ggNRS <- planktonr::pr_plot_Gantt(datNRSTrip, Survey = "NRS")
         
         p <- patchwork::wrap_plots(ggCPR, ggNRS, ncol = 1) &
           ggplot2::theme(text = ggplot2::element_text(size = 16, face = "bold"))
@@ -170,8 +170,10 @@ mod_home_server <- function(id){
       
       output$TaxaPie <- shiny::renderPlot({
         
-        p1 <- ggplot2::ggplot(data = NRSfgp %>% dplyr::group_by(Parameters) %>% dplyr::summarise(mean = mean(Values, na.rm = TRUE)), 
-                              ggplot2::aes(x = "", y = mean, fill = Parameters)) +
+        p1 <- ggplot2::ggplot(data = NRSfgp %>% 
+                                dplyr::group_by(.data$Parameters) %>% 
+                                dplyr::summarise(mean = mean(.data$Values, na.rm = TRUE)), 
+                              ggplot2::aes(x = "", y = mean, fill = .data$Parameters)) +
           ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
           ggplot2::coord_polar("y", start = 0) +
           ggplot2::theme_void() +  # remove background, grid, numeric labels
@@ -180,8 +182,9 @@ mod_home_server <- function(id){
           ggplot2::guides(fill = ggplot2::guide_legend(title = "Phytoplankton", nrow = 2, title.position = "top", title.hjust = 0.5, title.theme = ggplot2::element_text(face = "bold"))) +
           ggplot2::ggtitle("NRS")
         
-        p2 <- ggplot2::ggplot(data = CPRfgp %>% dplyr::group_by(Parameters) %>% dplyr::summarise(mean = mean(Values, na.rm = TRUE)), 
-                              ggplot2::aes(x = "", y = mean, fill = Parameters)) +
+        p2 <- ggplot2::ggplot(data = CPRfgp %>% dplyr::group_by(.data$Parameters) %>% 
+                                dplyr::summarise(mean = mean(.data$Values, na.rm = TRUE)), 
+                              ggplot2::aes(x = "", y = mean, fill = .data$Parameters)) +
           ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
           ggplot2::coord_polar("y", start = 0) +
           ggplot2::theme_void() +  # remove background, grid, numeric labels
@@ -190,8 +193,9 @@ mod_home_server <- function(id){
           ggplot2::guides(fill = ggplot2::guide_legend(title = "Phytoplankton", nrow = 2, title.position = "top", title.hjust = 0.5, title.theme = ggplot2::element_text(face = "bold"))) +
           ggplot2::ggtitle("CPR")
         
-        p3 <- ggplot2::ggplot(data = NRSfgz %>% dplyr::group_by(Parameters) %>% dplyr::summarise(mean = mean(Values, na.rm = TRUE)), 
-                              ggplot2::aes(x = "", y = mean, fill = Parameters)) +
+        p3 <- ggplot2::ggplot(data = NRSfgz %>% dplyr::group_by(.data$Parameters) %>% 
+                                dplyr::summarise(mean = mean(.data$Values, na.rm = TRUE)), 
+                              ggplot2::aes(x = "", y = mean, fill = .data$Parameters)) +
           ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
           ggplot2::coord_polar("y", start = 0) +
           ggplot2::theme_void() +  # remove background, grid, numeric labels
@@ -200,8 +204,9 @@ mod_home_server <- function(id){
           ggplot2::guides(fill = ggplot2::guide_legend(title = "Zooplankton", nrow = 2, title.position = "top", title.hjust = 0.5, title.theme = ggplot2::element_text(face = "bold"))) +
           ggplot2::ggtitle("NRS")
         
-        p4 <- ggplot2::ggplot(data = CPRfgz %>% dplyr::group_by(Parameters) %>% dplyr::summarise(mean = mean(Values, na.rm = TRUE)), 
-                              ggplot2::aes(x = "", y = mean, fill = Parameters)) +
+        p4 <- ggplot2::ggplot(data = CPRfgz %>% dplyr::group_by(.data$Parameters) %>% 
+                                dplyr::summarise(mean = mean(.data$Values, na.rm = TRUE)), 
+                              ggplot2::aes(x = "", y = mean, fill = .data$Parameters)) +
           ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
           ggplot2::coord_polar("y", start = 0) +
           ggplot2::theme_void() +  # remove background, grid, numeric labels
@@ -215,9 +220,9 @@ mod_home_server <- function(id){
           ggplot2::ggtitle("CPR")
         
         p <- (patchwork::wrap_plots(p1, p2, guides = "collect", ncol = 2) &
-                ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = element_text(face = "bold"))) | 
+                ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = ggplot2::element_text(face = "bold"))) | 
           (patchwork::wrap_plots(p3, p4, guides = "collect", ncol = 2) &
-             ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = element_text(face = "bold")))
+             ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = ggplot2::element_text(face = "bold")))
         
         return(p)
         

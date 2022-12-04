@@ -11,7 +11,7 @@ mod_ZooTsCPR_ui <- function(id){
   nsZooTsCPR <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, panel_id = "CPRzts", input = input, dat = datCPRz),
+      fPlanktonSidebar(id = id, panel_id = "CPRzts", dat = datCPRz),
       fPLanktonPanel(id = id, panel_id = "CPRzts"),
     )
   )

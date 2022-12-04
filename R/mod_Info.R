@@ -62,13 +62,13 @@ mod_info_ui <- function(id){
                            shiny::h4("References"),
                            shiny::h5("To further understand the data, collection methods etc."),
                            shiny::HTML("<li>Davies, CH., Sommerville, E. (Eds.) (2017). <em>National Reference Stations Biogeochemical Operations Manual</em>. Version 3.3.1. Integrated Marine Observing System. DOI:10.26198/5c4a56f2a8ae3. <a href = http://dx.doi.org/10.26198/5c4a56f2a8ae3 target = _blank> Website</a>."),
-                           shiny::HTML("<li>Eriksen RS, Davies CH, Bonham P, Coman FE, Edgar S, McEnnulty FR, McLeod D, Miller MJ, Rochester W, Slotwinski A, Tonks ML, Uribe-Palomino J and Richardson AJ (2019). <em>Australia’s Long-Term Plankton Observations: The Integrated Marine Observing System National Reference Station Network</em>. Front. Mar. Sci. 6:161. doi: 10.3389/fmars.2019.00161. <a href = https://www.frontiersin.org/articles/10.3389/fmars.2019.00161/full target = _blank> Website</a>."),
+                           shiny::HTML("<li>Eriksen RS, Davies CH, Bonham P, Coman FE, Edgar S, McEnnulty FR, McLeod D, Miller MJ, Rochester W, Slotwinski A, Tonks ML, Uribe-Palomino J and Richardson AJ (2019). <em>Australia's Long-Term Plankton Observations: The Integrated Marine Observing System National Reference Station Network</em>. Front. Mar. Sci. 6:161. doi: 10.3389/fmars.2019.00161. <a href = https://www.frontiersin.org/articles/10.3389/fmars.2019.00161/full target = _blank> Website</a>."),
                            shiny::HTML("<li>A.J. Richardson, A.W. Walne, A.W.G. John, T.D. Jonas, J.A. Lindley, D.W. Sims, D. Stevens, M. Witt, (2006). <em>Using continuous plankton recorder data</em>. Progress in Oceanography, 68.1, doi: 10.1016/j.pocean.2005.09.011. <a href = https://www.sciencedirect.com/science/article/pii/S0079661105001424?via%3Dihub target = _blank> Website</a>."),
                            shiny::HTML("<li>IMOS National Reference Stations website. <a href = https://imos.org.au/facilities/nationalmooringnetwork/nrs target = _blank> Website</a>."),
                            shiny::HTML("<li>IMOS Continuous PLankton Recorder Survey website. <a href = https://imos.org.au/facilities/shipsofopportunity/auscontinuousplanktonrecorder target = _blank> Website</a>."),
                            
                            shiny::h5("These references are also good resources for visualising this data"),
-                           shiny::HTML("<li>Richardson A.J, Eriksen R, Moltmann T, Hodgson-Johnston I, Wallis J.R. (2020). <em>State and Trends of Australia’s Ocean Report</em>. Integrated Marine Observing System (IMOS). <a href = https://www.imosoceanreport.org.au/about/ target = _blank> Website</a>."),
+                           shiny::HTML("<li>Richardson A.J, Eriksen R, Moltmann T, Hodgson-Johnston I, Wallis J.R. (2020). <em>State and Trends of Australia's Ocean Report</em>. Integrated Marine Observing System (IMOS). <a href = https://www.imosoceanreport.org.au/about/ target = _blank> Website</a>."),
                            shiny::br(),
                            shiny::br(),
                            shiny::h4("Package citations"),
@@ -76,7 +76,7 @@ mod_info_ui <- function(id){
                            shiny::HTML("<li>Chang W, Cheng J, Allaire J, Sievert C, Schloerke B, Xie Y, Allen J, McPherson J, Dipert A, Borges B (2022). <em>shiny: Web Application Framework for R</em>. R package version 1.7.2, <a href = https://CRAN.R-project.org/package=shiny target = _blank> Website</a>."),
                            shiny::HTML("<li>Fay C, Guyader V, Rochette S, Girard C (2022). <em>golem: A Framework for Robust Shiny Applications</em>. R package version 0.3.3, <a href = https://CRAN.R-project.org/package=golem target = _blank> Website</a>.<br>"),
                            shiny::HTML("<br>"),
-                           shiny::HTML("<li>Wickham H, François R, Henry L, Müller K (2022). <em>dplyr: A Grammar of Data Manipulation</em>. R package version 1.0.10, <a href = https://CRAN.R-project.org/package=dplyr target = _blank> Website</a>."),
+                           shiny::HTML("<li>Wickham H, Fran\u00E7ois R, Henry L, M\u00FCller K (2022). <em>dplyr: A Grammar of Data Manipulation</em>. R package version 1.0.10, <a href = https://CRAN.R-project.org/package=dplyr target = _blank> Website</a>."),
                            shiny::HTML("<li>Wickham H (2016). <em>ggplot2: Elegant Graphics for Data Analysis</em>. Springer-Verlag New York, <a href = https://ggplot2.tidyverse.org target = _blank> Website</a>."),
                            shiny::HTML("<li>Garrett Grolemund, Hadley Wickham (2011). <em>Dates and Times Made Easy with lubridate.</em>, Journal of Statistical Software, 40(3), 1-25. <a href = https://www.jstatsoft.org/v40/i03/ target = _blank> Website</a>."),
                            shiny::HTML("<li>Bache S, Wickham H (2022). <em>magrittr: A Forward-Pipe Operator for R</em>. R package version 2.0.3, <a href = https://CRAN.R-project.org/package=magrittr target = _blank> Website</a>."),
@@ -130,7 +130,7 @@ mod_info_ui <- function(id){
                            shiny::h5("Zooplankton is washed into a bogorov tray and counted by light microscopy. Every 4th segment is counted"),
                            shiny::h4("Biomass Index"),
                            shiny::h5("After counting the sample is dried at 60 degrees for 24 hours and weighed for biomass.")
-                           )
+                         )
                 ),
                 tabPanel("Phytoplankton Species Details", value = 7, 
                          shiny::h2("Phytoplankton Species Information"),
@@ -152,30 +152,32 @@ mod_info_server <- function(id){
     
     observeEvent({input$Info == 5}, {
       output$NRSDataTable <- shiny::renderDataTable(
-        NRSStation %>% dplyr::mutate(EndDate = dplyr::case_when(StationCode %in% c('NIN', 'ESP') ~ "2012-03-01",
-                                                                StationCode == 'PH4' ~ '2009-02-24')) %>% 
-          dplyr::select(StationCode:StationStartDate, EndDate, dplyr::everything()) %>% 
-          dplyr::rename(Code = StationCode, Station = StationName, State = StateCode, "Start Date" = StationStartDate, "End Date" = EndDate, "Water Depth (m)" = StationDepth_m,
-                        "Sampling Effort" = SamplingEffort, Region = ManagementRegion)
-        )
+        NRSStation %>% dplyr::mutate(EndDate = dplyr::case_when(.data$StationCode %in% c('NIN', 'ESP') ~ "2012-03-01",
+                                                                .data$StationCode == 'PH4' ~ '2009-02-24')) %>% 
+          dplyr::select("StationCode":"StationStartDate", "EndDate", dplyr::everything()) %>% 
+          dplyr::rename(Code = "StationCode", Station = "StationName", State = "StateCode", 
+                        `Start Date` = "StationStartDate", `End Date` = "EndDate", `Water Depth (m)` = "StationDepth_m",
+                        `Sampling Effort` = "SamplingEffort", Region = "ManagementRegion")
+      )
     })
     observeEvent({input$Info == 6}, {
       output$CPRDataTable <- shiny::renderDataTable(
         datCPRTrip %>% 
-          dplyr::group_by(BioRegion) %>% 
-          dplyr::summarise(StartDate = min(SampleTime_Local, na.rm = TRUE),
-                          EndDate = max(SampleTime_Local, na.rm = TRUE),
-                          MilesTowed = dplyr::n() * 5,
-                          SamplesCounted = round(dplyr::n()/4,0),
-                          .groups = 'drop') %>% 
-          dplyr::rename("Start Date" = StartDate, "End Date" = EndDate, "Miles Towed" = MilesTowed, "Samples Counted" = SamplesCounted) %>% 
-          dplyr::mutate(Project = ifelse(BioRegion == "Southern Ocean Region", "SO-CPR / AusCPR", "AusCPR"),
-                        Institution = ifelse(BioRegion == "Southern Ocean Region", "AAD / CSIRO", "CSIRO"))
-          
+          dplyr::group_by(.data$BioRegion) %>% 
+          dplyr::summarise(StartDate = min(.data$SampleTime_Local, na.rm = TRUE),
+                           EndDate = max(.data$SampleTime_Local, na.rm = TRUE),
+                           MilesTowed = dplyr::n() * 5,
+                           SamplesCounted = round(dplyr::n()/4,0),
+                           .groups = 'drop') %>% 
+          dplyr::rename(`Start Date` = "StartDate", `End Date` = "EndDate", `Miles Towed` = "MilesTowed",
+                        `Samples Counted` = "SamplesCounted") %>% 
+          dplyr::mutate(Project = ifelse(.data$BioRegion == "Southern Ocean Region", "SO-CPR / AusCPR", "AusCPR"),
+                        Institution = ifelse(.data$BioRegion == "Southern Ocean Region", "AAD / CSIRO", "CSIRO"))
+        
       )
     })
     
-        observeEvent({input$Info == 7}, {
+    observeEvent({input$Info == 7}, {
       output$PDataTable <- shiny::renderDataTable(
         SpInfoP, 
         options = list(

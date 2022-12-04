@@ -52,7 +52,7 @@ mod_PigmentsBGC_server <- function(id){
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       
       Pigs %>%
-        filter(.data$StationName %in% input$station,
+        dplyr::filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$Parameters %in% input$parameter) %>%
         dplyr::mutate(name = as.factor(.data$Parameters),

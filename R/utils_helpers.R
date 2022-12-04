@@ -1,7 +1,7 @@
 #' BOO Plankton Sidebar
 #'
 #' @noRd 
-fPlanktonSidebar <- function(id, panel_id, input, dat){
+fPlanktonSidebar <- function(id, panel_id, dat){
   ns <- NS(id)
   
   if (stringr::str_detect(id, "NRS") == TRUE){ # NRS
@@ -177,7 +177,7 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
       }
     },
     content = function(file) {
-      ggsave(file, plot = gg_id, device = "png", dpi = 500)
+      ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500)
     })
 }
 

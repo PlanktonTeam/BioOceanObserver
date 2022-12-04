@@ -3,25 +3,14 @@
 #' @param input,output,session Internal Parameters for {shiny}. 
 #'     DO NOT REMOVE.
 #' @import shiny
-#' @import patchwork
 #' @importFrom rlang .data
-#' @importFrom stats sd
-#' @importFrom utils write.table 
-#' @importFrom ggplot2 ggplot aes element_blank element_rect element_text facet_grid facet_wrap 
-#' geom_blank geom_col geom_errorbar geom_line geom_point geom_sf geom_smooth geom_text ggsave
-#' labs position_dodge 
-#' scale_colour_manual scale_fill_manual scale_x_continuous scale_x_datetime scale_y_continuous 
-#' theme theme_set theme_bw theme_minimal theme_void unit
-#' @importFrom dplyr filter group_by inner_join left_join mutate n select summarise ungroup
-#' @importFrom tidyr drop_na
-#' @importFrom shinycssloaders withSpinner
 #' @noRd
 #' 
 app_server <- function( input, output, session ) {
   # Your application server logic 
   
   ## global options and themes can go here
-  theme_set(theme_bw(base_size = 12) + theme(legend.position = "bottom")) 
+  ggplot2::theme_set(ggplot2::theme_bw(base_size = 12) + ggplot2::theme(legend.position = "bottom")) 
   options(na.action = "na.omit")
   
   ## only run if selected by tab - this should be home page for each Tab level

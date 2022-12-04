@@ -18,7 +18,7 @@ mod_MicroTsNRS_ui <- function(id){
         ),
         conditionalPanel(
           condition = "input.NRSmts == 2",
-                  selectizeInput(inputId = nsMicroTsNRS("interp"), label = strong("Interpolate data?"), choices = c("Interpolate", "Raw data", "Interpolate with gap filling"), selected = "Interpolate")
+          selectizeInput(inputId = nsMicroTsNRS("interp"), label = strong("Interpolate data?"), choices = c("Interpolate", "Raw data", "Interpolate with gap filling"), selected = "Interpolate")
         ),
         conditionalPanel(
           condition = "input.NRSmts == 1 | input.NRSmts == 2", 
@@ -60,9 +60,9 @@ mod_MicroTsNRS_ui <- function(id){
                              plotOutput(nsMicroTsNRS("timeseries2")) %>% 
                                shinycssloaders::withSpinner(color="#0dc5c1"),
                              div(style="display:inline-block; float:right; width:60%",
-                             fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
-                             fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
-                             fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
+                                 fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
+                                 fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
+                                 fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
                     ),
                     tabPanel("Trend analysis by depth", value=2,
                              h6(textOutput(nsMicroTsNRS("PlotExp3"), container = span)),  
@@ -101,8 +101,8 @@ mod_MicroTsNRS_server <- function(id){
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$Parameters %in% input$ycol,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-      droplevels() %>% 
-      mutate(name = as.factor(.data$Parameters))
+        droplevels() %>% 
+        dplyr::mutate(name = as.factor(.data$Parameters))
       
     }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
@@ -146,32 +146,32 @@ mod_MicroTsNRS_server <- function(id){
     observeEvent({input$NRSmts == 1}, {
       
       gg_out1 <- reactive({
+        
+        if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+          return(NULL)
+        
+        if(input$scaler1){
+          trans <- 'log10'
+        } else {
+          trans <- 'identity'
+        }
+        
+        p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
+        p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
+          ggplot2::theme(axis.title.y = ggplot2::element_blank())
+        
+        p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
+        
+      }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
-      if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
-        return(NULL)
+      output$timeseries1 <- renderPlot({
+        gg_out1()
+      }, height = function() {length(unique(selectedData()$StationName)) * 200}) 
       
-      if(input$scaler1){
-        trans <- 'log10'
-      } else {
-        trans <- 'identity'
-      }
+      # Download -------------------------------------------------------
+      output$downloadData1 <- fDownloadButtonServer(input, selectedData(), "Trend") # Download csv of data
+      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Trend") # Download figure
       
-      p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
-      p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
-        ggplot2::theme(axis.title.y = ggplot2::element_blank())
-      
-      p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
-      
-    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
-    
-    output$timeseries1 <- renderPlot({
-      gg_out1()
-    }, height = function() {length(unique(selectedData()$StationName)) * 200}) 
-    
-    # Download -------------------------------------------------------
-    output$downloadData1 <- fDownloadButtonServer(input, selectedData(), "Trend") # Download csv of data
-    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Trend") # Download figure
-    
     })
     
     
@@ -181,31 +181,31 @@ mod_MicroTsNRS_server <- function(id){
     observeEvent({input$NRSmts == 1}, {
       
       gg_out2 <- reactive({
+        
+        if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+          return(NULL)
+        
+        trans <- 'identity'
+        if(input$scaler1){
+          trans <- 'log10'
+        }
+        
+        p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "NRS", trans = trans) + 
+          ggplot2::theme(legend.position = "none")
+        
+        p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) + 
+          ggplot2::theme(axis.title.y = ggplot2::element_blank())
+        
+        p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) + 
+          ggplot2::theme(axis.title.y = ggplot2::element_blank())
+        
+        #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple"))
+        
+        p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
+        
+        
+      }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
-      if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
-        return(NULL)
-      
-      trans <- 'identity'
-      if(input$scaler1){
-        trans <- 'log10'
-      }
-      
-      p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "NRS", trans = trans) + 
-        ggplot2::theme(legend.position = "none")
-      
-      p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) + 
-        ggplot2::theme(axis.title.y = ggplot2::element_blank())
-      
-      p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) + 
-        ggplot2::theme(axis.title.y = ggplot2::element_blank())
-      
-      #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple"))
-      
-      p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
-      
-      
-    }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
-    
       output$timeseries2 <- renderPlot({
         gg_out2()
       })
@@ -230,7 +230,7 @@ mod_MicroTsNRS_server <- function(id){
       }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
       gg_out3 <-  reactive({  
-      
+        
         interp <-  input$interp
         
         if(interp == 'Interpolate'){
@@ -242,15 +242,15 @@ mod_MicroTsNRS_server <- function(id){
         }
         
       }) %>% bindCache(input$ycol, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$interp)
-    
-    output$timeseries3 <- renderPlot({
-      gg_out3()
-    }, height = function() {length(unique(selectedDataDepth()$StationName)) * 200})
-    
+      
+      output$timeseries3 <- renderPlot({
+        gg_out3()
+      }, height = function() {length(unique(selectedDataDepth()$StationName)) * 200})
+      
       # Download -------------------------------------------------------
       output$downloadData3 <- fDownloadButtonServer(input, selectedData(), "Enviro") # Download csv of data
       output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3(), "Enviro") # Download figure
-
+      
     })
     
     # Plots by Parameters ---------------------------------------------------------
@@ -258,39 +258,39 @@ mod_MicroTsNRS_server <- function(id){
     observeEvent({input$NRSmts == 3}, {
       
       selectedData1 <- reactive({
-      req(input$Site)
-      req(input$p1)
-      validate(need(!is.na(input$Site), "Error: Please select a station."))
-      validate(need(!is.na(input$p1), "Error: Please select a parameter."))
+        req(input$Site)
+        req(input$p1)
+        validate(need(!is.na(input$Site), "Error: Please select a station."))
+        validate(need(!is.na(input$p1), "Error: Please select a parameter."))
+        
+        selectedData1 <- datNRSm %>% 
+          dplyr::filter(.data$StationName %in% input$Site,
+                        .data$Parameters %in% c(input$p1, input$p2)) %>%
+          tidyr::pivot_wider(c("StationName", "SampleDepth_m", "SampleTime_Local"), names_from = "Parameters", values_from = "Values", values_fn = mean)
+        
+      }) %>% bindCache(input$p1, input$p2, input$Site)
       
-      selectedData1 <- datNRSm %>% 
-        dplyr::filter(.data$StationName %in% input$Site,
-                      .data$Parameters %in% c(input$p1, input$p2)) %>%
-        tidyr::pivot_wider(c("StationName", "SampleDepth_m", "SampleTime_Local"), names_from = "Parameters", values_from = "Values", values_fn = mean)
+      gg_out4 <- reactive({
+        x <- rlang::sym(colnames(selectedData1()[, 5]))
+        y <- rlang::sym(colnames(selectedData1()[, 4]))
+        
+        titlex <- planktonr::pr_relabel(rlang::as_string(x), style = "ggplot")
+        titley <- planktonr::pr_relabel(rlang::as_string(y), style = "ggplot")
+        
+        ggplot2::ggplot(data = selectedData1()) +
+          ggplot2::geom_point(ggplot2::aes(!!x, !!y, colour = .data$StationName)) +
+          ggplot2::xlab(titlex) + ggplot2::ylab(titley) 
+        
+      }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
-    }) %>% bindCache(input$p1, input$p2, input$Site)
-    
-    gg_out4 <- reactive({
-      x <- rlang::sym(colnames(selectedData1()[, 5]))
-      y <- rlang::sym(colnames(selectedData1()[, 4]))
+      output$timeseries4 <- renderPlot({
+        gg_out4()
+      })
       
-      titlex <- planktonr::pr_relabel(rlang::as_string(x), style = "ggplot")
-      titley <- planktonr::pr_relabel(rlang::as_string(y), style = "ggplot")
+      # Download -------------------------------------------------------
+      output$downloadData4 <- fDownloadButtonServer(input, selectedData1(), "Compare") # Download csv of data
+      output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4(), "Compare") # Download figure
       
-      ggplot2::ggplot(data = selectedData1()) +
-        ggplot2::geom_point(ggplot2::aes(!!x, !!y, colour = .data$StationName)) +
-        ggplot2::xlab(titlex) + ggplot2::ylab(titley) 
-      
-    }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
-    
-    output$timeseries4 <- renderPlot({
-      gg_out4()
     })
-    
-    # Download -------------------------------------------------------
-    output$downloadData4 <- fDownloadButtonServer(input, selectedData1(), "Compare") # Download csv of data
-    output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4(), "Compare") # Download figure
-    
   })
-  })
-  }
+}

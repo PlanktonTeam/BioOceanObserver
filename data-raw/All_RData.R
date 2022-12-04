@@ -32,17 +32,17 @@ datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
 # CPR time series data
 datCPRz <- planktonr::pr_get_Indices("CPR", "Z", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
-  dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
+  dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
   droplevels()
 
 datCPRp <- planktonr::pr_get_Indices("CPR", "P", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
-  dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
+  dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
   droplevels()
 
 datCPRw <- planktonr::pr_get_Indices("CPR", "W", near_dist_km = 250)  %>% # just PCI atm
   tidyr::drop_na(BioRegion) %>% 
-  dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
+  dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
   droplevels()
 
 # FG time series data
@@ -51,11 +51,11 @@ NRSfgp <- planktonr::pr_get_FuncGroups("NRS", "P")
 
 CPRfgz <- planktonr::pr_get_FuncGroups("CPR", "Z", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
-  dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
+  dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
   droplevels()
 CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
-  dplyr::filter(!BioRegion %in% c("North", "North-west")) %>% 
+  dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
   droplevels()
 
 # BGC Environmental variables data
@@ -78,7 +78,7 @@ LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
 #   dplyr::left_join(ALTsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) %>%
 #   dplyr::left_join(CHLsat, by = c("Latitude", "Longitude", "Year", "Month", "Day"))
 
-# readr::write_csv(SatData, "SatDataNRS.csv")
+# readr::write_csv(SatData, file.path("data-raw","SatDataNRS.csv"))
 
 # STI data
 stiz <- planktonr::pr_get_STIdata("Z")
@@ -184,6 +184,7 @@ MooringClim <- purrr::map_dfr(Stations, pr_get_mooringClim) %>%
 # Get Species Info for each Taxa
 SpInfoP <- planktonr::pr_get_SpeciesInfo(Type = "P")
 SpInfoZ <- planktonr::pr_get_SpeciesInfo(Type = "Z")
+
 
 # Get Larval Fish Data 
 LFData <- planktonr::pr_get_LFData()
