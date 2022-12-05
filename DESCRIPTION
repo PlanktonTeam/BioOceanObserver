@@ -1,8 +1,12 @@
 Package: imosboo
 Title: Visualisation of IMOS biological data
 Version: 0.0.1.0000
-Authors@R: c(person('Claire H.', 'Davies', email = 'claire.davies@csiro.au', role = c('cre', 'aut')),
-             person('Jason D.', 'Everett', email = 'jase.everett@gmail.com', role = 'aut'))
+Authors@R: c(
+    person("Claire H.", "Davies", email = 'claire.davies@csiro.au', role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-0424-1835")),
+    person("Jason D.", "Everett", email = 'jase.everett@gmail.com', role = "aut",
+           comment = c(ORCID = "0000-0002-6681-8054"))
+    )
 Description: A visualisation tool for IMOS biologial data.
 License: MIT + file LICENSE
 Imports: 

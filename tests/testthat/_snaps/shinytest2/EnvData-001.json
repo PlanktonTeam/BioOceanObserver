@@ -13,6 +13,19 @@
     "NutrientsBGC_ui_1-NutrientsBGCRows": true,
     "NutrientsBGC_ui_1-NutrientsBGCStationisFactor": "factor",
     "NutrientsBGC_ui_1-NutrientsBGCValuesisNumeric": "numeric",
+    "PicoBGC_ui_1-PicoBGC": 10,
+    "PicoBGC_ui_1-PicoBGCCodeisChr": "character",
+    "PicoBGC_ui_1-PicoBGCDateisDate": [
+      "POSIXct",
+      "POSIXt"
+    ],
+    "PicoBGC_ui_1-PicoBGCDepthisNumeric": "numeric",
+    "PicoBGC_ui_1-PicoBGCMonthisNumeric": "numeric",
+    "PicoBGC_ui_1-PicoBGCParametersisChr": "character",
+    "PicoBGC_ui_1-PicoBGCProjectisChr": "character",
+    "PicoBGC_ui_1-PicoBGCRows": true,
+    "PicoBGC_ui_1-PicoBGCStationisFactor": "factor",
+    "PicoBGC_ui_1-PicoBGCValuesisNumeric": "numeric",
     "PigmentsBGC_ui_1-PigsBGC": 10,
     "PigmentsBGC_ui_1-PigsBGCCodeisChr": "character",
     "PigmentsBGC_ui_1-PigsBGCDateisDate": [
@@ -26,7 +39,7 @@
     "PigmentsBGC_ui_1-PigsBGCRows": true,
     "PigmentsBGC_ui_1-PigsBGCStationisFactor": "factor",
     "PigmentsBGC_ui_1-PigsBGCValuesisNumeric": "numeric",
-    "WaterBGC_ui_1-WaterBGC": 11,
+    "WaterBGC_ui_1-WaterBGC": 12,
     "WaterBGC_ui_1-WaterBGCCodeisChr": "character",
     "WaterBGC_ui_1-WaterBGCDateisDate": [
       "POSIXct",

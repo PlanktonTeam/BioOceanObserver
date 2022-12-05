@@ -21,7 +21,7 @@
     "PhytoTsCPR_ui_1-PhytoFGCPRRows": true,
     "PhytoTsCPR_ui_1-PhytoFGCPRValuesisNumeric": "numeric",
     "PhytoTsCPR_ui_1-PhytoFGCPRYearisNumeric": "numeric",
-    "PhytoTsCPR_ui_1-PhytoTsCPR": 10,
+    "PhytoTsCPR_ui_1-PhytoTsCPR": 11,
     "PhytoTsCPR_ui_1-PhytoTsCPRDateisDate": [
       "POSIXct",
       "POSIXt"

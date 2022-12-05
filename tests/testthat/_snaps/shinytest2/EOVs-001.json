@@ -27,6 +27,21 @@
     "PolLTM_ui_1-PolLTMStationisChr": "factor",
     "PolLTM_ui_1-PolLTMValuesisNumeric": "numeric",
     "PolLTM_ui_1-PolLTMYearisNumeric": "numeric",
-    "PolLTM_ui_1-PolLTMsdisNumeric": "numeric"
+    "PolLTM_ui_1-PolLTMsdisNumeric": "numeric",
+    "PolNRS_ui_1-PolNRS": 11,
+    "PolNRS_ui_1-PolNRSAnomalyisNumeric": "numeric",
+    "PolNRS_ui_1-PolNRSCodeisChr": "character",
+    "PolNRS_ui_1-PolNRSDateisDate": [
+      "POSIXct",
+      "POSIXt"
+    ],
+    "PolNRS_ui_1-PolNRSMMeansisNumeric": "numeric",
+    "PolNRS_ui_1-PolNRSMonthisNumeric": "numeric",
+    "PolNRS_ui_1-PolNRSParametersisChr": "character",
+    "PolNRS_ui_1-PolNRSRows": true,
+    "PolNRS_ui_1-PolNRSStationisChr": "factor",
+    "PolNRS_ui_1-PolNRSValuesisNumeric": "numeric",
+    "PolNRS_ui_1-PolNRSYearisNumeric": "numeric",
+    "PolNRS_ui_1-PolNRSsdisNumeric": "numeric"
   }
 }
