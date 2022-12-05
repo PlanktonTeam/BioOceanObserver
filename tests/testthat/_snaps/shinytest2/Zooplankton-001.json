@@ -10,7 +10,7 @@
     "ZooSpatial_ui_1-ZooSpatialSeasonisChr": "NULL",
     "ZooSpatial_ui_1-ZooSpatialTaxonisChr": "NULL",
     "ZooSpatial_ui_1-ZooSpatialfreqsampisNumeric": "NULL",
-    "ZooTsCPR_ui_1-ZtsCPR": 10,
+    "ZooTsCPR_ui_1-ZtsCPR": 11,
     "ZooTsCPR_ui_1-ZtsCPRDateisDate": [
       "POSIXct",
       "POSIXt"
@@ -21,7 +21,7 @@
     "ZooTsCPR_ui_1-ZtsCPRRows": true,
     "ZooTsCPR_ui_1-ZtsCPRValuesisNumeric": "numeric",
     "ZooTsCPR_ui_1-ZtsCPRYearisNumeric": "numeric",
-    "ZooTsNRS_ui_1-ZtsNRS": 10,
+    "ZooTsNRS_ui_1-ZtsNRS": 11,
     "ZooTsNRS_ui_1-ZtsNRSCodeisChr": "character",
     "ZooTsNRS_ui_1-ZtsNRSDateisDate": [
       "POSIXct",

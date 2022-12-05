@@ -63,7 +63,7 @@ app_ui <- function(request) {
                       fluidPage(
                         value = "info", mod_info_ui("info_1"))
              ),
-             navbarMenu("", icon = icon("share-alt"),
+             navbarMenu("", icon = icon("share-nodes"),
                         tabPanel(tags$a("", href = "https://twitter.com/intent/tweet?url=https%3A%2F%2Fjaseeverett.shinyapps.io%2FIMOS_BioOceanObserver&text=Check%20out%20the%20fantastic%20new%20IMOS%20Biological%20Ocean%20Obervatory%20being%20developed", target = "_blank",
                                         list(icon("twitter"), "Twitter"))),
                         tabPanel(tags$a("", href = "https://www.facebook.com.sharer/sharer.php?u=https%3A%2F%2Fjaseeverett.shinyapps.io%2FIMOS_BioOceanObserver", target = "_blank",

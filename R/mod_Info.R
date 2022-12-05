@@ -98,6 +98,7 @@ mod_info_ui <- function(id){
                 tabPanel("Sampling Details", value = 5,
                          shiny::fluidPage(
                            shiny::h2("NRS"),
+                           shiny::h6("Note: Ningaloo and Esperance only operated for 3 years and were only sampled seasonally. The data is sparse for these stations."),
                            shiny::dataTableOutput(nsInfo("NRSDataTable")),
                            shiny::h4("Zooplankton"),
                            shiny::h5("Zooplankton is collected with a Heron drop net sampling only on the descent, 60cm diameter, 100 micron mesh net. This is a depth integrated sample analysed by light microscopy"),
