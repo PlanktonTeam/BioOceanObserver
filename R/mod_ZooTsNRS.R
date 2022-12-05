@@ -11,7 +11,7 @@ mod_ZooTsNRS_ui <- function(id){
   nsZooTsNRS <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, panel_id = "NRSzts", input = input, dat = datNRSz),
+      fPlanktonSidebar(id = id, panel_id = "NRSzts", dat = datNRSz),
       fPLanktonPanel(id = id, panel_id = "NRSzts")
     )
   )

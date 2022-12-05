@@ -19,7 +19,7 @@ mod_MoorBGC_ui <- function(id){
                            selected = 'Port Hacking')),
       mainPanel(
         h6(textOutput(nsMoorBGC("PlotExp"), container = span)),
-        plotOutput(nsMoorBGC("timeseries1")) %>% withSpinner(color="#0dc5c1"),
+        plotOutput(nsMoorBGC("timeseries1")) %>% shinycssloaders::withSpinner(color="#0dc5c1"),
         div(style="display:inline-block; float:right; width:60%",
             fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
             fButtons(id, button_id = "downloadData1", label = "Data TS", Type = "Download"),
@@ -42,7 +42,7 @@ mod_MoorBGC_server <- function(id){
                                                by = "day")) %>% 
               dplyr::mutate(TIME = lubridate::yday(.data$SampleDate) + 10956, 
                             year = lubridate::year(.data$SampleDate)) %>% 
-              dplyr::inner_join(df %>% dplyr::filter(StationName %in% Station), by = 'TIME') %>%
+              dplyr::inner_join(df %>% dplyr::filter(.data$StationName %in% Station), by = 'TIME') %>%
               unique()
     }
     
@@ -80,8 +80,8 @@ mod_MoorBGC_server <- function(id){
                                                   from = lubridate::ceiling_date(Sys.Date() - lubridate::years(noYear), "year"),
                                                   by = "day")) %>% 
         dplyr::mutate(DOY = lubridate::yday(.data$SampleDate) + 10956) %>% 
-        dplyr::inner_join(df %>% dplyr::filter(StationName %in% Station), by = 'DOY') %>%
-        dplyr::select(-c(.data$DOY)) %>%
+        dplyr::inner_join(df %>% dplyr::filter(.data$StationName %in% Station), by = 'DOY') %>%
+        dplyr::select(-"DOY") %>%
         tidyr::pivot_wider(c(.data$SampleDate, .data$StationName, .data$StationCode), names_from = 'Names', values_from = 'CLIM') 
     }
       
