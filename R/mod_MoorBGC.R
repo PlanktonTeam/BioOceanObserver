@@ -40,7 +40,7 @@ mod_MoorBGC_server <- function(id){
         df <- data.frame(SampleDate = seq.Date(to = lubridate::ceiling_date(Sys.Date(), "year"),
                                                from = lubridate::ceiling_date(Sys.Date() - lubridate::years(noYear), "year"),
                                                by = "day")) %>% 
-              dplyr::mutate(TIME = lubridate::yday(.data$SampleDate), 
+              dplyr::mutate(TIME = lubridate::yday(.data$SampleDate) + 10956, 
                             year = lubridate::year(.data$SampleDate)) %>% 
               dplyr::inner_join(df %>% dplyr::filter(StationName %in% Station), by = 'TIME') %>%
               unique()
@@ -79,8 +79,8 @@ mod_MoorBGC_server <- function(id){
       df <- data.frame(SampleDate = seq.Date(to = lubridate::ceiling_date(Sys.Date(), "year"),
                                                   from = lubridate::ceiling_date(Sys.Date() - lubridate::years(noYear), "year"),
                                                   by = "day")) %>% 
-        dplyr::mutate(DOY = lubridate::yday(.data$SampleDate)) %>% 
-        dplyr::inner_join(MooringTS %>% dplyr::filter(StationName %in% Station), by = 'DOY') %>%
+        dplyr::mutate(DOY = lubridate::yday(.data$SampleDate) + 10956) %>% 
+        dplyr::inner_join(df %>% dplyr::filter(StationName %in% Station), by = 'DOY') %>%
         dplyr::select(-c(.data$DOY)) %>%
         tidyr::pivot_wider(c(.data$SampleDate, .data$StationName, .data$StationCode), names_from = 'Names', values_from = 'CLIM') 
     }
