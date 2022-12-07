@@ -11,8 +11,8 @@ mod_PhytoTsNRS_ui <- function(id){
   nsPhytoTsNRS <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, panel_id = "NRSpts", dat = datNRSp),
-      fPLanktonPanel(id = id, panel_id = "NRSpts"),
+      fPlanktonSidebar(id = id, tabsetPanel_id = "NRSpts", dat = datNRSp),
+      fPLanktonPanel(id = id, tabsetPanel_id = "NRSpts"),
     )
   )
 }
@@ -61,7 +61,7 @@ mod_PhytoTsNRS_server <- function(id){
 
     # Plot Trends -------------------------------------------------------------
     observeEvent({input$NRSpts == 1}, {
-
+      
       gg_out1 <- reactive({
         if (is.null(datNRSp$StationCode)) {return(NULL)}
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
