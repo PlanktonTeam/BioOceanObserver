@@ -15,17 +15,38 @@
 #' @importFrom dplyr filter group_by inner_join left_join mutate n select summarise ungroup
 #' @importFrom tidyr drop_na
 #' @importFrom shinycssloaders withSpinner
+#' @importFrom jsonlite fromJSON
 #' @noRd
 
 # Load up-to-date data
-
-fileURL <- "https://data-cbr.it.csiro.au/files/sc-opendap-work/work/fileserver_tests/imosboo/data/sysdata.rda"
+old.data <- T
 tryCatch({
+  # Access data from local server (fastest)
+  print("Attempting to access data from opendap")
+  opendap.url <- "https://data-cbr.it.csiro.au/files/sc-opendap-work/work/sc-artefact/imosboo/sysdata.rda"
   tmp <- tempfile(fileext='.rda')   
-  httr::GET(fileURL, write_disk(tmp))
+  httr::GET(opendap.url, httr::write_disk(tmp))
   load(tmp)
+  print("Up-to-date data accessed from opendap")
+  old.data <- F
 }, error = function(e) { 
-  "Building the imosboo package using built in sysdata.rda. If this message appears when running the app, the data being served is not up-to-date."
+  print(e)
+  tryCatch({
+    # Access data from DAP (fallback)
+    print("Attempting to access data from dap")
+    dap.url <- "https://data.csiro.au/dap/ws/v2/collections/csiro:54520/data"
+    dap.data <- jsonlite::fromJSON(rawToChar(httr::GET(dap.url)$content))
+    file.req <- dap.data$file$filename 
+    tmp <- tempfile(fileext='.rda')   
+    httr::GET(dap.data$file$link$href[[which(dap.data$file$filename == "sysdata.rda")]], httr::write_disk(tmp))
+    load(tmp)
+    print("Up-to-date data accessed from dap")
+    old.data <- F
+  }, error = function(e) { 
+    # Warn that data is not up-to-date
+    print(e)
+    print("Building the imosboo package using built in sysdata.rda. If this message appears when running the app, the data being served is not up-to-date.")
+  }) 
 }) 
 
 app_server <- function( input, output, session ) {
@@ -34,6 +55,26 @@ app_server <- function( input, output, session ) {
   ## global options and themes can go here
   theme_set(theme_bw(base_size = 12) + theme(legend.position = "bottom")) 
   options(na.action = "na.omit")
+  
+
+  if (old.data)
+    showModal(modalDialog(
+      title = HTML(paste0('<span style="padding-right: 3px; padding-top: 3px; float: right">',
+                          '<img class="logo" src="https://www.csiro.au/~/media/Web-team/Images/CSIRO_Logo/logo.png" alt="CSIRO logo" style="width:50px;height:50px;"></img></span>',
+                          "<p style='font-size: 1.1em; margin-bottom: 0; padding-top: 12px;'>CSIRO Data Access Portal</p>")),
+      HTML(paste0("<p>The IMOS data that populates the Biological Ocean Observer is sourced from a ",
+                  "<a href = https://data.csiro.au/collection/csiro:54520>CSIRO Data Access Portal collection</a>", 
+                  " that cannot be reached at this time.</p>",
+                  "<span style='font-size: 1.15em'>Historical IMOS data is currently visualised on this site.</span>")),
+  
+      # footer = NULL,
+      # footer = tagList(
+      #   p("Please contact ",
+      #      HTML(paste0('<a href=mailto:', "contactEmail", '?subject=Metabarcode%20Gap%20Analytics%20Tool>', "contactName", '</a>')),
+      #      paste0(" if more information is required."))
+      # ),
+      size = "m"
+    ))
 
 ## only run if selected by tab - this should be home page for each Tab level
     ### Snapshot page
