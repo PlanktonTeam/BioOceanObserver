@@ -19,7 +19,7 @@
 #' @noRd
 
 # Load up-to-date data
-old.data <- T
+old.data <- TRUE
 tryCatch({
   # Access data from local server (fastest)
   print("Attempting to access data from opendap")
@@ -28,7 +28,7 @@ tryCatch({
   httr::GET(opendap.url, httr::write_disk(tmp))
   load(tmp)
   print("Up-to-date data accessed from opendap")
-  old.data <- F
+  old.data <- FALSE
 }, error = function(e) { 
   print(e)
   tryCatch({
@@ -41,7 +41,7 @@ tryCatch({
     httr::GET(dap.data$file$link$href[[which(dap.data$file$filename == "sysdata.rda")]], httr::write_disk(tmp))
     load(tmp)
     print("Up-to-date data accessed from dap")
-    old.data <- F
+    old.data <- FALSE
   }, error = function(e) { 
     # Warn that data is not up-to-date
     print(e)
@@ -56,7 +56,7 @@ app_server <- function( input, output, session ) {
   theme_set(theme_bw(base_size = 12) + theme(legend.position = "bottom")) 
   options(na.action = "na.omit")
   
-
+  ### Informative pop-up modal; advises that DAP is inaccessible and historical data is being used
   if (old.data)
     showModal(modalDialog(
       title = HTML(paste0('<span style="padding-right: 3px; padding-top: 3px; float: right">',
@@ -66,13 +66,6 @@ app_server <- function( input, output, session ) {
                   "<a href = https://data.csiro.au/collection/csiro:54520>CSIRO Data Access Portal collection</a>", 
                   " that cannot be reached at this time.</p>",
                   "<span style='font-size: 1.15em'>Historical IMOS data is currently visualised on this site.</span>")),
-  
-      # footer = NULL,
-      # footer = tagList(
-      #   p("Please contact ",
-      #      HTML(paste0('<a href=mailto:', "contactEmail", '?subject=Metabarcode%20Gap%20Analytics%20Tool>', "contactName", '</a>')),
-      #      paste0(" if more information is required."))
-      # ),
       size = "m"
     ))
 
