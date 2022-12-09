@@ -79,6 +79,17 @@ mod_LFishSeason_server <- function(id){
     
     
     LFLeaflet_obs <- function(sdf, name){
+      
+      labs_fish <- lapply(seq(nrow(sdf)), function(i) {
+        paste("<strong>Date:</strong>", sdf$SampleTime_Local[i], "<br>",
+              "<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
+              "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
+              "<strong>Count:</strong>", sdf$Count[i], "<br>",
+              "<strong>Abundance (1000 m\u207B\u00B3):</strong>", round(sdf$Abundance_1000m3[i], digits = 2), "<br>",
+              "<strong>Temperature (\u00B0C):</strong>", sdf$Temperature_degC[i], "<br>",
+              "<strong>Depth (m):</strong>", sdf$SampleDepth_m[i], "<br>")})
+      
+      
       leaflet::leafletProxy(name, data = sdf) %>%
         leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%
         leaflet::clearGroup("Present") %>%
@@ -89,7 +100,8 @@ mod_LFishSeason_server <- function(id){
                                   opacity = 1,
                                   fillOpacity = 1,
                                   radius = 2,
-                                  group = "Present")
+                                  group = "Present",
+                                  label = lapply(labs_fish, htmltools::HTML))
     }
     
     
