@@ -48,7 +48,7 @@ mod_LFishSeason_server <- function(id){
     
     LFDatar <- reactive({
       dat <- LFData %>%
-        dplyr::filter(.data$Species2 == input$species & .data$Count > 0) %>% 
+        # dplyr::filter(.data$Species2 == input$species & .data$Count > 0) %>% 
         dplyr::distinct(.data$Latitude, .data$Longitude, .keep_all = TRUE) %>% 
         dplyr::mutate(Season = dplyr::case_when(.data$Month_Local >= 3 &.data$Month_Local <= 5 ~ "Autumn",
                                                 .data$Month_Local >= 6 &.data$Month_Local <= 8 ~ "Winter",
