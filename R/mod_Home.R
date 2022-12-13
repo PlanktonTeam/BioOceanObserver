@@ -130,7 +130,7 @@ mod_home_server <- function(id){
     
     observeEvent({input$home == 2}, {
       output$progplot <- leaflet::renderLeaflet({
-        planktonr::pr_plot_ProgressMap(PMapData2, interactive = TRUE)
+        planktonr::pr_plot_ProgressMap(PMapData, interactive = TRUE, labels = FALSE)
       })
     })
     
