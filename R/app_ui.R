@@ -9,7 +9,8 @@ app_ui <- function(request) {
   # Your application UI logic 
   navbarPage(golem_add_external_resources(), # Leave this function for adding external resources
              id = "navbar",  
-             title = div(img(src = "www/logo.png", style="margin-top:-10px; padding-right:5px; padding-bottom:2px", height = 40), "The Biological Ocean Observer"),
+             title = span(img(src = "www/logo.png", style="padding-right:5px", height = 40), "Biological Ocean Observer"),
+             # title = div(img(src = "www/logo.png", style="margin-top:-10px; padding-right:5px; padding-bottom:2px", height = 40), "The Biological Ocean Observer"),
              windowTitle = "The Biological Ocean Observer",
              theme = bslib::bs_theme(version = 5, 
                                      bootswatch = "flatly",
@@ -96,11 +97,12 @@ golem_add_external_resources <- function(){
       app_title = 'imosboo'
     ),
     # Add here other external resources
-    # for example, you can add shinyalert::useShinyalert() 
-    
+    # for example, you can add shinyalert::useShinyalert()
+
     # Script for CSIRO branding tab ----
-    # tags$script(type="text/javascript",
-    # src="https://www.csiro.au/themes/default/js/csirotab.min.js"),
+    tags$script(type="text/javascript", src="https://www.csiro.au/themes/default/js/csirotab.min.js"),
+    # Custom CSIRO styling CSS for modal ----
+    tags$link(rel = "stylesheet", type = "text/css", href = "css/csiromodal.css"),
     # Google fonts ----
     tags$link(href="https://fonts.googleapis.com/css?family=Open+Sans",
               rel="stylesheet"),

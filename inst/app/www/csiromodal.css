@@ -1,0 +1,80 @@
+/*-------------//
+   Popup Modal
+//-------------*/
+
+/* Position */
+
+.modal-open .modal {
+  top: 25%;
+}
+
+/* Styling */
+
+.modal-content {
+  -webkit-box-shadow: 0 0 0 transparent;
+  -moz-box-shadow: 0 0 0 transparent;
+  box-shadow: 0 0 0 transparent;
+  border: 0;
+}
+
+.modal-content a {
+  color: #00596c;
+}
+
+.modal-content a:hover {
+  color: #005c97;
+    text-decoration: underline;
+}
+
+.modal-title {
+  font-family: Montserrat,"Open Sans", sans-serif;
+  width: 100%;
+  margin-top: 0;
+}
+
+.modal-header {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.modal-footer {
+  border-top: 1px solid #e5e5e5;
+}
+
+/* button */
+.modal-content .btn {
+  padding-left: 1.5em !important;
+  padding-right: 1.5em !important;
+  font-family: "Montserrat","Open sans",sans-serif !important;
+}
+
+/* default button style */
+.modal-content .btn-default, .modal-content .btn-default:active, .modal-content .btn-default:focus {
+    background-color: #004b87 !important;
+    border-color: #004b87 !important;
+    color: #ffffff !important;
+    border-radius: 4px !important;
+    transition:.2s background-color,.2s border,.3s padding !important;
+    box-shadow: none !important;
+}
+
+/* on hover default button style */
+.modal-content .btn-default:hover {
+  color: #00313c !important;
+  border-color: #f0f0f0 !important;
+  background-color: #f0f0f0 !important;
+  box-shadow: none;
+}
+
+.modal-content .btn-default:active:focus {
+  border-color: #004b87 !important;
+}
+
+/* disabled button */
+.modal-content .btn.disabled, .modal-content .btn[disabled], fieldset[disabled] .btn {
+  color: #00313c !important;
+  border-color: #f0f0f0 !important;
+  background-color: #f0f0f0 !important;
+  box-shadow: none;
+  opacity: 0.65;
+  cursor: not-allowed;
+}
