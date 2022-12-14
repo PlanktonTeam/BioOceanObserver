@@ -37,16 +37,7 @@ mod_MoorBGC_ui <- function(id){
         shiny::br(), # Give a bit of space for the menu to expand
         shiny::br()
       ),
-      mainPanel(
-        h6(textOutput(nsMoorBGC("PlotExp"), container = span)),
-        plotOutput(nsMoorBGC("timeseries1")) %>% 
-          shinycssloaders::withSpinner(color="#0dc5c1"),
-        div(style="display:inline-block; float:right; width:60%",
-            fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
-            fButtons(id, button_id = "downloadData1", label = "Data TS", Type = "Download"),
-            fButtons(id, button_id = "downloadData2", label = "Data Clim", Type = "Download"),
-            fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
-      )
+      fEnviroPanel(id = id)
     )
   )
 }

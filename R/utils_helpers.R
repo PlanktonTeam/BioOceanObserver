@@ -178,10 +178,13 @@ fEnviroPanel <- function(id){
     h6(textOutput(ns("PlotExp"), container = span)),
     plotOutput(ns("timeseries1")) %>% 
       shinycssloaders::withSpinner(color="#0dc5c1"),
-    div(style="display:inline-block; float:right; width:60%",
-        fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
-        fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
-        fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
+    shiny::div(style="display:inline-block; float:right; width:60%",
+               fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+               if (id == "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData2", label = "Data TS", Type = "Download")},
+               if (id == "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData3", label = "Data Clim", Type = "Download")},
+               if (id != "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download")},
+               fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"),
+    )
   )
 }
 
