@@ -42,7 +42,7 @@ mod_ZooSpatial_ui <- function(id){
                            h6(textOutput(nsZooSpatial("STIsExp"), container = span)),
                            plotOutput(nsZooSpatial("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                   ),
-                  tabPanel("Species Diurnal Behviour", value = 3, 
+                  tabPanel("Species Diurnal Behaviour", value = 3, 
                            h6(textOutput(nsZooSpatial("SDBsExp"), container = span)),
                            plotOutput(nsZooSpatial("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                   ),
@@ -182,7 +182,7 @@ mod_ZooSpatial_server <- function(id){
         
       }) %>% bindCache(input$species)
       
-      # sti plot
+      # daynight plot
       output$DNs <- renderPlot({
         
         validate(

@@ -170,54 +170,13 @@ mod_home_server <- function(id){
       
       output$TaxaPie <- shiny::renderPlot({
         
-        p1 <- ggplot2::ggplot(data = NRSfgp %>% 
-                                dplyr::group_by(.data$Parameters) %>% 
-                                dplyr::summarise(mean = mean(.data$Values, na.rm = TRUE)), 
-                              ggplot2::aes(x = "", y = mean, fill = .data$Parameters)) +
-          ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
-          ggplot2::coord_polar("y", start = 0) +
-          ggplot2::theme_void() +  # remove background, grid, numeric labels
-          ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) + 
-          ggplot2::scale_fill_brewer(palette = "Set1") +
-          ggplot2::guides(fill = ggplot2::guide_legend(title = "Phytoplankton", nrow = 2, title.position = "top", title.hjust = 0.5, title.theme = ggplot2::element_text(face = "bold"))) +
-          ggplot2::ggtitle("NRS")
+        p1 <- planktonr::pr_plot_PieFG(NRSfgp)
         
-        p2 <- ggplot2::ggplot(data = CPRfgp %>% dplyr::group_by(.data$Parameters) %>% 
-                                dplyr::summarise(mean = mean(.data$Values, na.rm = TRUE)), 
-                              ggplot2::aes(x = "", y = mean, fill = .data$Parameters)) +
-          ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
-          ggplot2::coord_polar("y", start = 0) +
-          ggplot2::theme_void() +  # remove background, grid, numeric labels
-          ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) + 
-          ggplot2::scale_fill_brewer(palette = "Set1") +
-          ggplot2::guides(fill = ggplot2::guide_legend(title = "Phytoplankton", nrow = 2, title.position = "top", title.hjust = 0.5, title.theme = ggplot2::element_text(face = "bold"))) +
-          ggplot2::ggtitle("CPR")
+        p2 <- planktonr::pr_plot_PieFG(CPRfgp)
         
-        p3 <- ggplot2::ggplot(data = NRSfgz %>% dplyr::group_by(.data$Parameters) %>% 
-                                dplyr::summarise(mean = mean(.data$Values, na.rm = TRUE)), 
-                              ggplot2::aes(x = "", y = mean, fill = .data$Parameters)) +
-          ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
-          ggplot2::coord_polar("y", start = 0) +
-          ggplot2::theme_void() +  # remove background, grid, numeric labels
-          ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) + 
-          ggplot2::scale_fill_brewer(palette = "Set1") +
-          ggplot2::guides(fill = ggplot2::guide_legend(title = "Zooplankton", nrow = 2, title.position = "top", title.hjust = 0.5, title.theme = ggplot2::element_text(face = "bold"))) +
-          ggplot2::ggtitle("NRS")
+        p3 <- planktonr::pr_plot_PieFG(NRSfgz)
         
-        p4 <- ggplot2::ggplot(data = CPRfgz %>% dplyr::group_by(.data$Parameters) %>% 
-                                dplyr::summarise(mean = mean(.data$Values, na.rm = TRUE)), 
-                              ggplot2::aes(x = "", y = mean, fill = .data$Parameters)) +
-          ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
-          ggplot2::coord_polar("y", start = 0) +
-          ggplot2::theme_void() +  # remove background, grid, numeric labels
-          ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) + 
-          ggplot2::scale_fill_brewer(palette = "Set1") +
-          ggplot2::guides(fill = ggplot2::guide_legend(title = "Zooplankton", 
-                                                       nrow = 2, 
-                                                       title.position = "top", 
-                                                       title.hjust = 0.5, 
-                                                       title.theme = ggplot2::element_text(face = "bold"))) +
-          ggplot2::ggtitle("CPR")
+        p4 <- planktonr::pr_plot_PieFG(CPRfgz)
         
         p <- (patchwork::wrap_plots(p1, p2, guides = "collect", ncol = 2) &
                 ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = ggplot2::element_text(face = "bold"))) | 
