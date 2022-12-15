@@ -108,8 +108,9 @@ mod_PolLTM_server <- function(id){
       patchwork::area(4,1,5,3),
       patchwork::area(6,1,7,3),
       patchwork::area(8,1,9,3),
-      patchwork::area(10,1,11,3),
-      patchwork::area(12,1,13,3)
+      patchwork::area(10,1,11,3), # Header
+      patchwork::area(12,1,13,3),
+      patchwork::area(14,1,15,3)
     )
     
     gg_out1 <- reactive({
@@ -132,7 +133,9 @@ mod_PolLTM_server <- function(id){
       
       patchwork::wrap_elements(grid::textGrob(StationSummary2, gp = grid::gpar(fontsize=16))) +
         grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20)) + 
-        p1 + p2 + p4 + p7 + p3 +
+        p7 + p3 + 
+        grid::textGrob("Biocehmical EOVs", gp = grid::gpar(fontsize=20)) + 
+        p1 + p2 + p4 + 
         patchwork::plot_layout(design = layout1) +
         patchwork::plot_annotation(title = input$SiteLTM) &
         ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),

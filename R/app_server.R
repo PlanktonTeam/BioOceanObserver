@@ -72,7 +72,7 @@ app_server <- function( input, output, session ) {
   
   # Microbes ----------------------------------------------------------------
   
-  
+  #only on tabpanel so observeEvent() within server for each minor tab
   
   # Phytoplankton -----------------------------------------------------------
   

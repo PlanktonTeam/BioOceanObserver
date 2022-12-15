@@ -131,11 +131,11 @@ PolLTM <- planktonr::pr_get_PolicyData("LTM") %>%
 NRSinfo <- planktonr::pr_get_PolicyInfo("NRS")
 CPRinfo <- planktonr::pr_get_PolicyInfo("CPR")
 
-
-# Species distribution data -----------------------------------------------
-
-fMapDataz <- planktonr::pr_get_FreqMap("Z")
-fMapDatap <- planktonr::pr_get_FreqMap("P")
+# Species distribution data
+fMapDataz <- planktonr::pr_get_FreqMap("Z") %>% 
+  dplyr::select(-c('samples', 'freq', 'freqsamp'))
+fMapDatap <- planktonr::pr_get_FreqMap("P") %>% 
+  dplyr::select(-c('samples', 'freq', 'freqsamp'))
 
 legdat <- data.frame(
   text = c("Absent", "Seen in 25%", "50%", "75%", "100 % of Samples","Absent", "Seen in 25%", "50%", "75%", "100 % of Samples"),

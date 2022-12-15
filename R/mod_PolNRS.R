@@ -18,7 +18,7 @@ mod_PolNRS_ui <- function(id){
       mainPanel(id = "EOV Biomass by NRS", 
                 h6(htmlOutput(nsPolNRS("PlotExp1"), container = span)),
                 # h6(verbatimTextOutput(nsPolNRS("PlotExp5"))),
-                plotOutput(nsPolNRS("timeseries1"), height = 1600) %>% 
+                plotOutput(nsPolNRS("timeseries1"), height = 1800) %>% 
                   shinycssloaders::withSpinner(color="#0dc5c1"), 
                 # h6(verbatimTextOutput(nsPolNRS("PlotExp3")),
                    div(style="display:inline-block; float:right; width:60%",
@@ -128,7 +128,7 @@ mod_PolNRS_server <- function(id){
       patchwork::area(24,1,25,3), # NH4
       patchwork::area(26,1,27,3), # NO2
       patchwork::area(28,1,29,3), # NO3
-      patchwork::area(30,1,30,3)  # 02
+      patchwork::area(30,1,31,3)  # 02
     )
     
     gg_out1 <- reactive({
