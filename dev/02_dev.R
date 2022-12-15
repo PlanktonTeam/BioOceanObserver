@@ -30,6 +30,7 @@ usethis::use_package( "tidyr")
 usethis::use_package( "httr")
 usethis::use_package( "jsonlite")
 usethis::use_package( "pracma")
+usethis::use_package( "futile.logger")
 usethis::use_pipe()
 
 # usethis::use_dev_package("planktonr", type = "Imports", remote = "PlanktonTeam/planktonr@AddShinyFuncs")
