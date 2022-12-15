@@ -160,8 +160,8 @@ mod_ZooSpatial_server <- function(id){
           need(nrow(selectedSTI()) > 20, "Not enough data for this copepod species")
         )
         
-        plotsti <- planktonr::pr_plot_STI(selectedSTI())
-        plotsti
+        planktonr::pr_plot_STI(selectedSTI())
+        
         
       }) %>% bindCache(input$species)
       

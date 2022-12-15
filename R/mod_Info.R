@@ -13,8 +13,6 @@ mod_info_ui <- function(id){
     tabsetPanel(id = "info",# type = "pills",
                 tabPanel("Frequently Asked Questions", value = 1,
                          shiny::fluidPage(
-                           shiny::h2(shiny::strong()), 
-                           shiny::br(),
                            shiny::h3(shiny::strong("App")),
                            shiny::h4("Does the app use real time data?"),
                            shiny::p("No, to keep the App efficient the data is harvested from the AODN monthly and pre-wrangled."),
@@ -27,7 +25,7 @@ mod_info_ui <- function(id){
                            shiny::h4("How can I access planktonr?"),
                            shiny::p("Via R studio use remotes::install_github('PlanktonTeam/planktonr', force = TRUE)"),
                            shiny::h4("How can I get more details on how these figures were put together?"),
-                           shiny::p("Click on the R Code Example' button to follow a link to vignettes detailing the process")
+                           shiny::p("Click on the 'R Code Example' button to follow a link to vignettes detailing the process")
                          )
                 ),
                 tabPanel("Technical Information", value = 2,
@@ -35,10 +33,11 @@ mod_info_ui <- function(id){
                            shiny::h3("Data binning"),
                            shiny::h4("Depths"),
                            shiny::p("Depths binned for ease of plotting.
-                                    Water column samples for the NRS stations have been removed - more information can be found at ...."),
+                                    Water column samples for the NRS stations have been removed, these were taken from the beginning of the program until July 2017.
+                                    The samples taken at defined depths have been included here as they are more informative. All data can be sourced using planktonr"),
                            shiny::h4("Contour plots"),
-                           shiny::p("There is an option to interpolate the data in the contour plots. This does not account for NAs. If the option to fill NAs is selected 
-                                    the maximum gap to interpolate over is 3. This can be changed if using planktonr"),
+                           shiny::p("There is an option to interpolate the data in the contour plots used for the environmental data taken at defined depths. This method does not fill in NAs in the dataset. If the option to fill NAs is selected 
+                                    the maximum gap interpolated over is 3."),
                            shiny::br(),
                            shiny::h3("Outliers"),
                            shiny::p("Outliers are removed when they are greater than 2 standard deviations from the mean using pr_remove_outliers. Negative values for nutrients etc. are also set 
@@ -99,6 +98,9 @@ mod_info_ui <- function(id){
                          shiny::fluidPage(
                            shiny::h2("NRS"),
                            shiny::h6("Note: Ningaloo and Esperance only operated for 3 years and were only sampled seasonally. The data is sparse for these stations."),
+                           shiny::h6("Note: The NRS sampling period goes from mid 2009 until present. Prior to this some environmental parameters were also collected at the 
+                                     Long Term Monitoring Stations - ROT, MAI, PHB. These are shown on the Long Term Monitoring tab under EOVs. Generally though in this 
+                                     APP we concentrate on the visualisation of the NRS period where more parameters have been collected in a consistent manner across stations"),
                            shiny::dataTableOutput(nsInfo("NRSDataTable")),
                            shiny::h4("Zooplankton"),
                            shiny::h5("Zooplankton is collected with a Heron drop net sampling only on the descent, 60cm diameter, 100 micron mesh net. This is a depth integrated sample analysed by light microscopy"),
