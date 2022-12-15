@@ -149,7 +149,7 @@ legdat <- data.frame(
 
 legendPlot <- ggplot2::ggplot() +
   ggplot2::geom_point(data = legdat, ggplot2::aes(x, y, size = size, colour = colnames)) +
-  ggplot2::scale_color_manual(values = c("lightblue1", "skyblue3", "dodgerblue2", "blue1", "navyblue", "#CCFFCC", "#99FF99", "#669933", "#009900", "#006600")) + 
+  ggplot2::scale_colour_manual(values = c("lightblue1", "skyblue3", "dodgerblue2", "blue1", "navyblue", "#CCFFCC", "#99FF99", "#669933", "#009900", "#006600")) + 
   ggplot2::geom_text(data = legdat, ggplot2::aes(x = xt, y = yt, label = text)) +
   ggplot2::geom_text(ggplot2::aes(x = c(5.5,5.5), y = c(1.1,1), label = c("CPR", "NRS"))) +
   ggplot2::theme_void() +

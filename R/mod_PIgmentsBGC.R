@@ -62,17 +62,12 @@ mod_PigmentsBGC_server <- function(id){
     
     # Create timeseries object the plotOutput function is expecting
     gg_out1 <- reactive({
-      
       trend <-  input$smoother
-      
       planktonr::pr_plot_Enviro(selected(), Trend = trend)
-      
     }) %>% bindCache(input$station, input$parameter, input$date, input$smoother)
     
     output$timeseries1 <- renderPlot({
-      
       gg_out1()
-      
     }, height = function() {length(unique(selected()$SampleDepth_m)) * 200}) 
     
     # Download -------------------------------------------------------

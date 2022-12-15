@@ -78,7 +78,7 @@ mod_MoorBGC_server <- function(id){
         ggplot2::geom_line(ggplot2::aes(y = .data$MLD, colour = 'MLD')) +
         ggplot2::geom_line(ggplot2::aes(y = .data$Bottom, colour = 'Bottom')) +
         ggplot2::facet_wrap(~ .data$StationName, scales = "free", ncol = 1) +
-        ggplot2::scale_color_manual(name = 'Depth', values = c('dark blue', 'blue', 'light blue')) +
+        ggplot2::scale_colour_manual(name = 'Depth', values = c('dark blue', 'blue', 'light blue')) +
         ggplot2::scale_x_date(breaks = '1 year') +
         ggplot2::labs(y = planktonr::pr_relabel("Temperature_degC", style = 'ggplot'), x = 'Years') +
         ggplot2::theme_minimal() +
