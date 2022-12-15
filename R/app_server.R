@@ -7,43 +7,43 @@
 #' @noRd
 #' 
 
-# Load up-to-date data
-old.data <- TRUE
-tryCatch({
-  # Access data from local server (fastest)
-  futile.logger::flog.info("Attempting to access data from opendap")
-  opendap.url <- "https://data-cbr.it.csiro.au/files/sc-opendap-work/work/sc-artefact/imosboo/sysdata.rda"
-  tmp <- tempfile(fileext='.rda')   
-  httr::GET(opendap.url, httr::write_disk(tmp))
-  load(tmp)
-  futile.logger::flog.info("Up-to-date data accessed from opendap")
-  old.data <- FALSE
-}, error = function(e) { 
-  futile.logger::flog.info(e)
-  tryCatch({
-    # Access data from DAP (fallback)
-    futile.logger::flog.info("Attempting to access data from dap")
-    dap.url <- "https://data.csiro.au/dap/ws/v2/collections/csiro:54520/data"
-    dap.data <- jsonlite::fromJSON(rawToChar(httr::GET(dap.url)$content))
-    file.req <- dap.data$file$filename 
-    tmp <- tempfile(fileext='.rda')   
-    httr::GET(dap.data$file$link$href[[which(dap.data$file$filename == "sysdata.rda")]], httr::write_disk(tmp))
-    load(tmp)
-    futile.logger::flog.info("Up-to-date data accessed from dap")
-    old.data <- FALSE
-  }, error = function(e) { 
-    # Warn that data is not up-to-date
-    futile.logger::flog.info(e)
-    futile.logger::flog.info("Building the imosboo package using built in sysdata.rda. If this message appears when running the app, the data being served is not up-to-date.")
-  }) 
-}) 
-
 app_server <- function( input, output, session ) {
   # Your application server logic 
   
   ## global options and themes can go here
   ggplot2::theme_set(ggplot2::theme_bw(base_size = 12) + ggplot2::theme(legend.position = "bottom")) 
   options(na.action = "na.omit")
+  
+  # Load up-to-date data
+  old.data <- TRUE
+  tryCatch({
+    # Access data from local server (fastest)
+    cat(file=stderr(), "Attempting to access data from opendap.\n")
+    opendap.url <- "https://data-cbr.it.csiro.au/files/sc-opendap-work/work/sc-artefact/imosboo/sysdata.rda"
+    tmp <- tempfile(fileext='.rda')   
+    httr::GET(opendap.url, httr::write_disk(tmp))
+    load(tmp)
+    cat(file=stderr(), "Up-to-date data accessed from opendap.\n")
+    old.data <- FALSE
+  }, error = function(e) { 
+    futile.logger::flog.info(e)
+    tryCatch({
+      # Access data from DAP (fallback)
+      cat(file=stderr(), "Attempting to access data from dap.\n")
+      dap.url <- "https://data.csiro.au/dap/ws/v2/collections/csiro:54520/data"
+      dap.data <- jsonlite::fromJSON(rawToChar(httr::GET(dap.url)$content))
+      file.req <- dap.data$file$filename 
+      tmp <- tempfile(fileext='.rda')   
+      httr::GET(dap.data$file$link$href[[which(dap.data$file$filename == "sysdata.rda")]], httr::write_disk(tmp))
+      load(tmp)
+      cat(file=stderr(), "Up-to-date data accessed from dap.\n")
+      old.data <- FALSE
+    }, error = function(e) { 
+      # Warn that data is not up-to-date
+      cat(file=stderr(), e)
+      cat(file=stderr(), "Building the imosboo package using built in sysdata.rda. If this message appears when running the app, the data being served is not up-to-date.\n")
+    }) 
+  }) 
   
   ### Informative pop-up modal; advises that DAP is inaccessible and historical data is being used
   if (old.data)
