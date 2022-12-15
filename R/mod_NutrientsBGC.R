@@ -8,41 +8,9 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_NutrientsBGC_ui <- function(id){
-  nsNutrientsBGC <- NS(id)
-  
   tagList(
     sidebarLayout(
-      sidebarPanel(
-        style = "padding:1%;",
-        tags$head(tags$style(HTML( #TODO move to custom css
-          ".multicol{
-          height:auto;
-          -webkit-column-count: 2;
-          -moz-column-count: 2;
-          column-count: 2;}"))),
-        # shiny::div(
-        # style = "padding:0px; margin:0px; max-height: 1000px;", #bottom: 0px; left: 0px; right: 0px; max-width: 1000px;  min-height: 10px
-        shiny::plotOutput(nsNutrientsBGC("plotmap"),
-                          width = "100%"),
-        # ),
-        shiny::HTML("<h5><strong>Select a station:</strong></h5>"),
-        shiny::fluidRow(tags$div(align = "left", 
-                                 class = "multicol",
-                                 shiny::checkboxGroupInput(inputId = nsNutrientsBGC("station"), 
-                                                           label = NULL,
-                                                           choices = NRSStation %>% 
-                                                             dplyr::filter(!.data$StationCode %in% c("PH4", "NIN", "ESP")) %>% 
-                                                             dplyr::pull(.data$StationName),  
-                                                           selected = "Port Hacking"))),
-        sliderInput(nsNutrientsBGC("date"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
-                    value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
-        # select parameter
-        selectizeInput(inputId = nsNutrientsBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(Nuts$Parameters), style = "simple"), selected = 'Silicate_umolL', multiple = FALSE),
-        # Select whether to interpolate
-        selectizeInput(inputId = nsNutrientsBGC("interp"), label = strong("Interpolate data?"), choices = c("Interpolate", "Raw data", "Interpolate with gap filling"), selected = "Interpolate"),
-        shiny::br(), # Give a bit of space for the menu to expand
-        shiny::br()
-      ),
+      fEnviroSidebar(id = id, dat = Nuts),
       fEnviroPanel(id = id)
       )
     )
@@ -68,6 +36,7 @@ mod_NutrientsBGC_server <- function(id){
       req(input$date)
       validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
+      
       Nuts %>%
         dplyr::filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
@@ -92,7 +61,7 @@ mod_NutrientsBGC_server <- function(id){
     # Create timeseries object the plotOutput function is expecting
     gg_out1 <- reactive({
       
-      interp <-  input$interp
+      interp <- input$interp
       
       if(interp == 'Interpolate'){
         planktonr::pr_plot_NRSEnvContour(selected(), Interpolation = TRUE, Fill_NA = FALSE)

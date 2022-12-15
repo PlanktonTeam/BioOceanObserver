@@ -8,35 +8,9 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_MoorBGC_ui <- function(id){
-  nsMoorBGC <- NS(id)
-  
   tagList(
     sidebarLayout(
-      sidebarPanel(
-        style = "padding:1%;",
-        tags$head(tags$style(HTML( #TODO move to custom css
-          ".multicol{
-          height:auto;
-          -webkit-column-count: 2;
-          -moz-column-count: 2;
-          column-count: 2;}"))),
-        shiny::div(
-          style = "padding:0px; margin:0px; max-height: 1000px;", #bottom: 0px; left: 0px; right: 0px; max-width: 1000px;  min-height: 10px
-          shiny::plotOutput(nsMoorBGC("plotmap"),
-                            width = "100%"),
-        ),
-        shiny::HTML("<h5><strong>Select a station:</strong></h5>"),
-        shiny::fluidRow(tags$div(align = "left", 
-                                 class = "multicol",
-                                 shiny::checkboxGroupInput(inputId = nsMoorBGC("station"), 
-                                                           label = NULL,
-                                                           choices = NRSStation %>% 
-                                                             dplyr::filter(!.data$StationCode %in% c("PH4", "NIN", "ESP")) %>% 
-                                                             dplyr::pull(.data$StationName), 
-                                                           selected = "Port Hacking"))),
-        shiny::br(), # Give a bit of space for the menu to expand
-        shiny::br()
-      ),
+      fEnviroSidebar(id = id),
       fEnviroPanel(id = id)
     )
   )
