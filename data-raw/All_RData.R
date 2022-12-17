@@ -1,13 +1,10 @@
 ## script for all RData 
 library(tidyverse)
 
-
 # Set up colours for the app ----------------------------------------------
 
 col12 <- RColorBrewer::brewer.pal(12, "Paired") %>% 
   stringr::str_replace("#FFFF99", "#000000") # Replace yellow with black
-
-
 
 
 # Trip Data Information ---------------------------------------------------
@@ -159,10 +156,31 @@ legendPlot <- ggplot2::ggplot() +
 
 # Progress Map ------------------------------------------------------------
 
-PMapData <- planktonr::pr_get_ProgressMapData(c("NRS", "CPR"), interactive = TRUE, near_dist_km = 250) %>% 
+PM <- planktonr::pr_get_ProgressMapData(c("CPR", "NRS"), interactive = TRUE, near_dist_km = 250)
+
+PM_NRS <- PM %>% 
+  dplyr::filter(Survey == "NRS") %>% 
+  dplyr::group_by(.data$Name) %>% 
+  dplyr::summarise(Start_Date = as.Date(min(.data$SampleTime_Local)),
+                   End_Date = as.Date(max(.data$SampleTime_Local)),
+                   Latitude = dplyr::first(Latitude),
+                   Longitude = dplyr::first(Longitude),
+                   Samples = dplyr::n(),
+                   .groups = "drop")
+  
+PM_CPR <- PM %>% 
+  dplyr::filter(Survey == "CPR") %>% 
+  dplyr::mutate(Latitude = round(Latitude, digits = 2),
+                Longitude = round(Longitude, digits = 2)) %>%
   dplyr::distinct(Latitude, Longitude, SampleTime_Local, .keep_all = TRUE) %>% # For BOO for the moment, no labels and distinct data
+  dplyr::arrange(.data$TripCode, .data$SampleTime_Local) %>% 
   dplyr::select(-c("TripCode", "SampleTime_Local", "Sample_ID"))
   
+PM_CPR <- PM_CPR[seq(2, nrow(PM_CPR), 2),] # Only keep every 3rd row for the moment
+  
+PMapData <- list(NRS = PM_NRS, CPR = PM_CPR)
+
+rm(PM, PM_NRS, PM_CPR)
 
 ## Using the Long Time Series Moorings Products
 ## NRS climatologies
@@ -179,7 +197,7 @@ pr_get_mooringTS <- function(Stations, Depth, Names){
     tidync::hyper_filter(DEPTH = DEPTH == Depth, 
                          TIME = index < 366) %>% # ignoring leap years
     tidync::hyper_tibble() %>%
-    dplyr::rename(DOY = .data$TIME) %>%
+    dplyr::rename(DOY = "TIME") %>%
     dplyr::mutate(StationCode = Stations, 
                   Names = Names)
   
@@ -223,7 +241,6 @@ MooringClim <- purrr::map_dfr(Stations, pr_get_mooringClim) %>%
 
 SpInfoP <- planktonr::pr_get_SpeciesInfo(Type = "P")
 SpInfoZ <- planktonr::pr_get_SpeciesInfo(Type = "Z")
-
 
 
 # Get Larval Fish Data ----------------------------------------------------
