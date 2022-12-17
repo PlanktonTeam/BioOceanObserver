@@ -173,11 +173,8 @@ mod_home_server <- function(id){
       output$TaxaPie <- shiny::renderPlot({
         
         p1 <- planktonr::pr_plot_PieFG(NRSfgp)
-        
         p2 <- planktonr::pr_plot_PieFG(CPRfgp)
-        
         p3 <- planktonr::pr_plot_PieFG(NRSfgz)
-        
         p4 <- planktonr::pr_plot_PieFG(CPRfgz)
         
         p <- (patchwork::wrap_plots(p1, p2, guides = "collect", ncol = 2) &

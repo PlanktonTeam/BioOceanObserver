@@ -21,12 +21,12 @@ mod_PolNRS_ui <- function(id){
                 plotOutput(nsPolNRS("timeseries1"), height = 1800) %>% 
                   shinycssloaders::withSpinner(color="#0dc5c1"), 
                 # h6(verbatimTextOutput(nsPolNRS("PlotExp3")),
-                   div(style="display:inline-block; float:right; width:60%",
-                       fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
-                       fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
-                       fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action")))
-      )
+                div(style="display:inline-block; float:right; width:60%",
+                    fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+                    fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+                    fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action")))
     )
+  )
 }
 
 #' Policy Server Functions

@@ -87,7 +87,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
                          choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"),
                          selected = selectedVar),
       shiny::selectizeInput(inputId = ns("interp"),
-                            label = strong("Interpolate micro data?"),
+                            label = strong("Interpolate data?"),
                             choices = c("Interpolate", "Raw data", "Interpolate with gap filling"),
                             selected = "Interpolate"),
     ),
