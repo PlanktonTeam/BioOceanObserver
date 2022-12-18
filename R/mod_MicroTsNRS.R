@@ -14,80 +14,7 @@ mod_MicroTsNRS_ui <- function(id){
       
       fPlanktonSidebar(id = id, tabsetPanel_id = "NRSmts", dat = datNRSm),
       fPLanktonPanel(id = id,  tabsetPanel_id = "NRSmts"),
-      
-      # sidebarPanel(
-      #   conditionalPanel(
-      #     condition="input.NRSmts == 1",
-      #     checkboxInput(inputId = nsMicroTsNRS("scaler1"), label = strong("Change the plot scale to log10"), value = FALSE)
-      #   ),
-      #   conditionalPanel(
-      #     condition = "input.NRSmts == 2",
-      #     selectizeInput(inputId = nsMicroTsNRS("interp"), label = strong("Interpolate data?"), choices = c("Interpolate", "Raw data", "Interpolate with gap filling"), selected = "Interpolate")
-      #   ),
-      #   conditionalPanel(
-      #     condition = "input.NRSmts == 1 | input.NRSmts == 2", 
-      #     sliderInput(nsMicroTsNRS("DatesSlide"), "Dates:", min = as.POSIXct('2009-01-01 00:00',
-      #                                                                        format = "%Y-%m-%d %H:%M",
-      #                                                                        tz = "Australia/Hobart"), max = Sys.time(), 
-      #                 value = c(as.POSIXct('2009-01-01 00:00',
-      #                                      format = "%Y-%m-%d %H:%M",
-      #                                      tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d"),
-      #     selectInput(inputId = nsMicroTsNRS("parameter"), label = 'Select a parameter', 
-      #                 choices = planktonr::pr_relabel(unique(datNRSm$Parameters), 
-      #                                                 style = "simple"), selected = "Bacterial_Richness"),
-      #   ),
-      #   conditionalPanel(
-      #     condition = "input.NRSmts == 3", 
-      #     selectInput(inputId = nsMicroTsNRS("p1"), label = 'Select an x parameter', choices = planktonr::pr_relabel(unique(datNRSm$Parameters), style = "simple"), selected = "Eukaryote_Chlorophyll_Index"),
-      #     selectInput(inputId = nsMicroTsNRS("p2"), label = 'Select a y parameter', 
-      #                 choices = planktonr::pr_relabel(unique(Pico$Parameters), style = "simple"), selected = "Prochlorococcus_cellsmL")
-      #   ),
-      #   conditionalPanel(
-      #     condition = "input.NRSmts == 1 | input.NRSmts == 2 | input.NRSmts == 3", 
-      #     plotOutput(nsMicroTsNRS("plotmap")),
-      #     checkboxGroupInput(inputId = nsMicroTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSm$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala"))
-      #   )
-      # ),
-      # mainPanel(
-      #   tabsetPanel(id = "NRSmts",
-      #               tabPanel("Trend Analysis", value = 1, 
-      #                        h6(textOutput(nsMicroTsNRS("PlotExp1"), container = span)),
-      #                        plotOutput(nsMicroTsNRS("timeseries1"), height = "auto") %>% 
-      #                          shinycssloaders::withSpinner(color="#0dc5c1"),
-      #                        div(style="display:inline-block; float:right; width:60%",
-      #                            fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
-      #                            fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
-      #                            fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
-      #               ),
-      #               tabPanel("Climatologies", value = 2,
-      #                        h6(textOutput(nsMicroTsNRS("PlotExp2"), container = span)),
-      #                        plotOutput(nsMicroTsNRS("timeseries2")) %>% 
-      #                          shinycssloaders::withSpinner(color="#0dc5c1"),
-      #                        div(style="display:inline-block; float:right; width:60%",
-      #                            fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
-      #                            fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
-      #                            fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
-      #               ),
-      #               tabPanel("Trend analysis by depth", value = 3,
-      #                        h6(textOutput(nsMicroTsNRS("PlotExp3"), container = span)),  
-      #                        plotOutput(nsMicroTsNRS("timeseries3"), height = 'auto') %>% 
-      #                          shinycssloaders::withSpinner(color="#0dc5c1"),
-      #                        div(style="display:inline-block; float:right; width:60%",
-      #                            fButtons(id, button_id = "downloadPlot3", label = "Plot", Type = "Download"),
-      #                            fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
-      #                            fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
-      #               ),
-      #               tabPanel("Cell counts vs Indices", value = 4,
-      #                        h6(textOutput(nsMicroTsNRS("PlotExp4"), container = span)),  
-      #                        plotOutput(nsMicroTsNRS("timeseries4")) %>% 
-      #                          shinycssloaders::withSpinner(color="#0dc5c1"),
-      #                        div(style="display:inline-block; float:right; width:60%",
-      #                            fButtons(id, button_id = "downloadPlot4", label = "Plot", Type = "Download"),
-      #                            fButtons(id, button_id = "downloadData4", label = "Data", Type = "Download"),
-      #                            fButtons(id, button_id = "downloadCode4", label = "R Code Example", Type = "Action"))
-      #               )
-      #   )
-      # )
+
     )
   )
 }
@@ -225,6 +152,7 @@ mod_MicroTsNRS_server <- function(id){
     observeEvent({input$NRSmts == 3}, {
       
       selectedDataDepth <- reactive({
+        
         selectedDataDepth <- selectedData() %>% 
           tidyr::drop_na() %>%
           dplyr::mutate(SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'month')) %>%
@@ -260,7 +188,7 @@ mod_MicroTsNRS_server <- function(id){
     
     # Plots by Parameters ---------------------------------------------------------
     
-    observeEvent({input$NRSmts == 3}, {
+    observeEvent({input$NRSmts == 4}, {
       
       selectedData1 <- reactive({
         req(input$Site)
@@ -277,6 +205,9 @@ mod_MicroTsNRS_server <- function(id){
       }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
       gg_out4 <- reactive({
+        
+        #TODO This needs to be converted to a planktonr function. At the moment it can't use planktonr colours without :::
+        
         x <- rlang::sym(colnames(selectedData1()[, 5]))
         y <- rlang::sym(colnames(selectedData1()[, 4]))
         
@@ -285,7 +216,9 @@ mod_MicroTsNRS_server <- function(id){
         
         ggplot2::ggplot(data = selectedData1()) +
           ggplot2::geom_point(ggplot2::aes(!!x, !!y, colour = .data$StationName)) +
-          ggplot2::xlab(titlex) + ggplot2::ylab(titley) 
+          ggplot2::xlab(titlex) + 
+          ggplot2::ylab(titley) + 
+          ggplot2::scale_colour_manual(values = planktonr:::colNRSName)
         
       }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
