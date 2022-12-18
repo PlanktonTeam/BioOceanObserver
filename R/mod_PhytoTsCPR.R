@@ -11,8 +11,8 @@ mod_PhytoTsCPR_ui <- function(id){
   nsPhytoTsCPR <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, panel_id = "CPRpts", dat = datCPRp),
-      fPLanktonPanel(id = id, panel_id = "CPRpts")
+      fPlanktonSidebar(id = id, tabsetPanel_id = "CPRpts", dat = datCPRp),
+      fPLanktonPanel(id = id, tabsetPanel_id = "CPRpts")
     )
   )
 }

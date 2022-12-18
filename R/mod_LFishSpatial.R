@@ -34,7 +34,7 @@ mod_LFishSpatial_server <- function(id){
     LFDatar <- reactive({
       
       dat <- LFData %>%
-        dplyr::filter(.data$Species2 == input$species & .data$Count > 0)# %>% 
+        dplyr::filter(.data$Species2 == input$species)# %>% 
         # dplyr::distinct(.data$Latitude, .data$Longitude, .keep_all = TRUE)
       
       return(dat)
@@ -44,7 +44,7 @@ mod_LFishSpatial_server <- function(id){
     # Render basemap
     output$LFMap <- leaflet::renderLeaflet({
       
-      leaflet::leaflet(LFData %>% 
+      leaflet::leaflet(LFDataAbs %>% 
                          dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
         leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
         # leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%

@@ -1,21 +1,28 @@
 ## script for all RData 
-library(planktonr)
 library(tidyverse)
 
-## Set up colours for the app
+# Set up colours for the app ----------------------------------------------
+
 col12 <- RColorBrewer::brewer.pal(12, "Paired") %>% 
   stringr::str_replace("#FFFF99", "#000000") # Replace yellow with black
 
 
-# Trip Data
-datNRSTrip <- planktonr::pr_get_NRSTrips(Type = c("P", "Z"))
-datCPRTrip <- planktonr::pr_get_CPRTrips()
+# Trip Data Information ---------------------------------------------------
+
+datNRSTrip <- planktonr::pr_get_NRSTrips(Type = c("P", "Z")) %>% 
+  dplyr::select(c("Year_Local", "Month_Local", "StationName"))
+
+datCPRTrip <- planktonr::pr_get_CPRTrips() %>% 
+  dplyr::select(c("Latitude", "Year_Local", "Month_Local", "Region", "TripCode"))
+
 NRSStation <- planktonr::pr_get_NRSStation() %>% 
-  dplyr::filter(ProjectName == 'NRS') %>% 
-  dplyr::select(-c('IMCRA', 'IMCRA_PB', 'ProjectName')) %>% 
+  dplyr::filter(ProjectName == "NRS") %>% 
+  dplyr::select(-c("IMCRA", "IMCRA_PB", "ProjectName")) %>% 
   dplyr::arrange(desc(Latitude))
 
-# NRS indices data
+
+# NRS indices data --------------------------------------------------------
+
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z") 
 datNRSp <- planktonr::pr_get_Indices("NRS", "P") 
 datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
@@ -29,23 +36,31 @@ datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
   tidyr::pivot_longer(-c("TripCode", "Year_Local", "Month_Local", "SampleTime_Local", "tz", "Latitude", "Longitude", "StationName", "StationCode"), 
                       names_to = "Parameters", values_to = "Values")
 
-# CPR time series data
+
+# CPR time series data ----------------------------------------------------
+
 datCPRz <- planktonr::pr_get_Indices("CPR", "Z", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
+  select(-c("Sample_ID", "tz")) %>% 
   droplevels()
 
 datCPRp <- planktonr::pr_get_Indices("CPR", "P", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
+  select(-c("Sample_ID", "tz")) %>% 
   droplevels()
 
 datCPRw <- planktonr::pr_get_Indices("CPR", "W", near_dist_km = 250)  %>% # just PCI atm
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
+  select(-c("Sample_ID", "tz")) %>% 
   droplevels()
 
-# FG time series data
+
+
+# FG time series data -----------------------------------------------------
+
 NRSfgz <- planktonr::pr_get_FuncGroups("NRS", "Z")
 NRSfgp <- planktonr::pr_get_FuncGroups("NRS", "P")
 
@@ -53,19 +68,26 @@ CPRfgz <- planktonr::pr_get_FuncGroups("CPR", "Z", near_dist_km = 250) %>%
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
   droplevels()
+
 CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
   droplevels()
 
-# BGC Environmental variables data
+
+# BGC Environmental variables data ----------------------------------------
+
 Nuts <- planktonr::pr_get_NRSEnvContour('Chemistry') %>% 
   dplyr::filter(Parameters != "SecchiDepth_m") 
-Pigs <- planktonr::pr_get_NRSPigments(Format = "binned") %>% planktonr::pr_remove_outliers(2)
+Pigs <- planktonr::pr_get_NRSPigments(Format = "binned") %>% 
+  planktonr::pr_remove_outliers(2)
 Pico <- planktonr::pr_get_NRSEnvContour('Pico')
-LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
+LTnuts <- planktonr::pr_get_LTnuts() %>% 
+  planktonr::pr_remove_outliers(2)
 
-# get Sat data
+
+# Get Sat data ------------------------------------------------------------
+
 # These can take a long time to run depending on the number of locations
 # These do not need to be available to the APP but should be in the DAP collection and planktonr
 # #TODO add function to remove the data that already has products matched.
@@ -80,15 +102,21 @@ LTnuts <- planktonr::pr_get_LTnuts() %>% planktonr::pr_remove_outliers(2)
 
 # readr::write_csv(SatData, file.path("data-raw","SatDataNRS.csv"))
 
-# STI data
+
+# STI data ----------------------------------------------------------------
+
 stiz <- planktonr::pr_get_STIdata("Z")
 stip <- planktonr::pr_get_STIdata("P")
 
-# Day-Night data (from CPR only)
+
+# Day-Night data (from CPR only) ------------------------------------------
+
 daynightz <- planktonr::pr_get_DayNight("Z")
 daynightp <- planktonr::pr_get_DayNight("P")
 
-# Policy data
+
+# Policy data -------------------------------------------------------------
+
 PolNRS <- planktonr::pr_get_PolicyData("NRS") %>% 
   dplyr::filter(!StationCode %in% c("NIN", "ESP")) %>% 
   planktonr::pr_remove_outliers(2)
@@ -101,8 +129,10 @@ NRSinfo <- planktonr::pr_get_PolicyInfo("NRS")
 CPRinfo <- planktonr::pr_get_PolicyInfo("CPR")
 
 # Species distribution data
-fMapDataz <- planktonr::pr_get_FreqMap("Z") %>% dplyr::select(-c('samples', 'freq', 'freqsamp'))
-fMapDatap <- planktonr::pr_get_FreqMap("P") %>% dplyr::select(-c('samples', 'freq', 'freqsamp'))
+fMapDataz <- planktonr::pr_get_FreqMap("Z") %>% 
+  dplyr::select(-c('samples', 'freq', 'freqsamp'))
+fMapDatap <- planktonr::pr_get_FreqMap("P") %>% 
+  dplyr::select(-c('samples', 'freq', 'freqsamp'))
 
 legdat <- data.frame(
   text = c("Absent", "Seen in 25%", "50%", "75%", "100 % of Samples","Absent", "Seen in 25%", "50%", "75%", "100 % of Samples"),
@@ -116,16 +146,41 @@ legdat <- data.frame(
 
 legendPlot <- ggplot2::ggplot() +
   ggplot2::geom_point(data = legdat, ggplot2::aes(x, y, size = size, colour = colnames)) +
-  ggplot2::scale_color_manual(values = c("lightblue1", "skyblue3", "dodgerblue2", "blue1", "navyblue", "#CCFFCC", "#99FF99", "#669933", "#009900", "#006600")) + 
+  ggplot2::scale_colour_manual(values = c("lightblue1", "skyblue3", "dodgerblue2", "blue1", "navyblue", "#CCFFCC", "#99FF99", "#669933", "#009900", "#006600")) + 
   ggplot2::geom_text(data = legdat, ggplot2::aes(x = xt, y = yt, label = text)) +
   ggplot2::geom_text(ggplot2::aes(x = c(5.5,5.5), y = c(1.1,1), label = c("CPR", "NRS"))) +
   ggplot2::theme_void() +
   ggplot2::theme(legend.position = "none")
 
 
-## Progress Map
-PMapData <- planktonr::pr_get_ProgressMapData(c("NRS", "CPR"), interactive = FALSE, near_dist_km = 250)
-PMapData2 <- planktonr::pr_get_ProgressMapData(c("NRS", "CPR"), interactive = TRUE, near_dist_km = 250)
+
+# Progress Map ------------------------------------------------------------
+
+PM <- planktonr::pr_get_ProgressMapData(c("CPR", "NRS"), interactive = TRUE, near_dist_km = 250)
+
+PM_NRS <- PM %>% 
+  dplyr::filter(Survey == "NRS") %>% 
+  dplyr::group_by(.data$Name) %>% 
+  dplyr::summarise(Start_Date = as.Date(min(.data$SampleTime_Local)),
+                   End_Date = as.Date(max(.data$SampleTime_Local)),
+                   Latitude = dplyr::first(Latitude),
+                   Longitude = dplyr::first(Longitude),
+                   Samples = dplyr::n(),
+                   .groups = "drop")
+  
+PM_CPR <- PM %>% 
+  dplyr::filter(Survey == "CPR") %>% 
+  dplyr::mutate(Latitude = round(Latitude, digits = 2),
+                Longitude = round(Longitude, digits = 2)) %>%
+  dplyr::distinct(Latitude, Longitude, SampleTime_Local, .keep_all = TRUE) %>% # For BOO for the moment, no labels and distinct data
+  dplyr::arrange(.data$TripCode, .data$SampleTime_Local) %>% 
+  dplyr::select(-c("TripCode", "SampleTime_Local", "Sample_ID"))
+  
+PM_CPR <- PM_CPR[seq(2, nrow(PM_CPR), 2),] # Only keep every 3rd row for the moment
+  
+PMapData <- list(NRS = PM_NRS, CPR = PM_CPR)
+
+rm(PM, PM_NRS, PM_CPR)
 
 ## Using the Long Time Series Moorings Products
 ## NRS climatologies
@@ -142,7 +197,7 @@ pr_get_mooringTS <- function(Stations, Depth, Names){
     tidync::hyper_filter(DEPTH = DEPTH == Depth, 
                          TIME = index < 366) %>% # ignoring leap years
     tidync::hyper_tibble() %>%
-    dplyr::rename(DOY = .data$TIME) %>%
+    dplyr::rename(DOY = "TIME") %>%
     dplyr::mutate(StationCode = Stations, 
                   Names = Names)
   
@@ -181,32 +236,51 @@ MooringClim <- purrr::map_dfr(Stations, pr_get_mooringClim) %>%
   planktonr::pr_reorder()
 
 
-# Get Species Info for each Taxa
+
+# Get Species Info for each Taxa ------------------------------------------
+
 SpInfoP <- planktonr::pr_get_SpeciesInfo(Type = "P")
 SpInfoZ <- planktonr::pr_get_SpeciesInfo(Type = "Z")
 
 
-# Get Larval Fish Data 
-LFData <- planktonr::pr_get_LFData()
+# Get Larval Fish Data ----------------------------------------------------
+
+temp <- planktonr::pr_get_LFData() %>% 
+  dplyr::select("Species", "Species2", "Project", "Latitude", "Longitude", "SampleTime_Local",
+                "Month_Local", "SampleDepth_m", "Count", "Abundance_1000m3", "Temperature_degC", 
+                "Salinity_psu", "Volume_m3", "Vessel", "TowType", "GearMesh_um", "Bathymetry_m") %>% 
+  dplyr::filter(!.data$Species %in% c("_37990025", "_37990051", "_37990052", "_Superclass.Pisces_37000000"))
+
+LFDataAbs <- temp %>% 
+  dplyr::distinct(Latitude, Longitude, SampleTime_Local, .keep_all = TRUE)
+
+LFData <- temp %>% 
+  dplyr::filter(.data$Count > 0) %>% 
+  dplyr::arrange(.data$Species2)
+
+rm(temp)
 
 
-# Get Taxa Accumulation Info
+# Get Taxa Accumulation Info ----------------------------------------------
+
 PSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "P")
 PSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "P")
 ZSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "Z")
 ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Z")
 
+# Add data to sysdata.rda -------------------------------------------------
 
-# add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, Pico, LTnuts,
                   fMapDataz, fMapDatap, legendPlot,
                   MooringTS, MooringClim,
-                  PolNRS, PolCPR, PolLTM, NRSinfo, CPRinfo, NRSStation,
+                  PolNRS, PolCPR, PolLTM, 
+                  NRSinfo, CPRinfo, NRSStation,
                   datCPRz, datCPRp, datCPRw,
                   datNRSz, datNRSp, datNRSm, datNRSw,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-                  stiz, stip, daynightz, daynightp, PMapData2,
-                  SpInfoP, SpInfoZ, LFData, datNRSTrip, datCPRTrip,
+                  stiz, stip, daynightz, daynightp,
+                  SpInfoP, SpInfoZ, LFData, LFDataAbs,
+                  datNRSTrip, datCPRTrip,
                   PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
                   col12, overwrite = TRUE, internal = TRUE)
 
@@ -217,7 +291,7 @@ usethis::use_data(Nuts, Pigs, Pico, LTnuts,
 #      datCPRz, datCPRp, datCPRw,
 #      datNRSz, datNRSp, datNRSm, datNRSw,
 #      NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-#      stiz, stip, daynightz, daynightp, PMapData2, 
+#      stiz, stip, daynightz, daynightp, 
 #      SpInfoP, SpInfoZ, datNRSTrip, datCPRTrip,
 #      PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
 #      col12, file = "data/sysdata.rda")
@@ -253,7 +327,7 @@ usethis::use_data(Nuts, Pigs, Pico, LTnuts,
 # write_csv(stip,  "stip.csv")
 # write_csv(daynightz,  "daynightz.csv")
 # write_csv(daynightp,  "daynightp.csv")
-# write_csv(PMapData2, "PMapData2.csv")
+# write_csv(PMapData, "PMapData.csv")
 # write_csv(SatData, "SatData.csv")
 
 

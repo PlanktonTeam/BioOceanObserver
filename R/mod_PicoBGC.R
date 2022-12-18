@@ -8,23 +8,9 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_PicoBGC_ui <- function(id){
-  nsPicoBGC <- NS(id)
-  
   tagList(
     sidebarLayout(
-      sidebarPanel(
-        plotOutput(nsPicoBGC("plotmap")),
-        # station selector
-        checkboxGroupInput(inputId = nsPicoBGC('station'), label = "Select a station", choices = unique(sort(Pico$StationName)), selected = 'Port Hacking'),
-        # Date selector
-        sliderInput(nsPicoBGC("date"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
-                    value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
-        # select parameter
-        selectizeInput(inputId = nsPicoBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(Pico$Parameters), style = "simple"), selected = 'Prochlorococcus_cellsmL', multiple = FALSE),
-        #selectizeInput(inputId = nsPicoBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
-        # Select whether to interpolate or not
-        selectizeInput(inputId = nsPicoBGC("interp"), label = strong("Interpolate data?"), choices = c("Interpolate", "Raw data", "Interpolate with gap filling"), selected = "Interpolate")
-      ),
+      fEnviroSidebar(id = id, dat = Pico),
       fEnviroPanel(id = id)
     )
   )
@@ -47,15 +33,19 @@ mod_PicoBGC_server <- function(id){
     })
     
     selected <- reactive({
+      
+      # browser()
       req(input$date)
       validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
+      
       Pico %>%
         dplyr::filter(.data$StationName %in% input$station,
-               .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
-               .data$Parameters %in% input$parameter) %>%
+                      .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
+                      .data$Parameters %in% input$parameter) %>%
         dplyr::mutate(name = as.factor(.data$Parameters)) %>%
         tidyr::drop_na() 
+      
     }) %>% bindCache(input$station, input$parameter, input$date)
     
     shiny::exportTestValues(
@@ -74,7 +64,7 @@ mod_PicoBGC_server <- function(id){
     # Create timeseries object the plotOutput function is expecting
     gg_out1 <- reactive({
       
-      interp <-  input$interp
+      interp <- input$interp
       
       if(interp == 'Interpolate'){
         planktonr::pr_plot_NRSEnvContour(selected(), Interpolation = TRUE, Fill_NA = FALSE)
@@ -96,9 +86,8 @@ mod_PicoBGC_server <- function(id){
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 
-      
+      # browser()
       planktonr::pr_plot_NRSmap(selected())
-      
     }, bg = "transparent") %>% bindCache(input$station)
     
     # add text information 

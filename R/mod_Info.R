@@ -135,11 +135,11 @@ mod_info_ui <- function(id){
                            shiny::h5("After counting the sample is dried at 60 degrees for 24 hours and weighed for biomass.")
                          )
                 ),
-                tabPanel("Phytoplankton Species Details", value = 7, 
+                tabPanel("Phytoplankton Species Details", value = 6, 
                          shiny::h2("Phytoplankton Species Information"),
                          shiny::dataTableOutput(nsInfo("PDataTable")),
                 ),
-                tabPanel("Zooplankton Species Details", value = 8, 
+                tabPanel("Zooplankton Species Details", value = 7, 
                          shiny::h2("Zooplankton Species Information"),
                          shiny::dataTableOutput(nsInfo("ZDataTable")),
                 ),
@@ -155,15 +155,15 @@ mod_info_server <- function(id){
     
     observeEvent({input$Info == 5}, {
       output$NRSDataTable <- shiny::renderDataTable(
-        NRSStation %>% dplyr::mutate(EndDate = dplyr::case_when(.data$StationCode %in% c('NIN', 'ESP') ~ "2012-03-01",
-                                                                .data$StationCode == 'PH4' ~ '2009-02-24')) %>% 
+        NRSStation %>% 
+          dplyr::mutate(EndDate = dplyr::case_when(.data$StationCode %in% c('NIN', 'ESP') ~ "2012-03-01",
+                                                   .data$StationCode == 'PH4' ~ '2009-02-24')) %>% 
           dplyr::select("StationCode":"StationStartDate", "EndDate", dplyr::everything()) %>% 
           dplyr::rename(Code = "StationCode", Station = "StationName", State = "StateCode", 
                         `Start Date` = "StationStartDate", `End Date` = "EndDate", `Water Depth (m)` = "StationDepth_m",
                         `Sampling Effort` = "SamplingEffort", Region = "ManagementRegion")
       )
-    })
-    observeEvent({input$Info == 6}, {
+      
       output$CPRDataTable <- shiny::renderDataTable(
         datCPRTrip %>% 
           dplyr::group_by(.data$BioRegion) %>% 
@@ -180,14 +180,14 @@ mod_info_server <- function(id){
       )
     })
     
-    observeEvent({input$Info == 7}, {
+    observeEvent({input$Info == 6}, {
       output$PDataTable <- shiny::renderDataTable(
         SpInfoP, 
         options = list(
           pageLength = 250))
     })
     
-    observeEvent({input$Info == 8}, {
+    observeEvent({input$Info == 7}, {
       output$ZDataTable <- shiny::renderDataTable(
         SpInfoZ, 
         options = list(

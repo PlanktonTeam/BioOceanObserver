@@ -15,23 +15,25 @@ mod_home_ui <- function(id){
                 tabPanel("Welcome", value = 1,
                          shiny::fluidPage(
                            shiny::fluidRow(
-                             column(4,
+                             column(3,
                                     img(src = "www/BOO_Hex.png", width = "95%"),
                                     shiny::hr(style = "border-top: 1px solid #000000;"),
-                                    shiny::br(),
                                     shiny::h4("Funded by: "),
                                     div(img(src = "www/IMOS_logo-stacked-Colour.png", width = "95%"), style="text-align: center;"),
                                     shiny::br(),
-                                    shiny::br(),
                                     shiny::h4("Supported by: "),
-                                    div(img(src = "www/AODN_logo.png", width = "70%"), style="text-align: center;"),
-                                    shiny::br(),
-                                    shiny::h4("and"),
-                                    shiny::br(),
-                                    div(img(src = "www/ARDC_logo_RGB.png", width = "70%"), style="text-align: center;"),
-                                    shiny::br(),
+                                    shiny::fluidRow(
+                                      shiny::column(6,
+                                                    style = "padding:0px;",
+                                                    div(img(src = "www/AODN_logo.png", width = "92%"),
+                                                        style = "text-align: center;")),
+                                      shiny::column(6,
+                                                    style = "padding:0px; position: relative;",
+                                                    div(img(src = "www/ARDC_logo_RGB.png", width = "97%"),
+                                                        style = "position: absolute; bottom: 0px; text-align: center;"),
+                                                    )),
                                     shiny::br()),
-                             column(8,
+                             column(9,
                                     shiny::h2("The Biological Ocean Observer"),
                                     shiny::HTML("The goal of this site is to Integrate, Analyse and Visualise data collected by the 
                             <a href='https://imos.org.au', target = '_blank'> Integrated Marine Observing System (IMOS)</a>. 
@@ -128,7 +130,7 @@ mod_home_server <- function(id){
     
     observeEvent({input$home == 2}, {
       output$progplot <- leaflet::renderLeaflet({
-        planktonr::pr_plot_ProgressMap(PMapData2, interactive = TRUE)
+        planktonr::pr_plot_ProgressMap(PMapData, interactive = TRUE, labels = FALSE)
       })
     })
     
@@ -171,11 +173,8 @@ mod_home_server <- function(id){
       output$TaxaPie <- shiny::renderPlot({
         
         p1 <- planktonr::pr_plot_PieFG(NRSfgp)
-        
         p2 <- planktonr::pr_plot_PieFG(CPRfgp)
-        
         p3 <- planktonr::pr_plot_PieFG(NRSfgz)
-        
         p4 <- planktonr::pr_plot_PieFG(CPRfgz)
         
         p <- (patchwork::wrap_plots(p1, p2, guides = "collect", ncol = 2) &
