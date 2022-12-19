@@ -15,6 +15,7 @@
 
 ## Dependencies ----
 ## Add one line by package you want to add as dependency
+usethis::use_package( "shiny")
 usethis::use_package( "dplyr") # using tidyverse as a dependency is discouraged as it is a meta-package
 usethis::use_package( "ggplot2")
 usethis::use_package( "lubridate")
