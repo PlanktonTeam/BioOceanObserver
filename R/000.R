@@ -20,7 +20,7 @@ pkg.env <- new.env(parent = emptyenv())
     httr::GET(opendap.url, httr::write_disk(tmp))
     load(tmp)
     cat(file=stderr(), "Up-to-date data accessed from opendap.\n")
-    pkg.env$old.data <- FALSE
+    pkg.env$new.data <- TRUE
     for (currVar in data.vars) {
       pkg.env[[currVar]] <- get(currVar)
     }
@@ -36,7 +36,7 @@ pkg.env <- new.env(parent = emptyenv())
       httr::GET(dap.data$file$link$href[[which(dap.data$file$filename == "sysdata.rda")]], httr::write_disk(tmp))
       load(tmp)
       cat(file=stderr(), "Up-to-date data accessed from dap.\n")
-      pkg.env$old.data <- FALSE
+      pkg.env$new.data <- TRUE
       for (currVar in data.vars) {
         pkg.env[[currVar]] <- get(currVar)
       }
@@ -44,7 +44,7 @@ pkg.env <- new.env(parent = emptyenv())
       # Warn that data is not up-to-date
       cat(file=stderr(), as.character(e))
       cat(file=stderr(), "Building the imosboo package using built in sysdata.rda. If this message appears when running the app, the data being served is not up-to-date.\n")
-      pkg.env$old.data <- TRUE
+      pkg.env$new.data <- FALSE
       for (currVar in data.vars) {
         pkg.env[[currVar]] <- get(currVar)
       }
