@@ -14,7 +14,7 @@ mod_LFishSpatial_ui <- function(id){
       shiny::fluidRow(
         # shiny::column(width = 3, shiny::HTML("<strong>Select Larval Fish:</strong>")),
         shiny::column(width = 6, offset = 6,
-                      selectizeInput(inputId = nsLFishSpatial("species"), label = NULL, choices = unique(LFData$Species2), width = "100%"),
+                      selectizeInput(inputId = nsLFishSpatial("species"), label = NULL, choices = unique(pkg.env$LFData$Species2), width = "100%"),
         )),
       shiny::fluidRow(
         leaflet::leafletOutput(nsLFishSpatial("LFMap"), width = "100%", height = "800px") %>% 
@@ -33,7 +33,7 @@ mod_LFishSpatial_server <- function(id){
     
     LFDatar <- reactive({
       
-      dat <- LFData %>%
+      dat <- pkg.env$LFData %>%
         dplyr::filter(.data$Species2 == input$species & .data$Count > 0)# %>% 
         # dplyr::distinct(.data$Latitude, .data$Longitude, .keep_all = TRUE)
       
@@ -44,7 +44,7 @@ mod_LFishSpatial_server <- function(id){
     # Render basemap
     output$LFMap <- leaflet::renderLeaflet({
       
-      leaflet::leaflet(LFData %>% 
+      leaflet::leaflet(pkg.env$LFData %>% 
                          dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
         leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
         # leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%

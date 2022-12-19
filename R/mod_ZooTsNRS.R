@@ -11,7 +11,7 @@ mod_ZooTsNRS_ui <- function(id){
   nsZooTsNRS <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, panel_id = "NRSzts", dat = datNRSz),
+      fPlanktonSidebar(id = id, panel_id = "NRSzts", dat = pkg.env$datNRSz),
       fPLanktonPanel(id = id, panel_id = "NRSzts")
     )
   )
@@ -30,7 +30,7 @@ mod_ZooTsNRS_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
-      selectedData <- datNRSz %>% 
+      selectedData <- pkg.env$datNRSz %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
@@ -74,7 +74,7 @@ mod_ZooTsNRS_server <- function(id){
       
       gg_out1 <- reactive({
         
-        if (is.null(datNRSz$StationCode)){return(NULL)}
+        if (is.null(pkg.env$datNRSz$StationCode)){return(NULL)}
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
         
         p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
@@ -98,7 +98,7 @@ mod_ZooTsNRS_server <- function(id){
     observeEvent({input$NRSpts == 2}, {
       
       gg_out2 <- reactive({   
-        if (is.null(datNRSz$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+        if (is.null(pkg.env$datNRSz$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
           return(NULL)
         
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
@@ -136,7 +136,7 @@ mod_ZooTsNRS_server <- function(id){
       selectedDataFG <- reactive({
         req(input$Site)
         validate(need(!is.na(input$Site), "Error: Please select a station."))
-        selectedDataFG <- NRSfgz %>% 
+        selectedDataFG <- pkg.env$NRSfgz %>% 
           dplyr::filter(.data$StationName %in% input$Site,
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
           droplevels()

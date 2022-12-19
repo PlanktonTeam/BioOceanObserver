@@ -14,7 +14,7 @@ mod_PhytoSpatial_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        selectizeInput(inputId = nsPhytoSpatial('species'), label = "Select a phytoplankton species", choices = unique(fMapDatap$Taxon), 
+        selectizeInput(inputId = nsPhytoSpatial('species'), label = "Select a phytoplankton species", choices = unique(pkg.env$fMapDatap$Taxon), 
                        selected = "Tripos furca")
       ),
       mainPanel(
@@ -65,7 +65,7 @@ mod_PhytoSpatial_server <- function(id){
       req(input$species)
       validate(need(!is.na(input$species), "Error: Please select a species"))
       
-      selectedZS <- fMapDatap %>%
+      selectedZS <- pkg.env$fMapDatap %>%
         dplyr::mutate(Taxon = dplyr::if_else(.data$Taxon == 'Taxon', input$species, .data$Taxon)) %>%
         dplyr::filter(.data$Taxon == input$species) %>%
         dplyr::arrange(.data$freqfac)
@@ -123,7 +123,7 @@ mod_PhytoSpatial_server <- function(id){
       }) %>% bindCache(input$species)
       
       output$plot2e <- renderPlot({
-        legendPlot
+        pkg.env$legendPlot
       }) %>% bindCache(input$species)
       
     })
@@ -150,7 +150,7 @@ mod_PhytoSpatial_server <- function(id){
         req(input$species)
         validate(need(!is.na(input$species), "Error: Please select a species"))
         
-        selectedSTI <- stip %>% 
+        selectedSTI <- pkg.env$stip %>% 
           dplyr::filter(.data$Species %in% input$species) 
         
       }) %>% bindCache(input$species)
@@ -178,7 +178,7 @@ mod_PhytoSpatial_server <- function(id){
         req(input$species)
         validate(need(!is.na(input$species), "Error: Please select a species"))
         
-        selecteddn <- daynightp %>% 
+        selecteddn <- pkg.env$daynightp %>% 
           dplyr::filter(.data$Species %in% input$species) 
         
       }) %>% bindCache(input$species)
