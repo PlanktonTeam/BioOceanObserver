@@ -14,7 +14,7 @@ mod_PolCPR_ui <- function(id){
       sidebarPanel(
         plotOutput(nsPolCPR("plotmap")),
         h6("Note there is very little data in the North and North-west regions"),
-        radioButtons(inputId = nsPolCPR("Site"), label = "Select a bioregion", choices = unique(sort(PolCPR$BioRegion)), selected = "Temperate East"),
+        radioButtons(inputId = nsPolCPR("Site"), label = "Select a bioregion", choices = unique(sort(pkg.env$PolCPR$BioRegion)), selected = "Temperate East"),
       ),
       mainPanel(id = "EOV Biomass by CPR", 
                 h6(htmlOutput(nsPolCPR("PlotExp1"), container = span)),
@@ -43,7 +43,7 @@ mod_PolCPR_server <- function(id){
       req(input$Site)
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       
-      selectedData <- PolCPR %>% 
+      selectedData <- pkg.env$PolCPR %>% 
         dplyr::filter(.data$BioRegion %in% input$Site) 
     }) %>% bindCache(input$Site)
     
@@ -73,7 +73,7 @@ mod_PolCPR_server <- function(id){
     }) %>% bindCache(input$Site)
     
     stationData <- reactive({
-      stationData <- CPRinfo %>% 
+      stationData <- pkg.env$CPRinfo %>% 
         dplyr::filter(.data$BioRegion == input$Site) 
     }) %>% bindCache(input$Site)
     
@@ -111,14 +111,14 @@ mod_PolCPR_server <- function(id){
     gg_out1 <- reactive({
       
       p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "BiomassIndex_mgm3", Survey = 'CPR', 
-                                   trans = "log10", col = col12[2], labels = "no")
+                                   trans = "log10", col = pkg.env$col12[2], labels = "no")
       p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgm3", Survey = 'CPR', 
-                                   trans = "log10", col = col12[4]) 
+                                   trans = "log10", col = pkg.env$col12[4]) 
       
       p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonCopepodDiversity", Survey = 'CPR', 
-                                   trans = "log10", col = col12[1], labels = "no") #check these col names with new indices data from AODN
+                                   trans = "log10", col = pkg.env$col12[1], labels = "no") #check these col names with new indices data from AODN
       p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', 
-                                   trans = "log10", col = col12[3])
+                                   trans = "log10", col = pkg.env$col12[3])
       
       BioRegionSummary <- strwrap(
         paste("The CPR has been sampling in the ", input$Site," bioregion since ", min(stationData()$SampleStartDate), 

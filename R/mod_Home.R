@@ -128,7 +128,7 @@ mod_home_server <- function(id){
     
     observeEvent({input$home == 2}, {
       output$progplot <- leaflet::renderLeaflet({
-        planktonr::pr_plot_ProgressMap(PMapData2, interactive = TRUE)
+        planktonr::pr_plot_ProgressMap(pkg.env$PMapData2, interactive = TRUE)
       })
     })
     
@@ -136,8 +136,8 @@ mod_home_server <- function(id){
     observeEvent({input$home == 3}, {
       
       output$gantt <- shiny::renderPlot({
-        ggCPR <- planktonr::pr_plot_Gantt(datCPRTrip, Survey = "CPR")
-        ggNRS <- planktonr::pr_plot_Gantt(datNRSTrip, Survey = "NRS")
+        ggCPR <- planktonr::pr_plot_Gantt(pkg.env$datCPRTrip, Survey = "CPR")
+        ggNRS <- planktonr::pr_plot_Gantt(pkg.env$datNRSTrip, Survey = "NRS")
         
         p <- patchwork::wrap_plots(ggCPR, ggNRS, ncol = 1) &
           ggplot2::theme(text = ggplot2::element_text(size = 16, face = "bold"))
@@ -149,10 +149,10 @@ mod_home_server <- function(id){
     observeEvent({input$home == 4}, {
       
       output$SpAccum <- shiny::renderPlot({
-        p1 <- planktonr::pr_plot_TaxaAccum(PSpNRSAccum, Survey = "NRS", Type = "P") 
-        p2 <- planktonr::pr_plot_TaxaAccum(PSpCPRAccum, Survey = "CPR", Type = "P")
-        p3 <- planktonr::pr_plot_TaxaAccum(ZSpNRSAccum, Survey = "NRS", Type = "Z")
-        p4 <- planktonr::pr_plot_TaxaAccum(ZSpCPRAccum, Survey = "CPR", Type = "Z")
+        p1 <- planktonr::pr_plot_TaxaAccum(pkg.env$PSpNRSAccum, Survey = "NRS", Type = "P") 
+        p2 <- planktonr::pr_plot_TaxaAccum(pkg.env$PSpCPRAccum, Survey = "CPR", Type = "P")
+        p3 <- planktonr::pr_plot_TaxaAccum(pkg.env$ZSpNRSAccum, Survey = "NRS", Type = "Z")
+        p4 <- planktonr::pr_plot_TaxaAccum(pkg.env$ZSpCPRAccum, Survey = "CPR", Type = "Z")
         
         p <- patchwork::wrap_plots(p1, p2, p3, p4, ncol = 4) &
           ggplot2::theme(text = ggplot2::element_text(size = 16, face = "bold"),
@@ -170,7 +170,7 @@ mod_home_server <- function(id){
       
       output$TaxaPie <- shiny::renderPlot({
         
-        p1 <- ggplot2::ggplot(data = NRSfgp %>% 
+        p1 <- ggplot2::ggplot(data = pkg.env$NRSfgp %>% 
                                 dplyr::group_by(.data$Parameters) %>% 
                                 dplyr::summarise(mean = mean(.data$Values, na.rm = TRUE)), 
                               ggplot2::aes(x = "", y = mean, fill = .data$Parameters)) +
@@ -182,7 +182,7 @@ mod_home_server <- function(id){
           ggplot2::guides(fill = ggplot2::guide_legend(title = "Phytoplankton", nrow = 2, title.position = "top", title.hjust = 0.5, title.theme = ggplot2::element_text(face = "bold"))) +
           ggplot2::ggtitle("NRS")
         
-        p2 <- ggplot2::ggplot(data = CPRfgp %>% dplyr::group_by(.data$Parameters) %>% 
+        p2 <- ggplot2::ggplot(data = pkg.env$CPRfgp %>% dplyr::group_by(.data$Parameters) %>% 
                                 dplyr::summarise(mean = mean(.data$Values, na.rm = TRUE)), 
                               ggplot2::aes(x = "", y = mean, fill = .data$Parameters)) +
           ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
@@ -193,7 +193,7 @@ mod_home_server <- function(id){
           ggplot2::guides(fill = ggplot2::guide_legend(title = "Phytoplankton", nrow = 2, title.position = "top", title.hjust = 0.5, title.theme = ggplot2::element_text(face = "bold"))) +
           ggplot2::ggtitle("CPR")
         
-        p3 <- ggplot2::ggplot(data = NRSfgz %>% dplyr::group_by(.data$Parameters) %>% 
+        p3 <- ggplot2::ggplot(data = pkg.env$NRSfgz %>% dplyr::group_by(.data$Parameters) %>% 
                                 dplyr::summarise(mean = mean(.data$Values, na.rm = TRUE)), 
                               ggplot2::aes(x = "", y = mean, fill = .data$Parameters)) +
           ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +
@@ -204,7 +204,7 @@ mod_home_server <- function(id){
           ggplot2::guides(fill = ggplot2::guide_legend(title = "Zooplankton", nrow = 2, title.position = "top", title.hjust = 0.5, title.theme = ggplot2::element_text(face = "bold"))) +
           ggplot2::ggtitle("NRS")
         
-        p4 <- ggplot2::ggplot(data = CPRfgz %>% dplyr::group_by(.data$Parameters) %>% 
+        p4 <- ggplot2::ggplot(data = pkg.env$CPRfgz %>% dplyr::group_by(.data$Parameters) %>% 
                                 dplyr::summarise(mean = mean(.data$Values, na.rm = TRUE)), 
                               ggplot2::aes(x = "", y = mean, fill = .data$Parameters)) +
           ggplot2::geom_bar(stat = "identity", width = 1, color = "white") +

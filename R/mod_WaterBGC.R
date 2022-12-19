@@ -15,12 +15,12 @@ mod_WaterBGC_ui <- function(id){
       sidebarPanel(
         plotOutput(nsWaterBGC("plotmap")),
         # station selector
-        checkboxGroupInput(inputId = nsWaterBGC('station'), label = "Select a station", choices = unique(sort(datNRSw$StationName)), selected = 'Port Hacking'),
+        checkboxGroupInput(inputId = nsWaterBGC('station'), label = "Select a station", choices = unique(sort(pkg.env$datNRSw$StationName)), selected = 'Port Hacking'),
         # Date selector
         sliderInput(nsWaterBGC("date"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
                     value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
         # select parameter
-        selectizeInput(inputId = nsWaterBGC('Parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(datNRSw$Parameters), style = "simple"), selected = 'CTDTemperature_degC', multiple = FALSE)
+        selectizeInput(inputId = nsWaterBGC('Parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(pkg.env$datNRSw$Parameters), style = "simple"), selected = 'CTDTemperature_degC', multiple = FALSE)
         # Select whether to overlay smooth trend line
         #selectizeInput(inputId = nsWaterBGC("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
       ),
@@ -47,7 +47,7 @@ mod_WaterBGC_server <- function(id){
       req(input$date)
       validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
-      datNRSw %>%
+      pkg.env$datNRSw %>%
         dplyr::filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$Parameters %in% input$Parameter) %>%

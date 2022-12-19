@@ -15,12 +15,12 @@ mod_PicoBGC_ui <- function(id){
       sidebarPanel(
         plotOutput(nsPicoBGC("plotmap")),
         # station selector
-        checkboxGroupInput(inputId = nsPicoBGC('station'), label = "Select a station", choices = unique(sort(Pico$StationName)), selected = 'Port Hacking'),
+        checkboxGroupInput(inputId = nsPicoBGC('station'), label = "Select a station", choices = unique(sort(pkg.env$Pico$StationName)), selected = 'Port Hacking'),
         # Date selector
         sliderInput(nsPicoBGC("date"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
                     value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
         # select parameter
-        selectizeInput(inputId = nsPicoBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(Pico$Parameters), style = "simple"), selected = 'Prochlorococcus_cellsmL', multiple = FALSE),
+        selectizeInput(inputId = nsPicoBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(pkg.env$Pico$Parameters), style = "simple"), selected = 'Prochlorococcus_cellsmL', multiple = FALSE),
         #selectizeInput(inputId = nsPicoBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
         # Select whether to interpolate or not
         selectizeInput(inputId = nsPicoBGC("interp"), label = strong("Interpolate data?"), choices = c("Interpolate", "Raw data", "Interpolate with gap filling"), selected = "Interpolate")
@@ -50,7 +50,7 @@ mod_PicoBGC_server <- function(id){
       req(input$date)
       validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
-      Pico %>%
+      pkg.env$Pico %>%
         dplyr::filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$Parameters %in% input$parameter) %>%

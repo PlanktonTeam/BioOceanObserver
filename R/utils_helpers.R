@@ -198,8 +198,8 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
 # @noRd
 # fPLanktonPanelServer <- function(ns, panel_id, input){
 # 
-#   dat1 <- datNRSp
-#   dat3 <- NRSfgp
+#   dat1 <- pkg.env$datNRSp
+#   dat3 <- pkg.env$NRSfgp
 #   
 #   # Variable for CPR or NRS 
 #   NRS <- 1
@@ -240,7 +240,7 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
 #   observeEvent({input$NRSpts == 1}, {
 # 
 #     gg_out1 <- reactive({
-#       if (is.null(datNRSp$StationCode)) {return(NULL)}
+#       if (is.null(pkg.env$datNRSp$StationCode)) {return(NULL)}
 #       trans <- dplyr::if_else(input$scaler1, "log10", "identity")
 # 
 #       p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
@@ -266,7 +266,7 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
 # 
 #     gg_out2 <- reactive({
 #       print("Tab 2")
-#       if (is.null(datNRSp$StationCode)) {return(NULL)}
+#       if (is.null(pkg.env$datNRSp$StationCode)) {return(NULL)}
 # 
 #       trans <- dplyr::if_else(input$scaler1, "log10", "identity")
 #       titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
@@ -299,7 +299,7 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
 #       req(input$Site)
 #       validate(need(!is.na(input$Site), "Error: Please select a station."))
 # 
-#       selectedDataFG <- NRSfgp %>%
+#       selectedDataFG <- pkg.env$NRSfgp %>%
 #         dplyr::filter(.data$StationName %in% input$Site,
 #                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
 #         droplevels()
@@ -308,7 +308,7 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
 # 
 #     gg_out3 <- reactive({
 # 
-#       if (is.null(NRSfgp$StationCode)) {return(NULL)}
+#       if (is.null(pkg.env$NRSfgp$StationCode)) {return(NULL)}
 #       scale <- dplyr::if_else(input$scaler3, "Percent", "Actual")
 # 
 #       p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)

@@ -13,7 +13,7 @@ mod_PolNRS_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         plotOutput(nsPolNRS("plotmap")),
-        radioButtons(inputId = nsPolNRS("Site"), label = "Select a station", choices = unique(sort(PolNRS$StationName)), selected = "Maria Island")
+        radioButtons(inputId = nsPolNRS("Site"), label = "Select a station", choices = unique(sort(pkg.env$PolNRS$StationName)), selected = "Maria Island")
       ),
       mainPanel(id = "EOV Biomass by NRS", 
                 h6(htmlOutput(nsPolNRS("PlotExp1"), container = span)),
@@ -68,7 +68,7 @@ mod_PolNRS_server <- function(id){
     }) %>% bindCache(input$Site)
     
     stationData <- reactive({
-      stationData <- NRSinfo %>% 
+      stationData <- pkg.env$NRSinfo %>% 
         dplyr::filter(.data$StationName == input$Site) 
     }) %>% bindCache(input$Site)
     
@@ -133,21 +133,21 @@ mod_PolNRS_server <- function(id){
     
     gg_out1 <- reactive({
       
-      p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Biomass_mgm3", trans = "log10", col = col12[2], labels = "no") 
-      p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col12[4]) 
+      p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Biomass_mgm3", trans = "log10", col = pkg.env$col12[2], labels = "no") 
+      p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = pkg.env$col12[4]) 
       
-      p3 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonCopepodDiversity", trans = "log10", col = col12[1], labels = "no") 
-      p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col12[3])
+      p3 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonCopepodDiversity", trans = "log10", col = pkg.env$col12[1], labels = "no") 
+      p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", trans = "log10", col = pkg.env$col12[3])
       
-      p5 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDTemperature_degC", trans = "identity", col = col12[5], labels = "no")
-      p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "PigmentChla_mgm3", trans = "log10", col = col12[6], labels = "no") 
-      p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDSalinity_PSU", trans = "identity", col = col12[7])
+      p5 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDTemperature_degC", trans = "identity", col = pkg.env$col12[5], labels = "no")
+      p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "PigmentChla_mgm3", trans = "log10", col = pkg.env$col12[6], labels = "no") 
+      p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDSalinity_PSU", trans = "identity", col = pkg.env$col12[7])
       
-      p8 <- planktonr::pr_plot_EOV(outputs(), EOV = "Ammonium_umolL", trans = "identity", col = col12[8], labels = "no")
-      p9 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrate_umolL", trans = "identity", col = col12[9], labels = "no")
-      p10 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrite_umolL", trans = "identity", col = col12[10], labels = "no")
-      p11 <- planktonr::pr_plot_EOV(outputs(), EOV = "Phosphate_umolL", trans = "log10", col = col12[11], labels = "no") 
-      p12 <- planktonr::pr_plot_EOV(outputs(), EOV = "Oxygen_umolL", trans = "identity", col = col12[12])
+      p8 <- planktonr::pr_plot_EOV(outputs(), EOV = "Ammonium_umolL", trans = "identity", col = pkg.env$col12[8], labels = "no")
+      p9 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrate_umolL", trans = "identity", col = pkg.env$col12[9], labels = "no")
+      p10 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrite_umolL", trans = "identity", col = pkg.env$col12[10], labels = "no")
+      p11 <- planktonr::pr_plot_EOV(outputs(), EOV = "Phosphate_umolL", trans = "log10", col = pkg.env$col12[11], labels = "no") 
+      p12 <- planktonr::pr_plot_EOV(outputs(), EOV = "Oxygen_umolL", trans = "identity", col = pkg.env$col12[12])
       
       
       StationSummary <- strwrap(

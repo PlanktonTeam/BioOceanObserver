@@ -13,7 +13,7 @@ mod_PolLTM_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         plotOutput(nsPolLTM("plotmap")),
-        radioButtons(inputId = nsPolLTM("SiteLTM"), label = "Select a station", choices = unique(sort(PolLTM$StationName)), selected = "Port Hacking")
+        radioButtons(inputId = nsPolLTM("SiteLTM"), label = "Select a station", choices = unique(sort(pkg.env$PolLTM$StationName)), selected = "Port Hacking")
       ),
       mainPanel(id = "EOV paramters from Long Term Monitoring", 
                 h6(htmlOutput(nsPolLTM("PlotExp1"), container = span)),
@@ -42,7 +42,7 @@ mod_PolLTM_server <- function(id){
       req(input$SiteLTM)
       validate(need(!is.na(input$SiteLTM), "Error: Please select a station."))
       
-      selectedDataLTM <- PolLTM %>% 
+      selectedDataLTM <- pkg.env$PolLTM %>% 
         dplyr::filter(.data$StationName %in% input$SiteLTM,
                       .data$SampleDepth_m < 15,
                       !.data$Parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL")) 
@@ -76,7 +76,7 @@ mod_PolLTM_server <- function(id){
     }) %>% bindCache(input$SiteLTM)
     
     stationData <- reactive({
-      stationData <- NRSinfo %>% dplyr::filter(.data$StationName == input$SiteLTM) 
+      stationData <- pkg.env$NRSinfo %>% dplyr::filter(.data$StationName == input$SiteLTM) 
     }) %>% bindCache(input$SiteLTM)
     
     # Sidebar Map
