@@ -15,8 +15,8 @@ app_server <- function( input, output, session ) {
   options(na.action = "na.omit")
   
   # Informative pop-up modal; advises that DAP is inaccessible and historical data is being used.
-  # old.data is defined in utils_updateData.R which is sourced after sysdata.rda (alphabetical sourcing)
-  if (pkg.env$old.data) {
+  # new.data is defined in 000.R which is sourced first (alphabetical sorting)
+  if (!pkg.env$new.data) {
     
     showModal(modalDialog(
       title = HTML(paste0('<span style="padding-right: 3px; padding-top: 3px; float: right">',
