@@ -11,7 +11,7 @@ mod_PhytoTsNRS_ui <- function(id){
   nsPhytoTsNRS <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, panel_id = "NRSpts", dat = datNRSp),
+      fPlanktonSidebar(id = id, panel_id = "NRSpts", dat = pkg.env$datNRSp),
       fPLanktonPanel(id = id, panel_id = "NRSpts"),
     )
   )
@@ -34,7 +34,7 @@ mod_PhytoTsNRS_server <- function(id){
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
 
-      selectedData <- datNRSp %>%
+      selectedData <- pkg.env$datNRSp %>%
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
@@ -63,7 +63,7 @@ mod_PhytoTsNRS_server <- function(id){
     observeEvent({input$NRSpts == 1}, {
 
       gg_out1 <- reactive({
-        if (is.null(datNRSp$StationCode)) {return(NULL)}
+        if (is.null(pkg.env$datNRSp$StationCode)) {return(NULL)}
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
 
         p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
@@ -88,7 +88,7 @@ mod_PhytoTsNRS_server <- function(id){
     observeEvent({input$NRSpts == 2}, {
 
       gg_out2 <- reactive({
-        if (is.null(datNRSp$StationCode)) {return(NULL)}
+        if (is.null(pkg.env$datNRSp$StationCode)) {return(NULL)}
 
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
         titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
@@ -121,7 +121,7 @@ mod_PhytoTsNRS_server <- function(id){
         req(input$Site)
         validate(need(!is.na(input$Site), "Error: Please select a station."))
 
-        selectedDataFG <- NRSfgp %>%
+        selectedDataFG <- pkg.env$NRSfgp %>%
           dplyr::filter(.data$StationName %in% input$Site,
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
           droplevels()
@@ -130,7 +130,7 @@ mod_PhytoTsNRS_server <- function(id){
 
       gg_out3 <- reactive({
 
-        if (is.null(NRSfgp$StationCode)) {return(NULL)}
+        if (is.null(pkg.env$NRSfgp$StationCode)) {return(NULL)}
         scale <- dplyr::if_else(input$scaler3, "Percent", "Actual")
 
         p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)

@@ -15,7 +15,7 @@ mod_LFishSeason_ui <- function(id){
       shiny::fluidRow(
         shiny::column(width = 6, offset = 6,
                       selectizeInput(inputId = nsLFishSeason("species"), label = NULL, 
-                                     choices = unique(LFData$Species2), width = "100%",
+                                     choices = unique(pkg.env$LFData$Species2), width = "100%",
                                      options = list(dropdownParent = 'body')),
         )),
       shiny::fluidRow(
@@ -47,7 +47,7 @@ mod_LFishSeason_server <- function(id){
     ns <- session$ns
     
     LFDatar <- reactive({
-      dat <- LFData %>%
+      dat <- pkg.env$LFData %>%
         dplyr::filter(.data$Species2 == input$species & .data$Count > 0) %>% 
         dplyr::distinct(.data$Latitude, .data$Longitude, .keep_all = TRUE) %>% 
         dplyr::mutate(Season = dplyr::case_when(.data$Month_Local >= 3 &.data$Month_Local <= 5 ~ "Autumn",

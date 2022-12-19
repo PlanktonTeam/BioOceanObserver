@@ -153,7 +153,7 @@ mod_info_server <- function(id){
     
     observeEvent({input$Info == 5}, {
       output$NRSDataTable <- shiny::renderDataTable(
-        NRSStation %>% dplyr::mutate(EndDate = dplyr::case_when(.data$StationCode %in% c('NIN', 'ESP') ~ "2012-03-01",
+        pkg.env$NRSStation %>% dplyr::mutate(EndDate = dplyr::case_when(.data$StationCode %in% c('NIN', 'ESP') ~ "2012-03-01",
                                                                 .data$StationCode == 'PH4' ~ '2009-02-24')) %>% 
           dplyr::select("StationCode":"StationStartDate", "EndDate", dplyr::everything()) %>% 
           dplyr::rename(Code = "StationCode", Station = "StationName", State = "StateCode", 
@@ -163,7 +163,7 @@ mod_info_server <- function(id){
     })
     observeEvent({input$Info == 6}, {
       output$CPRDataTable <- shiny::renderDataTable(
-        datCPRTrip %>% 
+        pkg.env$datCPRTrip %>% 
           dplyr::group_by(.data$BioRegion) %>% 
           dplyr::summarise(StartDate = min(.data$SampleTime_Local, na.rm = TRUE),
                            EndDate = max(.data$SampleTime_Local, na.rm = TRUE),
@@ -180,14 +180,14 @@ mod_info_server <- function(id){
     
     observeEvent({input$Info == 7}, {
       output$PDataTable <- shiny::renderDataTable(
-        SpInfoP, 
+        pkg.env$SpInfoP, 
         options = list(
           pageLength = 250))
     })
     
     observeEvent({input$Info == 8}, {
       output$ZDataTable <- shiny::renderDataTable(
-        SpInfoZ, 
+        pkg.env$SpInfoZ, 
         options = list(
           pageLength = 250))
     })

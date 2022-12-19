@@ -13,7 +13,7 @@ mod_ZooSpatial_ui <- function(id){
   
   tagList(
     sidebarPanel(
-      selectizeInput(inputId = nsZooSpatial('species'), label = "Select a zooplankton species", choices = unique(fMapDataz$Taxon), 
+      selectizeInput(inputId = nsZooSpatial('species'), label = "Select a zooplankton species", choices = unique(pkg.env$fMapDataz$Taxon), 
                      selected = "Acartia danae")
     ),
     mainPanel(
@@ -63,7 +63,7 @@ mod_ZooSpatial_server <- function(id){
       req(input$species)
       validate(need(!is.na(input$species), "Error: Please select a species"))
       
-      selectedZS <- fMapDataz %>% 
+      selectedZS <- pkg.env$fMapDataz %>% 
         dplyr::mutate(Taxon = dplyr::if_else(.data$Taxon == 'Taxon', input$species, .data$Taxon)) %>%
         dplyr::filter(.data$Taxon %in% input$species) %>%
         dplyr::arrange(.data$freqfac)
@@ -122,7 +122,7 @@ mod_ZooSpatial_server <- function(id){
       }) %>% bindCache(input$species)
       
       output$plot2e <- renderPlot({
-        legendPlot
+        pkg.env$legendPlot
       }) %>% bindCache(input$species)
       
     })  
@@ -148,7 +148,7 @@ mod_ZooSpatial_server <- function(id){
         req(input$species)
         validate(need(!is.na(input$species), "Error: Please select a species"))
         
-        selectedSTI <- stiz %>% 
+        selectedSTI <- pkg.env$stiz %>% 
           dplyr::filter(.data$Species %in% input$species) 
         
       }) %>% bindCache(input$species)
@@ -177,7 +177,7 @@ mod_ZooSpatial_server <- function(id){
         req(input$species)
         validate(need(!is.na(input$species), "Error: Please select a species"))
         
-        selecteddn <- daynightz %>% 
+        selecteddn <- pkg.env$daynightz %>% 
           dplyr::filter(.data$Species %in% input$species) 
         
       }) %>% bindCache(input$species)

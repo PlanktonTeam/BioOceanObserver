@@ -15,7 +15,7 @@ mod_MoorBGC_ui <- function(id){
       sidebarPanel(
         plotOutput(nsMoorBGC("plotmap")),
         # station selector
-        checkboxGroupInput(inputId = nsMoorBGC('station'), label = "Select a station", choices = unique(sort(MooringTS$StationName)), 
+        checkboxGroupInput(inputId = nsMoorBGC('station'), label = "Select a station", choices = unique(sort(pkg.env$MooringTS$StationName)), 
                            selected = 'Port Hacking')),
       mainPanel(
         h6(textOutput(nsMoorBGC("PlotExp"), container = span)),
@@ -105,7 +105,7 @@ mod_MoorBGC_server <- function(id){
       req(input$station)
       validate(need(!is.na(input$station), "Error: Please select a station."))
       
-      selectedClim <- pr_get_MoorClimPlotData(MooringClim, input$station, 5)
+      selectedClim <- pr_get_MoorClimPlotData(pkg.env$MooringClim, input$station, 5)
       
     }) %>% bindCache(input$station)
     
@@ -113,7 +113,7 @@ mod_MoorBGC_server <- function(id){
       req(input$station)
       validate(need(!is.na(input$station), "Error: Please select a station."))
       
-      selectedTS <- pr_get_MoorTSPlotData(MooringTS, input$station, 5) 
+      selectedTS <- pr_get_MoorTSPlotData(pkg.env$MooringTS, input$station, 5) 
       
     }) %>% bindCache(input$station)
     

@@ -29,19 +29,19 @@ mod_MicroTsNRS_ui <- function(id){
                                            format = "%Y-%m-%d %H:%M",
                                            tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d"),
           selectInput(inputId = nsMicroTsNRS("ycol"), label = 'Select a parameter', 
-                      choices = planktonr::pr_relabel(unique(datNRSm$Parameters), 
+                      choices = planktonr::pr_relabel(unique(pkg.env$datNRSm$Parameters), 
                                                       style = "simple"), selected = "Bacterial_Richness"),
         ),
         conditionalPanel(
           condition = "input.NRSmts == 3", 
-          selectInput(inputId = nsMicroTsNRS("p1"), label = 'Select an x parameter', choices = planktonr::pr_relabel(unique(datNRSm$Parameters), style = "simple"), selected = "Eukaryote_Chlorophyll_Index"),
+          selectInput(inputId = nsMicroTsNRS("p1"), label = 'Select an x parameter', choices = planktonr::pr_relabel(unique(pkg.env$datNRSm$Parameters), style = "simple"), selected = "Eukaryote_Chlorophyll_Index"),
           selectInput(inputId = nsMicroTsNRS("p2"), label = 'Select a y parameter', 
                       choices = planktonr::pr_relabel(unique(Pico$Parameters), style = "simple"), selected = "Prochlorococcus_cellsmL")
         ),
         conditionalPanel(
           condition = "input.NRSmts == 1 | input.NRSmts == 2 | input.NRSmts == 3", 
           plotOutput(nsMicroTsNRS("plotmap")),
-          checkboxGroupInput(inputId = nsMicroTsNRS("Site"), label = "Select a station", choices = unique(sort(datNRSm$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala"))
+          checkboxGroupInput(inputId = nsMicroTsNRS("Site"), label = "Select a station", choices = unique(sort(pkg.env$datNRSm$StationName)), selected = c("Maria Island", "Port Hacking", "Yongala"))
         )
       ),
       mainPanel(
@@ -97,7 +97,7 @@ mod_MicroTsNRS_server <- function(id){
     
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
-      selectedData <- datNRSm %>% 
+      selectedData <- pkg.env$datNRSm %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$Parameters %in% input$ycol,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
@@ -147,7 +147,7 @@ mod_MicroTsNRS_server <- function(id){
       
       gg_out1 <- reactive({
         
-        if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+        if (is.null(pkg.env$datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
           return(NULL)
         
         if(input$scaler1){
@@ -182,7 +182,7 @@ mod_MicroTsNRS_server <- function(id){
       
       gg_out2 <- reactive({
         
-        if (is.null(datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+        if (is.null(pkg.env$datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
           return(NULL)
         
         trans <- 'identity'
@@ -263,7 +263,7 @@ mod_MicroTsNRS_server <- function(id){
         validate(need(!is.na(input$Site), "Error: Please select a station."))
         validate(need(!is.na(input$p1), "Error: Please select a parameter."))
         
-        selectedData1 <- datNRSm %>% 
+        selectedData1 <- pkg.env$datNRSm %>% 
           dplyr::filter(.data$StationName %in% input$Site,
                         .data$Parameters %in% c(input$p1, input$p2)) %>%
           tidyr::pivot_wider(c("StationName", "SampleDepth_m", "SampleTime_Local"), names_from = "Parameters", values_from = "Values", values_fn = mean)

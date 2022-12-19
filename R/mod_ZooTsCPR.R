@@ -11,7 +11,7 @@ mod_ZooTsCPR_ui <- function(id){
   nsZooTsCPR <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, panel_id = "CPRzts", dat = datCPRz),
+      fPlanktonSidebar(id = id, panel_id = "CPRzts", dat = pkg.env$datCPRz),
       fPLanktonPanel(id = id, panel_id = "CPRzts"),
     )
   )
@@ -32,7 +32,7 @@ mod_ZooTsCPR_server <- function(id){
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       ## Need to make these factors load automatically...... if possible
-      selectedData <- datCPRz %>% 
+      selectedData <- pkg.env$datCPRz %>% 
         dplyr::filter(.data$BioRegion %in% input$region,
                       .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
@@ -136,7 +136,7 @@ mod_ZooTsCPR_server <- function(id){
         req(input$region)
         validate(need(!is.na(input$region), "Error: Please select a bioregion"))
         
-        selectedDataFG <- CPRfgz %>% 
+        selectedDataFG <- pkg.env$CPRfgz %>% 
           dplyr::filter(.data$BioRegion %in% input$region,
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
           droplevels()
@@ -144,7 +144,7 @@ mod_ZooTsCPR_server <- function(id){
       
       gg_out3 <- reactive({
         
-        if (is.null(CPRfgz$BioRegion)) {return(NULL)}
+        if (is.null(pkg.env$CPRfgz$BioRegion)) {return(NULL)}
         scale <- dplyr::if_else(input$scaler3, "Percent", "Actual")
         
         p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)

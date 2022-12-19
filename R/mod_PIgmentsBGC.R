@@ -15,12 +15,12 @@ mod_PigmentsBGC_ui <- function(id){
       sidebarPanel(
         plotOutput(nsPigmentsBGC("plotmap")),
         # station selector
-        checkboxGroupInput(inputId = nsPigmentsBGC('station'), label = "Select a station", choices = unique(sort(Pigs$StationName)), selected = 'Port Hacking'),
+        checkboxGroupInput(inputId = nsPigmentsBGC('station'), label = "Select a station", choices = unique(sort(pkg.env$Pigs$StationName)), selected = 'Port Hacking'),
         # Date selector
         sliderInput(nsPigmentsBGC("date"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
                     value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
         # select parameter
-        selectizeInput(inputId = nsPigmentsBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(Pigs$Parameters), style = "simple"), selected = 'TotalChla', multiple = FALSE),
+        selectizeInput(inputId = nsPigmentsBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(pkg.env$Pigs$Parameters), style = "simple"), selected = 'TotalChla', multiple = FALSE),
         #selectizeInput(inputId = nsPigmentsBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
         # Select whether to overlay smooth trend line
         selectizeInput(inputId = nsPigmentsBGC("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
@@ -51,7 +51,7 @@ mod_PigmentsBGC_server <- function(id){
       validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       
-      Pigs %>%
+      pkg.env$Pigs %>%
         dplyr::filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$Parameters %in% input$parameter) %>%

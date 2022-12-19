@@ -11,7 +11,7 @@ mod_PhytoTsCPR_ui <- function(id){
   nsPhytoTsCPR <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, panel_id = "CPRpts", dat = datCPRp),
+      fPlanktonSidebar(id = id, panel_id = "CPRpts", dat = pkg.env$datCPRp),
       fPLanktonPanel(id = id, panel_id = "CPRpts")
     )
   )
@@ -30,7 +30,7 @@ mod_PhytoTsCPR_server <- function(id){
       validate(need(!is.na(input$region), "Error: Please select a region"))
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
-      selectedData <- datCPRp %>% 
+      selectedData <- pkg.env$datCPRp %>% 
         dplyr::filter(.data$BioRegion %in% input$region,
                       .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
@@ -139,7 +139,7 @@ mod_PhytoTsCPR_server <- function(id){
         req(input$region)
         validate(need(!is.na(input$region), "Error: Please select a bioregion"))
         
-        selectedDataFG <- CPRfgp %>% 
+        selectedDataFG <- pkg.env$CPRfgp %>% 
           dplyr::filter(.data$BioRegion %in% input$region,
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
           droplevels()
@@ -158,7 +158,7 @@ mod_PhytoTsCPR_server <- function(id){
       
       gg_out3 <- reactive({
         
-        if (is.null(CPRfgp$BioRegion)) {  
+        if (is.null(pkg.env$CPRfgp$BioRegion)) {  
           return(NULL)
         }
         
