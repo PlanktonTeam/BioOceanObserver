@@ -246,17 +246,17 @@ SpInfoZ <- planktonr::pr_get_SpeciesInfo(Type = "Z")
 # Get Larval Fish Data ----------------------------------------------------
 
 temp <- planktonr::pr_get_LFData() %>% 
-  dplyr::select("Species", "Species2", "Project", "Latitude", "Longitude", "SampleTime_Local",
+  dplyr::select("Species" = "Species2", "Project", "Latitude", "Longitude", "SampleTime_Local",
                 "Month_Local", "SampleDepth_m", "Count", "Abundance_1000m3", "Temperature_degC", 
                 "Salinity_psu", "Volume_m3", "Vessel", "TowType", "GearMesh_um", "Bathymetry_m") %>% 
-  dplyr::filter(!.data$Species %in% c("_37990025", "_37990051", "_37990052", "_Superclass.Pisces_37000000"))
+  dplyr::filter(!.data$Species %in% c("(37990025)", "(37990051)", "(37990052)", "Superclass Pisces (37000000)"))
 
 LFDataAbs <- temp %>% 
   dplyr::distinct(Latitude, Longitude, SampleTime_Local, .keep_all = TRUE)
 
 LFData <- temp %>% 
   dplyr::filter(.data$Count > 0) %>% 
-  dplyr::arrange(.data$Species2)
+  dplyr::arrange(.data$Species)
 
 rm(temp)
 

@@ -15,18 +15,18 @@ mod_LFishSeason_ui <- function(id){
       shiny::fluidRow(
         shiny::column(width = 6, offset = 6,
                       selectizeInput(inputId = nsLFishSeason("species"), label = NULL, 
-                                     choices = unique(LFData$Species2), width = "100%",
+                                     choices = unique(LFData$Species), width = "100%",
                                      options = list(dropdownParent = 'body')),
         )),
       shiny::fluidRow(
         shiny::column(width = 6,
                       style = "padding:0px; margin:0px;",
-                      shiny::h4("Summer"),
+                      shiny::h4("December - February"),
                       leaflet::leafletOutput(nsLFishSeason("LFMapSum"), width = "99%", height = "250px") %>% 
                         shinycssloaders::withSpinner(color="#0dc5c1")), 
         shiny::column(width = 6,
                       style = "padding:0px; margin:0px;",
-                      shiny::h4("Autumn"),
+                      shiny::h4("March - May"),
                       leaflet::leafletOutput(nsLFishSeason("LFMapAut"), width = "99%", height = "250px") %>%
                         shinycssloaders::withSpinner(color="#0dc5c1")
                       )
@@ -34,12 +34,12 @@ mod_LFishSeason_ui <- function(id){
       shiny::fluidRow(
         shiny::column(width = 6,
                       style = "padding:0px; margin:0px;",
-                      shiny::h4("Winter"),
+                      shiny::h4("June = August"),
                       leaflet::leafletOutput(nsLFishSeason("LFMapWin"), width = "99%", height = "250px") %>% 
                         shinycssloaders::withSpinner(color="#0dc5c1")), 
         shiny::column(width = 6,
                       style = "padding:0px; margin:0px;",
-                      shiny::h4("Spring"),
+                      shiny::h4("September - November"),
                       leaflet::leafletOutput(nsLFishSeason("LFMapSpr"), width = "99%", height = "250px") %>% 
                         shinycssloaders::withSpinner(color="#0dc5c1"))
       )
@@ -57,84 +57,37 @@ mod_LFishSeason_server <- function(id){
     
     LFDatar <- reactive({
       dat <- LFData %>%
-        dplyr::filter(.data$Species2 == input$species) %>%
+        dplyr::filter(.data$Species == input$species) %>%
         dplyr::distinct(.data$Latitude, .data$Longitude, .keep_all = TRUE) %>% 
-        dplyr::mutate(Season = dplyr::case_when(.data$Month_Local >= 3 &.data$Month_Local <= 5 ~ "Autumn",
-                                                .data$Month_Local >= 6 &.data$Month_Local <= 8 ~ "Winter",
-                                                .data$Month_Local >= 9 &.data$Month_Local <= 11 ~ "Spring",
-                                                TRUE ~ "Summer"))
+        dplyr::mutate(Season = dplyr::case_when(.data$Month_Local >= 3 &.data$Month_Local <= 5 ~ "March - May",
+                                                .data$Month_Local >= 6 &.data$Month_Local <= 8 ~ "June = August",
+                                                .data$Month_Local >= 9 &.data$Month_Local <= 11 ~ "September - November",
+                                                TRUE ~ "December - February"))
       return(dat)
     }) %>% bindCache(input$species)
     
     
-    LFLeaflet <- function(df){
-      leaflet::leaflet(df %>% 
-                         dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
-        leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
-        # leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%
-        leaflet::addCircleMarkers(lng = ~ Longitude,
-                                  lat = ~ Latitude,
-                                  color = "grey",
-                                  opacity = 1,
-                                  fillOpacity = 1,
-                                  radius = 0.5, 
-                                  group = "Absent") %>% 
-        leaflet::addLegend("bottomleft", 
-                           colors = c("blue",  "grey"),
-                           labels = c("Seasonal Presence", "Seasonal Absence"),
-                           title = input$Species2,
-                           opacity = 1)
-    }
-    
-    
-    LFLeaflet_obs <- function(sdf, name){
-      
-      labs_fish <- lapply(seq(nrow(sdf)), function(i) {
-        paste("<strong>Date:</strong>", sdf$SampleTime_Local[i], "<br>",
-              "<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
-              "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
-              "<strong>Count:</strong>", sdf$Count[i], "<br>",
-              "<strong>Abundance (1000 m\u207B\u00B3):</strong>", round(sdf$Abundance_1000m3[i], digits = 2), "<br>",
-              "<strong>Temperature (\u00B0C):</strong>", sdf$Temperature_degC[i], "<br>",
-              "<strong>Depth (m):</strong>", sdf$SampleDepth_m[i], "<br>")})
-      
-      
-      leaflet::leafletProxy(name, data = sdf) %>%
-        # leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%
-        leaflet::clearGroup("Present") %>%
-        leaflet::addCircleMarkers(data = sdf, 
-                                  lng = ~ Longitude,
-                                  lat = ~ Latitude,
-                                  color = "blue",
-                                  opacity = 1,
-                                  fillOpacity = 1,
-                                  radius = 2,
-                                  group = "Present",
-                                  label = lapply(labs_fish, htmltools::HTML))
-    }
-    
-    
     # Summer
     output$LFMapSum <- leaflet::renderLeaflet({
-      lf <- LFLeaflet(LFDatar())
+      lf <- LeafletBase(LFDatar())
       return(lf)
     })
     
     # Autumn
     output$LFMapAut <- leaflet::renderLeaflet({
-      lf <- LFLeaflet(LFDatar())
+      lf <- LeafletBase(LFDatar())
       return(lf)
     })
     
     # Winter
     output$LFMapWin <- leaflet::renderLeaflet({
-      lf <- LFLeaflet(LFDatar())
+      lf <- LeafletBase(LFDatar())
       return(lf)
     })
     
     # Spring
     output$LFMapSpr <- leaflet::renderLeaflet({
-      lf <- LFLeaflet(LFDatar())
+      lf <- LeafletBase(LFDatar())
       return(lf)
     })
     
@@ -142,10 +95,10 @@ mod_LFishSeason_server <- function(id){
     
     # Add points for chosen larval fish by season
     observe({
-      LFLeaflet_obs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "Summer"), name = "LFMapSum")
-      LFLeaflet_obs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "Autumn"), name = "LFMapAut")
-      LFLeaflet_obs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "Winter"), name = "LFMapWin")
-      LFLeaflet_obs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "Spring"), name = "LFMapSpr")
+      LeafletObs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "December - February"), name = "LFMapSum", Type = 'PA')
+      LeafletObs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "September - November"), name = "LFMapAut", Type = 'PA')
+      LeafletObs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "June = August"), name = "LFMapWin", Type = 'PA')
+      LeafletObs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "March - May"), name = "LFMapSpr", Type = 'PA')
       
     })
     

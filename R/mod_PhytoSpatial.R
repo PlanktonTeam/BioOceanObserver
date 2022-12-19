@@ -14,25 +14,38 @@ mod_PhytoSpatial_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        selectizeInput(inputId = nsPhytoSpatial('species'), label = "Select a phytoplankton species", choices = unique(fMapDatap$Taxon), 
-                       selected = "Tripos furca")
+        selectizeInput(inputId = nsPhytoSpatial('species'), label = "Select a phytoplankton species", choices = unique(fMapDatap$Species), 
+                       selected = "Tripos furca"),
+        shiny::checkboxInput(inputId = nsPhytoSpatial("scaler1"), 
+                             label = strong("Change between frequency or Presence/Absence plot"), 
+                             value = FALSE)
       ),
       mainPanel(
         tabsetPanel(id = "NRSspatp",
                     tabPanel("Observation maps", value = 1, 
                              h6(textOutput(nsPhytoSpatial("DistMapExp"), container = span)),
                              fluidRow(
-                               column(width = 6,
-                                      leaflet::leafletOutput(nsPhytoSpatial("plot2a"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
-                                      leaflet::leafletOutput(nsPhytoSpatial("plot2c"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                               shiny::column(width = 6,
+                                             style = "padding:0px; margin:0px;",
+                                             shiny::h4("December - February"),
+                                             leaflet::leafletOutput(nsPhytoSpatial("PSMapSum"), width = "99%", height = "300px") %>% 
+                                               shinycssloaders::withSpinner(color="#0dc5c1")), 
+                               shiny::column(width = 6,
+                                             style = "padding:0px; margin:0px;",
+                                             shiny::h4("March - May"),
+                                             leaflet::leafletOutput(nsPhytoSpatial("PSMapAut"), width = "99%", height = "300px") %>%
+                                               shinycssloaders::withSpinner(color="#0dc5c1")
                                ),
-                               column(width = 6,
-                                      leaflet::leafletOutput(nsPhytoSpatial("plot2b"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
-                                      leaflet::leafletOutput(nsPhytoSpatial("plot2d"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                               )
-                             ),
-                             column(width = 6, br(), 
-                                    plotOutput(nsPhytoSpatial("plot2e"), height = 50)
+                               shiny::column(width = 6,
+                                             style = "padding:0px; margin:0px;",
+                                             shiny::h4("June - August"),
+                                             leaflet::leafletOutput(nsPhytoSpatial("PSMapWin"), width = "99%", height = "300px") %>% 
+                                               shinycssloaders::withSpinner(color="#0dc5c1")), 
+                               shiny::column(width = 6,
+                                             style = "padding:0px; margin:0px;",
+                                             shiny::h4("September - February"),
+                                             leaflet::leafletOutput(nsPhytoSpatial("PSMapSpr"), width = "99%", height = "300px") %>% 
+                                               shinycssloaders::withSpinner(color="#0dc5c1"))
                              )
                     ),        
                     #tabPanel("Species Distribution maps", value = 2, 
@@ -47,10 +60,10 @@ mod_PhytoSpatial_ui <- function(id){
                              h6(textOutput(nsPhytoSpatial("SDBsExp"), container = span)),
                              plotOutput(nsPhytoSpatial("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
+                    )
         )
       )
     )
-  )
 }
 
 #' PhytoSpatial Server Functions
@@ -60,29 +73,31 @@ mod_PhytoSpatial_server <- function(id){
   moduleServer( id, function(input, output, session, NRSspatp){
     # Subset data
     
-    plotlist <- reactive({
+    PSdatar <- reactive({
       
       req(input$species)
       validate(need(!is.na(input$species), "Error: Please select a species"))
       
-      selectedZS <- fMapDatap %>%
-        dplyr::mutate(Taxon = dplyr::if_else(.data$Taxon == 'Taxon', input$species, .data$Taxon)) %>%
-        dplyr::filter(.data$Taxon == input$species) %>%
+      PSdatar <- fMapDatap %>%
+        dplyr::filter(.data$Species == input$species) %>%
         dplyr::arrange(.data$freqfac)
       
-      plotlist <- planktonr::pr_plot_FreqMap(selectedZS, species = input$species, interactive = TRUE)
+    }) %>% bindCache(input$species)
+    
+    AbsPdatar <- reactive({
+      
+      AbsPdatar <- fMapDatap %>%
+        dplyr::distinct(.data$Longitude, .data$Latitude, .data$Season) 
       
     }) %>% bindCache(input$species)
     
     shiny::exportTestValues(
-      PhytoSpatial = {ncol(plotlist())},
-      PhytoSpatialRows = {nrow(plotlist()) > 0},
-      PhytoSpatialLatisNumeric = {class(plotlist()$Lat)},
-      PhytoSpatialLongisNumeric = {class(plotlist()$Long)},
-      PhytoSpatialFreqisFactor = {class(plotlist()$Freqfac)},
-      PhytoSpatialSeasonisChr = {class(plotlist()$Season)},
-      PhytoSpatialTaxonisChr = {class(plotlist()$Taxon)},
-      PhytoSpatialfreqsampisNumeric = {class(plotlist()$freqsamp)}
+      PhytoSpatialRows = {nrow(PSdatar()) > 0},
+      PhytoSpatialLatisNumeric = {class(PSdatar()$Latitude)},
+      PhytoSpatialLongisNumeric = {class(PSdatar()$Longitude)},
+      PhytoSpatialFreqisFactor = {class(PSdatar()$freqfac)},
+      PhytoSpatialSeasonisChr = {class(PSdatar()$Season)},
+      PhytoSpatialSpeciesisChr = {class(PSdatar()$Species)}
     )
     
     # add text information ------------------------------------------------------------------------------
@@ -98,34 +113,49 @@ mod_PhytoSpatial_server <- function(id){
       paste("Figure of the species STI")
     }) 
     output$SDBsExp <- renderText({
-      paste("Figure of the diunral abundances from CPR data")
+      paste("Figure of the diurnal abundances from CPR data")
     }) 
     
     
     # select initial map  ------------------------------------------------------------------------------
     
-    # Create dot map of distribution
     observeEvent({input$NRSspatp == 1}, {
-      output$plot2a <- leaflet::renderLeaflet({
-        plotlist()[[1]]
-      }) %>% bindCache(input$species)
+      # Create dot map of distribution
+    # Summer
+      output$PSMapSum <- leaflet::renderLeaflet({
+      lf <- LeafletBase(AbsPdatar())
+      return(lf)
+    }) %>%  bindCache(input$species, input$scaler1)
+    
+    # Autumn
+    output$PSMapAut <- leaflet::renderLeaflet({
+      lf <- LeafletBase(AbsPdatar())
+      return(lf)
+    }) %>%  bindCache(input$species, input$scaler1)
+    
+    # Winter
+    output$PSMapWin <- leaflet::renderLeaflet({
+      lf <- LeafletBase(AbsPdatar())
+      return(lf)
+    }) %>%  bindCache(input$species, input$scaler1)
+    
+    # Spring
+    output$PSMapSpr <- leaflet::renderLeaflet({
+      lf <- LeafletBase(AbsPdatar())
+      return(lf)
+    }) %>%  bindCache(input$species, input$scaler1)
+
+    observe ({
       
-      output$plot2b <- leaflet::renderLeaflet({
-        plotlist()[[2]]
-      }) %>% bindCache(input$species)
+      type <- dplyr::if_else(input$scaler1, "frequency", "Presence/Absence")
       
-      output$plot2c <- leaflet::renderLeaflet({
-        plotlist()[[3]]
-      }) %>% bindCache(input$species)
-      
-      output$plot2d <- leaflet::renderLeaflet({
-        plotlist()[[4]]
-      }) %>% bindCache(input$species)
-      
-      output$plot2e <- renderPlot({
-        legendPlot
-      }) %>% bindCache(input$species)
-      
+      LeafletObs(sdf = PSdatar() %>% dplyr::filter(.data$Season == "December - February"), name = "PSMapSum", Type = type)
+      LeafletObs(sdf = PSdatar() %>% dplyr::filter(.data$Season == "September - November"), name = "PSMapAut", Type = type)
+      LeafletObs(sdf = PSdatar() %>% dplyr::filter(.data$Season == "June - August"), name = "PSMapWin", Type = type)
+      LeafletObs(sdf = PSdatar() %>% dplyr::filter(.data$Season == "March - May"), name = "PSMapSpr", Type = type)
+    
+    }) 
+    
     })
     
     # # add SDM if it is available

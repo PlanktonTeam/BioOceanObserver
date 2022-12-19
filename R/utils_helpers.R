@@ -358,6 +358,129 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
 
 
 
+#' Base leaflet plot for all sample points
+#'
+#' @noRd 
+LeafletBase <- function(df){
+  
+  leaflet::leaflet(df %>% 
+                     dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
+    leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
+    # leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%
+    leaflet::addCircleMarkers(lng = ~ Longitude,
+                              lat = ~ Latitude,
+                              color = "#CCCCCC",
+                              opacity = 1,
+                              fillOpacity = 1,
+                              radius = 0.25, 
+                              group = "Absent") 
+}
+
+#' Base leaflet plot for all sample points with observations for a particular species
+#'
+#' @noRd 
+LeafletObs <- function(sdf, name, Type = 'PA'){
+
+  Species <- unique(sdf$Species)
+  
+  if("Abundance_1000m3" %in% colnames(sdf)){
+    labs <- lapply(seq(nrow(sdf)), function(i) {
+      paste("<strong>Date:</strong>", sdf$SampleTime_Local[i], "<br>",
+          "<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
+          "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
+          "<strong>Count:</strong>", sdf$Count[i], "<br>",
+          "<strong>Abundance (1000 m\u207B\u00B3):</strong>", round(sdf$Abundance_1000m3[i], digits = 2), "<br>",
+          "<strong>Temperature (\u00B0C):</strong>", sdf$Temperature_degC[i], "<br>",
+          "<strong>Depth (m):</strong>", sdf$SampleDepth_m[i], "<br>")})
+  } else if ("freqfac" %in% colnames(sdf)){
+    labs <- lapply(seq(nrow(sdf)), function(i) {
+      paste("<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
+            "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
+            "<strong>Frequency in sample:</strong>", sdf$freqfac[i], "<br>")})
+  } else {
+    labs <- ''
+  }
+  
+  if(Type == 'frequency'){
+    CPRpal <- leaflet::colorFactor(c("#99CCFF", "#3399FF", "#0066CC", "#003366"), domain = sdf$freqfac)
+    NRSpal <- leaflet::colorFactor(c("#CCFFCC", "#99FF99", "#009900", "#006600"), domain = sdf$freqfac)
+    
+    dfCPR <- sdf %>% dplyr::filter(.data$Survey == 'CPR') 
+    dfNRS <- sdf %>% dplyr::filter(.data$Survey == 'NRS') 
+    
+    leaf <- leaflet::leafletProxy(name, data = sdf) %>%
+      # leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%
+      leaflet::clearGroup("Present") %>%
+      leaflet::addCircleMarkers(data = dfCPR, 
+                              lng = ~ Longitude,
+                              lat = ~ Latitude,
+                              color = ~CPRpal(freqfac),
+                              opacity = 1,
+                              fillOpacity = 1,
+                              radius = 2,
+                              group = 'Continuous Plankton Recorder') %>% 
+      leaflet::addCircleMarkers(data = dfNRS, 
+                                lng = ~ Longitude,
+                                lat = ~ Latitude,
+                                color = ~NRSpal(freqfac),
+                                opacity = 1,
+                                fillOpacity = 1,
+                                radius = 2,
+                                group = 'National Reference Stations') %>% 
+      leaflet::addLayersControl( # Layers control
+        overlayGroups = c("National Reference Stations", "Continuous Plankton Recorder"),
+        position = "topright",
+        options = leaflet::layersControlOptions(collapsed = FALSE, fill = NA)) %>% 
+        leaflet::addLegend("bottomleft", 
+                       colors = c("#99CCFF", "#3399FF", "#0066CC", "#003366", 
+                                  "#CCFFCC", "#99FF99", "#009900", "#006600", "#CCCCCC"),
+                       labels = c("25% CPR", "50% CPR", "75% CPR", "100% CPR",   
+                                  "25% NRS", "50% NRS", "75% NRS", "100% NRS","Absent"),
+                       title = paste(Species, "in % of samples"),
+                       opacity = 1) 
+            
+      htmltools::browsable(
+        htmltools::tagList(
+          list(
+            tags$head(
+              tags$style(
+                ".leaflet .legend {
+                   line-height: 5px;
+                   font-size: 5px;
+                   }",
+                ".leaflet .legend i{
+                  width: 5px;
+                  height: 5px;
+                   }"
+            )
+          ),
+          leaf)))
+    
+    leaf
+    
+  } else {
+    leaflet::leafletProxy(name, data = sdf) %>%
+      # leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%
+      leaflet::clearGroup("Present") %>%
+      leaflet::addCircleMarkers(data = sdf, 
+                                lng = ~ Longitude,
+                                lat = ~ Latitude,
+                                color = 'blue',
+                                opacity = 1,
+                                fillOpacity = 1,
+                                radius = 2,
+                                group = "Present",
+                                label = lapply(labs, htmltools::HTML)) %>% 
+      leaflet::addLegend("bottomleft", 
+                         colors = c("blue",  "#CCCCCC"),
+                         labels = c("Seasonal Presence", "Seasonal Absence"),
+                         title = Species,
+                         opacity = 1)
+  }
+}
+  
+
+
 
 
 
