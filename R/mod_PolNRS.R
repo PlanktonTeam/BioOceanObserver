@@ -41,7 +41,7 @@ mod_PolNRS_server <- function(id){
       req(input$Site)
       validate(need(!is.na(input$Site), "Error: Please select a station."))
       
-      selectedData <- PolNRS %>% 
+      selectedData <- pkg.env$PolNRS %>% 
         dplyr::filter(.data$StationName %in% input$Site)
     }) %>% bindCache(input$Site)
     
