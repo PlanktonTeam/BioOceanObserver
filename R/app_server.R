@@ -16,7 +16,7 @@ app_server <- function( input, output, session ) {
   
   # Informative pop-up modal; advises that DAP is inaccessible and historical data is being used.
   # old.data is defined in utils_updateData.R which is sourced after sysdata.rda (alphabetical sourcing)
-  if (old.data) {
+  if (pkg.env$old.data) {
     
     showModal(modalDialog(
       title = HTML(paste0('<span style="padding-right: 3px; padding-top: 3px; float: right">',
@@ -30,7 +30,7 @@ app_server <- function( input, output, session ) {
     ))
     
   }
-  
+
   
   ## only run if selected by tab - this should be home page for each Tab level
   ### Snapshot page
