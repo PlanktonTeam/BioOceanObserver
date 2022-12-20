@@ -18,7 +18,7 @@ pkg.env <- new.env(parent = emptyenv())
   tryCatch({
     # Access data from local server (fastest)
     cat(file=stderr(), "Attempting to access data from opendap.\n")
-    opendap.url <- "https://data-cbr.it.csiro.au/files/sc-opendap-work/work/sc-artefact/imosboo/sysdata1.rda"
+    opendap.url <- "https://data-cbr.it.csiro.au/files/sc-opendap-work/work/sc-artefact/imosboo/sysdata.rda"
     tmp <- tempfile(fileext='.rda')   
     httr::GET(opendap.url, httr::write_disk(tmp))
     load(tmp)
@@ -33,7 +33,7 @@ pkg.env <- new.env(parent = emptyenv())
       dap.data <- jsonlite::fromJSON(rawToChar(httr::GET(dap.url)$content))
       file.req <- dap.data$file$filename 
       tmp <- tempfile(fileext='.rda')   
-      httr::GET(dap.data$file$link$href[[which(dap.data$file$filename == "sysdata1.rda")]], httr::write_disk(tmp))
+      httr::GET(dap.data$file$link$href[[which(dap.data$file$filename == "sysdata.rda")]], httr::write_disk(tmp))
       load(tmp)
       cat(file=stderr(), "Up-to-date data accessed from dap.\n")
       pkg.env$new.data <- TRUE
