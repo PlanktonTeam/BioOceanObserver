@@ -18,7 +18,7 @@ pkg.env <- new.env(parent = emptyenv())
   tryCatch({
     # Access data from local server (fastest)
     cat(file=stderr(), "Attempting to access data from opendap.\n")
-    opendap.url <- "https://data-cbr.it.csiro.au/files/sc-opendap-work/work/sc-artefact/imosboo/sysdata.rda"
+    opendap.url <- "https://data-cbr.it.csiro.au/files/sc-opendap-work/work/sc-artefact/imosboo/sysdata1.rda"
     tmp <- tempfile(fileext='.rda')   
     httr::GET(opendap.url, httr::write_disk(tmp))
     load(tmp)
