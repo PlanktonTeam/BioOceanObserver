@@ -196,6 +196,10 @@ PSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "P")
 ZSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "Z")
 ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Z")
 
+# # To test sysdata access from DAP
+# PolNRS <- PolNRS[PolNRS$Year_Local < 2017,]
+# PolCPR <- PolCPR[PolCPR$Year_Local < 2017,] 
+# PolLTM <- PolLTM[PolLTM$Year_Local < 2017,]
 
 # add data to sysdata.rda
 usethis::use_data(Nuts, Pigs, Pico, LTnuts,
