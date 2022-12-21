@@ -43,7 +43,7 @@ mod_PhytoSpatial_ui <- function(id){
                              h6(textOutput(nsPhytoSpatial("STIsExp"), container = span)),
                              plotOutput(nsPhytoSpatial("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
-                    tabPanel("Species Diurnal Behviour", value = 3, 
+                    tabPanel("Species Diurnal Behaviour", value = 3, 
                              h6(textOutput(nsPhytoSpatial("SDBsExp"), container = span)),
                              plotOutput(nsPhytoSpatial("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
                     ),
@@ -183,14 +183,15 @@ mod_PhytoSpatial_server <- function(id){
         
       }) %>% bindCache(input$species)
       
-      # sti plot
+      # daynight plot
       output$DNs <- renderPlot({
         
         validate(
-          need(length(unique(selecteddn()$daynight)) == 2 | nrow(selecteddn()) > 20, "Not enough data for this copepod species to plot")
+          need(length(unique(selecteddn()$daynight)) == 2 | nrow(selecteddn()) > 20, "Not enough data for this species to plot")
         )
         
-        planktonr::pr_plot_DayNight(selecteddn())
+        plotdn <- planktonr::pr_plot_DayNight(selecteddn())
+        plotdn
         
       }) %>% bindCache(input$species)
       

@@ -8,23 +8,9 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_PigmentsBGC_ui <- function(id){
-  nsPigmentsBGC <- NS(id)
-  
   tagList(
     sidebarLayout(
-      sidebarPanel(
-        plotOutput(nsPigmentsBGC("plotmap")),
-        # station selector
-        checkboxGroupInput(inputId = nsPigmentsBGC('station'), label = "Select a station", choices = unique(sort(pkg.env$Pigs$StationName)), selected = 'Port Hacking'),
-        # Date selector
-        sliderInput(nsPigmentsBGC("date"), "Dates:", min = lubridate::ymd(20090101), max = Sys.Date(), 
-                    value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%Y-%m-%d"),
-        # select parameter
-        selectizeInput(inputId = nsPigmentsBGC('parameter'), label = 'Select a parameter', choices = planktonr::pr_relabel(unique(pkg.env$Pigs$Parameters), style = "simple"), selected = 'TotalChla', multiple = FALSE),
-        #selectizeInput(inputId = nsPigmentsBGC('depth'), label = 'Select a depth', choices = NULL, selected = '0'),
-        # Select whether to overlay smooth trend line
-        selectizeInput(inputId = nsPigmentsBGC("smoother"), label = strong("Overlay trend line"), choices = c("Smoother", "Linear", "None"), selected = "None")
-      ),
+      fEnviroSidebar(id = id, dat = pkg.env$Pigs),
       fEnviroPanel(id = id)
     )
   )
@@ -76,17 +62,12 @@ mod_PigmentsBGC_server <- function(id){
     
     # Create timeseries object the plotOutput function is expecting
     gg_out1 <- reactive({
-      
       trend <-  input$smoother
-      
       planktonr::pr_plot_Enviro(selected(), Trend = trend)
-      
     }) %>% bindCache(input$station, input$parameter, input$date, input$smoother)
     
     output$timeseries1 <- renderPlot({
-      
       gg_out1()
-      
     }, height = function() {length(unique(selected()$SampleDepth_m)) * 200}) 
     
     # Download -------------------------------------------------------
