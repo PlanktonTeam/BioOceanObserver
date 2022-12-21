@@ -82,9 +82,6 @@ Nuts <- planktonr::pr_get_NRSEnvContour('Chemistry') %>%
 Pigs <- planktonr::pr_get_NRSPigments(Format = "binned") %>% 
   planktonr::pr_remove_outliers(2)
 Pico <- planktonr::pr_get_NRSEnvContour('Pico')
-LTnuts <- planktonr::pr_get_LTnuts() %>% 
-  planktonr::pr_remove_outliers(2)
-
 
 # Get Sat data ------------------------------------------------------------
 
@@ -270,7 +267,7 @@ ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Z")
 
 # Add data to sysdata.rda -------------------------------------------------
 
-usethis::use_data(Nuts, Pigs, Pico, LTnuts,
+usethis::use_data(Nuts, Pigs, Pico, 
                   fMapDataz, fMapDatap, legendPlot,
                   MooringTS, MooringClim,
                   PolNRS, PolCPR, PolLTM, 

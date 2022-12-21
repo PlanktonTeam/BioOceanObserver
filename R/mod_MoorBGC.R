@@ -147,7 +147,7 @@ mod_MoorBGC_server <- function(id){
     
     # Download -------------------------------------------------------
     output$downloadData1 <- fDownloadButtonServer(input, selectedTS(), "MooringTS") # Download csv of data
-    output$downloadData2 <- fDownloadButtonServer(input, selectedClim(), "MooringCLim") # Download csv of data
+    output$downloadData2 <- fDownloadButtonServer(input, selectedClim(), "MooringClim") # Download csv of data
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Mooring") # Download figure
     
   })
