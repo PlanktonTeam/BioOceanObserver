@@ -7,12 +7,14 @@ pkg.env <- new.env(parent = emptyenv())
   data.vars <- c("Nuts", "Pigs", "Pico", "LTnuts",
                  "fMapDataz", "fMapDatap", "legendPlot",
                  "MooringTS", "MooringClim",
-                 "PolNRS", "PolCPR", "PolLTM", "NRSinfo", "CPRinfo", "NRSStation",
+                 "PolNRS", "PolCPR", "PolLTM", 
+                 "NRSinfo", "CPRinfo", "NRSStation",
                  "datCPRz", "datCPRp", "datCPRw",
                  "datNRSz", "datNRSp", "datNRSm", "datNRSw",
                  "NRSfgz", "NRSfgp", "CPRfgz", "CPRfgp", "PMapData",
-                 "stiz", "stip", "daynightz", "daynightp", "PMapData2",
-                 "SpInfoP", "SpInfoZ", "LFData", "datNRSTrip", "datCPRTrip",
+                 "stiz", "stip", "daynightz", "daynightp",
+                 "SpInfoP", "SpInfoZ", "LFData", "LFDataAbs",
+                 "datNRSTrip", "datCPRTrip",
                  "PSpNRSAccum", "PSpCPRAccum", "ZSpNRSAccum", "ZSpCPRAccum",
                  "col12")
   tryCatch({
