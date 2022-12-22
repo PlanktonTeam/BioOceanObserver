@@ -45,6 +45,16 @@ mod_PolCPR_server <- function(id){
       
       selectedData <- PolCPR %>% 
         dplyr::filter(.data$BioRegion %in% input$Site) 
+      
+      }) %>% bindCache(input$Site)
+    
+    selectedPCI <- reactive({
+      req(input$Site)
+      validate(need(!is.na(input$Site), "Error: Please select a station."))
+      
+      selectedPCI <- PCI %>% 
+      dplyr::filter(.data$BioRegion %in% input$Site) 
+      
     }) %>% bindCache(input$Site)
     
     shiny::exportTestValues(
@@ -91,6 +101,14 @@ mod_PolCPR_server <- function(id){
       frequently used in policy making and input into reporting such as State of Environment.", sep = "")
     }) 
     
+    output$StationSummary <- shiny::renderText({ 
+      paste("<h4 style='text-align:center; font-weight: bold;'>",input$Site,"</h5>The CPR has been sampling 
+              in the ", input$Site," bioregion since ", format(min(stationData()$SampleStartDate), "%A %d %B %Y"), 
+            " and sampling is ongoing.", " Approximately ", format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
+            " nautical miles has been towed in this region. The ", input$Site, " bioregion is characterised by ", 
+            unique(stationData()$Features), sep = "")
+    })
+    
     # Plot Trends -------------------------------------------------------------
     #t, l, b, r
     layout1 <- c(
@@ -99,7 +117,9 @@ mod_PolCPR_server <- function(id){
       patchwork::area(4,1,5,3),
       patchwork::area(6,1,6,3),  # Header
       patchwork::area(7,1,8,3),
-      patchwork::area(9,1,10,3)
+      patchwork::area(9,1,10,3),
+      patchwork::area(11,1,11,3), # Header
+      patchwork::area(12,1,25,3)
     )
     
     gg_out1 <- reactive({
@@ -114,19 +134,14 @@ mod_PolCPR_server <- function(id){
       p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', 
                                    trans = "log10", col = col12[3])
       
-      output$StationSummary <- shiny::renderText({ 
-        paste("<h4 style='text-align:center; font-weight: bold;'>",input$Site,"</h5>The CPR has been sampling 
-              in the ", input$Site," bioregion since ", format(min(stationData()$SampleStartDate), "%A %d %B %Y"), 
-              " and sampling is ongoing.", " Approximately ", format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
-              " nautical miles has been towed in this region. The ", input$Site, " bioregion is characterised by ", 
-              unique(stationData()$Features), sep = "")
-      })
-      
+      p3 <- planktonr::pr_plot_PCI(selectedPCI())
       
       patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
         p1 + p2 + 
         grid::textGrob("Diversity EOVs", gp = grid::gpar(fontsize=20)) + 
         p6 + p7 + 
+        grid::textGrob("Chlorophyl density from Phytoplankton Colour Index", gp = grid::gpar(fontsize=20)) + 
+        p3 +
         patchwork::plot_layout(design = layout1) & 
         ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
                        axis.title = ggplot2::element_text(size = 12, face = "plain"),
