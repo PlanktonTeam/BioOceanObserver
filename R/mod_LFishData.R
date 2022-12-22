@@ -14,7 +14,7 @@ mod_LFishData_ui <- function(id){
       shiny::fluidRow(
         shiny::column(width = 6, offset = 6,
                       selectizeInput(inputId = nsLFishData("species"), label = NULL, 
-                                     choices = unique(LFData$Species2), width = "100%",
+                                     choices = unique(LFData$Species), width = "100%",
                                      options = list(dropdownParent = 'body')),
         )),
       shiny::fluidRow(
@@ -37,7 +37,7 @@ mod_LFishData_server <- function(id){
     SpeciesTabler <- shiny::reactive({
       
       dat <- LFData %>% 
-        dplyr::filter(input$species == .data$Species2) %>%
+        dplyr::filter(input$species == .data$Species) %>%
         dplyr::arrange(.data$SampleTime_Local) %>% 
         dplyr::select(c("Project", "Latitude", "Longitude", "SampleTime_Local", "SampleDepth_m", "Count",
                         "Abundance_1000m3", "Temperature_degC", "Salinity_psu", "Volume_m3", "Vessel", "TowType",
