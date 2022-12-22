@@ -92,7 +92,7 @@ mod_PhytoTsNRS_server <- function(id){
 
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
         titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
-
+        
         p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "NRS", trans = trans) +
           ggplot2::theme(legend.position = "none")
         p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) +

@@ -8,7 +8,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
     idSite <- "Site"
-    
+
     if (stringr::str_detect(id, "Micro") == TRUE){ # Microbes + NRS
       selectedVar <- "Bacterial_Richness"
     } else if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + NRS
@@ -35,11 +35,16 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
           -webkit-column-count: 2;
           -moz-column-count: 2;
           column-count: 2;}"))),
-      condition = paste0("input.", tabsetPanel_id, " >= 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3 | ", tabsetPanel_id, " == 4"), 
+      condition = "input.phyto == 'ptscpr' | input.zoo == 'ztscpr'", 
+      shiny::HTML("<h6>Note there is very little data in the North and North-west regions<h6>")
+    ),
+            
+      shiny::conditionalPanel(
+        condition = paste0("input.", tabsetPanel_id, " >= 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3 | ", tabsetPanel_id, " == 4"), 
       shiny::plotOutput(ns("plotmap"),
                         height = "300px", 
                         width = "100%"),
-      shiny::HTML("<h5><strong>Select a station:</strong></h5>"),
+      shiny::HTML("<h6><strong>Select a station:</strong></h5>"),
       shiny::fluidRow(tags$div(align = "left", 
                                class = "multicol",
                                shiny::checkboxGroupInput(inputId = ns(idSite), 
@@ -75,8 +80,6 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       shiny::br(),
       shiny::br()
     ),
-    
-    
     
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 3 && input.navbar != 'Microbes'"), # Plankton

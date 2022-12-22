@@ -147,7 +147,8 @@ PolNRS <- planktonr::pr_get_PolicyData("NRS") %>%
   dplyr::filter(!StationCode %in% c("NIN", "ESP")) %>% 
   planktonr::pr_remove_outliers(2)
 PolCPR <- planktonr::pr_get_PolicyData("CPR", near_dist_km = 250) %>% 
-  planktonr::pr_remove_outliers(2)
+  planktonr::pr_remove_outliers(2) %>% 
+  dplyr::filter(!BioRegion %in% c("North", "North-west", "None"))
 PolLTM <- planktonr::pr_get_PolicyData("LTM") %>% 
   planktonr::pr_remove_outliers(2)
 
