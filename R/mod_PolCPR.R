@@ -20,7 +20,7 @@ mod_PolCPR_ui <- function(id){
       mainPanel(id = "EOV Biomass by CPR", 
                 shiny::htmlOutput(nsPolCPR("PlotExp1")),
                 shiny::htmlOutput(nsPolCPR("StationSummary")),
-                plotOutput(nsPolCPR("timeseries1"), height = 1000) %>% 
+                plotOutput(nsPolCPR("timeseries1"), height = 1500) %>% 
                   shinycssloaders::withSpinner(color="#0dc5c1"),
                     div(style="display:inline-block; float:right; width:60%",
                        fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
