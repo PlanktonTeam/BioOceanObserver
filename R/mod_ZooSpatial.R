@@ -12,41 +12,11 @@ mod_ZooSpatial_ui <- function(id){
   nsZooSpatial <- NS(id)
   
   tagList(
-    sidebarPanel(
-      selectizeInput(inputId = nsZooSpatial('species'), label = "Select a zooplankton species", choices = unique(pkg.env$fMapDataz$Taxon), 
-                     selected = "Acartia danae")
-    ),
-    mainPanel(
-      tabsetPanel(id = "NRSspat",
-                  tabPanel("Observation maps", value = 1, 
-                           h6(textOutput(nsZooSpatial("DistMapExp"), container = span)),
-                           fluidRow(
-                             column(width = 6,
-                                    leaflet::leafletOutput(nsZooSpatial("plot2a"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
-                                    leaflet::leafletOutput(nsZooSpatial("plot2c"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                             ),
-                             column(width = 6,
-                                    leaflet::leafletOutput(nsZooSpatial("plot2b"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
-                                    leaflet::leafletOutput(nsZooSpatial("plot2d"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                             )
-                           ),
-                           column(width = 6, br(), 
-                                  plotOutput(nsZooSpatial("plot2e"), height = 50)
-                           )
-                  ),
-                  # tabPanel("Species Distribution maps", value = 2, 
-                  #          h6(textOutput(nsZooSpatial("SDMsMapExp"), container = span)),
-                  #          plotOutput(nsZooSpatial("SDMs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                  # ),
-                  tabPanel("Species Temperature Index graphs", value = 2, 
-                           h6(textOutput(nsZooSpatial("STIsExp"), container = span)),
-                           plotOutput(nsZooSpatial("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                  ),
-                  tabPanel("Species Diurnal Behaviour", value = 3, 
-                           h6(textOutput(nsZooSpatial("SDBsExp"), container = span)),
-                           plotOutput(nsZooSpatial("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                  ),
-      )
+
+    sidebarLayout(
+      fSpatialSidebar(id = id, tabsetPanel_id = "NRSspatz", dat1 = pkg.env$fMapDataz, dat2 = pkg.env$stiz, dat3 = pkg.env$daynightz),
+      fSpatialPanel(id= id, tabsetPanel_id = "NRSspatz")
+
     )
   )
 }
@@ -55,88 +25,104 @@ mod_ZooSpatial_ui <- function(id){
 #'
 #' @noRd 
 mod_ZooSpatial_server <- function(id){
-  moduleServer( id, function(input, output, session, NRSspat){
+  moduleServer( id, function(input, output, session, NRSspatz){
     # Subset data
     
-    plotlist <- reactive({
+    type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+    
+    AbsZdatar <- reactive({
+      
+      AbsZdatar <- pkg.env$fMapDataz %>%
+        dplyr::distinct(.data$Longitude, .data$Latitude, .data$Season, .data$Survey) %>% 
+        dplyr::mutate(Species = input$species, 
+                      freqfac = factor('Absent'))
+      
+    }) %>% bindCache(input$species)
+    
+    ZSdatar <- reactive({
       
       req(input$species)
       validate(need(!is.na(input$species), "Error: Please select a species"))
       
-      selectedZS <- pkg.env$fMapDataz %>% 
-        dplyr::mutate(Taxon = dplyr::if_else(.data$Taxon == 'Taxon', input$species, .data$Taxon)) %>%
-        dplyr::filter(.data$Taxon %in% input$species) %>%
-        dplyr::arrange(.data$freqfac)
+      ZSdatar <- pkg.env$fMapDataz %>%
+        dplyr::filter(.data$Species == input$species) 
       
-      plotlist <- planktonr::pr_plot_FreqMap(selectedZS, species = input$species, interactive = TRUE)
+      if(type == "frequency"){
+        ZSdatar <- ZSdatar %>% dplyr::bind_rows(AbsZdatar()) %>%
+          dplyr::mutate(freqfac = factor(.data$freqfac, levels = c("Absent", "Seen in 25%",'50%', '75%', '100% of Samples')))
+      } else {
+        ZSdatar
+      }
       
-    }) %>% bindCache(input$species)
+    }) %>% bindCache(input$species, input$scaler1)
     
     shiny::exportTestValues(
-      ZooSpatial = {ncol(plotlist())},
-      ZooSpatialRows = {nrow(plotlist()) > 0},
-      ZooSpatialLatisNumeric = {class(plotlist()$Lat)},
-      ZooSpatialLongisNumeric = {class(plotlist()$Long)},
-      ZooSpatialFreqisFactor = {class(plotlist()$Freqfac)},
-      ZooSpatialSeasonisChr = {class(plotlist()$Season)},
-      ZooSpatialTaxonisChr = {class(plotlist()$Taxon)},
-      ZooSpatialfreqsampisNumeric = {class(plotlist()$freqsamp)}
+      ZooSpatial = {ncol(PSdatar())},
+      ZooSpatialRows = {nrow(PSdatar()) > 0},
+      ZooSpatialLatisNumeric = {class(PSdatar()$Lat)},
+      ZooSpatialLongisNumeric = {class(PSdatar()$Long)},
+      ZooSpatialFreqisFactor = {class(PSdatar()$Freqfac)},
+      ZooSpatialSeasonisChr = {class(PSdatar()$Season)}
     )
     
     # add text information ------------------------------------------------------------------------------
     output$DistMapExp <- renderText({
-      "This map is a frequency of occurence map based on the NRS and CPR data for each species"
-    }) 
-    output$SDMsMapExp <- renderText({
-      paste("This map is a modelled output of the relative distribution for a species.",
-            "This is calculated using NRS and CPR data in a Tweedie model.",
-            "The environmental variables are SST, Chla, depth, Month", sep =  "<br/>")
+      "This map is either a presence absence map based on the NRS and CPR data for each species or a frequency map based on the 
+      number of times a species is seen in the sample location"
     }) 
     output$STIsExp <- renderText({
-      paste("Figure of the species STI")
+      paste("Figure of the species STI showing the temperature range at which this species is most common. 
+            A bimodal shape may indicate a sub-species or two species being identified as the same species")
     }) 
     output$SDBsExp <- renderText({
-      paste("Figure of the diunral abundances from CPR data")
+      paste("Figure of the diurnal abundances from CPR data. Note that the CPR is towed at ~10m depth so these abundances are representative of surface waters")
     }) 
     
     
     # select initial map  ------------------------------------------------------------------------------
     
-    # Create dot map of distribution
-    
     observeEvent({input$NRSspat == 1}, {
-      output$plot2a <- leaflet::renderLeaflet({
-        plotlist()[[1]]
-      }) %>% bindCache(input$species)
+      # Create dot map of distribution
+      # Summer
+      output$MapSum <- leaflet::renderLeaflet({
+        type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+        lf <- LeafletBase(AbsZdatar(), Type = type)
+        return(lf)
+      }) %>%  bindCache(input$species, input$scaler1)
       
-      output$plot2b <- leaflet::renderLeaflet({
-        plotlist()[[2]]
-      }) %>% bindCache(input$species)
+      # Autumn
+      output$MapAut <- leaflet::renderLeaflet({
+        type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+        lf <- LeafletBase(AbsZdatar(), Type = type)
+        return(lf)
+      }) %>%  bindCache(input$species, input$scaler1)
       
-      output$plot2c <- leaflet::renderLeaflet({
-        plotlist()[[3]]
-      }) %>% bindCache(input$species)
+      # Winter
+      output$MapWin <- leaflet::renderLeaflet({
+        type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+        lf <- LeafletBase(AbsZdatar(), Type = type)
+        return(lf)
+      }) %>%  bindCache(input$species, input$scaler1)
       
-      output$plot2d <- leaflet::renderLeaflet({
-        plotlist()[[4]]
-      }) %>% bindCache(input$species)
+      # Spring
+      output$MapSpr <- leaflet::renderLeaflet({
+        type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+        lf <- LeafletBase(AbsZdatar(), Type = type)
+        return(lf)
+      }) %>%  bindCache(input$species, input$scaler1)
       
-      output$plot2e <- renderPlot({
-        pkg.env$legendPlot
-      }) %>% bindCache(input$species)
+
+      observe ({
+        type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+        LeafletObs(sdf = ZSdatar() %>% dplyr::filter(.data$Season == "December - February"), name = "MapSum", Type = type)
+        LeafletObs(sdf = ZSdatar() %>% dplyr::filter(.data$Season == "September - November"), name = "MapAut", Type = type)
+        LeafletObs(sdf = ZSdatar() %>% dplyr::filter(.data$Season == "June - August"), name = "MapWin", Type = type)
+        LeafletObs(sdf = ZSdatar() %>% dplyr::filter(.data$Season == "March - May"), name = "MapSpr", Type = type)
+        
+      }) 
+
       
-    })  
-    #   # add SDM if it is available
-    # output$SDMs <- renderImage({
-    # 
-    #   speciesName <- stringr::str_replace_all(input$species1, " ", "")
-    #   filename <- paste("inst/app/www/SDMTweGAM_", speciesName, ".png", sep = "")
-    # 
-    #   list(src = filename,
-    #        height = 500, #width = 600,
-    #        alt = 'Species Distribution Map not available')
-    # 
-    # }, deleteFile = FALSE)
+    })
     
     # STI plot -----------------------------------------------------------------------------------------
     # Subset data
@@ -145,13 +131,13 @@ mod_ZooSpatial_server <- function(id){
       
       selectedSTI <- reactive({
         
-        req(input$species)
-        validate(need(!is.na(input$species), "Error: Please select a species"))
+        req(input$species1)
+        validate(need(!is.na(input$species1), "Error: Please select a species"))
         
         selectedSTI <- pkg.env$stiz %>% 
-          dplyr::filter(.data$Species %in% input$species) 
+          dplyr::filter(.data$Species %in% input$species1) 
         
-      }) %>% bindCache(input$species)
+      }) %>% bindCache(input$species1)
       
       # sti plot
       output$STIs <- renderPlot({
@@ -163,7 +149,7 @@ mod_ZooSpatial_server <- function(id){
         planktonr::pr_plot_STI(selectedSTI())
         
         
-      }) %>% bindCache(input$species)
+      }) %>% bindCache(input$species1)
       
     })
     
@@ -174,13 +160,14 @@ mod_ZooSpatial_server <- function(id){
       
       selecteddn <- reactive({
         
-        req(input$species)
-        validate(need(!is.na(input$species), "Error: Please select a species"))
+        req(input$species2)
+        validate(need(!is.na(input$species2), "Error: Please select a species"))
         
         selecteddn <- pkg.env$daynightz %>% 
-          dplyr::filter(.data$Species %in% input$species) 
+          dplyr::filter(.data$Species %in% input$species2) 
+
         
-      }) %>% bindCache(input$species)
+      }) %>% bindCache(input$species2)
       
       # daynight plot
       output$DNs <- renderPlot({
@@ -192,21 +179,11 @@ mod_ZooSpatial_server <- function(id){
         plotdn <- planktonr::pr_plot_DayNight(selecteddn())
         plotdn
         
-      }) %>% bindCache(input$species)
+      }) %>% bindCache(input$species2)
       
     })
     
-    # speciesName <- stringr::str_replace_all(Species, " ", "")
-    # filename <- paste("inst/app/www/SDMTweGAM_", speciesName, ".png", sep = "")
-    # img <- tryCatch(png::readPNG(filename), error = function(e){})
-    # dft <-  data.frame(x=c(1,1,1,1), y=c(0,2,1,3), label = c('','No species distribution','map available',''))
-    # imggrob <- tryCatch(grid::rasterGrob(img), error = function(e) {
-    #   ggplot2::ggplot(dft) +
-    #     ggplot2::geom_text(ggplot2::aes(x=.data$x, y=.data$y, label = .data$label), size = 20) +
-    #     ggplot2::theme_void()
-    # })
-    
-  
+
     
     
   })
