@@ -4,12 +4,12 @@ pkg.env <- new.env(parent = emptyenv())
 .onLoad <- function(libname, pkgname){
   cat(file=stderr(), "New data load call.\n")
   # Non-grep vars: LTnuts, datCPRw, PMapData
-  data.vars <- c("Nuts", "Pigs", "Pico", "LTnuts",
-                 "fMapDataz", "fMapDatap", "legendPlot",
+  data.vars <- c("Nuts", "Pigs", "Pico", 
+                 "fMapDataz", "fMapDatap", 
                  "MooringTS", "MooringClim",
                  "PolNRS", "PolCPR", "PolLTM", 
                  "NRSinfo", "CPRinfo", "NRSStation",
-                 "datCPRz", "datCPRp", "datCPRw",
+                 "datCPRz", "datCPRp", "PCI",
                  "datNRSz", "datNRSp", "datNRSm", "datNRSw",
                  "NRSfgz", "NRSfgp", "CPRfgz", "CPRfgp", "PMapData",
                  "stiz", "stip", "daynightz", "daynightp",

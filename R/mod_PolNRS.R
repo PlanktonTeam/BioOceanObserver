@@ -107,26 +107,12 @@ mod_PolNRS_server <- function(id){
       patchwork::area(11,1,11,3), # Physical Header 
       patchwork::area(12,1,13,3),
       patchwork::area(14,1,15,3),
-      patchwork::area(16,1,17,3)
-    )
-    
-    layout2 <- c(
-      #t, l, b, r
-      patchwork::area(1,1,1,3), # Biomass Header
-      patchwork::area(2,1,3,3),
-      patchwork::area(4,1,5,3),
-      patchwork::area(6,1,6,3), # Diversity Header
-      patchwork::area(7,1,8,3),
-      patchwork::area(9,1,10,3),
-      patchwork::area(11,1,11,3), # Physical Header 
-      patchwork::area(12,1,13,3),
-      patchwork::area(14,1,15,3),
       patchwork::area(16,1,17,3),
       patchwork::area(18,1,18,3),  # Biochemistry Header 
-      patchwork::area(19,1,20,3), # O2
-      patchwork::area(21,1,22,3), # NH4
-      patchwork::area(23,1,24,3), # NO2
-      patchwork::area(25,1,26,3), # NO3
+      patchwork::area(19,1,20,3), # NH4
+      patchwork::area(21,1,22,3), # N02
+      patchwork::area(23,1,24,3), # Si
+      patchwork::area(25,1,26,3), # P
       patchwork::area(27,1,28,3)  # 02
     )
     
@@ -143,11 +129,18 @@ mod_PolNRS_server <- function(id){
       p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "PigmentChla_mgm3", trans = "log10", col = pkg.env$col12[6], labels = "no") 
       p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDSalinity_PSU", trans = "identity", col = pkg.env$col12[7])
       
+
       p8 <- planktonr::pr_plot_EOV(outputs(), EOV = "Ammonium_umolL", trans = "identity", col = pkg.env$col12[8], labels = "no")
       p9 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrate_umolL", trans = "identity", col = pkg.env$col12[9], labels = "no")
-      p10 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrite_umolL", trans = "identity", col = pkg.env$col12[10], labels = "no")
-      p11 <- planktonr::pr_plot_EOV(outputs(), EOV = "Phosphate_umolL", trans = "log10", col = pkg.env$col12[11], labels = "no") 
-      p12 <- planktonr::pr_plot_EOV(outputs(), EOV = "Oxygen_umolL", trans = "identity", col = pkg.env$col12[12])
+      p10 <- planktonr::pr_plot_EOV(outputs(), EOV = "Silicate_umolL", trans = "identity", col = pkg.env$col12[10], labels = "no")
+       
+      if(input$Site %in% c('Maria Island', 'Rottnest Island')){
+        p11 <- planktonr::pr_plot_EOV(outputs(), EOV = "Phosphate_umolL", trans = "log10", col = pkg.env$col12[11], labels = "no")
+        p12 <- planktonr::pr_plot_EOV(outputs(), EOV = "Oxygen_umolL", trans = "identity", col = pkg.env$col12[12])
+      } else {
+        p11 <- planktonr::pr_plot_EOV(outputs(), EOV = "Phosphate_umolL", trans = "log10", col = pkg.env$col12[11], labels = "yes")
+        p12 <- ggplot2::ggplot + ggplot2::geom_blank()
+      }
       
       patchwork::wrap_elements(
         grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) +
@@ -155,9 +148,9 @@ mod_PolNRS_server <- function(id){
         grid::textGrob("Diversity EOVs", gp = grid::gpar(fontsize=20)) + 
         p3 + p4 + 
         grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20)) + 
-        p5 + p6 + p7 + patchwork::plot_layout(design = layout1) +
+        p5 + p6 + p7 + 
         grid::textGrob("Biochemical EOVs", gp = grid::gpar(fontsize=20)) + 
-        p8 + p9 + p10 + p11 + p12 + patchwork::plot_layout(design = layout2) &
+        p8 + p9 + p10 + p11 + p12 + patchwork::plot_layout(design = layout1) &
         ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
                        axis.title = ggplot2::element_text(size = 12, face = "plain"),
                        axis.text =  ggplot2::element_text(size = 10, face = "plain"),

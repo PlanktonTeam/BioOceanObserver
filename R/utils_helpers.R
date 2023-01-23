@@ -8,7 +8,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
     idSite <- "Site"
-    
+
     if (stringr::str_detect(id, "Micro") == TRUE){ # Microbes + NRS
       selectedVar <- "Bacterial_Richness"
     } else if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + NRS
@@ -35,11 +35,16 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
           -webkit-column-count: 2;
           -moz-column-count: 2;
           column-count: 2;}"))),
-      condition = paste0("input.", tabsetPanel_id, " >= 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3 | ", tabsetPanel_id, " == 4"), 
+      condition = "input.phyto == 'ptscpr' | input.zoo == 'ztscpr'", 
+      shiny::HTML("<h6>Note there is very little data in the North and North-west regions<h6>")
+    ),
+            
+      shiny::conditionalPanel(
+        condition = paste0("input.", tabsetPanel_id, " >= 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3 | ", tabsetPanel_id, " == 4"), 
       shiny::plotOutput(ns("plotmap"),
                         height = "300px", 
                         width = "100%"),
-      shiny::HTML("<h5><strong>Select a station:</strong></h5>"),
+      shiny::HTML("<h6><strong>Select a station:</strong></h5>"),
       shiny::fluidRow(tags$div(align = "left", 
                                class = "multicol",
                                shiny::checkboxGroupInput(inputId = ns(idSite), 
@@ -75,8 +80,6 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       shiny::br(),
       shiny::br()
     ),
-    
-    
     
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 3 && input.navbar != 'Microbes'"), # Plankton
@@ -167,6 +170,96 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
   )
 }
 
+
+
+
+#' Generic BOO Plankton Spatial Sidebar
+#' 
+#' @noRd
+fSpatialSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3){
+  ns <- NS(id)
+  
+    if (stringr::str_detect(id, "Zoo") == TRUE){ # Phyto
+      selectedVar <- "Acartia danae"
+      labeltext = "Select a zooplankton species"
+    } else { # Zoo 
+      selectedVar <- "Tripos furca"
+      labeltext = "Select a phytoplankton species"
+      }
+      
+      shiny::sidebarPanel(
+        shiny::conditionalPanel(
+          condition = paste0("input.", tabsetPanel_id, " == 1"), 
+          selectizeInput(inputId = ns('species'), label = labeltext, choices = unique(dat1$Species), 
+                         selected = selectedVar),
+          shiny::checkboxInput(inputId = ns("scaler1"), 
+                               label = strong("Change between frequency or Presence/Absence plot"), 
+                               value = FALSE)
+        ),
+        shiny::conditionalPanel(
+          condition = paste0("input.", tabsetPanel_id, " == 2"), 
+          selectizeInput(inputId = ns('species1'), label = labeltext, choices = unique(dat2$Species), 
+                         selected = selectedVar),
+          h6("This is a reduced species list that only contains species with enough data to create an STI plot")
+          
+        ),
+        shiny::conditionalPanel(
+          condition = paste0("input.", tabsetPanel_id, " == 3"), 
+          selectizeInput(inputId = ns('species2'), label = labeltext, choices = unique(dat3$Species), 
+                         selected = selectedVar),
+          h6("This is a reduced species list that only contains species with enough data to create a day night plot")
+        ),
+      )
+}
+
+
+
+#' Generic BOO Plankton Spatial Panel
+#' 
+#' @noRd
+fSpatialPanel <- function(id, tabsetPanel_id){
+  ns <- NS(id)
+  shiny::mainPanel(
+    tabsetPanel(id = tabsetPanel_id, type = "pills",
+                tabPanel("Observation maps", value = 1, 
+                         h6(textOutput(ns("DistMapExp"), container = span)),
+                         fluidRow(
+                           shiny::column(width = 6,
+                                         style = "padding:0px; margin:0px;",
+                                         shiny::h4("December - February"),
+                                         leaflet::leafletOutput(ns("MapSum"), width = "99%", height = "300px") %>% 
+                                           shinycssloaders::withSpinner(color="#0dc5c1")), 
+                           shiny::column(width = 6,
+                                         style = "padding:0px; margin:0px;",
+                                         shiny::h4("March - May"),
+                                         leaflet::leafletOutput(ns("MapAut"), width = "99%", height = "300px") %>%
+                                           shinycssloaders::withSpinner(color="#0dc5c1")
+                           ),
+                           shiny::column(width = 6,
+                                         style = "padding:0px; margin:0px;",
+                                         shiny::h4("June - August"),
+                                         leaflet::leafletOutput(ns("MapWin"), width = "99%", height = "300px") %>% 
+                                           shinycssloaders::withSpinner(color="#0dc5c1")), 
+                           shiny::column(width = 6,
+                                         style = "padding:0px; margin:0px;",
+                                         shiny::h4("September - February"),
+                                         leaflet::leafletOutput(ns("MapSpr"), width = "99%", height = "300px") %>% 
+                                           shinycssloaders::withSpinner(color="#0dc5c1"))
+                         )
+                ),        
+                tabPanel("Species Temperature Index graphs", value = 2, 
+                         h6(textOutput(ns("STIsExp"), container = span)),
+                         plotOutput(ns("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                ),
+                tabPanel("Species Diurnal Behaviour", value = 3, 
+                         h6(textOutput(ns("SDBsExp"), container = span)),
+                         plotOutput(ns("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                )
+    )
+  )
+}
+
+
 #' Generic BOO Environmental Panel
 #' 
 #' @noRd
@@ -229,7 +322,7 @@ fEnviroSidebar <- function(id, dat = NULL){
                              class = "multicol",
                              shiny::checkboxGroupInput(inputId = ns("station"),
                                                        label = NULL,
-                                                       choices = NRSStation %>% 
+                                                       choices = pkg.env$NRSStation %>% 
                                                          dplyr::filter(!.data$StationCode %in% ignoreStat) %>%
                                                          dplyr::pull(.data$StationName),
                                                        selected = "Port Hacking"))),
@@ -356,6 +449,136 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
     })
 }
 
+
+
+#' Base leaflet plot for all sample points
+#'
+#' @noRd 
+LeafletBase <- function(df, Type = 'PA'){
+  
+  if(Type == 'frequency'){
+
+    leaflet::leaflet(df %>% 
+                       dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
+      leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
+      leaflet::addCircleMarkers(lng = ~ Longitude,
+                                lat = ~ Latitude,
+                                color = "#CCCCCC",
+                                opacity = 0,
+                                fillOpacity = 0,
+                                radius = 0.25, 
+                                group = "Absent") 
+    
+  } else {
+    leaflet::leaflet(df %>% 
+                     dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
+    leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
+    leaflet::addCircleMarkers(lng = ~ Longitude,
+                              lat = ~ Latitude,
+                              color = "#CCCCCC",
+                              opacity = 1,
+                              fillOpacity = 1,
+                              radius = 0.25, 
+                              group = "Absent") 
+    }
+}
+
+#' Base leaflet plot for all sample points with observations for a particular species
+#'
+#' @noRd 
+LeafletObs <- function(sdf, name, Type = 'PA'){
+
+  Species <- unique(sdf$Species)
+  
+  if("Abundance_1000m3" %in% colnames(sdf)){
+    labs <- lapply(seq(nrow(sdf)), function(i) {
+      paste("<strong>Date:</strong>", sdf$SampleTime_Local[i], "<br>",
+          "<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
+          "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
+          "<strong>Count:</strong>", sdf$Count[i], "<br>",
+          "<strong>Abundance (1000 m\u207B\u00B3):</strong>", round(sdf$Abundance_1000m3[i], digits = 2), "<br>",
+          "<strong>Temperature (\u00B0C):</strong>", sdf$Temperature_degC[i], "<br>",
+          "<strong>Depth (m):</strong>", sdf$SampleDepth_m[i], "<br>")})
+  } else if ("freqfac" %in% colnames(sdf)){
+    labs <- lapply(seq(nrow(sdf)), function(i) {
+      paste("<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
+            "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
+            "<strong>Frequency in sample:</strong>", sdf$freqfac[i], "<br>")})
+  } else {
+    labs <- ''
+  }
+  
+  if(Type == 'frequency'){
+    dfCPR <- sdf %>% dplyr::filter(.data$Survey == 'CPR') %>% dplyr::arrange(.data$freqfac) 
+    dfNRS <- sdf %>% dplyr::filter(.data$Survey == 'NRS') %>% dplyr::arrange(.data$freqfac) 
+    
+    CPRpal <- leaflet::colorFactor(c("#CCCCCC", "#99CCFF", "#3399FF", "#0066CC", "#003366"), domain = sdf$freqfac)
+    NRSpal <- leaflet::colorFactor(c("#CCCCCC", "#CCFFCC", "#99FF99", "#009900", "#006600"), domain = sdf$freqfac)
+    
+    leaf <- leaflet::leafletProxy(name, data = sdf) %>%
+      leaflet::clearGroup(c("National Reference Stations", "Continuous Plankton Recorder")) %>%
+      leaflet::addCircleMarkers(data = dfCPR,
+                                group = 'Continuous Plankton Recorder', 
+                              lng = ~ Longitude,
+                              lat = ~ Latitude,
+                              color = ~CPRpal(freqfac),
+                              fill = ~CPRpal(freqfac),
+                              radius = 3) %>% 
+      leaflet::addCircleMarkers(data = dfNRS,
+                                group = 'National Reference Stations', 
+                                lng = ~ Longitude,
+                                lat = ~ Latitude,
+                                color = ~NRSpal(freqfac),
+                                fill = ~NRSpal(freqfac),
+                                radius = 3) %>% 
+      leaflet::addLayersControl( # Layers control
+        overlayGroups = c("National Reference Stations", "Continuous Plankton Recorder"),
+        position = "topright",
+        options = leaflet::layersControlOptions(collapsed = FALSE, fill = NA)) %>% 
+      leaflet::addLegend("bottomleft", pal = CPRpal, group = "Continuous Plankton Recorder", 
+                         values = sdf$freqfac, title = paste(Species, 'CPR')) %>% 
+      leaflet::addLegend("bottomleft", pal = NRSpal, group = "National Reference Stations", 
+                         values = sdf$freqfac, title = paste(Species, 'NRS'))
+      
+      htmltools::browsable(
+        htmltools::tagList(
+          list(
+            tags$head(
+              tags$style(
+                ".leaflet .legend {
+                   line-height: 5px;
+                   font-size: 5px;
+                   }",
+                ".leaflet .legend i{
+                  width: 5px;
+                  height: 5px;
+                   }"
+            )
+          ),
+          leaf)))
+
+    leaf
+    
+  } else {
+    leaflet::leafletProxy(name, data = sdf) %>%
+      leaflet::clearGroup("Present") %>%
+      leaflet::addCircleMarkers(data = sdf, 
+                                lng = ~ Longitude,
+                                lat = ~ Latitude,
+                                color = 'blue',
+                                opacity = 1,
+                                fillOpacity = 1,
+                                radius = 2,
+                                group = "Present",
+                                label = lapply(labs, htmltools::HTML)) %>% 
+      leaflet::addLegend("bottomleft", 
+                         colors = c("blue",  "#CCCCCC"),
+                         labels = c("Seasonal Presence", "Seasonal Absence"),
+                         title = Species,
+                         opacity = 1)
+  }
+}
+  
 
 
 

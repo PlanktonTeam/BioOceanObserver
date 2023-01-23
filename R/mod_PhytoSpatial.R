@@ -13,44 +13,12 @@ mod_PhytoSpatial_ui <- function(id){
   
   tagList(
     sidebarLayout(
-      sidebarPanel(
-        selectizeInput(inputId = nsPhytoSpatial('species'), label = "Select a phytoplankton species", choices = unique(pkg.env$fMapDatap$Taxon), 
-                       selected = "Tripos furca")
-      ),
-      mainPanel(
-        tabsetPanel(id = "NRSspatp",
-                    tabPanel("Observation maps", value = 1, 
-                             h6(textOutput(nsPhytoSpatial("DistMapExp"), container = span)),
-                             fluidRow(
-                               column(width = 6,
-                                      leaflet::leafletOutput(nsPhytoSpatial("plot2a"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
-                                      leaflet::leafletOutput(nsPhytoSpatial("plot2c"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                               ),
-                               column(width = 6,
-                                      leaflet::leafletOutput(nsPhytoSpatial("plot2b"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1"),
-                                      leaflet::leafletOutput(nsPhytoSpatial("plot2d"), width = "100%") %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                               )
-                             ),
-                             column(width = 6, br(), 
-                                    plotOutput(nsPhytoSpatial("plot2e"), height = 50)
-                             )
-                    ),        
-                    #tabPanel("Species Distribution maps", value = 2, 
-                    #                 h6(textOutput(nsPhytoSpatial("SDMsMapExp"), container = span))#,
-                    #                 plotOutput(nsPhytoSpatial("SDMs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                    #        ),
-                    tabPanel("Species Temperature Index graphs", value = 2, 
-                             h6(textOutput(nsPhytoSpatial("STIsExp"), container = span)),
-                             plotOutput(nsPhytoSpatial("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                    ),
-                    tabPanel("Species Diurnal Behaviour", value = 3, 
-                             h6(textOutput(nsPhytoSpatial("SDBsExp"), container = span)),
-                             plotOutput(nsPhytoSpatial("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
-                    ),
-        )
+
+      fSpatialSidebar(id = id, tabsetPanel_id = "NRSspatp", dat1 = pkg.env$fMapDatap, dat2 = pkg.env$stip, dat3 = pkg.env$daynightp),
+      fSpatialPanel(id= id, tabsetPanel_id = "NRSspatp")
+
       )
     )
-  )
 }
 
 #' PhytoSpatial Server Functions
@@ -60,85 +28,100 @@ mod_PhytoSpatial_server <- function(id){
   moduleServer( id, function(input, output, session, NRSspatp){
     # Subset data
     
-    plotlist <- reactive({
+    type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+    
+    AbsPdatar <- reactive({
       
-      req(input$species)
-      validate(need(!is.na(input$species), "Error: Please select a species"))
-      
-      selectedZS <- pkg.env$fMapDatap %>%
-        dplyr::mutate(Taxon = dplyr::if_else(.data$Taxon == 'Taxon', input$species, .data$Taxon)) %>%
-        dplyr::filter(.data$Taxon == input$species) %>%
-        dplyr::arrange(.data$freqfac)
-      
-      plotlist <- planktonr::pr_plot_FreqMap(selectedZS, species = input$species, interactive = TRUE)
+      AbsPdatar <- pkg.env$fMapDatap %>%
+        dplyr::distinct(.data$Longitude, .data$Latitude, .data$Season, .data$Survey) %>% 
+        dplyr::mutate(Species = input$species, 
+                      freqfac = factor('Absent'))
       
     }) %>% bindCache(input$species)
     
+    PSdatar <- reactive({
+      
+      req(input$species)
+      validate(need(!is.na(input$species), "Error: Please select a species"))
+
+      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+      
+      PSdatar <- pkg.env$fMapDatap %>%
+        dplyr::filter(.data$Species == input$species) 
+
+      if(type == "frequency"){
+        PSdatar <- PSdatar %>% dplyr::bind_rows(AbsPdatar()) %>%
+          dplyr::mutate(freqfac = factor(.data$freqfac, levels = c("Absent", "Seen in 25%",'50%', '75%', '100% of Samples')))
+      } else {
+        PSdatar
+      }
+        
+    }) %>% bindCache(input$species, input$scaler1)
+    
     shiny::exportTestValues(
-      PhytoSpatial = {ncol(plotlist())},
-      PhytoSpatialRows = {nrow(plotlist()) > 0},
-      PhytoSpatialLatisNumeric = {class(plotlist()$Lat)},
-      PhytoSpatialLongisNumeric = {class(plotlist()$Long)},
-      PhytoSpatialFreqisFactor = {class(plotlist()$Freqfac)},
-      PhytoSpatialSeasonisChr = {class(plotlist()$Season)},
-      PhytoSpatialTaxonisChr = {class(plotlist()$Taxon)},
-      PhytoSpatialfreqsampisNumeric = {class(plotlist()$freqsamp)}
+      PhytoSpatialRows = {nrow(PSdatar()) > 0},
+      PhytoSpatialLatisNumeric = {class(PSdatar()$Latitude)},
+      PhytoSpatialLongisNumeric = {class(PSdatar()$Longitude)},
+      PhytoSpatialFreqisFactor = {class(PSdatar()$freqfac)},
+      PhytoSpatialSeasonisChr = {class(PSdatar()$Season)},
+      PhytoSpatialSpeciesisChr = {class(PSdatar()$Species)}
     )
     
     # add text information ------------------------------------------------------------------------------
     output$DistMapExp <- renderText({
-      "This map is a frequency of occurence map based on the NRS and CPR data for each species"
-    }) 
-    output$SDMsMapExp <- renderText({
-      paste("This map is a modelled output of the relative distribution for a species.",
-            "This is calculated using NRS and CPR data in a Tweedie model.",
-            "The environmental variables are SST, Chla, depth, Month", sep =  "<br/>")
+      "This map is either a presence absence map based on the NRS and CPR data for each species or a frequency map based on the 
+      number of times a species is seen in the sample location"
     }) 
     output$STIsExp <- renderText({
-      paste("Figure of the species STI")
+      paste("Figure of the species STI showing the temperature range at which this species is most common. 
+            A bimodal shape may indicate a sub-species or two species being identified as the same species")
     }) 
     output$SDBsExp <- renderText({
-      paste("Figure of the diunral abundances from CPR data")
+      paste("Figure of the diurnal abundances from CPR data. Note that the CPR is towed at ~10m depth so these abundances are representative of surface waters")
     }) 
     
-    
     # select initial map  ------------------------------------------------------------------------------
-    
-    # Create dot map of distribution
     observeEvent({input$NRSspatp == 1}, {
-      output$plot2a <- leaflet::renderLeaflet({
-        plotlist()[[1]]
-      }) %>% bindCache(input$species)
-      
-      output$plot2b <- leaflet::renderLeaflet({
-        plotlist()[[2]]
-      }) %>% bindCache(input$species)
-      
-      output$plot2c <- leaflet::renderLeaflet({
-        plotlist()[[3]]
-      }) %>% bindCache(input$species)
-      
-      output$plot2d <- leaflet::renderLeaflet({
-        plotlist()[[4]]
-      }) %>% bindCache(input$species)
-      
-      output$plot2e <- renderPlot({
-        pkg.env$legendPlot
-      }) %>% bindCache(input$species)
-      
-    })
+
+      # Create dot map of distribution
+      # Summer
+      output$MapSum <- leaflet::renderLeaflet({
+        type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+        lf <- LeafletBase(AbsPdatar(), Type = type)
+      return(lf)
+    }) %>%  bindCache(input$species, input$scaler1)
     
-    # # add SDM if it is available
-    # output$SDMs <- renderImage({
-    # 
-    #   speciesName <- stringr::str_replace_all(input$species1, " ", "")
-    #   filename <- paste("inst/app/www/SDMTweGAM_", speciesName, ".png", sep = "")
-    # 
-    #   list(src = filename,
-    #        height = 500, #width = 600,
-    #        alt = 'Species Distribution Map not available')
-    # 
-    # }, deleteFile = FALSE)
+    # Autumn
+    output$MapAut <- leaflet::renderLeaflet({
+      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+      lf <- LeafletBase(AbsPdatar(), Type = type)
+      return(lf)
+    }) %>%  bindCache(input$species, input$scaler1)
+    
+    # Winter
+    output$MapWin <- leaflet::renderLeaflet({
+      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+      lf <- LeafletBase(AbsPdatar(), Type = type)
+      return(lf)
+    }) %>%  bindCache(input$species, input$scaler1)
+    
+    # Spring
+    output$MapSpr <- leaflet::renderLeaflet({
+      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+      lf <- LeafletBase(AbsPdatar(), Type = type)
+      return(lf)
+    }) %>%  bindCache(input$species, input$scaler1)
+
+    observe ({
+      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+      LeafletObs(sdf = PSdatar() %>% dplyr::filter(.data$Season == "December - February"), name = "MapSum", Type = type)
+      LeafletObs(sdf = PSdatar() %>% dplyr::filter(.data$Season == "September - November"), name = "MapAut", Type = type)
+      LeafletObs(sdf = PSdatar() %>% dplyr::filter(.data$Season == "June - August"), name = "MapWin", Type = type)
+      LeafletObs(sdf = PSdatar() %>% dplyr::filter(.data$Season == "March - May"), name = "MapSpr", Type = type)
+    
+    }) 
+    
+    })
     
     # STI plot -----------------------------------------------------------------------------------------
     # Subset data
@@ -147,24 +130,21 @@ mod_PhytoSpatial_server <- function(id){
       
       selectedSTI <- reactive({
         
-        req(input$species)
-        validate(need(!is.na(input$species), "Error: Please select a species"))
+        req(input$species1)
+        validate(need(!is.na(input$species1), "Error: Please select a species"))
         
         selectedSTI <- pkg.env$stip %>% 
-          dplyr::filter(.data$Species %in% input$species) 
+          dplyr::filter(.data$Species %in% input$species1) 
+
         
-      }) %>% bindCache(input$species)
+      }) %>% bindCache(input$species1)
       
       # sti plot
       output$STIs <- renderPlot({
         
-        validate(
-          need(nrow(selectedSTI()) > 20, "Not enough data for this copepod species")
-        )
-        
         planktonr::pr_plot_STI(selectedSTI())
         
-      }) %>% bindCache(input$species)
+      }) %>% bindCache(input$species1)
       
     })
     
@@ -175,40 +155,25 @@ mod_PhytoSpatial_server <- function(id){
       
       selecteddn <- reactive({
         
-        req(input$species)
-        validate(need(!is.na(input$species), "Error: Please select a species"))
+        req(input$species2)
+        validate(need(!is.na(input$species2), "Error: Please select a species"))
         
         selecteddn <- pkg.env$daynightp %>% 
-          dplyr::filter(.data$Species %in% input$species) 
+          dplyr::filter(.data$Species %in% input$species2) 
+
         
-      }) %>% bindCache(input$species)
+      }) %>% bindCache(input$species2)
       
       # daynight plot
       output$DNs <- renderPlot({
         
-        validate(
-          need(length(unique(selecteddn()$daynight)) == 2 | nrow(selecteddn()) > 20, "Not enough data for this species to plot")
-        )
-        
         plotdn <- planktonr::pr_plot_DayNight(selecteddn())
         plotdn
         
-      }) %>% bindCache(input$species)
+      }) %>% bindCache(input$species2)
       
     })
     
-    
-    # speciesName <- stringr::str_replace_all(Species, " ", "")
-    # filename <- paste("inst/app/www/SDMTweGAM_", speciesName, ".png", sep = "")
-    # img <- tryCatch(png::readPNG(filename), error = function(e){})
-    # dft <-  data.frame(x=c(1,1,1,1), y=c(0,2,1,3), label = c('','No species distribution','map available',''))
-    # imggrob <- tryCatch(grid::rasterGrob(img), error = function(e) {
-    #   ggplot2::ggplot(dft) +
-    #     ggplot2::geom_text(ggplot2::aes(x=.data$x, y=.data$y, label = .data$label), size = 20) +
-    #     ggplot2::theme_void()
-    # })
-    
-   
   })
 }
 
