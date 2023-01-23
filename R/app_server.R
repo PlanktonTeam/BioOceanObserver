@@ -2,7 +2,7 @@
 #' 
 #' @param input,output,session Internal Parameters for {shiny}. 
 #'     DO NOT REMOVE.
-#' @import shiny patchwork
+#' @import shiny patchwork jsonlite
 #' @importFrom rlang .data
 #' @noRd
 #' 
