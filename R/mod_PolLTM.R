@@ -115,11 +115,11 @@ mod_PolLTM_server <- function(id){
     
     gg_out1 <- reactive({
       
-      p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrate_umolL", Survey = "LTM", trans = "identity", col = "aquamarine4", labels = "no")
-      p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "Phosphate_umolL", Survey = "LTM", trans = "identity", col = "darkorange3", labels = "no") 
-      p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "Silicate_umolL", Survey = "LTM", trans = "identity", col = "darkgoldenrod1", labels = "no") 
-      p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "Temperature_degC", Survey = "LTM", trans = "identity", col = "darkviolet", labels = "no")
-      p3 <- planktonr::pr_plot_EOV(outputs(), EOV = "Salinity", Survey = "LTM", trans = "identity", col = "darkred")
+      p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrate_umolL", Survey = "LTM", trans = "identity", col = pkg.env$col12[9], labels = "no")
+      p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "Phosphate_umolL", Survey = "LTM", trans = "identity", col = pkg.env$col12[11], labels = "no") 
+      p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "Silicate_umolL", Survey = "LTM", trans = "identity", col = pkg.env$col12[10], labels = "no") 
+      p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "Temperature_degC", Survey = "LTM", trans = "identity", col = pkg.env$col12[5], labels = "no")
+      p3 <- planktonr::pr_plot_EOV(outputs(), EOV = "Salinity", Survey = "LTM", trans = "identity", col = pkg.env$col12[7])
       
       
       patchwork::wrap_elements(

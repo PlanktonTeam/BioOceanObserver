@@ -14,7 +14,7 @@ mod_LFishSpatial_ui <- function(id){
       shiny::fluidRow(
         # shiny::column(width = 3, shiny::HTML("<strong>Select Larval Fish:</strong>")),
         shiny::column(width = 6, offset = 6,
-                      selectizeInput(inputId = nsLFishSpatial("species"), label = NULL, choices = unique(pkg.env$LFData$Species2), width = "100%"),
+                      selectizeInput(inputId = nsLFishSpatial("species"), label = NULL, choices = unique(pkg.env$LFData$Species), width = "100%"),
         )),
       shiny::fluidRow(
         leaflet::leafletOutput(nsLFishSpatial("LFMap"), width = "100%", height = "800px") %>% 
@@ -33,9 +33,8 @@ mod_LFishSpatial_server <- function(id){
     
     LFDatar <- reactive({
       
-
       dat <- pkg.env$LFData %>%
-        dplyr::filter(.data$Species2 == input$species)# %>% 
+        dplyr::filter(.data$Species == input$species)# %>% 
         # dplyr::distinct(.data$Latitude, .data$Longitude, .keep_all = TRUE)
       
       return(dat)
