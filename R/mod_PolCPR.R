@@ -118,8 +118,11 @@ mod_PolCPR_server <- function(id){
       patchwork::area(6,1,6,3),  # Header
       patchwork::area(7,1,8,3),
       patchwork::area(9,1,10,3),
-      patchwork::area(11,1,11,3), # Header
-      patchwork::area(12,1,25,3)
+      patchwork::area(11,1,11,3),  # Header
+      patchwork::area(12,1,13,3),
+      patchwork::area(14,1,15,3),
+      patchwork::area(16,1,16,3), # Header
+      patchwork::area(17,1,25,3)
     )
     
     gg_out1 <- reactive({
@@ -134,12 +137,19 @@ mod_PolCPR_server <- function(id){
       p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', 
                                    trans = "log10", col = pkg.env$col12[3])
       
+      p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "SST", Survey = 'CPR', 
+                                   trans = "identity", col = col12[5])
+      p5 <- planktonr::pr_plot_EOV(outputs(), EOV = "chl_oc3", Survey = 'CPR', 
+                                   trans = "identity", col = col12[3])
+      
       p3 <- planktonr::pr_plot_PCI(selectedPCI())
       
       patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
         p1 + p2 + 
         grid::textGrob("Diversity EOVs", gp = grid::gpar(fontsize=20)) + 
         p6 + p7 + 
+        grid::textGrob("Physical EOVs from satellite data", gp = grid::gpar(fontsize=20)) + 
+        p4 + p5 + 
         grid::textGrob("Chlorophyl density from Phytoplankton Colour Index", gp = grid::gpar(fontsize=20)) + 
         p3 +
         patchwork::plot_layout(design = layout1) & 
