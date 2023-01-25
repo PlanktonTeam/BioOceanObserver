@@ -34,18 +34,18 @@ mod_info_ui <- function(id){
                            shiny::h4("Depths"),
                            shiny::p("Depths binned for ease of plotting.
                                     Water column samples for the NRS stations have been removed, these were taken from the beginning of the program until July 2017.
-                                    The samples taken at defined depths have been included here as they are more informative. All data can be sourced using planktonr"),
+                                    The samples taken at defined depths have been included here as they are more informative. All data can be sourced direct from the AODN or by using planktonr"),
                            shiny::h4("Contour plots"),
-                           shiny::p("There is an option to interpolate the data in the contour plots used for the environmental data taken at defined depths. This method does not fill in NAs in the dataset. If the option to fill NAs is selected 
-                                    the maximum gap interpolated over is 3."),
+                           shiny::p("There is an option to interpolate the data in the contour plots used for the environmental data taken at defined depths. The base method does not fill in NAs in the dataset. 
+                                     Use the option 'fill' NAs if you want to fill in missing values, the maximum gap interpolated over is set at 3."),
                            shiny::br(),
                            shiny::h3("Outliers"),
-                           shiny::p("Outliers are removed when they are greater than 2 standard deviations from the mean using pr_remove_outliers. Negative values for nutrients etc. are also set 
-                                    to 0 in this function. If you want to keep the outliers you can download the data and plot the figures using planktonr"),
+                           shiny::p("Outliers are removed when they are greater than 2 standard deviations from the mean. Negative values for nutrients etc. are also set 
+                                    to 0. These options are used in BOO but if you want to keep the outliers you can download the data and plot the figures using planktonr with your chosen settings"),
                            shiny::br(),
                            shiny::h3("Assigning bioregions to CPR samples"),
                            shiny::p("CPR BioRegions have been selected using nearest neighbour. If there is a requriement for only bioregions 
-                                    to be assigned when they are in the exct region, this can be done with the function in planktonr. 
+                                    to be assigned when they are in the exact region, this can be done with the function in planktonr. 
                                     We use the pre-defined bioregions for the CPR samples (see State of the Environment 2016 website) except 
                                     for the Southern Ocean bioregion which has been determined by the SO_CPR project boundaries")
                          )
@@ -67,11 +67,12 @@ mod_info_ui <- function(id){
                            shiny::HTML("<li>IMOS Continuous PLankton Recorder Survey website. <a href = https://imos.org.au/facilities/shipsofopportunity/auscontinuousplanktonrecorder target = _blank> Website</a>."),
                            
                            shiny::h5("These references are also good resources for visualising this data"),
-                           shiny::HTML("<li>Richardson A.J, Eriksen R, Moltmann T, Hodgson-Johnston I, Wallis J.R. (2020). <em>State and Trends of Australia's Ocean Report</em>. Integrated Marine Observing System (IMOS). <a href = https://www.imosoceanreport.org.au/about/ target = _blank> Website</a>."),
+                           shiny::HTML("<li>Richardson A.J, Eriksen R,S, Moltmann T, Hodgson-Johnston I, Wallis J.R. (2020). <em>State and Trends of Australia's Ocean Report</em>. Integrated Marine Observing System (IMOS). <a href = https://www.imosoceanreport.org.au/about/ target = _blank> Website</a>."),
+                           shiny::HTML("<li>Richardson A.J, Eriksen R.S, Rochester, W. (2015) <em>Plankton 2015: State of Australia's Oceans</em>. CSIRO report. ISBN 978-1-4863-0566-7 (EPDF). <a href = https://imos.org.au/fileadmin/user_upload/shared/Data_Tools/15-00245_OA_Plankton2015_20ppBrochure_WEB_151116.pdf target = _blank> Website</a>."),
                            shiny::br(),
                            shiny::br(),
                            shiny::h4("Package citations"),
-                           shiny::h5("This Web App is possible thanks to the following packages"),
+                           shiny::h5("This Web App is possible thanks to the following packages and the active R community"),
                            shiny::HTML("<li>Chang W, Cheng J, Allaire J, Sievert C, Schloerke B, Xie Y, Allen J, McPherson J, Dipert A, Borges B (2022). <em>shiny: Web Application Framework for R</em>. R package version 1.7.2, <a href = https://CRAN.R-project.org/package=shiny target = _blank> Website</a>."),
                            shiny::HTML("<li>Fay C, Guyader V, Rochette S, Girard C (2022). <em>golem: A Framework for Robust Shiny Applications</em>. R package version 0.3.3, <a href = https://CRAN.R-project.org/package=golem target = _blank> Website</a>.<br>"),
                            shiny::HTML("<br>"),
@@ -97,9 +98,9 @@ mod_info_ui <- function(id){
                 tabPanel("Sampling Details", value = 5,
                          shiny::fluidPage(
                            shiny::h2("NRS"),
-                           shiny::h6("Note: Ningaloo and Esperance only operated for 3 years and were only sampled seasonally. The data is sparse for these stations."),
+                           shiny::h6("Note: Ningaloo and Esperance only operated for 3 years and were only sampled seasonally. The data is sparse for these stations and has often been removed for some analysis."),
                            shiny::h6("Note: The NRS sampling period goes from mid 2009 until present. Prior to this some environmental parameters were also collected at the 
-                                     Long Term Monitoring Stations - ROT, MAI, PHB. These are shown on the Long Term Monitoring tab under EOVs. Generally though in this 
+                                     Long Term Monitoring Stations - ROT, MAI, PH4. These are shown on the Long Term Monitoring tab under EOVs. Generally though in this 
                                      APP we concentrate on the visualisation of the NRS period where more parameters have been collected in a consistent manner across stations"),
                            shiny::dataTableOutput(nsInfo("NRSDataTable")),
                            shiny::h4("Zooplankton"),
@@ -130,9 +131,9 @@ mod_info_ui <- function(id){
                            shiny::h4("Phytoplankton"),
                            shiny::h5("Phytoplankton is counted by light microscopy as a field of view count (0-20) on the silk. Every 4th segment is counted."),
                            shiny::h4("Zooplankton"),
-                           shiny::h5("Zooplankton is washed into a bogorov tray and counted by light microscopy. Every 4th segment is counted"),
+                           shiny::h5("Zooplankton is washed into a Bogorov tray and counted by light microscopy. Every 4th segment is counted"),
                            shiny::h4("Biomass Index"),
-                           shiny::h5("After counting the sample is dried at 60 degrees for 24 hours and weighed for biomass.")
+                           shiny::h5("After counting the sample is dried at 60 degrees for 24 hours and weighed for biomass. Note that this index of biomass includes phytoplankton")
                          )
                 ),
                 tabPanel("Phytoplankton Species Details", value = 6, 
@@ -165,17 +166,19 @@ mod_info_server <- function(id){
       )
       
       output$CPRDataTable <- shiny::renderDataTable(
-        pkg.env$datCPRTrip %>% 
-          dplyr::group_by(.data$BioRegion) %>% 
-          dplyr::summarise(StartDate = min(.data$SampleTime_Local, na.rm = TRUE),
-                           EndDate = max(.data$SampleTime_Local, na.rm = TRUE),
+
+  pkg.env$datCPRTrip %>% 
+          dplyr::group_by(.data$Region) %>% 
+          dplyr::summarise(StartDate = min(.data$Year_Local, na.rm = TRUE),
+                           EndDate = max(.data$Year_Local, na.rm = TRUE),
+
                            MilesTowed = dplyr::n() * 5,
                            SamplesCounted = round(dplyr::n()/4,0),
                            .groups = 'drop') %>% 
           dplyr::rename(`Start Date` = "StartDate", `End Date` = "EndDate", `Miles Towed` = "MilesTowed",
                         `Samples Counted` = "SamplesCounted") %>% 
-          dplyr::mutate(Project = ifelse(.data$BioRegion == "Southern Ocean Region", "SO-CPR / AusCPR", "AusCPR"),
-                        Institution = ifelse(.data$BioRegion == "Southern Ocean Region", "AAD / CSIRO", "CSIRO"))
+          dplyr::mutate(Project = ifelse(.data$Region == "Southern Ocean Region", "SO-CPR / AusCPR", "AusCPR"),
+                        Institution = ifelse(.data$Region == "Southern Ocean Region", "AAD / CSIRO", "CSIRO"))
         
       )
     })
