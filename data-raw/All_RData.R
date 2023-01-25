@@ -257,7 +257,7 @@ temp <- planktonr::pr_get_LFData() %>%
   dplyr::select("Species" = "Species2", "Project", "Latitude", "Longitude", "SampleTime_Local",
                 "Month_Local", "SampleDepth_m", "Count", "Abundance_1000m3", "Temperature_degC", 
                 "Salinity_psu", "Volume_m3", "Vessel", "TowType", "GearMesh_um", "Bathymetry_m") %>% 
-  dplyr::filter(!.data$Species %in% c("(37990025)", "(37990051)", "(37990052)", "Superclass Pisces (37000000)"))
+  dplyr::filter(!.data$Species %in% c("Superclass: Pisces (37000000)"))
 
 LFDataAbs <- temp %>% 
   dplyr::distinct(Latitude, Longitude, SampleTime_Local, .keep_all = TRUE)

@@ -126,9 +126,9 @@ mod_PolNRS_server <- function(id){
       p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", trans = "log10", col = pkg.env$col12[3])
       
       p5 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDTemperature_degC", trans = "identity", col = pkg.env$col12[5], labels = "no")
-      p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "PigmentChla_mgm3", trans = "log10", col = pkg.env$col12[6], labels = "no") 
+      p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "PigmentChla_mgm3", trans = "log10", col = pkg.env$col12[3], labels = "no") 
       p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "CTDSalinity_PSU", trans = "identity", col = pkg.env$col12[7])
-      
+  
 
       p8 <- planktonr::pr_plot_EOV(outputs(), EOV = "Ammonium_umolL", trans = "identity", col = pkg.env$col12[8], labels = "no")
       p9 <- planktonr::pr_plot_EOV(outputs(), EOV = "Nitrate_umolL", trans = "identity", col = pkg.env$col12[9], labels = "no")
