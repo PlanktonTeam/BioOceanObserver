@@ -10,11 +10,11 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     idSite <- "Site"
 
     if (stringr::str_detect(id, "Micro") == TRUE){ # Microbes + NRS
-      selectedVar <- "Bacterial_Richness"
+      selectedVar <- "Bacterial_Temperature_Index_KD"
     } else if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + NRS
       selectedVar <- "Biomass_mgm3"
     } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + NRS
-      selectedVar =  "PhytoBiomassCarbon_pgL"
+      selectedVar =  "PhytoAbundance_CellsL"
     }
   } else if (stringr::str_detect(id, "CPR") == TRUE){ # CPR
     choices <- unique(sort(dat$BioRegion))
@@ -23,7 +23,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + CPR
       selectedVar = "ZoopAbundance_m3"
     } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + CPR
-      selectedVar = "PhytoAbund_Cellsm3"
+      selectedVar = "PhytoAbundance_Cellsm3"
     }
   }
   
@@ -93,14 +93,14 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       shiny::selectizeInput(inputId = ns("interp"),
                             label = strong("Interpolate data?"),
                             choices = c("Interpolate", "Raw data", "Interpolate with gap filling"),
-                            selected = "Interpolate"),
+                            selected = "Raw data"),
     ),
     
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 4 && input.navbar == 'Microbes'"),
       shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
       selectInput(inputId = ns("p1"), label = 'Select an x parameter', 
-                  choices = planktonr::pr_relabel(unique(datNRSm$Parameters), style = "simple"), selected = "Eukaryote_Chlorophyll_Index"),
+                  choices = planktonr::pr_relabel(unique(datNRSm$Parameters), style = "simple"), selected = "Bacterial_Temperature_Index_KD"),
       selectInput(inputId = ns("p2"), label = 'Select a y parameter',
                   choices = planktonr::pr_relabel(unique(Pico$Parameters), style = "simple"), selected = "Prochlorococcus_cellsmL")
     ),
