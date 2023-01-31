@@ -219,7 +219,7 @@ mod_MicroTsNRS_server <- function(id){
           ggplot2::geom_point(ggplot2::aes(!!x, !!y, colour = .data$StationName)) +
           ggplot2::xlab(titlex) + 
           ggplot2::ylab(titley) + 
-          ggplot2::scale_colour_manual(values = planktonr:::colNRSName)
+          ggplot2::scale_colour_manual(values = planktonr::colNRSName)
         
       }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
