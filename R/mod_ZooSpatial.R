@@ -57,12 +57,12 @@ mod_ZooSpatial_server <- function(id){
     }) %>% bindCache(input$species, input$scaler1)
     
     shiny::exportTestValues(
-      ZooSpatial = {ncol(PSdatar())},
-      ZooSpatialRows = {nrow(PSdatar()) > 0},
-      ZooSpatialLatisNumeric = {class(PSdatar()$Lat)},
-      ZooSpatialLongisNumeric = {class(PSdatar()$Long)},
-      ZooSpatialFreqisFactor = {class(PSdatar()$Freqfac)},
-      ZooSpatialSeasonisChr = {class(PSdatar()$Season)}
+      ZooSpatial = {ncol(ZSdatar())},
+      ZooSpatialRows = {nrow(ZSdatar()) > 0},
+      ZooSpatialLatisNumeric = {class(ZSdatar()$Lat)},
+      ZooSpatialLongisNumeric = {class(ZSdatar()$Long)},
+      ZooSpatialFreqisFactor = {class(ZSdatar()$Freqfac)},
+      ZooSpatialSeasonisChr = {class(ZSdatar()$Season)}
     )
     
     # add text information ------------------------------------------------------------------------------
