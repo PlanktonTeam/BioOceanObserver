@@ -82,10 +82,10 @@ Pico <- planktonr::pr_get_NRSEnvContour('Pico')
 # These can take a long time to run depending on the number of locations
 # These do not need to be available to the APP but should be in the DAP collection and planktonr
 # #TODO add function to remove the data that already has products matched.
-# res_spat <- 10
-# SSTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_GHRSST(pr = "sea_surface_temperature")
-# ALTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_Altimetry(pr = "GSLA") 
-# CHLsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_MODIS(pr = "chl_oc3")
+# 
+# SSTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_GHRSST(pr = "sea_surface_temperature", res_spat = 10)
+# ALTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_Altimetry(pr = "GSLA", res_spat = 10) 
+# CHLsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_MODIS(pr = "chl_oc3", res_spat = 10)
 
 # SatData <- SSTsat %>%
 #   dplyr::left_join(ALTsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) %>%
