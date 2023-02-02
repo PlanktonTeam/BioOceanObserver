@@ -201,11 +201,14 @@ mod_MicroTsNRS_server <- function(id){
           dplyr::filter(.data$StationName %in% input$Site,
                         .data$Parameters %in% c(input$p1, input$p2),
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-          tidyr::pivot_wider(c("StationName", "SampleDepth_m", "SampleTime_Local"), names_from = "Parameters", values_from = "Values", values_fn = mean)
+          tidyr::pivot_wider(id_cols = c("StationName", "SampleDepth_m", "SampleTime_Local"), names_from = "Parameters", values_from = "Values", values_fn = mean)
         
       }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
       gg_out4 <- reactive({
+        
+        # When we move to a planktonr function for this, we can use this:
+        # pr_plot_scatter(selectedData1(), x = colnames(selectedData1()[, 5]), y = colnames(selectedData1()[, 4]))
         
         #TODO This needs to be converted to a planktonr function. At the moment it can't use planktonr colours without :::
         
@@ -219,8 +222,8 @@ mod_MicroTsNRS_server <- function(id){
           ggplot2::geom_point(ggplot2::aes(!!x, !!y, colour = .data$StationName)) +
           ggplot2::xlab(titlex) + 
           ggplot2::ylab(titley) + 
-          ggplot2::scale_colour_manual(values = planktonr::colNRSName)
-        
+          ggplot2::scale_colour_manual(values = planktonr:::colNRSName)
+      
       }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
       output$timeseries4 <- renderPlot({
