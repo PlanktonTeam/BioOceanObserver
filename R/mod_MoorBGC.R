@@ -68,7 +68,7 @@ mod_MoorBGC_server <- function(id){
         dplyr::mutate(DOY = lubridate::yday(.data$SampleDate) + 10956) %>% 
         dplyr::inner_join(df %>% dplyr::filter(.data$StationName %in% Station), by = 'DOY') %>%
         dplyr::select(-"DOY") %>%
-        tidyr::pivot_wider(c(.data$SampleDate, .data$StationName, .data$StationCode), names_from = 'Names', values_from = 'CLIM') 
+        tidyr::pivot_wider(id_cols = c(.data$SampleDate, .data$StationName, .data$StationCode), names_from = 'Names', values_from = 'CLIM') 
     }
     
     pr_plot_MoorTS <- function(df){
