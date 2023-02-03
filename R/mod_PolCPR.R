@@ -127,19 +127,19 @@ mod_PolCPR_server <- function(id){
     
     gg_out1 <- reactive({
       
-      p1 <- planktonr::pr_plot_EOV(outputs(), EOV = "BiomassIndex_mgm3", Survey = 'CPR', 
+      p1 <- planktonr::pr_plot_EOVs(outputs(), EOV = "BiomassIndex_mgm3", Survey = 'CPR', 
                                    trans = "log10", col = pkg.env$col12[2], labels = "no")
-      p2 <- planktonr::pr_plot_EOV(outputs(), EOV = "PhytoBiomassCarbon_pgm3", Survey = 'CPR', 
+      p2 <- planktonr::pr_plot_EOVs(outputs(), EOV = "PhytoBiomassCarbon_pgm3", Survey = 'CPR', 
                                    trans = "log10", col = pkg.env$col12[4]) 
       
-      p6 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonCopepodDiversity", Survey = 'CPR', 
+      p6 <- planktonr::pr_plot_EOVs(outputs(), EOV = "ShannonCopepodDiversity", Survey = 'CPR', 
                                    trans = "log10", col = pkg.env$col12[1], labels = "no") #check these col names with new indices data from AODN
-      p7 <- planktonr::pr_plot_EOV(outputs(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', 
+      p7 <- planktonr::pr_plot_EOVs(outputs(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', 
                                    trans = "log10", col = pkg.env$col12[3])
       
-      p4 <- planktonr::pr_plot_EOV(outputs(), EOV = "SST", Survey = 'CPR', 
+      p4 <- planktonr::pr_plot_EOVs(outputs(), EOV = "SST", Survey = 'CPR', 
                                    trans = "identity", col = col12[5])
-      p5 <- planktonr::pr_plot_EOV(outputs(), EOV = "chl_oc3", Survey = 'CPR', 
+      p5 <- planktonr::pr_plot_EOVs(outputs(), EOV = "chl_oc3", Survey = 'CPR', 
                                    trans = "identity", col = col12[3])
       
       p3 <- planktonr::pr_plot_PCI(selectedPCI())
