@@ -143,13 +143,13 @@ rm(daynightzAll, daynightpAll)
 
 # Policy data -------------------------------------------------------------
 
-PolNRS <- planktonr::pr_get_PolicyData("NRS") %>% 
+PolNRS <- planktonr::pr_get_EOVs("NRS") %>% 
   dplyr::filter(!StationCode %in% c("NIN", "ESP")) %>% 
   planktonr::pr_remove_outliers(2)
-PolCPR <- planktonr::pr_get_PolicyData("CPR", near_dist_km = 250) %>% 
+PolCPR <- planktonr::pr_get_EOVs("CPR", near_dist_km = 250) %>% 
   planktonr::pr_remove_outliers(2) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None"))
-PolLTM <- planktonr::pr_get_PolicyData("LTM") %>% 
+PolLTM <- planktonr::pr_get_EOVs("LTM") %>% 
   planktonr::pr_remove_outliers(2)
 
 NRSinfo <- planktonr::pr_get_PolicyInfo("NRS")
