@@ -8,7 +8,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
     idSite <- "Site"
-
+    
     if (stringr::str_detect(id, "Micro") == TRUE){ # Microbes + NRS
       selectedVar <- "Bacterial_Temperature_Index_KD"
     } else if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + NRS
@@ -38,9 +38,9 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       condition = "input.phyto == 'ptscpr' | input.zoo == 'ztscpr'", 
       shiny::HTML("<h6>Note there is very little data in the North and North-west regions<h6>")
     ),
-            
-      shiny::conditionalPanel(
-        condition = paste0("input.", tabsetPanel_id, " >= 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3 | ", tabsetPanel_id, " == 4"), 
+    
+    shiny::conditionalPanel(
+      condition = paste0("input.", tabsetPanel_id, " >= 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3 | ", tabsetPanel_id, " == 4"), 
       shiny::plotOutput(ns("plotmap"),
                         height = "300px", 
                         width = "100%"),
@@ -179,37 +179,37 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
 fSpatialSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3){
   ns <- NS(id)
   
-    if (stringr::str_detect(id, "Zoo") == TRUE){ # Phyto
-      selectedVar <- "Acartia danae"
-      labeltext = "Select a zooplankton species"
-    } else { # Zoo 
-      selectedVar <- "Tripos furca"
-      labeltext = "Select a phytoplankton species"
-      }
+  if (stringr::str_detect(id, "Zoo") == TRUE){ # Phyto
+    selectedVar <- "Acartia danae"
+    labeltext = "Select a zooplankton species"
+  } else { # Zoo 
+    selectedVar <- "Tripos furca"
+    labeltext = "Select a phytoplankton species"
+  }
+  
+  shiny::sidebarPanel(
+    shiny::conditionalPanel(
+      condition = paste0("input.", tabsetPanel_id, " == 1"), 
+      selectizeInput(inputId = ns('species'), label = labeltext, choices = unique(dat1$Species), 
+                     selected = selectedVar),
+      shiny::checkboxInput(inputId = ns("scaler1"), 
+                           label = strong("Change between frequency or Presence/Absence plot"), 
+                           value = FALSE)
+    ),
+    shiny::conditionalPanel(
+      condition = paste0("input.", tabsetPanel_id, " == 2"), 
+      selectizeInput(inputId = ns('species1'), label = labeltext, choices = unique(dat2$Species), 
+                     selected = selectedVar),
+      h6("This is a reduced species list that only contains species with enough data to create an STI plot")
       
-      shiny::sidebarPanel(
-        shiny::conditionalPanel(
-          condition = paste0("input.", tabsetPanel_id, " == 1"), 
-          selectizeInput(inputId = ns('species'), label = labeltext, choices = unique(dat1$Species), 
-                         selected = selectedVar),
-          shiny::checkboxInput(inputId = ns("scaler1"), 
-                               label = strong("Change between frequency or Presence/Absence plot"), 
-                               value = FALSE)
-        ),
-        shiny::conditionalPanel(
-          condition = paste0("input.", tabsetPanel_id, " == 2"), 
-          selectizeInput(inputId = ns('species1'), label = labeltext, choices = unique(dat2$Species), 
-                         selected = selectedVar),
-          h6("This is a reduced species list that only contains species with enough data to create an STI plot")
-          
-        ),
-        shiny::conditionalPanel(
-          condition = paste0("input.", tabsetPanel_id, " == 3"), 
-          selectizeInput(inputId = ns('species2'), label = labeltext, choices = unique(dat3$Species), 
-                         selected = selectedVar),
-          h6("This is a reduced species list that only contains species with enough data to create a day night plot")
-        ),
-      )
+    ),
+    shiny::conditionalPanel(
+      condition = paste0("input.", tabsetPanel_id, " == 3"), 
+      selectizeInput(inputId = ns('species2'), label = labeltext, choices = unique(dat3$Species), 
+                     selected = selectedVar),
+      h6("This is a reduced species list that only contains species with enough data to create a day night plot")
+    ),
+  )
 }
 
 
@@ -395,11 +395,16 @@ fButtons <- function(id, button_id, label, Type = "Download") {
       )
     } else if (Type == "Action"){
       
-      if (stringr::str_detect(id, "NRS")){
-        # ws <- "window.open('http://google.com', '_blank')"
-        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/NRS_ts.html')"
-      } else if (stringr::str_detect(id, "CPR")){
-        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/CPR_ts.html')"
+      if (stringr::str_detect(id, "Pol")){
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/1_EssentialOceanVariables.html')"
+      } else if (stringr::str_detect(id, "Micro")){
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/2_Microbes.html')"
+      } else if (stringr::str_detect(id, "Phyto")){
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/3_Phytoplankton.html')"
+      } else if (stringr::str_detect(id, "Zoo")){
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/4_Zooplankton.html')"
+      } else if (stringr::str_detect(id, "BGC")){
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/6_Biogeochemistry.html')"
       } else {
         wsite <- "window.open('https://planktonteam.github.io/planktonr/index.html')"
       }
@@ -457,7 +462,7 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
 LeafletBase <- function(df, Type = 'PA'){
   
   if(Type == 'frequency'){
-
+    
     leaflet::leaflet(df %>% 
                        dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
       leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
@@ -471,34 +476,34 @@ LeafletBase <- function(df, Type = 'PA'){
     
   } else {
     leaflet::leaflet(df %>% 
-                     dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
-    leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
-    leaflet::addCircleMarkers(lng = ~ Longitude,
-                              lat = ~ Latitude,
-                              color = "#CCCCCC",
-                              opacity = 1,
-                              fillOpacity = 1,
-                              radius = 0.25, 
-                              group = "Absent") 
-    }
+                       dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
+      leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
+      leaflet::addCircleMarkers(lng = ~ Longitude,
+                                lat = ~ Latitude,
+                                color = "#CCCCCC",
+                                opacity = 1,
+                                fillOpacity = 1,
+                                radius = 0.25, 
+                                group = "Absent") 
+  }
 }
 
 #' Base leaflet plot for all sample points with observations for a particular species
 #'
 #' @noRd 
-LeafletObs <- function(sdf, name, Type = 'PA'){
-
+LeafletObs <- function(sdf, name, Type = "PA"){
+  
   Species <- unique(sdf$Species)
   
   if("Abundance_1000m3" %in% colnames(sdf)){
     labs <- lapply(seq(nrow(sdf)), function(i) {
       paste("<strong>Date:</strong>", sdf$SampleTime_Local[i], "<br>",
-          "<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
-          "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
-          "<strong>Count:</strong>", sdf$Count[i], "<br>",
-          "<strong>Abundance (1000 m\u207B\u00B3):</strong>", round(sdf$Abundance_1000m3[i], digits = 2), "<br>",
-          "<strong>Temperature (\u00B0C):</strong>", sdf$Temperature_degC[i], "<br>",
-          "<strong>Depth (m):</strong>", sdf$SampleDepth_m[i], "<br>")})
+            "<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
+            "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
+            "<strong>Count:</strong>", sdf$Count[i], "<br>",
+            "<strong>Abundance (1000 m\u207B\u00B3):</strong>", round(sdf$Abundance_1000m3[i], digits = 2), "<br>",
+            "<strong>Temperature (\u00B0C):</strong>", sdf$Temperature_degC[i], "<br>",
+            "<strong>Depth (m):</strong>", sdf$SampleDepth_m[i], "<br>")})
   } else if ("freqfac" %in% colnames(sdf)){
     labs <- lapply(seq(nrow(sdf)), function(i) {
       paste("<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
@@ -519,11 +524,11 @@ LeafletObs <- function(sdf, name, Type = 'PA'){
       leaflet::clearGroup(c("National Reference Stations", "Continuous Plankton Recorder")) %>%
       leaflet::addCircleMarkers(data = dfCPR,
                                 group = 'Continuous Plankton Recorder', 
-                              lng = ~ Longitude,
-                              lat = ~ Latitude,
-                              color = ~CPRpal(freqfac),
-                              fill = ~CPRpal(freqfac),
-                              radius = 3) %>% 
+                                lng = ~ Longitude,
+                                lat = ~ Latitude,
+                                color = ~CPRpal(freqfac),
+                                fill = ~CPRpal(freqfac),
+                                radius = 3) %>% 
       leaflet::addCircleMarkers(data = dfNRS,
                                 group = 'National Reference Stations', 
                                 lng = ~ Longitude,
@@ -539,24 +544,24 @@ LeafletObs <- function(sdf, name, Type = 'PA'){
                          values = sdf$freqfac, title = paste(Species, 'CPR')) %>% 
       leaflet::addLegend("bottomleft", pal = NRSpal, group = "National Reference Stations", 
                          values = sdf$freqfac, title = paste(Species, 'NRS'))
-      
-      htmltools::browsable(
-        htmltools::tagList(
-          list(
-            tags$head(
-              tags$style(
-                ".leaflet .legend {
+    
+    htmltools::browsable(
+      htmltools::tagList(
+        list(
+          tags$head(
+            tags$style(
+              ".leaflet .legend {
                    line-height: 5px;
                    font-size: 5px;
                    }",
-                ".leaflet .legend i{
+              ".leaflet .legend i{
                   width: 5px;
                   height: 5px;
                    }"
             )
           ),
           leaf)))
-
+    
     leaf
     
   } else {
@@ -578,7 +583,7 @@ LeafletObs <- function(sdf, name, Type = 'PA'){
                          opacity = 1)
   }
 }
-  
+
 
 
 
