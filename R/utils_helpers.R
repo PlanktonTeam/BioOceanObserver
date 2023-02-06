@@ -395,11 +395,16 @@ fButtons <- function(id, button_id, label, Type = "Download") {
       )
     } else if (Type == "Action"){
       
-      if (stringr::str_detect(id, "NRS")){
-        # ws <- "window.open('http://google.com', '_blank')"
-        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/NRS_ts.html')"
-      } else if (stringr::str_detect(id, "CPR")){
-        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/CPR_ts.html')"
+      if (stringr::str_detect(id, "Pol")){
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/1_EssentialOceanVariables.html')"
+      } else if (stringr::str_detect(id, "Micro")){
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/2_Microbes.html')"
+      } else if (stringr::str_detect(id, "Phyto")){
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/3_Phytoplankton.html')"
+      } else if (stringr::str_detect(id, "Zoo")){
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/4_Zooplankton.html')"
+      } else if (stringr::str_detect(id, "BGC")){
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/6_Biogeochemistry.html')"
       } else {
         wsite <- "window.open('https://planktonteam.github.io/planktonr/index.html')"
       }
