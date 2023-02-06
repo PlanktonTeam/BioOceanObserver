@@ -27,7 +27,7 @@ datNRSz <- planktonr::pr_get_Indices("NRS", "Z")
 datNRSp <- planktonr::pr_get_Indices("NRS", "P") 
 datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
 
-datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
+datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>% #TODO move the MLD calcs to planktonr
   tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
   dplyr::mutate(MLD_m = dplyr::case_when(.data$MLDtemp_m <= .data$MLDsal_m ~ .data$MLDtemp_m,
                                          .data$MLDsal_m < .data$MLDtemp_m ~ .data$MLDsal_m,
