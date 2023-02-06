@@ -27,7 +27,7 @@ datNRSz <- planktonr::pr_get_Indices("NRS", "Z")
 datNRSp <- planktonr::pr_get_Indices("NRS", "P") 
 datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
 
-datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>%
+datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>% #TODO move the MLD calcs to planktonr
   tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
   dplyr::mutate(MLD_m = dplyr::case_when(.data$MLDtemp_m <= .data$MLDsal_m ~ .data$MLDtemp_m,
                                          .data$MLDsal_m < .data$MLDtemp_m ~ .data$MLDsal_m,
@@ -82,10 +82,10 @@ Pico <- planktonr::pr_get_NRSEnvContour('Pico')
 # These can take a long time to run depending on the number of locations
 # These do not need to be available to the APP but should be in the DAP collection and planktonr
 # #TODO add function to remove the data that already has products matched.
-# res_spat <- 10
-# SSTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_GHRSST(pr = "sea_surface_temperature")
-# ALTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_Altimetry(pr = "GSLA") 
-# CHLsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_MODIS(pr = "chl_oc3")
+# 
+# SSTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_GHRSST(pr = "sea_surface_temperature", res_spat = 10)
+# ALTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_Altimetry(pr = "GSLA", res_spat = 10) 
+# CHLsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_MODIS(pr = "chl_oc3", res_spat = 10)
 
 # SatData <- SSTsat %>%
 #   dplyr::left_join(ALTsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) %>%
@@ -143,13 +143,13 @@ rm(daynightzAll, daynightpAll)
 
 # Policy data -------------------------------------------------------------
 
-PolNRS <- planktonr::pr_get_PolicyData("NRS") %>% 
+PolNRS <- planktonr::pr_get_EOVs("NRS") %>% 
   dplyr::filter(!StationCode %in% c("NIN", "ESP")) %>% 
   planktonr::pr_remove_outliers(2)
-PolCPR <- planktonr::pr_get_PolicyData("CPR", near_dist_km = 250) %>% 
+PolCPR <- planktonr::pr_get_EOVs("CPR", near_dist_km = 250) %>% 
   planktonr::pr_remove_outliers(2) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None"))
-PolLTM <- planktonr::pr_get_PolicyData("LTM") %>% 
+PolLTM <- planktonr::pr_get_EOVs("LTM") %>% 
   planktonr::pr_remove_outliers(2)
 
 NRSinfo <- planktonr::pr_get_PolicyInfo("NRS")
