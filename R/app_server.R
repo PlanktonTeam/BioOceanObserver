@@ -11,7 +11,7 @@ app_server <- function( input, output, session ) {
   # Your application server logic 
   
   ## global options and themes can go here
-  ggplot2::theme_set(ggplot2::theme_bw(base_size = 12) + ggplot2::theme(legend.position = "bottom")) 
+  # ggplot2::theme_set(ggplot2::theme_bw(base_size = 12) + ggplot2::theme(legend.position = "bottom"))
   options(na.action = "na.omit")
   
   # Informative pop-up modal; advises that DAP is inaccessible and historical data is being used.
