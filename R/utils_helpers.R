@@ -18,7 +18,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     }
   } else if (stringr::str_detect(id, "CPR") == TRUE){ # CPR
     choices <- unique(sort(dat$BioRegion))
-    selectedSite <- "Temperate East"
+    selectedSite <- c("Temperate East", "South-east")
     idSite <- "region"
     if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + CPR
       selectedVar = "ZoopAbundance_m3"
@@ -325,7 +325,7 @@ fEnviroSidebar <- function(id, dat = NULL){
                                                        choices = pkg.env$NRSStation %>% 
                                                          dplyr::filter(!.data$StationCode %in% ignoreStat) %>%
                                                          dplyr::pull(.data$StationName),
-                                                       selected = "Port Hacking"))),
+                                                       selected = c("North Stradbroke Island", "Maria Island")))),
     
     
     if (id != "MoorBGC_ui_1"){
@@ -396,15 +396,15 @@ fButtons <- function(id, button_id, label, Type = "Download") {
     } else if (Type == "Action"){
       
       if (stringr::str_detect(id, "Pol")){
-        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/1_EssentialOceanVariables.html')"
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/EssentialOceanVariables.html')"
       } else if (stringr::str_detect(id, "Micro")){
-        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/2_Microbes.html')"
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/Microbes.html')"
       } else if (stringr::str_detect(id, "Phyto")){
-        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/3_Phytoplankton.html')"
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/Phytoplankton.html')"
       } else if (stringr::str_detect(id, "Zoo")){
-        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/4_Zooplankton.html')"
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/Zooplankton.html')"
       } else if (stringr::str_detect(id, "BGC")){
-        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/6_Biogeochemistry.html')"
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/Biogeochemistry.html')"
       } else {
         wsite <- "window.open('https://planktonteam.github.io/planktonr/index.html')"
       }
