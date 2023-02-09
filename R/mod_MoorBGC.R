@@ -52,13 +52,13 @@ mod_MoorBGC_server <- function(id){
         #ggplot2::scale_x_continuous(breaks = labbreak, labels = years, expand=c(0,0)) +
         ggplot2::scale_x_date(breaks = '1 year', expand=c(0,0)) +
         ggplot2::labs(x = "Years", y = "Depth (m)") +
-        ggplot2::theme_bw() + 
+        ggplot2::theme_bw(base_size = 16) + 
         ggplot2::theme(legend.position = 'bottom',
                        strip.background = ggplot2::element_blank(),
                        panel.grid.major = ggplot2::element_blank(), 
                        panel.grid.minor = ggplot2::element_blank())
       
-      climtsplot
+      return(climtsplot)
     }
     
     pr_get_MoorTSPlotData <- function(df, Station, noYear){
@@ -81,9 +81,9 @@ mod_MoorBGC_server <- function(id){
         ggplot2::scale_colour_manual(name = 'Depth', values = c('dark blue', 'blue', 'light blue')) +
         ggplot2::scale_x_date(breaks = '1 year') +
         ggplot2::labs(y = planktonr::pr_relabel("Temperature_degC", style = 'ggplot'), x = 'Years') +
-        ggplot2::theme_minimal() +
+        ggplot2::theme_minimal(base_size = 16) +
         ggplot2::theme(legend.position = 'bottom')
-      plot
+      return(plot)
       
     }
     
