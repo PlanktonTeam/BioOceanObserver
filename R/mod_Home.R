@@ -84,6 +84,11 @@ mod_home_ui <- function(id){
                            shinycssloaders::withSpinner()
                 ),
                 tabPanel("Sampling Status", value = 3,
+                         shiny::br(),
+                         shiny::HTML("Gantt plots to show the time range and regularity of samples processed from each NRS station 
+                                     or CPR route."),
+                         shiny::br(),
+                         shiny::br(),
                          plotOutput(nsHome("gantt"), height = 700) %>% 
                            shinycssloaders::withSpinner(color="#0dc5c1")
                 ),
