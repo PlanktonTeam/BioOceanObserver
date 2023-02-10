@@ -134,8 +134,10 @@ mod_MicroTsNRS_server <- function(id){
         
         #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple"))
         
-        p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
-        
+        # p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
+        p1 / 
+          (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom")) #+
+          # patchwork::plot_annotation(title = titleplot)
         
       }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
@@ -222,7 +224,8 @@ mod_MicroTsNRS_server <- function(id){
           ggplot2::geom_point(ggplot2::aes(!!x, !!y, colour = .data$StationName)) +
           ggplot2::xlab(titlex) + 
           ggplot2::ylab(titley) + 
-          ggplot2::scale_colour_manual(values = planktonr:::colNRSName)
+          ggplot2::scale_colour_manual(values = planktonr:::colNRSName) +
+          planktonr::theme_pr()
       
       }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       

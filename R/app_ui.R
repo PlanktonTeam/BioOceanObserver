@@ -63,13 +63,13 @@ app_ui <- function(request) {
                     ),
                     navbarMenu("", icon = icon("share-nodes"),
                                shiny::tabPanel(tags$a("", href = "https://twitter.com/intent/tweet?url=https%3A%2F%2Fjaseeverett.shinyapps.io%2FIMOS_BioOceanObserver&text=Check%20out%20the%20fantastic%20new%20IMOS%20Biological%20Ocean%20Obervatory%20being%20developed", target = "_blank",
-                                                      list(icon("twitter"), "Twitter"))),
-                               shiny::tabPanel(tags$a("", href = "https://www.facebook.com.sharer/sharer.php?u=https%3A%2F%2Fjaseeverett.shinyapps.io%2FIMOS_BioOceanObserver", target = "_blank",
-                                                      list(icon("facebook"), "Facebook"))),
-                               shiny::tabPanel(tags$a("", href = "http://pinterest.com/pin/create/button/?url=https%3A%2F%2Fjaseeverett.shinyapps.io%2FIMOS_BioOceanObserver", target = "_blank",
-                                                      list(icon("pinterest-p"), "Pinterest"))),
-                               shiny::tabPanel(tags$a("", href = "http://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fjaseeverett.shinyapps.io%2FIMOS_BioOceanObserver", target = "_blank",
-                                                      list(icon("linkedin"), "LinkedIn"))))
+                                                      list(icon("twitter"), "Twitter"))))
+                    # shiny::tabPanel(tags$a("", href = "https://www.facebook.com.sharer/sharer.php?u=https%3A%2F%2Fjaseeverett.shinyapps.io%2FIMOS_BioOceanObserver", target = "_blank",
+                    # list(icon("facebook"), "Facebook"))),
+                    # shiny::tabPanel(tags$a("", href = "http://pinterest.com/pin/create/button/?url=https%3A%2F%2Fjaseeverett.shinyapps.io%2FIMOS_BioOceanObserver", target = "_blank",
+                    # list(icon("pinterest-p"), "Pinterest"))),
+                    # shiny::tabPanel(tags$a("", href = "http://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fjaseeverett.shinyapps.io%2FIMOS_BioOceanObserver", target = "_blank",
+                    # list(icon("linkedin"), "LinkedIn")))
   )
 }
 
@@ -95,7 +95,7 @@ golem_add_external_resources <- function(){
     ),
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()
-
+    
     # Script for CSIRO branding tab ----
     tags$script(type="text/javascript", src="https://www.csiro.au/themes/default/js/csirotab.min.js"),
     # Custom CSIRO styling CSS for modal ----

@@ -115,8 +115,9 @@ mod_PhytoTsCPR_server <- function(id){
         
         titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
         
-        p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect") + patchwork::plot_annotation(
-          title = titleplot)
+        p1 / 
+          (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom")) +
+          patchwork::plot_annotation(title = titleplot)
         
         
       }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
