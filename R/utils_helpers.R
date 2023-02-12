@@ -440,7 +440,7 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
 #' Download Plot - Server Side
 #'
 #' @noRd 
-fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
+fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
   downloadPlot <- downloadHandler(
     filename = function() {
       if (gg_prefix == "Policy"){
@@ -450,7 +450,13 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
       }
     },
     content = function(file) {
-      ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500)
+      if (papersize == "A4r"){
+        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 297, height = 210, units = "mm")
+      } else if (papersize == "A4") {
+        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 210, height = 297, units = "mm")
+      } else if (papersize == "A2") {
+        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 420, height = 594, units = "mm")
+      }
     })
 }
 
