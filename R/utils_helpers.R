@@ -403,6 +403,8 @@ fButtons <- function(id, button_id, label, Type = "Download") {
         wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/Phytoplankton.html')"
       } else if (stringr::str_detect(id, "Zoo")){
         wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/Zooplankton.html')"
+      } else if (stringr::str_detect(id, "LFish")){
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/LarvalFish.html')"
       } else if (stringr::str_detect(id, "BGC")){
         wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/Biogeochemistry.html')"
       } else {
@@ -427,7 +429,8 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
       if (gg_prefix == "Policy"){
         paste0(gg_prefix, "_", format(Sys.time(), "%Y%m%d"), ".csv")
       } else{
-        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".csv")
+        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".csv") %>% 
+          stringr::str_replace_all("__", "_") # Replace any double underscores with single ones
       }
     },
     content = function(file) {
@@ -440,7 +443,7 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
 #' Download Plot - Server Side
 #'
 #' @noRd 
-fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
+fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
   downloadPlot <- downloadHandler(
     filename = function() {
       if (gg_prefix == "Policy"){
@@ -450,7 +453,13 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix) {
       }
     },
     content = function(file) {
-      ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500)
+      if (papersize == "A4r"){
+        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 297, height = 210, units = "mm")
+      } else if (papersize == "A4") {
+        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 210, height = 297, units = "mm")
+      } else if (papersize == "A2") {
+        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 420, height = 594, units = "mm")
+      }
     })
 }
 
