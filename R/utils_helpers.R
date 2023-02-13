@@ -403,6 +403,8 @@ fButtons <- function(id, button_id, label, Type = "Download") {
         wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/Phytoplankton.html')"
       } else if (stringr::str_detect(id, "Zoo")){
         wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/Zooplankton.html')"
+      } else if (stringr::str_detect(id, "LFish")){
+        wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/LarvalFish.html')"
       } else if (stringr::str_detect(id, "BGC")){
         wsite <- "window.open('https://planktonteam.github.io/planktonr/articles/Biogeochemistry.html')"
       } else {
@@ -427,7 +429,8 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
       if (gg_prefix == "Policy"){
         paste0(gg_prefix, "_", format(Sys.time(), "%Y%m%d"), ".csv")
       } else{
-        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".csv")
+        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".csv") %>% 
+          stringr::str_replace_all("__", "_") # Replace any double underscores with single ones
       }
     },
     content = function(file) {
