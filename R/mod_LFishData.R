@@ -20,9 +20,12 @@ mod_LFishData_ui <- function(id){
       shiny::fluidRow(
         # shiny::dataTableOutput(nsLFishData("SpeciesTable")),  
         DT::DTOutput(nsLFishData("SpeciesTable")),
-        
-        
-      )
+      ),
+      
+      div(style="display:inline-block; float:right; width:60%",
+          fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+          fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action"))
+      
     )
   )
 }
@@ -69,7 +72,15 @@ mod_LFishData_server <- function(id){
       filter = "top",
       options = list(
         pageLength = 100))
+    
+    
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, SpeciesTabler(), 
+                                                  stringr::str_remove_all(input$species, ":|\\(|\\)") %>% 
+                                                    stringr::str_replace_all(" ", "_")) # Download csv of data
+    
   })
+  
 }
 
 ## To be copied in the UI
