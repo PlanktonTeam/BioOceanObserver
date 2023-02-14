@@ -97,7 +97,7 @@ mod_PhytoTsNRS_server <- function(id){
           ggplot2::theme(legend.position = "none")
         
         p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) +
-          ggplot2::theme(legend.position = "none", axis.title.y = ggplot2::element_blank())
+          ggplot2::theme(legend.position = "none")
         
         p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) +
           ggplot2::theme(axis.title.y = ggplot2::element_blank(), legend.position = "bottom")

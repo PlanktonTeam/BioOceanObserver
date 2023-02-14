@@ -102,12 +102,10 @@ mod_PhytoTsCPR_server <- function(id){
         if (identical(input$parameter, "")) return(NULL)
         
         p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "CPR", trans = trans) + 
-          ggplot2::theme(legend.position = "none",
-                         axis.title.y = ggplot2::element_blank())
+          ggplot2::theme(legend.position = "none")
         
         p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Month", trans = trans) + 
-          ggplot2::theme(legend.position = "bottom",
-                         axis.title.y = ggplot2::element_blank())
+          ggplot2::theme(legend.position = "none")
         
         p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Year", trans = trans) + 
           ggplot2::theme(axis.title.y = ggplot2::element_blank(),
