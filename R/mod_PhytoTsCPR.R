@@ -102,22 +102,17 @@ mod_PhytoTsCPR_server <- function(id){
         if (identical(input$parameter, "")) return(NULL)
         
         p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "CPR", trans = trans) + 
-          ggplot2::theme(legend.position = "none",
-                         axis.title.y = ggplot2::element_blank())
+          ggplot2::theme(legend.position = "none")
         
         p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Month", trans = trans) + 
-          ggplot2::theme(legend.position = "bottom",
-                         axis.title.y = ggplot2::element_blank())
+          ggplot2::theme(legend.position = "none")
         
         p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Year", trans = trans) + 
           ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                          legend.position = "bottom")
         
-        titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
-        
         p1 / 
-          (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom")) +
-          patchwork::plot_annotation(title = titleplot)
+          (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom")) 
         
         
       }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
