@@ -91,7 +91,6 @@ mod_PhytoTsNRS_server <- function(id){
         if (is.null(pkg.env$datNRSp$StationCode)) {return(NULL)}
 
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
-        titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
         
         p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "NRS", trans = trans) +
           ggplot2::theme(legend.position = "none")
@@ -103,8 +102,7 @@ mod_PhytoTsNRS_server <- function(id){
           ggplot2::theme(axis.title.y = ggplot2::element_blank(), legend.position = "bottom")
         
         p1 / 
-          (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom")) +
-          patchwork::plot_annotation(title = titleplot)
+          (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom"))
         
       }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
 

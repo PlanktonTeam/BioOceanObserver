@@ -114,11 +114,8 @@ mod_ZooTsNRS_server <- function(id){
           ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                          legend.position = "bottom")
         
-        titleplot <- names(planktonr::pr_relabel(input$parameter, style = "simple"))
-        
         p1 / 
-          (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom")) +
-          patchwork::plot_annotation(title = titleplot)
+          (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom"))
         
       }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
