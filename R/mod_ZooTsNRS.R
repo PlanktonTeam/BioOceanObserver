@@ -80,6 +80,7 @@ mod_ZooTsNRS_server <- function(id){
         p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
         p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
+        
         p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
         
       }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
@@ -104,12 +105,10 @@ mod_ZooTsNRS_server <- function(id){
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
         
         p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "NRS", trans = trans) + 
-          ggplot2::theme(legend.position = "none",
-                         axis.title.y = ggplot2::element_blank())
+          ggplot2::theme(legend.position = "none")
         
         p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) + 
-          ggplot2::theme(legend.position = "bottom",
-                         axis.title.y = ggplot2::element_blank())
+          ggplot2::theme(legend.position = "none")
         
         p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) + 
           ggplot2::theme(axis.title.y = ggplot2::element_blank(),
