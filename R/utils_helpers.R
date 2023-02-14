@@ -28,6 +28,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
   }
   
   shiny::sidebarPanel(
+    
     shiny::conditionalPanel(
       tags$head(tags$style(HTML(
         ".multicol{
@@ -39,8 +40,9 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       shiny::HTML("<h6>Note there is very little data in the North and North-west regions<h6>")
     ),
     
+    # Put Map, Station names and date slider on all panels
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " >= 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3 | ", tabsetPanel_id, " == 4"), 
+      condition = paste0("input.", tabsetPanel_id, " == 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3 | ", tabsetPanel_id, " == 4"), 
       shiny::plotOutput(ns("plotmap"),
                         height = "300px", 
                         width = "100%"),
@@ -63,14 +65,30 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
                                               tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%Y-%m-%d")
     ),
     
+    # Parameter selection for Microbes
+    # All subtabs (ie 1-3) using this input need to be created together
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3"), 
+      condition = paste0("input.", tabsetPanel_id, " <= 3 && input.navbar == 'Microbes'"), # Micro
+      shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
+      shiny::selectInput(inputId = ns("parameterm"), 
+                         label = NULL, 
+                         choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), 
+                         selected = selectedVar)
+    ),
+    
+    # Parameter Selection for Plankton (Tabs 1-2)
+    # All subtabs (ie 1-2) using this input need to be created together
+    shiny::conditionalPanel(
+      condition = paste0("input.", tabsetPanel_id, " <= 2 && input.navbar != 'Microbes'"), 
       shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
       shiny::selectInput(inputId = ns("parameter"), 
                          label = NULL, 
                          choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), 
                          selected = selectedVar),
     ),
+    
+   
+    
     
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 1 | input.", tabsetPanel_id, " == 2"), 
@@ -88,6 +106,8 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
                            value = FALSE),
     ),
     
+   
+    
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 3 && input.navbar == 'Microbes'"), # Micro
       shiny::selectizeInput(inputId = ns("interp"),
@@ -95,6 +115,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
                             choices = c("Interpolate", "Raw data", "Interpolate with gap filling"),
                             selected = "Raw data"),
     ),
+    
     
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 4 && input.navbar == 'Microbes'"),

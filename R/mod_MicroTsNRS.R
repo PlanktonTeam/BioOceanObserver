@@ -32,12 +32,12 @@ mod_MicroTsNRS_server <- function(id){
       selectedData <- pkg.env$datNRSm %>% 
 
         dplyr::filter(.data$StationName %in% input$Site,
-                      .data$Parameters %in% input$parameter,
+                      .data$Parameters %in% input$parameterm,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels() %>% 
         dplyr::mutate(name = as.factor(.data$Parameters))
       
-    }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2])
     
     shiny::exportTestValues(
       MicroTs = {ncol(selectedData())},
@@ -95,7 +95,7 @@ mod_MicroTsNRS_server <- function(id){
         
         p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
         
-      }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
       output$timeseries1 <- renderPlot({
         gg_out1()
@@ -127,7 +127,7 @@ mod_MicroTsNRS_server <- function(id){
           ggplot2::theme(legend.position = "none")
         
         p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) + 
-          ggplot2::theme(axis.title.y = ggplot2::element_blank())
+          ggplot2::theme(legend.position = "none")
         
         p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) + 
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
@@ -139,7 +139,7 @@ mod_MicroTsNRS_server <- function(id){
           (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom")) #+
           # patchwork::plot_annotation(title = titleplot)
         
-      }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
       output$timeseries2 <- renderPlot({
         gg_out2()
@@ -163,7 +163,7 @@ mod_MicroTsNRS_server <- function(id){
           droplevels() %>%
           planktonr::pr_reorder()
         
-      }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+      }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
       gg_out3 <-  reactive({  
         
@@ -177,7 +177,7 @@ mod_MicroTsNRS_server <- function(id){
           planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), Interpolation = FALSE, Fill_NA = FALSE)
         }
         
-      }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$interp)
+      }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$interp)
       
       output$timeseries3 <- renderPlot({
         gg_out3()
@@ -203,7 +203,8 @@ mod_MicroTsNRS_server <- function(id){
           dplyr::filter(.data$StationName %in% input$Site,
                         .data$Parameters %in% c(input$p1, input$p2),
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-          tidyr::pivot_wider(id_cols = c("StationName", "SampleDepth_m", "SampleTime_Local"), names_from = "Parameters", values_from = "Values", values_fn = mean)
+          tidyr::pivot_wider(id_cols = c("StationName", "SampleDepth_m", "SampleTime_Local"), 
+                             names_from = "Parameters", values_from = "Values", values_fn = mean)
         
       }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
