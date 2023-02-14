@@ -5,9 +5,9 @@ account: jaseeverett
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8200082
-bundleId: 6816871
+bundleId: 6843700
 url: https://jaseeverett.shinyapps.io/BioOceanObserver/
-when: 1675721645.94503
-lastSyncTime: 1675721645.94504
+when: 1676354575.60439
+lastSyncTime: 1676354575.6044
 asMultiple: FALSE
 asStatic: FALSE
