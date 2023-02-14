@@ -43,9 +43,9 @@ hexSticker::sticker("data-raw/Sapphirina_m_NSI_20161116_5x_jup_8st_ED.JPG",
                     url = "https://shiny.csiro.au/BioOceanObserver",
                     u_color = "white",
                     u_family = "sans",
-                    u_size = 10,
-                    u_x = 1.12,
-                    u_y = 0.15,
+                    u_size = 12,
+                    u_x = 1.04,
+                    u_y = 0.1,
                     dpi = 1000,
                     asp = 1,
                     filename="inst/app/www/BOO_HexRaw.png", 
@@ -56,11 +56,12 @@ hexSticker::sticker("data-raw/Sapphirina_m_NSI_20161116_5x_jup_8st_ED.JPG",
 # Code from https://github.com/GuangchuangYu/hexSticker/issues/39
 library(magick)
 p <- image_read("inst/app/www/BOO_HexRaw.png")
+
 pp <- p %>%
-  image_fill(color = "transparent", refcolor = "white", fuzz = 4, point = "+1+1") %>%
-  image_fill(color = "transparent", refcolor = "white", fuzz = 4, point = "+517+1") %>%
-  image_fill(color = "transparent", refcolor = "white", fuzz = 4, point = "+1+599") #%>%
+  image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+0+0") %>%
+  image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+517+0") %>%
+  image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+0+599") #%>%
   # image_fill(color = "transparent", refcolor = "white", fuzz = 4, point = "+517+599") # This one seems to find some text as well
+
 image_write(image = pp, path = "inst/app/www/BOO_Hex.png")
-file.show("hex_transp.png")
 
