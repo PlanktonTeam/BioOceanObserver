@@ -137,7 +137,10 @@ mod_MoorBGC_server <- function(id){
     
     output$timeseries1 <- renderPlot({
       gg_out1()
-    }, height = function() {length(unique(selectedTS()$StationName)) * 200}) 
+    }, height = function() {
+      if(length(unique(selectedTS()$StationName)) < 2) 
+      {300} else 
+      {length(unique(selectedTS()$StationName)) * 200}})
     
     
     # add text information 

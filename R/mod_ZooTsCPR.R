@@ -153,7 +153,10 @@ mod_ZooTsCPR_server <- function(id){
       
       output$timeseries3 <- renderPlot({
         gg_out3()
-      }, height = function() {length(unique(selectedData()$BioRegion)) * 200})
+      }, height = function() {
+        if(length(unique(selectedDataFG()$BioRegion)) < 2) 
+        {300} else 
+        {length(unique(selectedDataFG()$BioRegion)) * 200}})
       
       # Download -------------------------------------------------------
       output$downloadData3 <- fDownloadButtonServer(input, selectedDataFG(), "FuncGroup") # Download csv of data
