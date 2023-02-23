@@ -287,7 +287,7 @@ fSpatialPanel <- function(id, tabsetPanel_id){
 fEnviroPanel <- function(id){
   ns <- NS(id)
   shiny::mainPanel(
-    h6(textOutput(ns("PlotExp"), container = span)),
+    shiny::htmlOutput(ns("PlotExp")),
     plotOutput(ns("timeseries1")) %>% 
       shinycssloaders::withSpinner(color="#0dc5c1"),
     shiny::div(style="display:inline-block; float:right; width:60%",
