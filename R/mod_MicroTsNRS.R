@@ -181,7 +181,10 @@ mod_MicroTsNRS_server <- function(id){
       
       output$timeseries3 <- renderPlot({
         gg_out3()
-      }, height = function() {length(unique(selectedDataDepth()$StationName)) * 200})
+      }, height = function() {
+        if(length(unique(selectedDataDepth()$StationName)) < 2) 
+        {300} else 
+        {length(unique(selectedDataDepth()$StationName)) * 200}})
       
       # Download -------------------------------------------------------
       output$downloadData3 <- fDownloadButtonServer(input, selectedData(), "Enviro") # Download csv of data
