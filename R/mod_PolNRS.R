@@ -88,11 +88,11 @@ mod_PolNRS_server <- function(id){
     }) 
     
     output$StationSummary <- shiny::renderText({ 
-      paste("<h4 style='text-align:center; font-weight: bold;'>",input$Site,"</h5>The ", input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), 
+      paste("<h4 style='text-align:center; font-weight: bold;'>",input$Site,"</h5>The IMOS ", input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), 
             "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ". The water depth at the station is ", 
             round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, 
             ". The station has been sampled since ", format(stationData()$StationStartDate, "%A %d %B %Y"), " ", stationData()$now,
-            ". ", input$Site, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, 
+            ". ", input$Site, " is in the ", stationData()$ManagementRegion, 
             " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = "")
       })
     
