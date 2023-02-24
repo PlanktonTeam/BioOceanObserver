@@ -1,6 +1,6 @@
 Package: imosboo
 Title: Visualisation of IMOS biological data
-Version: 0.9.0.0000
+Version: 0.9.1.0000
 Authors@R: c(
     person("Claire H.", "Davies", email = 'claire.davies@csiro.au', role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-0424-1835")),
@@ -24,7 +24,7 @@ Imports:
     magrittr,
     patchwork,
     pracma,
-    planktonr (>= 0.5.2),
+    planktonr (>= 0.5.3),
     purrr (>= 1.0.1),
     rlang,
     shiny (>= 1.6.0),
