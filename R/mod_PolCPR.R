@@ -138,9 +138,9 @@ mod_PolCPR_server <- function(id){
                                    trans = "log10", col = pkg.env$col12[3])
       
       p4 <- planktonr::pr_plot_EOVs(outputs(), EOV = "SST", Survey = 'CPR', 
-                                   trans = "identity", col = col12[5])
+                                   trans = "identity", col = pkg.env$col12[5])
       p5 <- planktonr::pr_plot_EOVs(outputs(), EOV = "chl_oc3", Survey = 'CPR', 
-                                   trans = "identity", col = col12[3])
+                                   trans = "identity", col = pkg.env$col12[3])
       
       p3 <- planktonr::pr_plot_PCI(selectedPCI())
       
