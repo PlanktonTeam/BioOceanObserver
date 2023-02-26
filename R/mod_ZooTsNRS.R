@@ -163,7 +163,10 @@ mod_ZooTsNRS_server <- function(id){
       
       output$timeseries3 <- renderPlot({
         gg_out3()
-      }, height = function() {length(unique(selectedData()$StationName)) * 200})
+      }, height = function() {
+        if(length(unique(selectedDataFG()$StationName)) < 2) 
+        {300} else 
+        {length(unique(selectedDataFG()$StationName)) * 200}})
       
       # Download -------------------------------------------------------
       output$downloadData3 <- fDownloadButtonServer(input, selectedDataFG(), "FuncGroup") # Download csv of data
