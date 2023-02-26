@@ -16,7 +16,7 @@ pkg.env <- new.env(parent = emptyenv())
                  "SpInfoP", "SpInfoZ", "LFData", "LFDataAbs",
                  "datNRSTrip", "datCPRTrip",
                  "PSpNRSAccum", "PSpCPRAccum", "ZSpNRSAccum", "ZSpCPRAccum",
-                 "col12")
+                 "col12", "ParamDef")
   tryCatch({
     # Access data from local server (fastest)
     cat(file=stderr(), "Attempting to access data from opendap.\n")
