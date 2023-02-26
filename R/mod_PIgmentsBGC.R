@@ -86,5 +86,9 @@ mod_PigmentsBGC_server <- function(id){
       "A plot of selected nutrient Parameters from the NRS as timeseries at analysed depths"
     }) 
     
+    # Parameter Definition
+    output$ParamDefb <- fParamDefServer(selected) # Download csv of data
+    
+    
   })
 }

@@ -105,5 +105,9 @@ mod_NutrientsBGC_server <- function(id){
       
     }) %>% bindCache(input$parameter)
     
+    # Parameter Definition
+    output$ParamDefb <- fParamDefServer(selected) # Download csv of data
+    
+    
   })
 }

@@ -11,10 +11,9 @@ mod_MicroTsNRS_ui <- function(id){
   nsMicroTsNRS <- NS(id)
   tagList(
     sidebarLayout(
-      
       fPlanktonSidebar(id = id, tabsetPanel_id = "NRSmts", dat = pkg.env$datNRSm),
       fPLanktonPanel(id = id,  tabsetPanel_id = "NRSmts"),
-
+      
     )
   )
 }
@@ -28,9 +27,8 @@ mod_MicroTsNRS_server <- function(id){
     
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
-
+      
       selectedData <- pkg.env$datNRSm %>% 
-
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$Parameters %in% input$parameterm,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
@@ -105,6 +103,9 @@ mod_MicroTsNRS_server <- function(id){
       output$downloadData1 <- fDownloadButtonServer(input, selectedData(), "Trend") # Download csv of data
       output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Trend") # Download figure
       
+      # Parameter Definition
+      output$ParamDefm <- fParamDefServer(selectedData) # Download csv of data
+      
     })
     
     
@@ -137,7 +138,7 @@ mod_MicroTsNRS_server <- function(id){
         # p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
         p1 / 
           (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom")) #+
-          # patchwork::plot_annotation(title = titleplot)
+        # patchwork::plot_annotation(title = titleplot)
         
       }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
@@ -148,6 +149,10 @@ mod_MicroTsNRS_server <- function(id){
       # Download -------------------------------------------------------
       output$downloadData2 <- fDownloadButtonServer(input, selectedData(), "Climate") # Download csv of data
       output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2(), "Climate") # Download figure
+      
+      # Parameter Definition
+      output$ParamDefm <- fParamDefServer(selectedData)
+      
     })
     
     # Plots by depths ---------------------------------------------------------
@@ -190,6 +195,9 @@ mod_MicroTsNRS_server <- function(id){
       output$downloadData3 <- fDownloadButtonServer(input, selectedData(), "Enviro") # Download csv of data
       output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3(), "Enviro") # Download figure
       
+      # Parameter Definition
+      output$ParamDefm <- fParamDefServer(selectedData)
+      
     })
     
     # Plots by Parameters ---------------------------------------------------------
@@ -230,7 +238,7 @@ mod_MicroTsNRS_server <- function(id){
           ggplot2::ylab(titley) + 
           ggplot2::scale_colour_manual(values = planktonr:::colNRSName) +
           planktonr::theme_pr()
-      
+        
       }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
       output$timeseries4 <- renderPlot({
