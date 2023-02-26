@@ -276,6 +276,9 @@ PSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "P")
 ZSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "Z")
 ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Z")
 
+# Parameter Definitions
+ParamDef <- readr::read_csv(file.path("data-raw", "ParameterDefn.csv"), na = character())
+
 # # To test sysdata access from DAP
 # PolNRS <- PolNRS[PolNRS$Year_Local < 2017,]
 # PolCPR <- PolCPR[PolCPR$Year_Local < 2017,] 
@@ -294,7 +297,7 @@ usethis::use_data(Nuts, Pigs, Pico,
                   SpInfoP, SpInfoZ, LFData, LFDataAbs,
                   datNRSTrip, datCPRTrip,
                   PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
-                  col12, overwrite = TRUE, internal = TRUE)
+                  ParamDef, col12, overwrite = TRUE, internal = TRUE)
 
 # save(Nuts, Pigs, Pico, 
 #      fMapDataz, fMapDatap, 
