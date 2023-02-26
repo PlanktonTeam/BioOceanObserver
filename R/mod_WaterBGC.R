@@ -82,5 +82,8 @@ mod_WaterBGC_server <- function(id){
       "A plot of selected water parameters from the NRS as timeseries"
     }) 
     
+    # Parameter Definition
+    output$ParamDefb <- fParamDefServer(selected) # Download csv of data
+    
   })
 }

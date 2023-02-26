@@ -1,0 +1,112 @@
+﻿Category,Parameter,Definition
+Phytoplankton,AvgCellVol_um3,Average cell volume of phytoplankton, calculated from average cell size of the species found in the sample
+Phytoplankton,DiatomDinoflagellateRatio,The ratio of diatoms to dinoflagellates
+Phytoplankton,DiatomEvenness,
+Phytoplankton,DinoflagellateEvenness,
+Phytoplankton,NoDiatomSpecies_Sample,Number of diatom species in the sample
+Phytoplankton,NoDinoSpecies_Sample,Number of dinoflagellate species in the sample
+Phytoplankton,NoPhytoSpecies_Sample,Total umber of phytoplankton species in the sample
+Phytoplankton,PCI,Phytoplankton Colour Index calculated by how green the CPR silks are
+Phytoplankton,PhytoAbundance_CellsL,Abundance of phytoplankton cells per litre
+Phytoplankton,PhytoAbundance_Cellsm3,Abundance of phytoplankton cells per cubic metre
+Phytoplankton,PhytoBiomassCarbon_pgL,Carbon biomass of phytoplankton, calculated from the average cell carbon of each species found in the sample
+Phytoplankton,PhytoBiomassCarbon_pgm3,Carbon biomass of phytoplankton, calculated from the average cell carbon of each species found in the sample
+Phytoplankton,PhytoEvenness,
+Phytoplankton,ShannonDiatomDiversity,
+Phytoplankton,ShannonDinoDiversity,
+Phytoplankton,ShannonPhytoDiversity,
+Zooplankton,AshFreeBiomass_mgm3,
+Zooplankton,AvgTotalLengthCopepod_mm,
+Zooplankton,Biomass_mgm3,Total biomass of zooplankton
+Zooplankton,BiomassIndex_mgm3,
+Zooplankton,CopeAbundance_m3,Abundance of all copepods.
+Zooplankton,CopepodEvenness,
+Zooplankton,NoCopepodSpecies_Sample,Number of copepod species in the sample
+Zooplankton,OmnivoreCarnivoreCopepodRatio,
+Zooplankton,ShannonCopepodDiversity,
+Zooplankton,ZoopAbundance_m3,Abundance of zooplankton individuals
+BGC,Alkalinity_umolkg,
+BGC,Allo_mgm3,
+BGC,AlphaBetaCar_mgm3,
+BGC,Ammonium_umolL,Concentration of ammonium at given depths
+BGC,Anth_mgm3,
+BGC,Asta_mgm3,
+BGC,BetaBetaCar_mgm3,
+BGC,BetaEpiCar_mgm3,
+BGC,Butfuco_mgm3,
+BGC,Cantha_mgm3,
+BGC,ChlF_mgm3,
+BGC,Conductivity_Sm,
+BGC,CphlA_mgm3,
+BGC,CphlB_mgm3,
+BGC,CphlC1_mgm3,
+BGC,CphlC1C2_mgm3,
+BGC,CphlC2_mgm3,
+BGC,CphlC3_mgm3,
+BGC,CphlideA_mgm3,
+BGC,Diadchr_mgm3,
+BGC,Diadino_mgm3,
+BGC,DIC_umolkg,Concentration of dissolved inorganic carbon at given depths
+BGC,DIN_umolL,Concentration of dissolved inorganic nitrogen at given depths
+BGC,DissolvedOxygen_umolkg,
+BGC,Fuco_mgm3,
+BGC,Gyro_mgm3,
+BGC,Hexfuco_mgm3,
+BGC,Ketohexfuco_mgm3,
+BGC,Lut_mgm3,
+BGC,Lyco_mgm3,
+BGC,MgDvp_mgm3,
+BGC,Neo_mgm3,
+BGC,Nitrate_umolL,Concentration of nitrate at given depths
+BGC,Nitrite_umolL,Concentration of nitrite at given depths
+BGC,NOx_umolL,Concentration of nitrate+nitrite at given depths
+BGC,Oxygen_umolL,
+BGC,Perid_mgm3,
+BGC,PhideA_mgm3,
+BGC,Phosphate_umolL,Concentration of phosphate at given depths
+BGC,PhytinA_mgm3,
+BGC,PhytinB_mgm3,
+BGC,Picoeukaryotes_cellsmL,
+BGC,Pigments_flag,
+BGC,PPC,
+BGC,Pras_mgm3,
+BGC,Prochlorococcus_cellsmL,
+BGC,PSC,
+BGC,PSP,
+BGC,PyrophideA_mgm3,
+BGC,PyrophytinA_mgm3,
+BGC,Redfield,
+BGC,Salinity,
+BGC,Salinity_psu,
+BGC,SecchiDepth_m,A measure of water transparency using a Secchi Disk
+BGC,Silicate_umolL,Concentration of silicate
+BGC,Synechococcus_cellsmL,
+BGC,TAcc,
+BGC,TCaro,
+BGC,TDP,
+BGC,Temperature_degC,
+BGC,TotalChl,Total Chlorophyll from HPLC
+BGC,TotalChla,Total Chlorophyll <i>a</i> from HPLC
+BGC,TPig,Total pigment concentration from HPLC
+BGC,Turbidity_NTU,
+BGC,Viola_mgm3,
+BGC,WaterDensity_kgm3,
+BGC,Zea_mgm3,
+Microbes,Archaeal_Nitrogen_Index_KD,
+Microbes,Archaeal_Oxygen_Index_KD,
+Microbes,Archaeal_Phosphate_Index_KD,
+Microbes,Archaeal_Salinity_Index_KD,
+Microbes,Archaeal_Silicate_Index_KD,
+Microbes,Archaeal_Temperature_Index_KD,
+Microbes,Bacterial_Nitrogen_Index_KD,
+Microbes,Bacterial_Oxygen_Index_KD,
+Microbes,Bacterial_Phosphate_Index_KD,
+Microbes,Bacterial_Salinity_Index_KD,
+Microbes,Bacterial_Silicate_Index_KD,
+Microbes,Bacterial_Temperature_Index_KD,
+Microbes,Eukaryote_Nitrogen_Index_KD,
+Microbes,Eukaryote_Oxygen_Diversity,
+Microbes,Eukaryote_Phosphate_Index_KD,
+Microbes,Eukaryote_Salinity_Index_KD,
+Microbes,Eukaryote_Silicate_Index_KD,
+Microbes,Eukaryote_Temperature_Index_KD,
