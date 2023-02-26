@@ -94,5 +94,9 @@ mod_NutrientsBGC_server <- function(id){
       If raw data is used the dots represent actual samples"
     }) 
     
+    # Parameter Definition
+    output$ParamDefb <- fParamDefServer(selected) # Download csv of data
+    
+    
   })
 }
