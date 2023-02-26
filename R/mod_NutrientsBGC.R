@@ -75,7 +75,10 @@ mod_NutrientsBGC_server <- function(id){
     
     output$timeseries1 <- renderPlot({
       gg_out1()
-    }, height = function() {length(unique(selected()$StationName)) * 200})
+    }, height = function() {
+      if(length(unique(selected()$StationName)) < 2) 
+      {300} else 
+          {length(unique(selected()$StationName)) * 200}})
     
     # Download -------------------------------------------------------
     output$downloadData1 <- fDownloadButtonServer(input, selected(), "Nuts") # Download csv of data
@@ -89,10 +92,18 @@ mod_NutrientsBGC_server <- function(id){
     }, bg = "transparent") %>% bindCache(input$station)
     
     # add text information 
+    
     output$PlotExp <- renderText({
-      "A contour plot of nutrients from the NRS around Australia, as a time series and a monthly climatology by depth. 
+      
+      if(input$parameter == 'Oxygen_umolL') {
+        paste("A contour plot of nutrients from the NRS around Australia, as a time series and a monthly climatology by depth. 
+      If raw data is used the dots represent actual samples. <b>NOTE: Oxygen data is only available for Maria Island and Rottnest Island</b>")
+      } else {
+        "A contour plot of nutrients from the NRS around Australia, as a time series and a monthly climatology by depth. 
       If raw data is used the dots represent actual samples"
-    }) 
+      }
+      
+    }) %>% bindCache(input$parameter)
     
     # Parameter Definition
     output$ParamDefb <- fParamDefServer(selected) # Download csv of data
