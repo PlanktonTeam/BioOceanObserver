@@ -70,7 +70,7 @@ mod_home_ui <- function(id){
                                  <a href = 'https://www.imosoceanreport.org.au/australias-oceans/', target = '_blank'> Australia's Marine Bioregions</a>.
                                  More information about the methods used in this tool, can be found in 'Technical Information' under the 'Information' tab."),
                                     shiny::h3("Citation"),
-                                    shiny::HTML("If you use this app in any publication, please cite as: <br> <i>'Davies, Claire H., Everett, Jason D., Ord, Louise (2022) IMOS Biological Ocean Observer - Shiny APP. v3. CSIRO. Service Collection. <a href = http://hdl.handle.net/102.100.100/447365?index=1>http://hdl.handle.net/102.100.100/447365?index=1</a></i>."),
+                                    shiny::HTML("If you use this app in any publication, please cite as: <br> <i>'Davies, Claire H., Everett, Jason D., Ord, Louise (2022) Integrated Marine Observing System (IMOS) Biological Ocean Observer - Shiny APP. v3. CSIRO. Service Collection. <a href = http://hdl.handle.net/102.100.100/447365?index=1>http://hdl.handle.net/102.100.100/447365?index=1</a></i>."),
                                     shiny::br(),
                                     shiny::br(),
                                     shiny::HTML("All of the analysis and plotting contained in this application are powered by the <i>planktonr</i> package: <br>
