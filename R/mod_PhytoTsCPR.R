@@ -166,11 +166,11 @@ mod_PhytoTsCPR_server <- function(id){
           return(NULL)
         }
         
-        scale <- dplyr::if_else(input$scaler3, "Actual", "Percent")
+        scale <- dplyr::if_else(input$scaler3, "Percent", "Actual")
         
         p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
-        p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month")
-        
+        p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") +
+          ggplot2::theme(axis.title.y = ggplot2::element_blank(), legend.position = "none")
         p1 + p2 + patchwork::plot_layout(widths = c(3,1))
         
       }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
