@@ -25,7 +25,8 @@ NRSStation <- planktonr::pr_get_NRSStation() %>%
 
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z") 
 datNRSp <- planktonr::pr_get_Indices("NRS", "P") 
-datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
+datNRSm <- planktonr::pr_get_NRSMicro("NRS") ## microbial data
+datCSm  <- planktonr::pr_get_NRSMicro("Coastal") ## microbial data
 
 datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>% #TODO move the MLD calcs to planktonr
   tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
@@ -291,61 +292,13 @@ usethis::use_data(Nuts, Pigs, Pico,
                   PolNRS, PolCPR, PolLTM, 
                   NRSinfo, CPRinfo, NRSStation,
                   datCPRz, datCPRp, PCI,
-                  datNRSz, datNRSp, datNRSm, datNRSw,
+                  datNRSz, datNRSp, datNRSm, datCSm, datNRSw,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
                   stiz, stip, daynightz, daynightp,
                   SpInfoP, SpInfoZ, LFData, LFDataAbs,
                   datNRSTrip, datCPRTrip,
                   PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
                   ParamDef, col12, overwrite = TRUE, internal = TRUE)
-
-# save(Nuts, Pigs, Pico, 
-#      fMapDataz, fMapDatap, 
-#      MooringTS, MooringClim,
-#      PolNRS, PolCPR, PolLTM, 
-#      NRSinfo, CPRinfo, NRSStation,
-#      datCPRz, datCPRp, PCI,
-#      datNRSz, datNRSp, datNRSm, datNRSw,
-#      NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-#      stiz, stip, daynightz, daynightp,
-#      SpInfoP, SpInfoZ, LFData, LFDataAbs,
-#      datNRSTrip, datCPRTrip,
-#      PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
-#      col12, file = "data/sysdata.rda")
-
-# Write to csv to save onto the DAP
-# write_csv(Nuts, "Nuts.csv")
-# write_csv(Pigs,  "Pigs.csv")
-# write_csv(Pico,  "Pico.csv")
-# write_csv(LTnuts,    "LTnuts.csv") 
-# write_csv(fMapDataz,  "fMapDataz.csv")
-# write_csv(fMapDatap,  "fMapDatap.csv")
-# write_csv(legendPlot, "legendPlot.csv")
-# write_csv(MooringTS,  "MooringTS.csv")
-# write_csv(MooringClim, "MooringClim.csv")
-# write_csv(PolNRS, "PolNRS.csv")
-# write_csv(PolCPR,  "PolCPR.csv")
-# write_csv(PolLTM,  "PolLTM.csv")
-# write_csv(NRSinfo,  "NRSinfo.csv")
-# write_csv(CPRinfo,  "CPRinfo.csv")
-# write_csv(datCPRz,  "datCPRz.csv")
-# write_csv(datCPRp,  "datCPRp.csv")
-# write_csv(datCPRw, "datCPRw.csv") 
-# write_csv(datNRSz,  "datNRSz.csv")
-# write_csv(datNRSp,  "datNRSp.csv")
-# write_csv(datNRSm,  "datNRSm.csv")
-# write_csv(datNRSw, "datNRSw.csv")
-# write_csv(NRSfgz,  "NRSfgz.csv")
-# write_csv(NRSfgp,  "NRSfgp.csv")
-# write_csv(CPRfgz,  "CPRfgz.csv")
-# write_csv(CPRfgp,  "CPRfgp.csv")
-# write_csv(PMapData, "PMapData.csv")
-# write_csv(stiz,  "stiz.csv")
-# write_csv(stip,  "stip.csv")
-# write_csv(daynightz,  "daynightz.csv")
-# write_csv(daynightp,  "daynightp.csv")
-# write_csv(PMapData, "PMapData.csv")
-# write_csv(SatData, "SatData.csv")
 
 
 

@@ -25,6 +25,12 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + CPR
       selectedVar = "PhytoAbundance_Cellsm3"
     }
+  } else if (stringr::str_detect(id, "CS") == TRUE){ # Microbes Coastal
+    choices <- unique(sort(dat$StationName))
+    selectedSite <- c("Derwent Estuary B1", "Derwent Estuary B3", "Derwent Estuary E","Derwent Estuary G2",
+                      "Derwent Estuary KB", "Derwent Estuary RBN", "Derwent Estuary U2")
+    idSite <- "Site"
+    selectedVar = "Bacterial_Temperature_Index_KD"
   }
   
   shiny::sidebarPanel(
@@ -42,7 +48,8 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     
     # Put Map, Station names and date slider on all panels
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3 | ", tabsetPanel_id, " == 4"), 
+      condition = paste0("input.", tabsetPanel_id, " == 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3 | input.", 
+                         tabsetPanel_id, " == 4"), 
       shiny::plotOutput(ns("plotmap"),
                         height = "300px", 
                         width = "100%"),
@@ -162,7 +169,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                            fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
                                            fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
                        ),
-                       if(tabsetPanel_id != "NRSmts"){
+                       if(!tabsetPanel_id %in% c("NRSmts", "CSmts")){
                          shiny::tabPanel("Functional groups", value = 3,
                                          h6(textOutput(ns("PlotExp3"), container = span)),  
                                          plotOutput(ns("timeseries3"), height = "auto") %>% 
@@ -184,8 +191,8 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                              fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
                          )
                        },
-                       if (tabsetPanel_id == "NRSmts"){
-                         shiny::tabPanel("Cell counts vs Indices", value = 4,
+                       if (tabsetPanel_id %in% c("NRSmts", "CSmts")){
+                         shiny::tabPanel("Traits", value = 4,
                                          h6(textOutput(ns("PlotExp4"), container = span)),
                                          plotOutput(ns("timeseries4")) %>%
                                            shinycssloaders::withSpinner(color="#0dc5c1"),
