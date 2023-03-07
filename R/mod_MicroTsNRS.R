@@ -11,7 +11,7 @@ mod_MicroTsNRS_ui <- function(id){
   nsMicroTsNRS <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, tabsetPanel_id = "NRSmts", dat = pkg.env$datNRSm),
+      fPlanktonSidebar(id = id, tabsetPanel_id = "NRSmts", dat = datNRSm),#dat = pkg.env$datNRSm),
       fPLanktonPanel(id = id,  tabsetPanel_id = "NRSmts"),
       
     )
@@ -28,7 +28,7 @@ mod_MicroTsNRS_server <- function(id){
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
       
-      selectedData <- pkg.env$datNRSm %>% 
+      selectedData <- datNRSm %>% #pkg.env$datNRSm %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$Parameters %in% input$parameterm,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
@@ -40,7 +40,7 @@ mod_MicroTsNRS_server <- function(id){
     shiny::exportTestValues(
       MicroTs = {ncol(selectedData())},
       MicroTsRows = {nrow(selectedData()) > 0},
-      MicroTsYearisNumeric = {class(selectedData()$Year)},
+      MicroTsYearisNumeric = {class(selectedData()$Year_Local)},
       MicroTsMonthisNumeric = {class(selectedData()$Month_Local)},
       MicroTsDepthisNumeric = {class(selectedData()$SampleDepth_m)},
       MicroTsDateisDate = {class(selectedData()$SampleTime_Local)},
@@ -210,7 +210,7 @@ mod_MicroTsNRS_server <- function(id){
         validate(need(!is.na(input$Site), "Error: Please select a station."))
         validate(need(!is.na(input$p1), "Error: Please select a parameter."))
         
-        selectedData1 <- pkg.env$datNRSm %>% 
+        selectedData1 <- datNRSm %>% #pkg.env$datNRSm %>% 
           dplyr::filter(.data$StationName %in% input$Site,
                         .data$Parameters %in% c(input$p1, input$p2),
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%

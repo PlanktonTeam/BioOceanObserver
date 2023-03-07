@@ -125,8 +125,18 @@ app_server <- function( input, output, session ) {
     }
   })
   
+  # Microbes -------------------------------------------------------------
   
-  
+  observeEvent(input$mic, {
+    
+    ### Microbes Coastal Data
+    if(input$mic == "mtsCS"){
+      mod_MicroTsCS_server("MicroTsCS_ui_1")
+    }
+    
+  })
+    
+
   # Larval Fish -------------------------------------------------------------
   
   # Season Larval Fish
