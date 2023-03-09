@@ -26,7 +26,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       selectedVar = "PhytoAbundance_Cellsm3"
     }
   } else if (stringr::str_detect(id, "CS") == TRUE){ # Microbes Coastal
-    choices <- unique(sort(dat$StationName))
+    choices <- unique((dat$StationName))
     selectedSite <- c("Derwent Estuary B1", "Derwent Estuary B3", "Derwent Estuary E","Derwent Estuary G2",
                       "Derwent Estuary KB", "Derwent Estuary RBN", "Derwent Estuary U2")
     idSite <- "Site"
@@ -49,7 +49,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     # Put Map, Station names and date slider on all panels
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3 | input.", 
-                         tabsetPanel_id, " == 4"), 
+                         tabsetPanel_id, " == 4 | input.", tabsetPanel_id, " == 5"), 
       shiny::plotOutput(ns("plotmap"),
                         height = "300px", 
                         width = "100%"),
@@ -133,14 +133,21 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       condition = paste0("input.", tabsetPanel_id, " == 4 && input.navbar == 'Microbes'"),
       shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
       selectInput(inputId = ns("p1"), label = 'Select an x parameter', 
-                  choices = planktonr::pr_relabel(unique(pkg.env$datNRSm$Parameters), style = "simple"), selected = "Bacterial_Temperature_Index_KD"),
+                  choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), selected = "Bacterial_Temperature_Index_KD"),
       selectInput(inputId = ns("p2"), label = 'Select a y parameter',
                   choices = planktonr::pr_relabel(unique(pkg.env$Pico$Parameters), style = "simple"), selected = "Prochlorococcus_cellsmL")
+    ),
+    
+    
+    shiny::conditionalPanel(
+      condition = paste0("input.", tabsetPanel_id, " == 5 && input.navbar == 'Microbes'"),
+      shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
+      selectInput(inputId = ns("p1"), label = 'Select a parameter', 
+                  choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), selected = "Bacterial_Temperature_Index_KD")
     )
     
   ) # End of shiny::sidebarpanel
-  
-  
+
 }
 
 
@@ -191,8 +198,8 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                              fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
                          )
                        },
-                       if (tabsetPanel_id %in% c("NRSmts", "CSmts")){
-                         shiny::tabPanel("Traits", value = 4,
+                       if (tabsetPanel_id %in% c("NRSmts")){
+                         shiny::tabPanel("Scatter plots", value = 4,
                                          h6(textOutput(ns("PlotExp4"), container = span)),
                                          plotOutput(ns("timeseries4")) %>%
                                            shinycssloaders::withSpinner(color="#0dc5c1"),
@@ -200,6 +207,17 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                              fButtons(id, button_id = "downloadPlot4", label = "Plot", Type = "Download"),
                                              fButtons(id, button_id = "downloadData4", label = "Data", Type = "Download"),
                                              fButtons(id, button_id = "downloadCode4", label = "R Code Example", Type = "Action"))
+                         )
+                       },
+                       if (tabsetPanel_id %in% c("CSmts")){
+                         shiny::tabPanel("Traits", value = 5,
+                                         h6(textOutput(ns("PlotExp5"), container = span)),
+                                         plotOutput(ns("timeseries5")) %>%
+                                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                                         div(style="display:inline-block; float:right; width:60%",
+                                             fButtons(id, button_id = "downloadPlot5", label = "Plot", Type = "Download"),
+                                             fButtons(id, button_id = "downloadData5", label = "Data", Type = "Download"),
+                                             fButtons(id, button_id = "downloadCode5", label = "R Code Example", Type = "Action"))
                          )
                        }
     )
