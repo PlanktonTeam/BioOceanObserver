@@ -28,7 +28,7 @@ mod_MicroTsNRS_server <- function(id){
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
       
-      selectedData <- datNRSm %>% #pkg.env$datNRSm %>% 
+      selectedData <- pkg.env$datNRSm %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$Parameters %in% input$parameterm,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
