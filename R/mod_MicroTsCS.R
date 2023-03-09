@@ -123,13 +123,13 @@ mod_MicroTsCS_server <- function(id){
           trans <- 'log10'
         }
 
-        p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "NRS", trans = trans) +
+        p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "Coastal", trans = trans) +
           ggplot2::theme(legend.position = "none")
 
-        p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) +
+        p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "Coastal", Trend = "Month", trans = trans) +
           ggplot2::theme(legend.position = "none")
 
-        p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) +
+        p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "Coastal", Trend = "Year", trans = trans) +
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
         #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple"))
@@ -160,7 +160,7 @@ mod_MicroTsCS_server <- function(id){
 
     # Plots by Parameters ---------------------------------------------------------
 
-    observeEvent({input$CSmts == 4}, {
+    observeEvent({input$CSmts == 5}, {
 
       selectedData1 <- reactive({
         req(input$Site)
@@ -170,42 +170,46 @@ mod_MicroTsCS_server <- function(id){
 
         selectedData1 <- datCSm %>% #pkg.env$datCSm %>%
           dplyr::filter(.data$StationName %in% input$Site,
-                        .data$Parameters %in% c(input$p1, input$p2),
+                        .data$Parameters %in% c(input$p1),
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
           tidyr::pivot_wider(id_cols = c("StationName", "SampleTime_Local"),
                              names_from = "Parameters", values_from = "Values", values_fn = mean)
 
-      }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+      }) %>% bindCache(input$p1, input$Site, input$DatesSlide[1], input$DatesSlide[2])
 
-      gg_out4 <- reactive({
+      gg_out5 <- reactive({
 
         # When we move to a planktonr function for this, we can use this:
         # pr_plot_scatter(selectedData1(), x = colnames(selectedData1()[, 5]), y = colnames(selectedData1()[, 4]))
 
         #TODO This needs to be converted to a planktonr function. At the moment it can't use planktonr colours without :::
 
-        x <- rlang::sym(colnames(selectedData1()[, 4]))
         y <- rlang::sym(colnames(selectedData1()[, 3]))
 
-        titlex <- planktonr::pr_relabel(rlang::as_string(x), style = "ggplot")
+        #titlex <- planktonr::pr_relabel(rlang::as_string(x), style = "ggplot")
         titley <- planktonr::pr_relabel(rlang::as_string(y), style = "ggplot")
 
-        ggplot2::ggplot(data = selectedData1()) +
-          ggplot2::geom_point(ggplot2::aes(!!x, !!y, colour = .data$StationName)) +
-          ggplot2::xlab(titlex) +
+        p1 <- ggplot2::ggplot(data = selectedData1()) +
+          ggplot2::geom_boxplot(ggplot2::aes(.data$StationName, !!y)) +
           ggplot2::ylab(titley) +
-          ggplot2::scale_colour_manual(values = planktonr:::colNRSName) +
+          #ggplot2::scale_colour_manual(values = planktonr:::colNRSName) +
           planktonr::theme_pr()
+       
+        p2 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "Coastal", trans = 'identity') +
+          ggplot2::theme(legend.position = "none") +
+          planktonr::theme_pr()
+        
+        p1 / p2 
 
-      }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+      }) %>% bindCache(input$p1, input$Site, input$DatesSlide[1], input$DatesSlide[2])
 
-      output$timeseries4 <- renderPlot({
-        gg_out4()
+      output$timeseries5 <- renderPlot({
+        gg_out5()
       })
 
       # Download -------------------------------------------------------
-      output$downloadData4 <- fDownloadButtonServer(input, selectedData1(), "Compare") # Download csv of data
-      output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4(), "Compare") # Download figure
+      output$downloadData5 <- fDownloadButtonServer(input, selectedData1(), "Compare") # Download csv of data
+      output$downloadPlot5 <- fDownloadPlotServer(input, gg_id = gg_out5(), "Compare") # Download figure
 
     })
   })
