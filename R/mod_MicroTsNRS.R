@@ -210,40 +210,42 @@ mod_MicroTsNRS_server <- function(id){
         validate(need(!is.na(input$Site), "Error: Please select a station."))
         validate(need(!is.na(input$p1), "Error: Please select a parameter."))
         
-        selectedData1 <- datNRSm %>% #pkg.env$datNRSm %>% 
+        selectedData1 <- pkg.env$datNRSm %>% 
+          dplyr::select(-c("TripCode_depth")) %>% 
+          dplyr::bind_rows(ctd) %>% #TODO pkg.env$
           dplyr::filter(.data$StationName %in% input$Site,
                         .data$Parameters %in% c(input$p1, input$p2),
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-          tidyr::pivot_wider(id_cols = c("StationName", "SampleDepth_m", "SampleTime_Local"), 
-                             names_from = "Parameters", values_from = "Values", values_fn = mean)
+          dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10) %>% 
+          tidyr::pivot_wider(id_cols = c("StationName", "SampleTime_Local", "SampleDepth_m"), 
+                             names_from = "Parameters", values_from = "Values", values_fn = mean) %>% 
+          tidyr::drop_na()
         
       }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
+      # Parameter Definition
+      output$ParamDefm1 <-   shiny::renderText({
+        paste("<h6><strong>", planktonr::pr_relabel(input$p1, style = "plotly"), ":</strong> ",
+              pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p1) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+      })
+      # Parameter Definition
+      output$ParamDefm2 <- shiny::renderText({
+        paste("<h6><strong>", planktonr::pr_relabel(input$p2, style = "plotly"), ":</strong> ",
+              pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p2) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+      })
+      
       gg_out4 <- reactive({
         
-        # When we move to a planktonr function for this, we can use this:
-        # pr_plot_scatter(selectedData1(), x = colnames(selectedData1()[, 5]), y = colnames(selectedData1()[, 4]))
-        
-        #TODO This needs to be converted to a planktonr function. At the moment it can't use planktonr colours without :::
-        
-        x <- rlang::sym(colnames(selectedData1()[, 5]))
-        y <- rlang::sym(colnames(selectedData1()[, 4]))
-        
-        titlex <- planktonr::pr_relabel(rlang::as_string(x), style = "ggplot")
-        titley <- planktonr::pr_relabel(rlang::as_string(y), style = "ggplot")
-        
-        ggplot2::ggplot(data = selectedData1()) +
-          ggplot2::geom_point(ggplot2::aes(!!x, !!y, colour = .data$StationName)) +
-          ggplot2::xlab(titlex) + 
-          ggplot2::ylab(titley) + 
-          ggplot2::scale_colour_manual(values = planktonr:::colNRSName) +
-          planktonr::theme_pr()
+        planktonr::pr_plot_scatter(selectedData1(), input$p2, input$p1)
         
       }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
       
       output$timeseries4 <- renderPlot({
         gg_out4()
-      })
+      }, height = function() {
+        if(length(unique(selectedData1()$SampleDepth_m)) < 2) 
+        {300} else 
+        {length(unique(selectedData1()$SampleDepth_m)) * 200}})
       
       # Download -------------------------------------------------------
       output$downloadData4 <- fDownloadButtonServer(input, selectedData1(), "Compare") # Download csv of data

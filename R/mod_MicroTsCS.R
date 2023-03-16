@@ -29,11 +29,13 @@ mod_MicroTsCS_server <- function(id){
     selectedData <- reactive({
 
       selectedData <- datCSm %>% #pkg.env$datCSm %>%
-        dplyr::filter(.data$StationName %in% input$Site,
+        dplyr::filter(.data$State %in% input$Site,
                       .data$Parameters %in% input$parameterm,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels() %>%
-        dplyr::mutate(name = as.factor(.data$Parameters))
+        dplyr::mutate(name = as.factor(.data$Parameters)) %>% 
+        dplyr::arrange(.data$State) %>% 
+        tidyr::drop_na()
 
     }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2])
 
@@ -51,7 +53,7 @@ mod_MicroTsCS_server <- function(id){
 
     # Sidebar Map
     output$plotmap <- renderPlot({
-      planktonr::pr_plot_NRSmap(selectedData())
+      planktonr::pr_plot_NRSmap(selectedData(), Survey = 'Coastal')
     }, bg = "transparent") %>% bindCache(input$Site)
 
     # Add text information
@@ -86,7 +88,7 @@ mod_MicroTsCS_server <- function(id){
           trans <- 'identity'
         }
 
-        p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
+        p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "Coastal", method = "lm", trans = trans)
         p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
@@ -169,7 +171,7 @@ mod_MicroTsCS_server <- function(id){
         validate(need(!is.na(input$p1), "Error: Please select a parameter."))
 
         selectedData1 <- datCSm %>% #pkg.env$datCSm %>%
-          dplyr::filter(.data$StationName %in% input$Site,
+          dplyr::filter(.data$State %in% input$Site,
                         .data$Parameters %in% c(input$p1),
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
           tidyr::pivot_wider(id_cols = c("StationName", "SampleTime_Local"),
@@ -179,27 +181,14 @@ mod_MicroTsCS_server <- function(id){
 
       gg_out5 <- reactive({
 
-        # When we move to a planktonr function for this, we can use this:
-        # pr_plot_scatter(selectedData1(), x = colnames(selectedData1()[, 5]), y = colnames(selectedData1()[, 4]))
-
-        #TODO This needs to be converted to a planktonr function. At the moment it can't use planktonr colours without :::
-
-        y <- rlang::sym(colnames(selectedData1()[, 3]))
-
-        #titlex <- planktonr::pr_relabel(rlang::as_string(x), style = "ggplot")
-        titley <- planktonr::pr_relabel(rlang::as_string(y), style = "ggplot")
-
-        p1 <- ggplot2::ggplot(data = selectedData1()) +
-          ggplot2::geom_boxplot(ggplot2::aes(.data$StationName, !!y)) +
-          ggplot2::ylab(titley) +
-          #ggplot2::scale_colour_manual(values = planktonr:::colNRSName) +
-          planktonr::theme_pr()
-       
-        p2 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "Coastal", trans = 'identity') +
-          ggplot2::theme(legend.position = "none") +
-          planktonr::theme_pr()
+        p1 <- planktonr::pr_plot_box(selectedData1(), input$p1) +
+          ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+                         legend.position = "none") 
         
-        p1 / p2 
+        p2 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "Coastal", trans = 'identity') +
+          planktonr::theme_pr()  
+        
+        p1 / p2
 
       }) %>% bindCache(input$p1, input$Site, input$DatesSlide[1], input$DatesSlide[2])
 
