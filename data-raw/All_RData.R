@@ -25,7 +25,14 @@ NRSStation <- planktonr::pr_get_NRSStation() %>%
 
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z") 
 datNRSp <- planktonr::pr_get_Indices("NRS", "P") 
-datNRSm <- planktonr::pr_get_NRSMicro("NRS") ## microbial data
+datNRSm <- planktonr::pr_get_NRSMicro("NRS")  ## microbial data
+Tricho <- planktonr::pr_get_NRSData(Type = 'Phytoplankton', Variable = "abundance", Subset = "genus") %>% 
+  dplyr::select(dplyr::any_of(colnames(datNRSm)), Values = "Trichodesmium")  %>% 
+  dplyr::filter(!.data$StationCode %in% c("NWS", "SOTS_RAS", "NA"))%>% 
+  dplyr::mutate(Parameters = "Trichodesmium")
+datNRSm <- datNRSm %>% dplyr::bind_rows(Tricho)
+rm(Tricho)
+
 datCSm  <- planktonr::pr_get_NRSMicro("Coastal") ## microbial data
 
 datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>% #TODO move the MLD calcs to planktonr
@@ -77,6 +84,13 @@ Nuts <- planktonr::pr_get_NRSEnvContour('Chemistry') %>%
 Pigs <- planktonr::pr_get_NRSPigments(Format = "binned") %>% 
   planktonr::pr_remove_outliers(2)
 Pico <- planktonr::pr_get_NRSEnvContour('Pico')
+
+ctd <- planktonr::pr_get_NRSCTD() %>% 
+  dplyr::select(-c("Project", "file_id", "tz", "SampleTime_UTC", "Latitude", "Longitude"), 
+                CTD_Salinity = "Salinity_psu", CTD_Temperature_degC = "Temperature_degC") %>% 
+  dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m,0)) %>% 
+  dplyr::filter(SampleDepth_m %in% datNRSm$SampleDepth_m) %>% 
+  tidyr::pivot_longer(-c(dplyr::any_of(colnames(datNRSm))), values_to = "Values", names_to = "Parameters") 
 
 # Get Sat data ------------------------------------------------------------
 
@@ -286,7 +300,7 @@ ParamDef <- readr::read_csv(file.path("data-raw", "ParameterDefn.csv"), na = cha
 # PolLTM <- PolLTM[PolLTM$Year_Local < 2017,]
 
 # Add data to sysdata.rda -------------------------------------------------
-usethis::use_data(Nuts, Pigs, Pico, 
+usethis::use_data(Nuts, Pigs, Pico, ctd,
                   fMapDataz, fMapDatap, 
                   MooringTS, MooringClim,
                   PolNRS, PolCPR, PolLTM, 
