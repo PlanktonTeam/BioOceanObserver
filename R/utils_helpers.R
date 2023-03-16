@@ -26,9 +26,8 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       selectedVar = "PhytoAbundance_Cellsm3"
     }
   } else if (stringr::str_detect(id, "CS") == TRUE){ # Microbes Coastal
-    choices <- unique((dat$StationName))
-    selectedSite <- c("Derwent Estuary B1", "Derwent Estuary B3", "Derwent Estuary E","Derwent Estuary G2",
-                      "Derwent Estuary KB", "Derwent Estuary RBN", "Derwent Estuary U2")
+    choices <- unique(sort(dat$State))
+    selectedSite <- c("TAS")
     idSite <- "Site"
     selectedVar = "Bacterial_Temperature_Index_KD"
   }
@@ -48,8 +47,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     
     # Put Map, Station names and date slider on all panels
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3 | input.", 
-                         tabsetPanel_id, " == 4 | input.", tabsetPanel_id, " == 5"), 
+      condition = paste0("input.", tabsetPanel_id, " <= 5"), 
       shiny::plotOutput(ns("plotmap"),
                         height = "300px", 
                         width = "100%"),
@@ -132,10 +130,14 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 4 && input.navbar == 'Microbes'"),
       shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
-      selectInput(inputId = ns("p1"), label = 'Select an x parameter', 
+      selectInput(inputId = ns("p1"), label = 'Select an y parameter', 
                   choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), selected = "Bacterial_Temperature_Index_KD"),
-      selectInput(inputId = ns("p2"), label = 'Select a y parameter',
-                  choices = planktonr::pr_relabel(unique(pkg.env$Pico$Parameters), style = "simple"), selected = "Prochlorococcus_cellsmL")
+      shiny::htmlOutput(ns("ParamDefm1")),
+      selectInput(inputId = ns("p2"), label = 'Select a x parameter',
+                  choices = c(planktonr::pr_relabel(unique(pkg.env$Pico$Parameters), style = "simple"), "Trichodesmium",
+                              planktonr::pr_relabel(unique(ctd$Parameters), style = "simple")), selected = "Prochlorococcus_cellsmL"), #TODO pkg.env
+      #TODO Tricho needs to be added to pr_relabel if we keep this in
+      shiny::htmlOutput(ns("ParamDefm2"))
     ),
     
     
