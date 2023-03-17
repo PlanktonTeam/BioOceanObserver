@@ -64,6 +64,10 @@ app_server <- function( input, output, session ) {
       mod_NutrientsBGC_server("NutrientsBGC_ui_1")
     }
     
+    if(input$navbar == "Relationships") {
+      mod_RelNRS_server("RelNRS_ui_1")
+    }
+    
     if(input$navbar == "Information") {
       mod_info_server("info_1")
     }

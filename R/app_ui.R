@@ -57,6 +57,11 @@ app_ui <- function(request) {
                                                        shiny::tabPanel(value = "water", "NRS BGC Water", mod_WaterBGC_ui("WaterBGC_ui_1")),
                                                        shiny::tabPanel(value = 'moor', "NRS Moorings", mod_MoorBGC_ui("MoorBGC_ui_1"))
                                     )),
+                    shiny::tabPanel("Relationships",
+                                    shiny::tabsetPanel(id = 'rel', type = "pills",
+                                                       shiny::tabPanel(value = "nrsRel", "NRS relationship", mod_RelNRS_ui("RelNRS_ui_1"))#,
+                                                       #shiny::tabPanel(value = "cprRel", "CPR relationship", mod_RelCPR_ui("RelCPR_ui_1"))
+                                    )),
                     shiny::tabPanel("Information",
                                     fluidPage(
                                       value = "info", mod_info_ui("info_1"))
