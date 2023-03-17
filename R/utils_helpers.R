@@ -15,7 +15,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       selectedVar <- "Biomass_mgm3"
     } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + NRS
       selectedVar =  "PhytoAbundance_CellsL"
-    }
+    } 
   } else if (stringr::str_detect(id, "CPR") == TRUE){ # CPR
     choices <- unique(sort(dat$BioRegion))
     selectedSite <- c("Temperate East", "South-east")
@@ -30,7 +30,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     selectedSite <- c("TAS")
     idSite <- "Site"
     selectedVar = "Bacterial_Temperature_Index_KD"
-  }
+  } 
   
   shiny::sidebarPanel(
     
@@ -97,9 +97,6 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       shiny::br()
     ),
     
-    
-    
-    
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 1 | input.", tabsetPanel_id, " == 2"), 
       shiny::checkboxInput(inputId = ns("scaler1"), 
@@ -139,7 +136,6 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       #TODO Tricho needs to be added to pr_relabel if we keep this in
       shiny::htmlOutput(ns("ParamDefm2"))
     ),
-    
     
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 5 && input.navbar == 'Microbes'"),
