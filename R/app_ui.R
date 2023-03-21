@@ -59,8 +59,9 @@ app_ui <- function(request) {
                                     )),
                     shiny::tabPanel("Relationships",
                                     shiny::tabsetPanel(id = 'rel', type = "pills",
-                                                       shiny::tabPanel(value = "nrsRel", "NRS relationship", mod_RelNRS_ui("RelNRS_ui_1"))#,
-                                                       #shiny::tabPanel(value = "cprRel", "CPR relationship", mod_RelCPR_ui("RelCPR_ui_1"))
+                                                       shiny::tabPanel(value = "nrsRel", "NRS relationship", mod_RelNRS_ui("RelNRS_ui_1")),
+                                                       shiny::tabPanel(value = "csRel", "Coastal Stations relationship", mod_RelCS_ui("RelCS_ui_1")),
+                                                       shiny::tabPanel(value = "cprRel", "CPR relationship", mod_RelCPR_ui("RelCPR_ui_1"))
                                     )),
                     shiny::tabPanel("Information",
                                     fluidPage(
