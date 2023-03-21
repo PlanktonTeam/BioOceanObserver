@@ -185,4 +185,17 @@ app_server <- function( input, output, session ) {
       mod_MoorBGC_server("MoorBGC_ui_1")
     }
   })
-}
+
+# Environmental -----------------------------------------------------------
+
+  # Coastal Microbes
+  observeEvent(input$rel, {
+    if(input$rel == "csRel"){
+      mod_RelCS_server("RelCS_ui_1")
+    }
+    
+    if(input$rel == "cprRel"){
+      mod_RelCPR_server("RelCPR_ui_1")
+    }
+  })
+  }

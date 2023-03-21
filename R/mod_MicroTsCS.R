@@ -162,44 +162,44 @@ mod_MicroTsCS_server <- function(id){
 
     # Plots by Parameters ---------------------------------------------------------
 
-    observeEvent({input$CSmts == 5}, {
-
-      selectedData1 <- reactive({
-        req(input$Site)
-        req(input$p1)
-        validate(need(!is.na(input$Site), "Error: Please select a station."))
-        validate(need(!is.na(input$p1), "Error: Please select a parameter."))
-
-        selectedData1 <- datCSm %>% #pkg.env$datCSm %>%
-          dplyr::filter(.data$State %in% input$Site,
-                        .data$Parameters %in% c(input$p1),
-                        dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-          tidyr::pivot_wider(id_cols = c("StationName", "SampleTime_Local"),
-                             names_from = "Parameters", values_from = "Values", values_fn = mean)
-
-      }) %>% bindCache(input$p1, input$Site, input$DatesSlide[1], input$DatesSlide[2])
-
-      gg_out5 <- reactive({
-
-        p1 <- planktonr::pr_plot_box(selectedData1(), input$p1) +
-          ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                         legend.position = "none") 
-        
-        p2 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "Coastal", trans = 'identity') +
-          planktonr::theme_pr()  
-        
-        p1 / p2
-
-      }) %>% bindCache(input$p1, input$Site, input$DatesSlide[1], input$DatesSlide[2])
-
-      output$timeseries5 <- renderPlot({
-        gg_out5()
-      })
-
-      # Download -------------------------------------------------------
-      output$downloadData5 <- fDownloadButtonServer(input, selectedData1(), "Compare") # Download csv of data
-      output$downloadPlot5 <- fDownloadPlotServer(input, gg_id = gg_out5(), "Compare") # Download figure
-
-    })
+    # observeEvent({input$CSmts == 5}, {
+    # 
+    #   selectedData1 <- reactive({
+    #     req(input$Site)
+    #     req(input$p1)
+    #     validate(need(!is.na(input$Site), "Error: Please select a station."))
+    #     validate(need(!is.na(input$p1), "Error: Please select a parameter."))
+    # 
+    #     selectedData1 <- datCSm %>% #pkg.env$datCSm %>%
+    #       dplyr::filter(.data$State %in% input$Site,
+    #                     .data$Parameters %in% c(input$p1),
+    #                     dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+    #       tidyr::pivot_wider(id_cols = c("StationName", "SampleTime_Local"),
+    #                          names_from = "Parameters", values_from = "Values", values_fn = mean)
+    # 
+    #   }) %>% bindCache(input$p1, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    # 
+    #   gg_out5 <- reactive({
+    # 
+    #     p1 <- planktonr::pr_plot_box(selectedData1(), input$p1) +
+    #       ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+    #                      legend.position = "none") 
+    #     
+    #     p2 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "Coastal", trans = 'identity') +
+    #       planktonr::theme_pr()  
+    #     
+    #     p1 / p2
+    # 
+    #   }) %>% bindCache(input$p1, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    # 
+    #   output$timeseries5 <- renderPlot({
+    #     gg_out5()
+    #   })
+    # 
+    #   # Download -------------------------------------------------------
+    #   output$downloadData5 <- fDownloadButtonServer(input, selectedData1(), "Compare") # Download csv of data
+    #   output$downloadPlot5 <- fDownloadPlotServer(input, gg_id = gg_out5(), "Compare") # Download figure
+    # 
+    # })
   })
 }
