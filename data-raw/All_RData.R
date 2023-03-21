@@ -25,7 +25,8 @@ NRSStation <- planktonr::pr_get_NRSStation() %>%
 
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z") 
 datNRSp <- planktonr::pr_get_Indices("NRS", "P") 
-datNRSm <- planktonr::pr_get_NRSMicro("NRS")  ## microbial data
+datNRSm <- planktonr::pr_get_NRSMicro("NRS") %>%  ## microbial data
+  tidyr::drop_na()
 Tricho <- planktonr::pr_get_NRSData(Type = 'Phytoplankton', Variable = "abundance", Subset = "genus") %>% 
   dplyr::select(dplyr::any_of(colnames(datNRSm)), Values = "Trichodesmium")  %>% 
   dplyr::filter(!.data$StationCode %in% c("NWS", "SOTS_RAS", "NA"))%>% 
@@ -91,6 +92,10 @@ ctd <- planktonr::pr_get_NRSCTD() %>%
   dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m,0)) %>% 
   dplyr::filter(SampleDepth_m %in% datNRSm$SampleDepth_m) %>% 
   tidyr::pivot_longer(-c(dplyr::any_of(colnames(datNRSm))), values_to = "Values", names_to = "Parameters") 
+
+CSChem <- planktonr::pr_get_CSChem() %>% dplyr::filter(Parameters %in% c("Chla_mgm3", "Temperature_degC",
+                                                                         "Salinity_psu")) %>% 
+  dplyr::mutate(Parameters = ifelse(Parameters == "Salinity_psu", "Salinity", Parameters))
 
 # Get Sat data ------------------------------------------------------------
 
@@ -300,7 +305,7 @@ ParamDef <- readr::read_csv(file.path("data-raw", "ParameterDefn.csv"), na = cha
 # PolLTM <- PolLTM[PolLTM$Year_Local < 2017,]
 
 # Add data to sysdata.rda -------------------------------------------------
-usethis::use_data(Nuts, Pigs, Pico, ctd,
+usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   fMapDataz, fMapDatap, 
                   MooringTS, MooringClim,
                   PolNRS, PolCPR, PolLTM, 
