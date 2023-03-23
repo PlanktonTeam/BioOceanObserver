@@ -26,7 +26,8 @@ NRSStation <- planktonr::pr_get_NRSStation() %>%
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z") 
 datNRSp <- planktonr::pr_get_Indices("NRS", "P") 
 datNRSm <- planktonr::pr_get_NRSMicro("NRS") %>%  ## microbial data
-  tidyr::drop_na()
+  tidyr::drop_na() %>% 
+  dplyr::select(-"TripCode_depth")
 Tricho <- planktonr::pr_get_NRSData(Type = 'Phytoplankton', Variable = "abundance", Subset = "genus") %>% 
   dplyr::select(dplyr::any_of(colnames(datNRSm)), Values = "Trichodesmium")  %>% 
   dplyr::filter(!.data$StationCode %in% c("NWS", "SOTS_RAS", "NA"))%>% 
@@ -41,8 +42,8 @@ datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>% #TODO move the MLD calcs to
   dplyr::mutate(MLD_m = dplyr::case_when(.data$MLDtemp_m <= .data$MLDsal_m ~ .data$MLDtemp_m,
                                          .data$MLDsal_m < .data$MLDtemp_m ~ .data$MLDsal_m,
                                          TRUE ~ NA_real_)) %>%
-  dplyr::select(-c(MLDtemp_m, MLDsal_m)) %>%
-  tidyr::pivot_longer(-c("TripCode", "Year_Local", "Month_Local", "SampleTime_Local", "tz", "Latitude", "Longitude", "StationName", "StationCode"), 
+  dplyr::select(-c("MLDtemp_m", "MLDsal_m", "Latitude", "Longitude", "tz")) %>%
+  tidyr::pivot_longer(-c("TripCode", "Year_Local", "Month_Local", "SampleTime_Local", "StationName", "StationCode"), 
                       names_to = "Parameters", values_to = "Values")
 
 

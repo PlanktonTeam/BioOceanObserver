@@ -12,8 +12,8 @@ mod_RelCPR_ui <- function(id){
   
   tagList(
     sidebarLayout(
-      fRelationSidebar(id = id, tabsetPanel_id = "RelCPR", dat1 = datCPRz, dat2 = pkg.env$PolCPR, dat3 = pkg.env$datCPRp, 
-                       dat4 = pkg.env$datNRSm, dat5 = ctd), #TODO pkg.env$
+      fRelationSidebar(id = id, tabsetPanel_id = "RelCPR", dat1 = datCPRz, dat2 = pkg.env$datCPRp, dat4 = pkg.env$PolCPR, 
+                       dat3 = pkg.env$datNRSm), #TODO pkg.env$
       fRelationPanel(id = id, tabsetPanel_id = "RelCPR")
     )
   )
@@ -30,17 +30,26 @@ mod_RelCPR_server <- function(id){
       if(input$group %in% 'Zooplankton'){
         dat <- pkg.env$datCPRz
         y <- rlang::string(input$p1)
-        x <- rlang::string(input$p2)
+        # Parameter Definition
+        output$ParamDefm1 <-   shiny::renderText({
+          paste("<h6><strong>", planktonr::pr_relabel(input$p1, style = "plotly"), ":</strong> ",
+                pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p1) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+        })
       } else if (input$group %in% 'Phytoplankton'){
         dat <- pkg.env$datCPRp
         y <- rlang::string(input$p3)
-        x <- rlang::string(input$p2)
+        # Parameter Definition
+        output$ParamDefm3 <-   shiny::renderText({
+          paste("<h6><strong>", planktonr::pr_relabel(input$p3, style = "plotly"), ":</strong> ",
+                pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p3) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+        })
       } 
       
       dat1 <- pkg.env$PolCPR %>% 
         dplyr::filter(.data$Parameters %in% c("SST", "chl_oc3")) %>% 
         dplyr::select(-c("sd", "anomaly", "Survey", "means"))
       
+      x <- rlang::string(input$p2)
       vars <- c("BioRegion", "SampleTime_Local") 
       
       selectedData <- dat %>%  
@@ -54,11 +63,6 @@ mod_RelCPR_server <- function(id){
       
     }) %>% bindCache(input$Site, input$p2, input$p1, input$group)
     
-    # Parameter Definition
-    output$ParamDefm1 <-   shiny::renderText({
-      paste("<h6><strong>", planktonr::pr_relabel(input$p1, style = "plotly"), ":</strong> ",
-            pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p1) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
-    })
     # Parameter Definition
     output$ParamDefm2 <- shiny::renderText({
       paste("<h6><strong>", planktonr::pr_relabel(input$p2, style = "plotly"), ":</strong> ",
