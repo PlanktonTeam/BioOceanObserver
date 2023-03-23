@@ -12,8 +12,8 @@ mod_RelCS_ui <- function(id){
   
   tagList(
     sidebarLayout(
-      fRelationSidebar(id = id, tabsetPanel_id = "RelCS", dat1 = datCSm, dat2 = CSChem, dat3 = pkg.env$datNRSp,
-                       dat4 = pkg.env$datNRSm, dat5 = ctd), #TODO pkg.env$
+      fRelationSidebar(id = id, tabsetPanel_id = "RelCS", dat1 = datCSm, dat4 = CSChem, dat3 = pkg.env$datNRSp,
+                       dat2 = pkg.env$datNRSm), #TODO pkg.env$
       fRelationPanel(id = id, tabsetPanel_id = "RelCS")
     )
   )
@@ -27,7 +27,7 @@ mod_RelCS_server <- function(id){
     
     selectedData <- reactive({
       
-      y <- rlang::string(input$p1)
+      y <- rlang::string(input$p4)
       x <- rlang::string(input$p2)
       vars <- c("StationName", "StationCode", "SampleTime_Local", "SampleDepth_m") # only microbes has depth data
       
@@ -39,12 +39,12 @@ mod_RelCS_server <- function(id){
                            names_from = "Parameters", values_from = "Values", values_fn = mean) %>%
         tidyr::drop_na()
       
-    }) %>% bindCache(input$Site, input$p2, input$p1)
+    }) %>% bindCache(input$Site, input$p2, input$p4)
     
     # Parameter Definition
-    output$ParamDefm1 <-   shiny::renderText({
-      paste("<h6><strong>", planktonr::pr_relabel(input$p1, style = "plotly"), ":</strong> ",
-            pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p1) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+    output$ParamDefm4 <-   shiny::renderText({
+      paste("<h6><strong>", planktonr::pr_relabel(input$p4, style = "plotly"), ":</strong> ",
+            pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p4) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
     })
     # Parameter Definition
     output$ParamDefm2 <- shiny::renderText({
@@ -73,12 +73,12 @@ mod_RelCS_server <- function(id){
       gg_out1 <- reactive({
         
         trend <- input$smoother
-        y <- rlang::string(input$p1)
+        y <- rlang::string(input$p4)
         x <- rlang::string(input$p2)
         
         planktonr::pr_plot_scatter(selectedData(), x, y, trend)
         
-      }) %>% bindCache(input$p1, input$p2, input$p3, input$p5, input$Site, input$group, input$smoother)
+      }) %>% bindCache(input$p4, input$p2, input$Site, input$group, input$smoother)
       
       output$scatter1 <- renderPlot({
         gg_out1()
@@ -96,11 +96,11 @@ mod_RelCS_server <- function(id){
       
       gg_out2 <- reactive({
         
-        y <- rlang::string(input$p1)
+        y <- rlang::string(input$p4)
 
         planktonr::pr_plot_box(selectedData(), y)
         
-      }) %>% bindCache(input$p1, input$Site)
+      }) %>% bindCache(input$p4, input$Site)
       
       output$box2 <- renderPlot({
         gg_out2()

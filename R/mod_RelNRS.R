@@ -12,8 +12,8 @@ mod_RelNRS_ui <- function(id){
 
   tagList(
     sidebarLayout(
-      fRelationSidebar(id = id, tabsetPanel_id = "relNRS", dat1 = pkg.env$datNRSz, dat2 = pkg.env$datNRSw, dat3 = pkg.env$datNRSp,
-                       dat4 = pkg.env$datNRSm, dat5 = ctd), #TODO pkg.env$
+      fRelationSidebar(id = id, tabsetPanel_id = "relNRS", dat1 = pkg.env$datNRSz, dat2 = pkg.env$datNRSp, 
+                       dat3 = pkg.env$datNRSm, dat4 = ctd), #TODO pkg.env$
       fRelationPanel(id = id, tabsetPanel_id = "relNRS")
     )
   )
@@ -28,46 +28,53 @@ mod_RelNRS_server <- function(id){
     selectedData <- reactive({
       
       if(input$group %in% 'Zooplankton'){
-        dat <- pkg.env$datNRSz
-        dat1 <- pkg.env$datNRSw
+        dat <- pkg.env$datNRSz %>%
+          dplyr::mutate(SampleDepth_m = 10)
         y <- rlang::string(input$p1)
-        x <- rlang::string(input$p2)
-      } else if (input$group %in% 'Phytoplankton'){
-        dat <- pkg.env$datNRSp
-        dat1 <- pkg.env$datNRSw
+        # Parameter Definition
+        output$ParamDefm1 <-   shiny::renderText({
+          paste("<h6><strong>", planktonr::pr_relabel(input$p1, style = "plotly"), ":</strong> ",
+                pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p1) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+        })
+        } else if (input$group %in% 'Phytoplankton'){
+        dat <- pkg.env$datNRSp %>%
+          dplyr::mutate(SampleDepth_m = 10)
         y <- rlang::string(input$p3)
-        x <- rlang::string(input$p2)
+        # Parameter Definition
+        output$ParamDefm3 <-   shiny::renderText({
+          paste("<h6><strong>", planktonr::pr_relabel(input$p3, style = "plotly"), ":</strong> ",
+                pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p3) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+        })
       } else if (input$group %in% 'Microbes - NRS'){
         dat <- pkg.env$datNRSm %>% 
           dplyr::select(-c("TripCode_depth")) %>%
           dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10) 
-        dat1 <- ctd ##TODO pkg.env$
         y <- rlang::string(input$p5)
-        x <- rlang::string(input$p6)
-      } 
+        # Parameter Definition
+        output$ParamDefm5 <- shiny::renderText({
+          paste("<h6><strong>", planktonr::pr_relabel(input$p5, style = "plotly"), ":</strong> ",
+                pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p5) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+        })      } 
       
+      x <- rlang::string(input$p2)
       vars <- c("StationName", "StationCode", "SampleTime_Local", "SampleDepth_m") # only microbes has depth data
       
       selectedData <- dat %>%  
-        dplyr::bind_rows(dat1) %>%
+        dplyr::bind_rows(ctd) %>%
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$Parameters %in% c(x, y)) %>%
         tidyr::pivot_wider(id_cols = dplyr::any_of(vars),
                            names_from = "Parameters", values_from = "Values", values_fn = mean) %>%
         tidyr::drop_na()
       
-    }) %>% bindCache(input$Site, input$p2, input$p1, input$p3, input$p5, input$p6, input$group)
+    }) %>% bindCache(input$Site, input$p2, input$p1, input$p3, input$p5, input$group)
     
-    # Parameter Definition
-    output$ParamDefm1 <-   shiny::renderText({
-      paste("<h6><strong>", planktonr::pr_relabel(input$p1, style = "plotly"), ":</strong> ",
-            pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p1) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
-    })
     # Parameter Definition
     output$ParamDefm2 <- shiny::renderText({
       paste("<h6><strong>", planktonr::pr_relabel(input$p2, style = "plotly"), ":</strong> ",
             pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p2) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
     })
+
     
     # Sidebar Map
     output$plotmap <- renderPlot({
@@ -93,14 +100,13 @@ mod_RelNRS_server <- function(id){
     
       if(input$group %in% 'Zooplankton'){
         y <- rlang::string(input$p1)
-        x <- rlang::string(input$p2)
       } else if (input$group %in% 'Phytoplankton'){
         y <- rlang::string(input$p3)
-        x <- rlang::string(input$p2)
       } else if (input$group %in% c('Microbes - NRS')){
         y <- rlang::string(input$p5)
-        x <- rlang::string(input$p6)
       } 
+    
+      x <- rlang::string(input$p2)
       
       planktonr::pr_plot_scatter(selectedData(), x, y, trend)
 
