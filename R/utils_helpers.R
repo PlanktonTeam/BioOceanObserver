@@ -432,102 +432,89 @@ fEnviroSidebar <- function(id, dat = NULL){
 # Generic BOO relationships sidebar panel function
 #' 
 #' @noRd
-fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){
+fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4){ #dat 1-3 group data vars, dat4 physical params
   ns <- NS(id)
   
   if(stringr::str_detect(id, "CS") == TRUE){
     Choices = unique(sort(dat1$State))
-    choicesx = unique(dat2$Parameters)
-    ChoicesStation = 'Microbes - Coastal'
+    choicesx = unique(dat4$Parameters)
+    ChoicesGroup = 'Microbes - Coastal'
     SelectedVar = 'TAS'
     SelectedSite = 'Microbes - Coastal'
     SelectedVarP = "PhytoAbundance_CellsL"
-    SelectedVarx = "CTDTemperature_degC"
+    SelectedVarx = "Temperature_degC"
     selectedVarZ = "Biomass_mgm3"
   } else if (stringr::str_detect(id, "NRS") == TRUE){
     Choices = unique(sort(dat1$StationName))
-    choicesx = unique(dat2$Parameters)
-    ChoicesStation = c("Zooplankton", "Phytoplankton", "Microbes - NRS")
+    choicesx = unique(dat4$Parameters)
+    ChoicesGroup = c("Zooplankton", "Phytoplankton", "Microbes - NRS")
     SelectedVar = 'Maria Island'
     SelectedSite = 'Zooplankton'
     SelectedVarP = "PhytoAbundance_CellsL"
-    SelectedVarx = "CTDTemperature_degC"
+    SelectedVarx = "CTD_Temperature_degC"
     selectedVarZ = "Biomass_mgm3"
   } else if (stringr::str_detect(id, "CPR") == TRUE){
     Choices = unique(sort(dat1$BioRegion))
     choicesx = c("SST", "chl_oc3")
-    ChoicesStation = c("Zooplankton", "Phytoplankton")
+    ChoicesGroup = c("Zooplankton", "Phytoplankton")
     SelectedVar = 'Temperate East'
     SelectedSite = 'Zooplankton'
     SelectedVarP = "PhytoAbundance_Cellsm3"
     SelectedVarx = "SST"
     selectedVarZ = "BiomassIndex_mgm3"
   }
-  
+
   shiny::sidebarPanel(
     shiny::conditionalPanel(
       condition = "input.navbar == 'Relationships'",
       plotOutput(ns("plotmap")),
       shiny::HTML("<h6><strong>Select a station:</strong></h5>"),
-      shiny::checkboxGroupInput(inputId = ns("Site"), label = NULL, choices = Choices, selected = SelectedVar)
-      ),
-    shiny::conditionalPanel(
-      condition = "input.navbar == 'Relationships'",
+      shiny::checkboxGroupInput(inputId = ns("Site"), label = NULL, choices = Choices, selected = SelectedVar),
       shiny::HTML("<h6><strong>Select a group:</strong></h5>"),
-      shiny::selectizeInput(inputId = ns('group'), label = NULL, choices = ChoicesStation,
+      shiny::selectizeInput(inputId = ns('group'), label = NULL, choices = ChoicesGroup,
                             selected = SelectedSite)
     ),
     shiny::conditionalPanel(
-      condition = paste0("(input.group == 'Zooplankton' || input.group == 'Phytoplankton') && input.",tabsetPanel_id," != 2"),
-      ns = ns,
-      shiny::HTML("<h6><strong>Select a x variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('p2'), label = NULL, choices = choicesx, 
-                            selected = SelectedVarx)
+      condition = paste0("input.navbar == 'Relationships' && input.", tabsetPanel_id," == 1"),
+      shiny::HTML("<h6><strong>Select an x variable:</strong></h6>"),
+      shiny::selectizeInput(inputId = ns('p2'), label = NULL, choices = choicesx,
+                            selected = SelectedVarx),
+      shiny::htmlOutput(ns("ParamDefm2"))
     ),
-    shiny::conditionalPanel(
-      condition = paste0("input.group == 'Microbes - NRS' && input.",tabsetPanel_id," != 2"),
-      ns = ns,
-      shiny::HTML("<h6><strong>Select a x variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('p6'), label = NULL, choices = unique(dat5$Parameters), 
-                            selected = "CTD_Temperature_degC")
-    ),  
-    shiny::conditionalPanel(
-      condition = paste0("input.group == 'Microbes - Coastal' && input.",tabsetPanel_id," != 2"),
-      ns = ns,
-      shiny::HTML("<h6><strong>Select a x variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('p2'), label = NULL, choices = unique(dat2$Parameters), 
-                            selected = "Temperature_degC")
-    ),   
     shiny::conditionalPanel(
       condition = paste0("input.group == 'Microbes - Coastal'"),
       ns = ns,
       shiny::HTML("<h6><strong>Select a y variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('p1'), label = NULL, choices = unique(dat1$Parameters), 
-                            selected = "Bacterial_Temperature_Index_KD")
+      shiny::selectizeInput(inputId = ns('p4'), label = NULL, choices = unique(dat1$Parameters), 
+                            selected = "Bacterial_Temperature_Index_KD"),
+      shiny::htmlOutput(ns("ParamDefm4"))
     ),    
     shiny::conditionalPanel(
       condition = "input.group == 'Zooplankton'",
       ns = ns,
       shiny::HTML("<h6><strong>Select a y variable:</strong></h6>"),
       shiny::selectizeInput(inputId = ns('p1'), label = NULL, choices = unique(dat1$Parameters), 
-                            selected = selectedVarZ)
+                            selected = selectedVarZ),
+      shiny::htmlOutput(ns("ParamDefm1"))
     ),
     shiny::conditionalPanel(
       condition = "input.group == 'Phytoplankton'",
       ns = ns,
       shiny::HTML("<h6><strong>Select a y variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('p3'), label = NULL, choices = unique(dat3$Parameters), 
-                            selected = SelectedVarP)
+      shiny::selectizeInput(inputId = ns('p3'), label = NULL, choices = unique(dat2$Parameters), 
+                            selected = SelectedVarP),
+      shiny::htmlOutput(ns("ParamDefm3"))
     ),
     shiny::conditionalPanel(
       condition = paste0("input.group == 'Microbes - NRS'"),
       ns = ns,
       shiny::HTML("<h6><strong>Select a y variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('p5'), label = NULL, choices = unique(dat4$Parameters), 
-                            selected = "Bacterial_Temperature_Index_KD")
+      shiny::selectizeInput(inputId = ns('p5'), label = NULL, choices = unique(dat3$Parameters), 
+                            selected = "Bacterial_Temperature_Index_KD"),
+      shiny::htmlOutput(ns("ParamDefm5"))
     ),
     shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Relationships' && input.",tabsetPanel_id," == 1"),
+      condition = paste0("input.navbar == 'Relationships' && input.", tabsetPanel_id," == 1"),
       shiny::HTML("<h6><strong>Overlay trend line?</strong></h6>"),
       shiny::selectizeInput(inputId = ns("smoother"), label = NULL, 
                             choices = c("Smoother", "Linear", "None"), selected = "None")
