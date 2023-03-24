@@ -278,7 +278,7 @@ save(Nuts, Pigs, Pico,
      SpInfoP, SpInfoZ, LFData, LFDataAbs,
      datNRSTrip, datCPRTrip,
      PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
-     ParamDef, col12, file = paste0("data/sysdata-archive/sysdata-",format(Sys.time(), "%Y%M%d"),".rda"))
+     ParamDef, col12, file = paste0("data/sysdata-archive/sysdata-",format(Sys.time(), "%Y%m%d"),".rda"))
 
 
 
