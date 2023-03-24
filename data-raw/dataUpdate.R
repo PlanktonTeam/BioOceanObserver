@@ -2,7 +2,7 @@
 library(tidyverse)
 
 ## Update planktonr package
-# remotes::install_github("PlanktonTeam/planktonr", force=FALSE, upgrade=TRUE)
+remotes::install_github("PlanktonTeam/planktonr", force=FALSE, upgrade=TRUE)
 
 # Set up colours for the app ----------------------------------------------
 
