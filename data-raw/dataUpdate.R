@@ -1,9 +1,6 @@
 ## script for all RData 
 library(tidyverse)
 
-## Update planktonr package
-remotes::install_github("PlanktonTeam/planktonr", force=FALSE, upgrade=TRUE)
-
 # Set up colours for the app ----------------------------------------------
 
 col12 <- RColorBrewer::brewer.pal(12, "Paired") %>% 
