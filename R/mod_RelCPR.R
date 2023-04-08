@@ -27,47 +27,79 @@ mod_RelCPR_server <- function(id){
     
     selectedData <- reactive({
       
-      if(input$group %in% 'Zooplankton'){
-        dat <- pkg.env$datCPRz
-        y <- rlang::string(input$p1)
+      if(input$groupy %in% 'Zooplankton'){
+        dat <- pkg.env$datCPRz %>%  
+          dplyr::select(-c("Latitude", "Longitude")) 
+        y <- rlang::string(input$pzy)
         # Parameter Definition
-        output$ParamDefm1 <-   shiny::renderText({
-          paste("<h6><strong>", planktonr::pr_relabel(input$p1, style = "plotly"), ":</strong> ",
-                pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p1) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+        output$ParamDefzy <-   shiny::renderText({
+          paste("<h6><strong>", planktonr::pr_relabel(input$pzy, style = "plotly"), ":</strong> ",
+                pkg.env$ParamDef %>% dplyr::filter(Parameter == input$pzy) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
         })
-      } else if (input$group %in% 'Phytoplankton'){
-        dat <- pkg.env$datCPRp
-        y <- rlang::string(input$p3)
+      } else if (input$groupy %in% 'Phytoplankton'){
+        dat <- pkg.env$datCPRp %>%  
+          dplyr::select(-c("Latitude", "Longitude")) 
+        y <- rlang::string(input$ppy)
         # Parameter Definition
-        output$ParamDefm3 <-   shiny::renderText({
-          paste("<h6><strong>", planktonr::pr_relabel(input$p3, style = "plotly"), ":</strong> ",
-                pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p3) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+        output$ParamDefpy <-   shiny::renderText({
+          paste("<h6><strong>", planktonr::pr_relabel(input$ppy, style = "plotly"), ":</strong> ",
+                pkg.env$ParamDef %>% dplyr::filter(Parameter == input$ppy) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+        })
+      } else if (input$groupy %in% 'Physical'){
+        dat <- pkg.env$PolCPR %>% 
+          dplyr::filter(.data$Parameters %in% c("SST", "chl_oc3")) %>% 
+          dplyr::select(-c("sd", "anomaly", "Survey", "means"))
+        y <- rlang::string(input$ppyy)
+        # Parameter Definition
+        output$ParamDefpyy <-   shiny::renderText({
+          paste("<h6><strong>", planktonr::pr_relabel(input$ppyy, style = "plotly"), ":</strong> ",
+                pkg.env$ParamDef %>% dplyr::filter(Parameter == input$ppyy) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
         })
       } 
       
-      dat1 <- pkg.env$PolCPR %>% 
-        dplyr::filter(.data$Parameters %in% c("SST", "chl_oc3")) %>% 
-        dplyr::select(-c("sd", "anomaly", "Survey", "means"))
+      if(input$groupx %in% 'Zooplankton'){
+        dat1 <- pkg.env$datCPRz %>%  
+          dplyr::select(-c("Latitude", "Longitude")) 
+        x <- rlang::string(input$pzx)
+        # Parameter Definition
+        output$ParamDefzx <-   shiny::renderText({
+          paste("<h6><strong>", planktonr::pr_relabel(input$pzy, style = "plotly"), ":</strong> ",
+                pkg.env$ParamDef %>% dplyr::filter(Parameter == input$pzy) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+        })
+      } else if (input$groupx %in% 'Phytoplankton'){
+        dat1 <- pkg.env$datCPRp %>%  
+          dplyr::select(-c("Latitude", "Longitude")) 
+        x <- rlang::string(input$ppx)
+        # Parameter Definition
+        output$ParamDefpx <-   shiny::renderText({
+          paste("<h6><strong>", planktonr::pr_relabel(input$ppy, style = "plotly"), ":</strong> ",
+                pkg.env$ParamDef %>% dplyr::filter(Parameter == input$ppy) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+        })
+      } else if (input$groupx %in% 'Physical'){
+        dat1 <- pkg.env$PolCPR %>% 
+          dplyr::filter(.data$Parameters %in% c("SST", "chl_oc3")) %>% 
+          dplyr::select(-c("sd", "anomaly", "Survey", "means"))
+        x <- rlang::string(input$ppyx)
+        # Parameter Definition
+        output$ParamDefpyx <-   shiny::renderText({
+          paste("<h6><strong>", planktonr::pr_relabel(input$ppyx, style = "plotly"), ":</strong> ",
+                ParamDef %>% dplyr::filter(Parameter == input$ppyx) %>% dplyr::pull("Definition"), ".</h6>", sep = "") #TODO pkg.env$
+        })
+      } 
       
-      x <- rlang::string(input$p2)
       vars <- c("BioRegion", "SampleTime_Local") 
       
-      selectedData <- dat %>%  
-        dplyr::select(-c("Latitude", "Longitude")) %>% 
+      selectedData <- dat %>% 
         dplyr::bind_rows(dat1) %>% 
+        planktonr::pr_remove_outliers(2) %>% 
         dplyr::filter(.data$BioRegion %in% input$Site,
                       .data$Parameters %in% c(x, y)) %>%
         tidyr::pivot_wider(id_cols = dplyr::any_of(vars),
                            names_from = "Parameters", values_from = "Values", values_fn = mean) %>%
-        tidyr::drop_na()
+        tidyr::drop_na() %>% 
+        planktonr::pr_reorder()
       
-    }) %>% bindCache(input$Site, input$p2, input$p1, input$group)
-    
-    # Parameter Definition
-    output$ParamDefm2 <- shiny::renderText({
-      paste("<h6><strong>", planktonr::pr_relabel(input$p2, style = "plotly"), ":</strong> ",
-            pkg.env$ParamDef %>% dplyr::filter(Parameter == input$p2) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
-    })
+    }) %>% bindCache(input$pzy, input$ppy, input$ppyy, input$pzx, input$ppx, input$ppyx, input$Site, input$groupy, input$groupx, input$smoother)
     
     # Sidebar Map
     output$plotmap <- renderPlot({
@@ -91,19 +123,25 @@ mod_RelCPR_server <- function(id){
         
         trend <- input$smoother
 
-        if(input$group %in% 'Zooplankton'){
-          dat <- pkg.env$datCPRz
-          y <- rlang::string(input$p1)
-          x <- rlang::string(input$p2)
-        } else if (input$group %in% 'Phytoplankton'){
-          dat <- pkg.env$datCPRp
-          y <- rlang::string(input$p3)
-          x <- rlang::string(input$p2)
+        if(input$groupy %in% 'Zooplankton'){
+          y <- rlang::string(input$pzy)
+        } else if (input$groupy %in% 'Phytoplankton'){
+          y <- rlang::string(input$ppy)
+        } else if (input$groupy %in% 'Physical'){
+          y <- rlang::string(input$ppyy)
         } 
-        
-        planktonr::pr_plot_scatter(selectedData(), x, y, trend)
 
-      }) %>% bindCache(input$p1, input$p2, input$Site, input$group, input$smoother)
+        if(input$groupx %in% 'Zooplankton'){
+          x <- rlang::string(input$pzx)
+        } else if (input$groupx %in% 'Phytoplankton'){
+          x <- rlang::string(input$ppx)
+        } else if (input$groupx %in% 'Physical'){
+          x <- rlang::string(input$ppyx)
+        } 
+
+      planktonr::pr_plot_scatter(selectedData(), x, y, trend)
+
+      }) %>% bindCache(input$pzy, input$ppy, input$ppyy, input$pzx, input$ppx, input$ppyx, input$Site, input$groupy, input$groupx, input$smoother)
       
       output$scatter1 <- renderPlot({
         gg_out1()
@@ -121,15 +159,17 @@ mod_RelCPR_server <- function(id){
       
       gg_out2 <- reactive({
         
-        if(input$group %in% 'Zooplankton'){
-          y <- rlang::string(input$p1)
-        } else if (input$group %in% 'Phytoplankton'){
-          y <- rlang::string(input$p3)
+        if(input$groupy %in% 'Zooplankton'){
+          y <- rlang::string(input$pzy)
+        } else if (input$groupy %in% 'Phytoplankton'){
+          y <- rlang::string(input$ppy)
+        } else if (input$groupy %in% 'Physical'){
+          y <- rlang::string(input$ppyy)
         }
         
         planktonr::pr_plot_box(selectedData(), y)
         
-      }) %>% bindCache(input$p1, input$Site)
+      }) %>% bindCache(input$pzy, input$ppy, input$ppyy, input$Site)
       
       output$box2 <- renderPlot({
         gg_out2()
