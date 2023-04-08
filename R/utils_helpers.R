@@ -436,38 +436,26 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4){ #dat 1
   ns <- NS(id)
   
   if(stringr::str_detect(id, "CS") == TRUE){
-    Choices = unique(sort(dat1$State))
-    choicesx = planktonr::pr_relabel(unique(dat4$Parameters), style = 'simple')
+    ChoiceSite = unique(sort(dat1$State))
     ChoicesGroupy = 'Microbes - Coastal'
     ChoicesGroupx = 'Physical'
     SelectedVar = 'TAS'
     SelectedGroupy = 'Microbes - Coastal'
     SelectedGroupx = 'Physical'
-    SelectedVarP = "PhytoAbundance_CellsL"
-    SelectedVarx = "Temperature_degC"
-    selectedVarZ = "Biomass_mgm3"
   } else if (stringr::str_detect(id, "NRS") == TRUE){
-    Choices = unique(sort(dat1$StationName))
-    choicesx = planktonr::pr_relabel(unique(dat4$Parameters), style = 'simple')
+    ChoiceSite = unique(sort(dat1$StationName))
     ChoicesGroupy = c("Zooplankton", "Phytoplankton", "Microbes - NRS", "Physical")
     ChoicesGroupx = c("Zooplankton", "Phytoplankton", "Microbes - NRS", "Physical")
     SelectedVar = 'Maria Island'
     SelectedGroupy = 'Zooplankton'
     SelectedGroupx = 'Physical'
-    SelectedVarP = "PhytoAbundance_CellsL"
-    SelectedVarx = "CTD_Temperature_degC"
-    selectedVarZ = "Biomass_mgm3"
   } else if (stringr::str_detect(id, "CPR") == TRUE){
-    Choices = unique(sort(dat1$BioRegion))
-    choicesx = planktonr::pr_relabel(c("SST", "chl_oc3"), style = 'simple')
+    ChoiceSite = unique(sort(dat1$BioRegion))
     ChoicesGroupy = c("Zooplankton", "Phytoplankton", "Physical")
     ChoicesGroupx = c("Zooplankton", "Phytoplankton", "Physical")
     SelectedVar = 'Temperate East'
     SelectedGroupy = 'Zooplankton'
     SelectedGroupx = 'Physical'
-    SelectedVarP = "PhytoAbundance_Cellsm3"
-    SelectedVarx = "SST"
-    selectedVarZ = "BiomassIndex_mgm3"
   }
 
   shiny::sidebarPanel(
@@ -475,91 +463,22 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4){ #dat 1
       condition = "input.navbar == 'Relationships'",
       plotOutput(ns("plotmap")),
       shiny::HTML("<h6><strong>Select a station:</strong></h5>"),
-      shiny::checkboxGroupInput(inputId = ns("Site"), label = NULL, choices = Choices, selected = SelectedVar),
+      shiny::checkboxGroupInput(inputId = ns("Site"), label = NULL, choices = ChoiceSite, selected = SelectedVar),
       shiny::HTML("<h6><strong>Select a group for the y axis:</strong></h5>"),
       shiny::selectizeInput(inputId = ns('groupy'), label = NULL, choices = ChoicesGroupy,
-                            selected = SelectedGroupy)
-    ),
-    shiny::conditionalPanel(
-      condition = paste0("input.groupy == 'Microbes - Coastal'"),
-      ns = ns,
+                            selected = SelectedGroupy),
       shiny::HTML("<h6><strong>Select a y variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('pmcy'), label = NULL, choices = planktonr::pr_relabel(unique(dat1$Parameters), style = 'simple'), 
-                            selected = "Bacterial_Temperature_Index_KD"),
-      shiny::htmlOutput(ns("ParamDefmcy"))
+      shiny::selectizeInput(inputId = ns('py'), label = NULL, choices = NULL),
+      shiny::htmlOutput(ns("ParamDefy"))
     ),    
     shiny::conditionalPanel(
-      condition = "input.groupy == 'Zooplankton' && input.groupx != 'Zooplankton'",
-      ns = ns,
-      shiny::HTML("<h6><strong>Select a y variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('pzy'), label = NULL, choices = planktonr::pr_relabel(unique(dat1$Parameters), style = 'simple'), 
-                            selected = selectedVarZ),
-      shiny::htmlOutput(ns("ParamDefzy"))
-    ),
-    shiny::conditionalPanel(
-      condition = "input.groupy == 'Phytoplankton' && input.groupx != 'Phytoplankton'",
-      ns = ns,
-      shiny::HTML("<h6><strong>Select a y variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('ppy'), label = NULL, choices = planktonr::pr_relabel(unique(dat2$Parameters), style = 'simple'), 
-                            selected = SelectedVarP),
-      shiny::htmlOutput(ns("ParamDefpy"))
-    ),
-    shiny::conditionalPanel(
-      condition = paste0("input.groupy == 'Microbes - NRS' && input.groupx != 'Micobes - NRS'"),
-      ns = ns,
-      shiny::HTML("<h6><strong>Select a y variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('pmny'), label = NULL, choices = planktonr::pr_relabel(unique(dat3$Parameters), style = 'simple'), 
-                            selected = "Bacterial_Temperature_Index_KD"),
-      shiny::htmlOutput(ns("ParamDefmny"))
-    ),
-    shiny::conditionalPanel(
-      condition = paste0("input.groupy == 'Physical' && input.groupx != 'Physical'"),
-      ns = ns,
-      shiny::HTML("<h6><strong>Select a y variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('ppyy'), label = NULL, choices = choicesx, 
-                            selected = SelectedVarx),
-      shiny::htmlOutput(ns("ParamDefpyy"))
-    ),
-    shiny::conditionalPanel(
-      condition = "input.navbar == 'Relationships'",
+      condition = paste0("input.navbar == 'Relationships' && input.", tabsetPanel_id," == 1"),
       shiny::HTML("<h6><strong>Select a group for the x axis:</strong></h5>"),
       shiny::selectizeInput(inputId = ns('groupx'), label = NULL, choices = ChoicesGroupx,
-                            selected = SelectedGroupx)
-    ),
-    shiny::conditionalPanel(
-      condition = "input.groupx == 'Zooplankton' && input.groupy != 'Zooplankton'",
-      ns = ns,
+                            selected = SelectedGroupx),
       shiny::HTML("<h6><strong>Select a x variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('pzx'), label = NULL, choices = planktonr::pr_relabel(unique(dat1$Parameters), style = 'simple'),
-                            selected = selectedVarZ),
-      shiny::htmlOutput(ns("ParamDefzx"))
-    ),
-    shiny::conditionalPanel(
-      condition = "input.groupx == 'Phytoplankton' && input.groupy != 'Phytoplankton'",
-      ns = ns,
-      shiny::HTML("<h6><strong>Select a x variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('ppx'), label = NULL, choices = planktonr::pr_relabel(unique(dat2$Parameters), style = 'simple'),
-                            selected = SelectedVarP),
-      shiny::htmlOutput(ns("ParamDefpx"))
-    ),
-    shiny::conditionalPanel(
-      condition = paste0("input.groupx == 'Microbes - NRS' && input.groupy != 'Microbes - NRS'"),
-      ns = ns,
-      shiny::HTML("<h6><strong>Select a x variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('pmnx'), label = NULL, choices = planktonr::pr_relabel(unique(dat3$Parameters), style = 'simple'),
-                            selected = "Bacterial_Temperature_Index_KD"),
-      shiny::htmlOutput(ns("ParamDefmnx"))
-    ),
-    shiny::conditionalPanel(
-      condition = paste0("input.groupx == 'Physical' && input.groupy != 'Physical'"),
-      ns = ns,
-      shiny::HTML("<h6><strong>Select a x variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('ppyx'), label = NULL, choices = choicesx,
-                            selected = SelectedVarx),
-      shiny::htmlOutput(ns("ParamDefpyx"))
-    ),
-    shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Relationships' && input.", tabsetPanel_id," == 1"),
+      shiny::selectizeInput(inputId = ns('px'), label = NULL, choices = NULL),
+      shiny::htmlOutput(ns("ParamDefx")),
       shiny::HTML("<h6><strong>Overlay trend line?</strong></h6>"),
       shiny::selectizeInput(inputId = ns("smoother"), label = NULL, 
                             choices = c("Smoother", "Linear", "None"), selected = "None")

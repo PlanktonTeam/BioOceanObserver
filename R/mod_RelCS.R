@@ -25,14 +25,32 @@ mod_RelCS_ui <- function(id){
 mod_RelCS_server <- function(id){
   moduleServer(id, function(input, output, session, RelCS){
     
+    daty <- reactive({
+      dat <- datCSm  #TODO pkg.env$
+    }) %>% bindCache(input$groupy)
+    
+    observeEvent(daty(), {
+      choicesy <- planktonr::pr_relabel(unique(daty()$Parameters), style = "simple")
+      shiny::updateSelectizeInput(session, 'py', choices = choicesy, selected = "Bacterial_Temperature_Index_KD")
+    })
+    
+    datx <- reactive({
+      dat1 <- CSChem  #TODO pkg.env$        
+    }) %>% bindCache(input$groupx)
+    
+    observeEvent(datx(), {
+      choicesx <- planktonr::pr_relabel(unique(datx()$Parameters), style = "simple")
+      shiny::updateSelectizeInput(session, 'px', choices = choicesx, selected = "Temperature_degC")
+    })
+    
     selectedData <- reactive({
       
-      y <- rlang::string(input$pmcy)
-      x <- rlang::string(input$ppyx)
+      y <- rlang::string(input$py)
+      x <- rlang::string(input$px)
       vars <- c("StationName", "StationCode", "SampleTime_Local", "SampleDepth_m", "State") # only microbes has depth data
       
-      selectedData <- datCSm %>%  #TODO pkg.env$
-        dplyr::bind_rows(CSChem) %>% #TODO pkg.env$
+      selectedData <- daty() %>%  
+        dplyr::bind_rows(datx()) %>% 
         dplyr::filter(.data$State %in% input$Site,
                       .data$Parameters %in% c(x, y)) %>%
         planktonr::pr_remove_outliers(2) %>% 
@@ -40,23 +58,23 @@ mod_RelCS_server <- function(id){
                            names_from = "Parameters", values_from = "Values", values_fn = mean) %>%
         tidyr::drop_na() 
       
-    }) %>% bindCache(input$Site, input$pmcy, input$ppyx)
+    }) %>% bindCache(input$Site, input$py, input$px)
     
     # Parameter Definition
-    output$ParamDefmcy <-   shiny::renderText({
-      paste("<h6><strong>", planktonr::pr_relabel(input$pmcy, style = "plotly"), ":</strong> ",
-            pkg.env$ParamDef %>% dplyr::filter(Parameter == input$pmcy) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+    output$ParamDefy <-   shiny::renderText({
+      paste("<h6><strong>", planktonr::pr_relabel(input$py, style = "plotly"), ":</strong> ",
+            pkg.env$ParamDef %>% dplyr::filter(Parameter == input$py) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
     })
     # Parameter Definition
-    output$ParamDefpyx <- shiny::renderText({
-      paste("<h6><strong>", planktonr::pr_relabel(input$ppyx, style = "plotly"), ":</strong> ",
-            pkg.env$ParamDef %>% dplyr::filter(Parameter == input$ppyx) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+    output$ParamDefx <- shiny::renderText({
+      paste("<h6><strong>", planktonr::pr_relabel(input$px, style = "plotly"), ":</strong> ",
+            pkg.env$ParamDef %>% dplyr::filter(Parameter == input$px) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
     })
     
     # Sidebar Map
     output$plotmap <- renderPlot({
       planktonr::pr_plot_NRSmap(selectedData(), Survey = 'Coastal')
-    }, bg = "transparent") %>% bindCache(input$Site)
+    }, bg = "transparent") %>% bindCache(input$Site, input$py)
     
     # Add text information 
     output$PlotExp1 <- shiny::renderText({
@@ -74,12 +92,12 @@ mod_RelCS_server <- function(id){
       gg_out1 <- reactive({
         
         trend <- input$smoother
-        y <- rlang::string(input$pmcy)
-        x <- rlang::string(input$ppyx)
+        y <- rlang::string(input$py)
+        x <- rlang::string(input$px)
         
         planktonr::pr_plot_scatter(selectedData(), x, y, trend)
         
-      }) %>% bindCache(input$pmcy, input$ppyx, input$Site, input$groupy, input$smoother)
+      }) %>% bindCache(input$py, input$px, input$Site, input$groupy, input$smoother)
       
       output$scatter1 <- renderPlot({
         gg_out1()
@@ -97,11 +115,11 @@ mod_RelCS_server <- function(id){
       
       gg_out2 <- reactive({
         
-        y <- rlang::string(input$pmcy)
+        y <- rlang::string(input$py)
 
         planktonr::pr_plot_box(selectedData(), y)
         
-      }) %>% bindCache(input$pmcy, input$Site)
+      }) %>% bindCache(input$py, input$Site)
       
       output$box2 <- renderPlot({
         gg_out2()
