@@ -24,7 +24,7 @@ Imports:
     magrittr,
     patchwork,
     pracma,
-    planktonr (>= 0.5.3),
+    planktonr (>= 0.5.5),
     purrr (>= 1.0.1),
     rlang,
     shiny (>= 1.6.0),
