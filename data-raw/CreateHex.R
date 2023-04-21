@@ -30,7 +30,7 @@ library(hexSticker)
 #         filename="IMOS_Hex.png")
 
 
-hexSticker::sticker("data-raw/Sapphirina_m_NSI_20161116_5x_jup_8st_ED.JPG", 
+hexSticker::sticker("data-raw/Sapphirina_m_NSI_20161116_5x_jup_8st_ED_crop.JPG", 
                     package="Biological\n Ocean Observer", 
                     p_y = 1.5,
                     p_color = "white",
@@ -39,29 +39,29 @@ hexSticker::sticker("data-raw/Sapphirina_m_NSI_20161116_5x_jup_8st_ED.JPG",
                     s_y = 0.85, 
                     s_width = 0.9,
                     h_fill = "black",
-                    h_color = "white",
+                    h_color = "black",
                     url = "https://shiny.csiro.au/BioOceanObserver",
                     u_color = "white",
                     u_family = "sans",
-                    u_size = 12,
-                    u_x = 1.04,
-                    u_y = 0.1,
+                    u_size = 13,
+                    u_x = 1.05,
+                    u_y = 0.07,
                     dpi = 1000,
                     asp = 1,
-                    filename="inst/app/www/BOO_HexRaw.png", 
-                    white_around_sticker = TRUE,
+                    filename="inst/app/www/BOO_Hex.png", 
+                    # white_around_sticker = TRUE,
                     lineheight = 0.1)
 
-
-# Code from https://github.com/GuangchuangYu/hexSticker/issues/39
-library(magick)
-p <- image_read("inst/app/www/BOO_HexRaw.png")
-
-pp <- p %>%
-  image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+0+0") %>%
-  image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+517+0") %>%
-  image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+0+599") #%>%
-  # image_fill(color = "transparent", refcolor = "white", fuzz = 4, point = "+517+599") # This one seems to find some text as well
-
-image_write(image = pp, path = "inst/app/www/BOO_Hex.png")
+# 
+# # Code from https://github.com/GuangchuangYu/hexSticker/issues/39
+# library(magick)
+# p <- image_read("inst/app/www/BOO_HexRaw.png")
+# 
+# pp <- p %>%
+#   image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+0+1") %>%
+#   image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+517+0") %>%
+#   image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+0+599") #%>%
+#   # image_fill(color = "transparent", refcolor = "white", fuzz = 4, point = "+517+599") # This one seems to find some text as well
+# 
+# image_write(image = pp, path = "inst/app/www/BOO_Hex.png")
 
