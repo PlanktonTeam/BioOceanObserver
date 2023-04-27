@@ -123,9 +123,9 @@ mod_PolLTM_server <- function(id){
       
       
       patchwork::wrap_elements(
-        grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20))) + 
+        grid::textGrob("Physical EOVs", gp = grid::gpar(fontsize=20))) + 
         p7 + p3 + 
-        grid::textGrob("Biocehmical EOVs", gp = grid::gpar(fontsize=20)) + 
+        grid::textGrob("Biochemical EOVs", gp = grid::gpar(fontsize=20)) + 
         p1 + p2 + p4 + 
         patchwork::plot_layout(design = layout1) &
         ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),

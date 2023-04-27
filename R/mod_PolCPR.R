@@ -150,7 +150,7 @@ mod_PolCPR_server <- function(id){
         p6 + p7 + 
         grid::textGrob("Physical EOVs from satellite data", gp = grid::gpar(fontsize=20)) + 
         p4 + p5 + 
-        grid::textGrob("Chlorophyl density from Phytoplankton Colour Index", gp = grid::gpar(fontsize=20)) + 
+        grid::textGrob("Chlorophyll density from Phytoplankton Colour Index", gp = grid::gpar(fontsize=20)) + 
         p3 +
         patchwork::plot_layout(design = layout1) & 
         ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
