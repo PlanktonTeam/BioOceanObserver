@@ -51,7 +51,7 @@ app_ui <- function(request) {
                                     )),
                     shiny::tabPanel("Environmental Data",
                                     shiny::tabsetPanel(id = 'env', type = "pills",
-                                                       shiny::tabPanel(value = "bgc", "NRS BGC", mod_NutrientsBGC_ui("NutrientsBGC_ui_1")),
+                                                       shiny::tabPanel(value = "bgc", "NRS Biogeochemistry", mod_NutrientsBGC_ui("NutrientsBGC_ui_1")),
                                                        shiny::tabPanel(value = "pico", "NRS Picoplankton", mod_PicoBGC_ui("PicoBGC_ui_1")),
                                                        shiny::tabPanel(value = "pigs", "NRS Pigments", mod_PigmentsBGC_ui("PigmentsBGC_ui_1")),
                                                        shiny::tabPanel(value = "water", "NRS CTD", mod_WaterBGC_ui("WaterBGC_ui_1")),
