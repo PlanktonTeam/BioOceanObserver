@@ -24,17 +24,21 @@ NRSStation <- planktonr::pr_get_NRSStation() %>%
 # NRS indices data --------------------------------------------------------
 
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z") 
-datNRSp <- planktonr::pr_get_Indices("NRS", "P") 
+datNRSp <- planktonr::pr_get_Indices("NRS", "P") %>% 
+  planktonr::pr_remove_outliers(2)
 datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
 
 datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>% #TODO move the MLD calcs to planktonr
   tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
   dplyr::mutate(MLD_m = dplyr::case_when(.data$MLDtemp_m <= .data$MLDsal_m ~ .data$MLDtemp_m,
                                          .data$MLDsal_m < .data$MLDtemp_m ~ .data$MLDsal_m,
-                                         TRUE ~ NA_real_)) %>%
+                                         TRUE ~ NA_real_)) %>% 
   dplyr::select(-c(MLDtemp_m, MLDsal_m)) %>%
   tidyr::pivot_longer(-c("TripCode", "Year_Local", "Month_Local", "SampleTime_Local", "tz", "Latitude", "Longitude", "StationName", "StationCode"), 
-                      names_to = "Parameters", values_to = "Values")
+                      names_to = "Parameters", values_to = "Values") %>%
+  dplyr::filter(Values > 0, 
+                !(Values == 5.964 & StationCode == 'YON')) %>%   
+  planktonr::pr_remove_outliers(2) 
 
 
 # CPR time series data ----------------------------------------------------
@@ -124,7 +128,7 @@ daynightzAll <- planktonr::pr_get_DayNight("Z") %>%
   dplyr::group_by(Species) %>% 
   dplyr::summarise(count = dplyr::n(),
                    .groups = 'drop') %>% 
-  dplyr::filter(count > 10)
+  dplyr::filter(count > 14)
 
 daynightz <- planktonr::pr_get_DayNight("Z") %>% 
   dplyr::filter(Species %in% daynightzAll$Species)
@@ -134,7 +138,7 @@ daynightpAll <- planktonr::pr_get_DayNight("P") %>%
   dplyr::group_by(Species) %>% 
   dplyr::summarise(count = dplyr::n(),
                    .groups = 'drop') %>% 
-  dplyr::filter(count > 10)
+  dplyr::filter(count > 14)
 
 daynightp <- planktonr::pr_get_DayNight("P") %>% 
   dplyr::filter(Species %in% daynightpAll$Species)
