@@ -4,19 +4,20 @@ pkg.env <- new.env(parent = emptyenv())
 .onLoad <- function(libname, pkgname){
   cat(file=stderr(), "New data load call.\n")
   # Non-grep vars: LTnuts, datCPRw, PMapData
-  data.vars <- c("Nuts", "Pigs", "Pico", 
+  data.vars <- c("Nuts", "Pigs", "Pico", "ctd", "CSChem",
                  "fMapDataz", "fMapDatap", 
                  "MooringTS", "MooringClim",
                  "PolNRS", "PolCPR", "PolLTM", 
                  "NRSinfo", "CPRinfo", "NRSStation",
                  "datCPRz", "datCPRp", "PCI",
-                 "datNRSz", "datNRSp", "datNRSm", "datNRSw",
+                 "datNRSz", "datNRSp", "datNRSm", "datCSm", "datNRSw",
                  "NRSfgz", "NRSfgp", "CPRfgz", "CPRfgp", "PMapData",
                  "stiz", "stip", "daynightz", "daynightp",
                  "SpInfoP", "SpInfoZ", "LFData", "LFDataAbs",
                  "datNRSTrip", "datCPRTrip",
                  "PSpNRSAccum", "PSpCPRAccum", "ZSpNRSAccum", "ZSpCPRAccum",
                  "col12", "ParamDef")
+
   tryCatch({
     # Access data from local server (fastest)
     cat(file=stderr(), "Attempting to access data from opendap.\n")
