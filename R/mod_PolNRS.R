@@ -149,7 +149,7 @@ mod_PolNRS_server <- function(id){
         p1 + p2 + 
         grid::textGrob("Diversity EOVs", gp = grid::gpar(fontsize=20)) + 
         p3 + p4 + 
-        grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20)) + 
+        grid::textGrob("Physical EOVs", gp = grid::gpar(fontsize=20)) + 
         p5 + p6 + p7 + 
         grid::textGrob("Biochemical EOVs", gp = grid::gpar(fontsize=20)) + 
         p8 + p9 + p10 + p11 + p12 + patchwork::plot_layout(design = layout1) &
