@@ -70,7 +70,7 @@ mod_ZooTsNRS_server <- function(id){
     
     
     # Plot Trends -------------------------------------------------------------
-    observeEvent({input$NRSpts == 1}, {
+    observeEvent({input$NRSzts == 1}, {
       
       gg_out1 <- reactive({
         
@@ -100,7 +100,7 @@ mod_ZooTsNRS_server <- function(id){
     # Climatologies -----------------------------------------------------------
     
     # Plot abundance spectra by species
-    observeEvent({input$NRSpts == 2}, {
+    observeEvent({input$NRSzts == 2}, {
       
       gg_out2 <- reactive({   
         if (is.null(pkg.env$datNRSz$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
@@ -138,7 +138,7 @@ mod_ZooTsNRS_server <- function(id){
     
     # Functional groups -------------------------------------------------------
     
-    observeEvent({input$NRSpts == 3}, {
+    observeEvent({input$NRSzts == 3}, {
       selectedDataFG <- reactive({
         req(input$Site)
         validate(need(!is.na(input$Site), "Error: Please select a station."))

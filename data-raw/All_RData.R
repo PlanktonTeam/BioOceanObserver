@@ -24,22 +24,30 @@ NRSStation <- planktonr::pr_get_NRSStation() %>%
 # NRS indices data --------------------------------------------------------
 
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z") 
-datNRSp <- planktonr::pr_get_Indices("NRS", "P") %>% 
-  planktonr::pr_remove_outliers(2)
-datNRSm <- planktonr::pr_get_NRSMicro() ## microbial data
+datNRSp <- planktonr::pr_get_Indices("NRS", "P") 
+datNRSm <- planktonr::pr_get_NRSMicro("NRS") %>%  ## microbial data
+  tidyr::drop_na() %>% 
+  dplyr::select(-"TripCode_depth")
+Tricho <- planktonr::pr_get_NRSData(Type = 'Phytoplankton', Variable = "abundance", Subset = "genus") %>% 
+  dplyr::select(dplyr::any_of(colnames(datNRSm)), Values = "Trichodesmium")  %>% 
+  dplyr::filter(!.data$StationCode %in% c("NWS", "SOTS_RAS", "NA"))%>% 
+  dplyr::mutate(Parameters = "Trichodesmium")
+datNRSm <- datNRSm %>% dplyr::bind_rows(Tricho)
+rm(Tricho)
+
+datCSm  <- planktonr::pr_get_NRSMicro("Coastal") ## microbial data
 
 datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>% #TODO move the MLD calcs to planktonr
   tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
   dplyr::mutate(MLD_m = dplyr::case_when(.data$MLDtemp_m <= .data$MLDsal_m ~ .data$MLDtemp_m,
                                          .data$MLDsal_m < .data$MLDtemp_m ~ .data$MLDsal_m,
-                                         TRUE ~ NA_real_)) %>% 
-  dplyr::select(-c(MLDtemp_m, MLDsal_m)) %>%
-  tidyr::pivot_longer(-c("TripCode", "Year_Local", "Month_Local", "SampleTime_Local", "tz", "Latitude", "Longitude", "StationName", "StationCode"), 
+                                         TRUE ~ NA_real_)) %>%
+  dplyr::select(-c("MLDtemp_m", "MLDsal_m", "Latitude", "Longitude", "tz")) %>%
+  tidyr::pivot_longer(-c("TripCode", "Year_Local", "Month_Local", "SampleTime_Local", "StationName", "StationCode"), 
                       names_to = "Parameters", values_to = "Values") %>%
   dplyr::filter(Values > 0, 
                 !(Values == 5.964 & StationCode == 'YON')) %>%   
   planktonr::pr_remove_outliers(2) 
-
 
 # CPR time series data ----------------------------------------------------
 
@@ -80,6 +88,17 @@ Nuts <- planktonr::pr_get_NRSEnvContour('Chemistry') %>%
 Pigs <- planktonr::pr_get_NRSPigments(Format = "binned") %>% 
   planktonr::pr_remove_outliers(2)
 Pico <- planktonr::pr_get_NRSEnvContour('Pico')
+
+ctd <- planktonr::pr_get_NRSCTD() %>% 
+  dplyr::select(-c("Project", "file_id", "tz", "SampleTime_UTC", "Latitude", "Longitude"), 
+                CTD_Salinity = "Salinity_psu", CTD_Temperature_degC = "Temperature_degC") %>% 
+  dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m,0)) %>% 
+  dplyr::filter(SampleDepth_m %in% datNRSm$SampleDepth_m) %>% 
+  tidyr::pivot_longer(-c(dplyr::any_of(colnames(datNRSm))), values_to = "Values", names_to = "Parameters") 
+
+CSChem <- planktonr::pr_get_CSChem() %>% dplyr::filter(Parameters %in% c("Chla_mgm3", "Temperature_degC",
+                                                                         "Salinity_psu")) %>% 
+  dplyr::mutate(Parameters = ifelse(Parameters == "Salinity_psu", "Salinity", Parameters))
 
 # Get Sat data ------------------------------------------------------------
 
@@ -289,67 +308,19 @@ ParamDef <- readr::read_csv(file.path("data-raw", "ParameterDefn.csv"), na = cha
 # PolLTM <- PolLTM[PolLTM$Year_Local < 2017,]
 
 # Add data to sysdata.rda -------------------------------------------------
-usethis::use_data(Nuts, Pigs, Pico, 
+usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   fMapDataz, fMapDatap, 
                   MooringTS, MooringClim,
                   PolNRS, PolCPR, PolLTM, 
                   NRSinfo, CPRinfo, NRSStation,
                   datCPRz, datCPRp, PCI,
-                  datNRSz, datNRSp, datNRSm, datNRSw,
+                  datNRSz, datNRSp, datNRSm, datCSm, datNRSw,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
                   stiz, stip, daynightz, daynightp,
                   SpInfoP, SpInfoZ, LFData, LFDataAbs,
                   datNRSTrip, datCPRTrip,
                   PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
                   ParamDef, col12, overwrite = TRUE, internal = TRUE)
-
-# save(Nuts, Pigs, Pico, 
-#      fMapDataz, fMapDatap, 
-#      MooringTS, MooringClim,
-#      PolNRS, PolCPR, PolLTM, 
-#      NRSinfo, CPRinfo, NRSStation,
-#      datCPRz, datCPRp, PCI,
-#      datNRSz, datNRSp, datNRSm, datNRSw,
-#      NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-#      stiz, stip, daynightz, daynightp,
-#      SpInfoP, SpInfoZ, LFData, LFDataAbs,
-#      datNRSTrip, datCPRTrip,
-#      PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
-#      col12, file = "data/sysdata.rda")
-
-# Write to csv to save onto the DAP
-# write_csv(Nuts, "Nuts.csv")
-# write_csv(Pigs,  "Pigs.csv")
-# write_csv(Pico,  "Pico.csv")
-# write_csv(LTnuts,    "LTnuts.csv") 
-# write_csv(fMapDataz,  "fMapDataz.csv")
-# write_csv(fMapDatap,  "fMapDatap.csv")
-# write_csv(legendPlot, "legendPlot.csv")
-# write_csv(MooringTS,  "MooringTS.csv")
-# write_csv(MooringClim, "MooringClim.csv")
-# write_csv(PolNRS, "PolNRS.csv")
-# write_csv(PolCPR,  "PolCPR.csv")
-# write_csv(PolLTM,  "PolLTM.csv")
-# write_csv(NRSinfo,  "NRSinfo.csv")
-# write_csv(CPRinfo,  "CPRinfo.csv")
-# write_csv(datCPRz,  "datCPRz.csv")
-# write_csv(datCPRp,  "datCPRp.csv")
-# write_csv(datCPRw, "datCPRw.csv") 
-# write_csv(datNRSz,  "datNRSz.csv")
-# write_csv(datNRSp,  "datNRSp.csv")
-# write_csv(datNRSm,  "datNRSm.csv")
-# write_csv(datNRSw, "datNRSw.csv")
-# write_csv(NRSfgz,  "NRSfgz.csv")
-# write_csv(NRSfgp,  "NRSfgp.csv")
-# write_csv(CPRfgz,  "CPRfgz.csv")
-# write_csv(CPRfgp,  "CPRfgp.csv")
-# write_csv(PMapData, "PMapData.csv")
-# write_csv(stiz,  "stiz.csv")
-# write_csv(stip,  "stip.csv")
-# write_csv(daynightz,  "daynightz.csv")
-# write_csv(daynightp,  "daynightp.csv")
-# write_csv(PMapData, "PMapData.csv")
-# write_csv(SatData, "SatData.csv")
 
 
 

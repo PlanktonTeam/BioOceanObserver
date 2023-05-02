@@ -15,7 +15,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       selectedVar <- "Biomass_mgm3"
     } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + NRS
       selectedVar =  "PhytoAbundance_CellsL"
-    }
+    } 
   } else if (stringr::str_detect(id, "CPR") == TRUE){ # CPR
     choices <- unique(sort(dat$BioRegion))
     selectedSite <- c("Temperate East", "South-east")
@@ -25,7 +25,12 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + CPR
       selectedVar = "PhytoAbundance_Cellsm3"
     }
-  }
+  } else if (stringr::str_detect(id, "CS") == TRUE){ # Microbes Coastal
+    choices <- unique(sort(dat$State))
+    selectedSite <- c("TAS")
+    idSite <- "Site"
+    selectedVar = "Bacterial_Temperature_Index_KD"
+  } 
   
   shiny::sidebarPanel(
     
@@ -42,7 +47,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     
     # Put Map, Station names and date slider on all panels
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 1 | input.", tabsetPanel_id, " == 2 | input.", tabsetPanel_id, " == 3 | ", tabsetPanel_id, " == 4"), 
+      condition = paste0("input.", tabsetPanel_id, " <= 5"), 
       shiny::plotOutput(ns("plotmap"),
                         height = "300px", 
                         width = "100%"),
@@ -92,9 +97,6 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       shiny::br()
     ),
     
-    
-    
-    
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 1 | input.", tabsetPanel_id, " == 2"), 
       shiny::checkboxInput(inputId = ns("scaler1"), 
@@ -119,21 +121,10 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
                             label = strong("Interpolate data?"),
                             choices = c("Interpolate", "Raw data", "Interpolate with gap filling"),
                             selected = "Raw data"),
-    ),
-    
-    
-    shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 4 && input.navbar == 'Microbes'"),
-      shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
-      selectInput(inputId = ns("p1"), label = 'Select an x parameter', 
-                  choices = planktonr::pr_relabel(unique(pkg.env$datNRSm$Parameters), style = "simple"), selected = "Bacterial_Temperature_Index_KD"),
-      selectInput(inputId = ns("p2"), label = 'Select a y parameter',
-                  choices = planktonr::pr_relabel(unique(pkg.env$Pico$Parameters), style = "simple"), selected = "Prochlorococcus_cellsmL")
     )
     
   ) # End of shiny::sidebarpanel
-  
-  
+
 }
 
 
@@ -162,7 +153,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                            fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
                                            fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
                        ),
-                       if(tabsetPanel_id != "NRSmts"){
+                       if(!tabsetPanel_id %in% c("NRSmts", "CSmts")){
                          shiny::tabPanel("Functional groups", value = 3,
                                          h6(textOutput(ns("PlotExp3"), container = span)),  
                                          plotOutput(ns("timeseries3"), height = "auto") %>% 
@@ -183,18 +174,29 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                              fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
                                              fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
                          )
-                       },
-                       if (tabsetPanel_id == "NRSmts"){
-                         shiny::tabPanel("Cell counts vs Indices", value = 4,
-                                         h6(textOutput(ns("PlotExp4"), container = span)),
-                                         plotOutput(ns("timeseries4")) %>%
-                                           shinycssloaders::withSpinner(color="#0dc5c1"),
-                                         div(style="display:inline-block; float:right; width:60%",
-                                             fButtons(id, button_id = "downloadPlot4", label = "Plot", Type = "Download"),
-                                             fButtons(id, button_id = "downloadData4", label = "Data", Type = "Download"),
-                                             fButtons(id, button_id = "downloadCode4", label = "R Code Example", Type = "Action"))
-                         )
-                       }
+                       }#,
+                       # if (tabsetPanel_id %in% c("NRSmts")){
+                       #   shiny::tabPanel("Scatter plots", value = 4,
+                       #                   h6(textOutput(ns("PlotExp4"), container = span)),
+                       #                   plotOutput(ns("timeseries4")) %>%
+                       #                     shinycssloaders::withSpinner(color="#0dc5c1"),
+                       #                   div(style="display:inline-block; float:right; width:60%",
+                       #                       fButtons(id, button_id = "downloadPlot4", label = "Plot", Type = "Download"),
+                       #                       fButtons(id, button_id = "downloadData4", label = "Data", Type = "Download"),
+                       #                       fButtons(id, button_id = "downloadCode4", label = "R Code Example", Type = "Action"))
+                       #   )
+                       # },
+                       # if (tabsetPanel_id %in% c("CSmts")){
+                       #   shiny::tabPanel("Traits", value = 5,
+                       #                   h6(textOutput(ns("PlotExp5"), container = span)),
+                       #                   plotOutput(ns("timeseries5")) %>%
+                       #                     shinycssloaders::withSpinner(color="#0dc5c1"),
+                       #                   div(style="display:inline-block; float:right; width:60%",
+                       #                       fButtons(id, button_id = "downloadPlot5", label = "Plot", Type = "Download"),
+                       #                       fButtons(id, button_id = "downloadData5", label = "Data", Type = "Download"),
+                       #                       fButtons(id, button_id = "downloadCode5", label = "R Code Example", Type = "Action"))
+                       #   )
+                       #}
     )
   )
 }
@@ -407,10 +409,95 @@ fEnviroSidebar <- function(id, dat = NULL){
   
 }
 
+# Generic BOO relationships sidebar panel function
+#' 
+#' @noRd
+fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4){ #dat 1-3 group data vars, dat4 physical params
+  ns <- NS(id)
+  
+  if(stringr::str_detect(id, "CS") == TRUE){
+    ChoiceSite = unique(sort(dat1$State))
+    ChoicesGroupy = 'Microbes - Coastal'
+    ChoicesGroupx = 'Physical'
+    SelectedVar = 'TAS'
+    SelectedGroupy = 'Microbes - Coastal'
+    SelectedGroupx = 'Physical'
+  } else if (stringr::str_detect(id, "NRS") == TRUE){
+    ChoiceSite = unique(sort(dat1$StationName))
+    ChoicesGroupy = c("Zooplankton", "Phytoplankton", "Microbes - NRS", "Physical")
+    ChoicesGroupx = c("Zooplankton", "Phytoplankton", "Microbes - NRS", "Physical")
+    SelectedVar = 'Maria Island'
+    SelectedGroupy = 'Zooplankton'
+    SelectedGroupx = 'Physical'
+  } else if (stringr::str_detect(id, "CPR") == TRUE){
+    ChoiceSite = unique(sort(dat1$BioRegion))
+    ChoicesGroupy = c("Zooplankton", "Phytoplankton", "Physical")
+    ChoicesGroupx = c("Zooplankton", "Phytoplankton", "Physical")
+    SelectedVar = 'Temperate East'
+    SelectedGroupy = 'Zooplankton'
+    SelectedGroupx = 'Physical'
+  }
 
+  shiny::sidebarPanel(
+    shiny::conditionalPanel(
+        tags$head(tags$style(HTML("
+                              .shiny-split-layout > div {overflow: visible;}
+                                    "))),
+        condition = "input.navbar == 'Relationships'",
+        plotOutput(ns("plotmap")),   
+        shiny::HTML("<h6><strong>Select a station:</strong></h5>"),           
+        shiny::checkboxGroupInput(inputId = ns("Site"), label = NULL, choices = ChoiceSite, selected = SelectedVar),
+        shiny::HTML("<h6><strong>Select a group & variable for the y axis:</strong></h5>"),
+        shiny::splitLayout(
+          shiny::selectizeInput(inputId = ns('groupy'), label = NULL, choices = ChoicesGroupy,
+                            selected = SelectedGroupy),
+          shiny::selectizeInput(inputId = ns('py'), label = NULL, choices = NULL)
+          
+        ),
+        shiny::htmlOutput(ns("ParamDefy"))
+      ),    
+    shiny::conditionalPanel(
+      condition = paste0("input.navbar == 'Relationships' && input.", tabsetPanel_id," == 1"),
+      shiny::HTML("<h6><strong>Select a group & variable for the x axis:</strong></h5>"),
+      shiny::splitLayout(
+        shiny::selectizeInput(inputId = ns('groupx'), label = NULL, choices = ChoicesGroupx,
+                            selected = SelectedGroupx),
+      shiny::selectizeInput(inputId = ns('px'), label = NULL, choices = NULL)
+      ),
+      shiny::htmlOutput(ns("ParamDefx")),
+      shiny::HTML("<h6><strong>Overlay trend line?</strong></h6>"),
+      shiny::selectizeInput(inputId = ns("smoother"), label = NULL, 
+                            choices = c("Smoother", "Linear", "None"), selected = "None")
+      )
+    )
+}
 
-
-
+#' Generic BOO Plankton Panel
+#' 
+#' @noRd
+fRelationPanel <- function(id, tabsetPanel_id){
+  ns <- NS(id)
+  shiny::mainPanel( 
+          shiny::tabsetPanel(id = tabsetPanel_id, type = "pills",
+                             shiny::tabPanel("Scatter plots", value = 1,
+                                             shiny::htmlOutput(ns("PlotExp1")),
+                                             plotOutput(ns("scatter1")) %>% 
+                                               shinycssloaders::withSpinner(color="#0dc5c1"),
+                                             div(style="display:inline-block; float:right; width:60%",
+                                                 fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+                                                 fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"))
+                             ),
+                             shiny::tabPanel("Box plots", value = 2,
+                                             h6(textOutput(ns("PlotExp2"), container = span)),  
+                                             plotOutput(ns("box2"), height = 800) %>%
+                                               shinycssloaders::withSpinner(color="#0dc5c1"),
+                                             div(style="display:inline-block; float:right; width:60%",
+                                                 fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
+                                                 fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"))
+                                             )
+                             )
+          )
+  }
 
 
 

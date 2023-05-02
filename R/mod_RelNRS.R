@@ -1,0 +1,167 @@
+#' RelNRS UI Function
+#'
+#' @description A shiny Module.
+#'
+#' @param id,input,output,session Internal Parameters for {shiny}.
+#'
+#' @noRd 
+#'
+#' @importFrom shiny NS tagList 
+mod_RelNRS_ui <- function(id){
+  nsRelNRS <- NS(id)
+
+  tagList(
+    sidebarLayout(
+      fRelationSidebar(id = id, tabsetPanel_id = "relNRS", dat1 = pkg.env$datNRSz, dat2 = pkg.env$datNRSp, 
+                       dat3 = pkg.env$datNRSm, dat4 = ctd), #TODO pkg.env$
+      fRelationPanel(id = id, tabsetPanel_id = "relNRS")
+    )
+  )
+}
+
+#' RelNRS Server Functions
+#'
+#' @noRd 
+mod_RelNRS_server <- function(id){
+  moduleServer(id, function(input, output, session, relNRS){
+    
+    daty <- reactive({
+      
+      if(input$groupy %in% 'Zooplankton'){
+        dat <- pkg.env$datNRSz %>%
+          dplyr::mutate(SampleDepth_m = 10)
+        } else if (input$groupy %in% 'Phytoplankton'){
+        dat <- pkg.env$datNRSp %>%
+          dplyr::mutate(SampleDepth_m = 10)
+        } else if (input$groupy %in% 'Microbes - NRS'){
+        dat <- pkg.env$datNRSm %>% 
+          dplyr::select(-c("TripCode_depth")) %>%
+          dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10) 
+        } else if (input$groupy %in% 'Physical'){
+        dat <- ctd  #TODO pkg.env$
+        }
+    }) %>% bindCache(input$groupy)
+    
+    observeEvent(daty(), {
+      vars <- c("Biomass_mgm3", "PhytoAbundance_CellsL", "Bacterial_Temperature_Index_KD", "CTD_Temperature_degC")
+      sv <- daty() %>% dplyr::filter(Parameters %in% vars) 
+      sv <- unique(sv$Parameters)
+      choicesy <- planktonr::pr_relabel(unique(daty()$Parameters), style = "simple")
+      shiny::updateSelectizeInput(session, 'py', choices = choicesy, selected = sv)
+    })
+      
+    datx <- reactive({
+      if(input$groupx %in% 'Zooplankton'){
+        dat1 <- pkg.env$datNRSz %>%
+          dplyr::mutate(SampleDepth_m = 10)
+        } else if (input$groupx %in% 'Phytoplankton'){
+          dat1 <- pkg.env$datNRSp %>%
+            dplyr::mutate(SampleDepth_m = 10)
+          } else if (input$groupx %in% 'Microbes - NRS'){
+            dat1 <- pkg.env$datNRSm %>% 
+              dplyr::select(-c("TripCode_depth")) %>%
+              dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10) 
+            } else if (input$groupx %in% 'Physical'){
+              dat1 <- ctd  #TODO pkg.env$
+              }       
+    }) %>% bindCache(input$groupx)
+
+    observeEvent(datx(), {
+      vars <- c("Biomass_mgm3", "PhytoAbundance_CellsL", "Bacterial_Temperature_Index_KD", "CTD_Temperature_degC")
+      sv <- datx() %>% dplyr::filter(Parameters %in% vars) 
+      sv <- unique(sv$Parameters)
+      choicesx <- planktonr::pr_relabel(unique(datx()$Parameters), style = "simple")
+      shiny::updateSelectizeInput(session, 'px', choices = choicesx, selected = sv)
+    })
+    
+    selectedData <- reactive({
+      y <- rlang::string(input$py)
+      x <- rlang::string(input$px)
+      vars <- c("StationName", "StationCode", "SampleTime_Local", "SampleDepth_m") # only microbes has depth data
+      
+      selectedData <- daty() %>%  
+        dplyr::bind_rows(datx()) %>%
+        dplyr::filter(.data$StationName %in% input$Site,
+                      .data$Parameters %in% c(x, y)) %>%
+        planktonr::pr_remove_outliers(2) %>% 
+        tidyr::pivot_wider(id_cols = dplyr::any_of(vars),
+                           names_from = "Parameters", values_from = "Values", values_fn = mean) %>%
+        tidyr::drop_na() %>% 
+        planktonr::pr_reorder()
+      
+    }) %>% bindCache(input$Site, input$py, input$px, input$groupy, input$groupx)
+    
+  # Parameter Definition
+  output$ParamDefy <-   shiny::renderText({
+    paste("<h6><strong>", planktonr::pr_relabel(input$py, style = "plotly"), ":</strong> ",
+          pkg.env$ParamDef %>% dplyr::filter(Parameter == input$py) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+    })
+  output$ParamDefx <-   shiny::renderText({
+    paste("<h6><strong>", planktonr::pr_relabel(input$px, style = "plotly"), ":</strong> ",
+          pkg.env$ParamDef %>% dplyr::filter(Parameter == input$px) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+    })  
+
+    # Sidebar Map
+    output$plotmap <- renderPlot({
+      planktonr::pr_plot_NRSmap(selectedData())
+    }, bg = "transparent") %>% bindCache(input$Site, input$py)
+
+    # Add text information 
+    output$PlotExp1 <- shiny::renderText({
+      "A scatter plot of selected indices against oceanographic parameters measured from the NRS around Australia"
+    }) 
+    # Add text information 
+    output$PlotExp2 <- shiny::renderText({
+      "A box plot of selected indices showing range of each parameter at the NRS around Australia"
+    }) 
+    
+    ## scatter plot
+    # Plot Trends -------------------------------------------------------------
+    observeEvent({input$relNRS == 1}, {
+      
+      gg_out1 <- reactive({
+      
+    trend <- input$smoother
+    y <- rlang::string(input$py)
+    x <- rlang::string(input$px)
+    
+    planktonr::pr_plot_scatter(selectedData(), x, y, trend)
+
+    }) %>% bindCache(input$Site, input$py, input$px, input$groupy, input$groupx, input$smoother)
+
+    output$scatter1 <- renderPlot({
+      gg_out1()
+    }, height = function() {
+      if(input$groupy != 'Microbes - NRS')
+      {300} else
+      {length(unique(selectedData()$SampleDepth_m)) * 200}})
+
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData(), "Scatter") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Scatter") # Download figure
+
+    })
+    
+    ## scatter plot
+    # Plot Trends -------------------------------------------------------------
+    observeEvent({input$relNRS == 2}, {
+      
+      gg_out2 <- reactive({
+        y <- rlang::string(input$py)
+
+        planktonr::pr_plot_box(selectedData(), y)
+        
+      }) %>% bindCache(input$py, input$Site, input$groupy, input$groupx)
+      
+      output$box2 <- renderPlot({
+        gg_out2()
+      })
+      
+      # Download -------------------------------------------------------
+      output$downloadData2 <- fDownloadButtonServer(input, selectedData(), "Scatter") # Download csv of data
+      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2(), "Scatter") # Download figure
+      
+    })
+  }
+  )
+}

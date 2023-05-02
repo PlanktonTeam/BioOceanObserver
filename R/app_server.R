@@ -64,6 +64,10 @@ app_server <- function( input, output, session ) {
       mod_NutrientsBGC_server("NutrientsBGC_ui_1")
     }
     
+    if(input$navbar == "Relationships") {
+      mod_RelNRS_server("RelNRS_ui_1")
+    }
+    
     if(input$navbar == "Information") {
       mod_info_server("info_1")
     }
@@ -125,8 +129,18 @@ app_server <- function( input, output, session ) {
     }
   })
   
+  # Microbes -------------------------------------------------------------
   
-  
+  observeEvent(input$mic, {
+    
+    ### Microbes Coastal Data
+    if(input$mic == "mtsCS"){
+      mod_MicroTsCS_server("MicroTsCS_ui_1")
+    }
+    
+  })
+    
+
   # Larval Fish -------------------------------------------------------------
   
   # Season Larval Fish
@@ -171,4 +185,17 @@ app_server <- function( input, output, session ) {
       mod_MoorBGC_server("MoorBGC_ui_1")
     }
   })
-}
+
+# Environmental -----------------------------------------------------------
+
+  # Coastal Microbes
+  observeEvent(input$rel, {
+    if(input$rel == "csRel"){
+      mod_RelCS_server("RelCS_ui_1")
+    }
+    
+    if(input$rel == "cprRel"){
+      mod_RelCPR_server("RelCPR_ui_1")
+    }
+  })
+  }
