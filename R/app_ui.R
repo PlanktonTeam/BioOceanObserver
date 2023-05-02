@@ -27,7 +27,7 @@ app_ui <- function(request) {
                     shiny::tabPanel("Microbes",
                                     shiny::tabsetPanel(id = 'mic', type = "pills",
                                                        shiny::tabPanel(value = "mts", "Time Series NRS", mod_MicroTsNRS_ui("MicroTsNRS_ui_1")),
-                                                       # shiny::tabPanel("Diversity"),
+                                                       shiny::tabPanel(value = "mtsCS", "Time Series Coastal", mod_MicroTsCS_ui("MicroTsCS_ui_1"))
                                                        # shiny::tabPanel("Composition")
                                     )),
                     shiny::tabPanel("Phytoplankton",
@@ -56,6 +56,12 @@ app_ui <- function(request) {
                                                        shiny::tabPanel(value = "pigs", "NRS Pigments", mod_PigmentsBGC_ui("PigmentsBGC_ui_1")),
                                                        shiny::tabPanel(value = "water", "NRS CTD", mod_WaterBGC_ui("WaterBGC_ui_1")),
                                                        shiny::tabPanel(value = 'moor', "NRS Moorings", mod_MoorBGC_ui("MoorBGC_ui_1"))
+                                    )),
+                    shiny::tabPanel("Relationships",
+                                    shiny::tabsetPanel(id = 'rel', type = "pills",
+                                                       shiny::tabPanel(value = "nrsRel", "NRS relationship", mod_RelNRS_ui("RelNRS_ui_1")),
+                                                       shiny::tabPanel(value = "csRel", "Coastal Stations relationship", mod_RelCS_ui("RelCS_ui_1")),
+                                                       shiny::tabPanel(value = "cprRel", "CPR relationship", mod_RelCPR_ui("RelCPR_ui_1"))
                                     )),
                     shiny::tabPanel("Information",
                                     fluidPage(

@@ -34,7 +34,7 @@ usethis::use_package( "pracma")
 usethis::use_pipe()
 
 # usethis::use_dev_package("planktonr", type = "Imports", remote = "PlanktonTeam/planktonr@AddShinyFuncs")
-remotes::install_github("PlanktonTeam/planktonr", force = TRUE)
+remotes::install_github("PlanktonTeam/planktonr@molecular", force = TRUE)
 
 #devtools::install_local("C:/Users/dav649/Documents/GitHub/planktonr", force = TRUE)
 
