@@ -44,8 +44,10 @@ datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>% #TODO move the MLD calcs to
                                          TRUE ~ NA_real_)) %>%
   dplyr::select(-c("MLDtemp_m", "MLDsal_m", "Latitude", "Longitude", "tz")) %>%
   tidyr::pivot_longer(-c("TripCode", "Year_Local", "Month_Local", "SampleTime_Local", "StationName", "StationCode"), 
-                      names_to = "Parameters", values_to = "Values")
-
+                      names_to = "Parameters", values_to = "Values") %>%
+  dplyr::filter(Values > 0, 
+                !(Values == 5.964 & StationCode == 'YON')) %>%   
+  planktonr::pr_remove_outliers(2) 
 
 # CPR time series data ----------------------------------------------------
 
@@ -145,7 +147,7 @@ daynightzAll <- planktonr::pr_get_DayNight("Z") %>%
   dplyr::group_by(Species) %>% 
   dplyr::summarise(count = dplyr::n(),
                    .groups = 'drop') %>% 
-  dplyr::filter(count > 10)
+  dplyr::filter(count > 14)
 
 daynightz <- planktonr::pr_get_DayNight("Z") %>% 
   dplyr::filter(Species %in% daynightzAll$Species)
@@ -155,7 +157,7 @@ daynightpAll <- planktonr::pr_get_DayNight("P") %>%
   dplyr::group_by(Species) %>% 
   dplyr::summarise(count = dplyr::n(),
                    .groups = 'drop') %>% 
-  dplyr::filter(count > 10)
+  dplyr::filter(count > 14)
 
 daynightp <- planktonr::pr_get_DayNight("P") %>% 
   dplyr::filter(Species %in% daynightpAll$Species)

@@ -28,15 +28,13 @@ mod_NutrientsBGC_server <- function(id){
       req(input$parameter)
       validate(need(!is.na(input$station), "Error: Please select a station."))
       validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
-      # updateSelectizeInput(session, "depth", "Select a depth", server = TRUE, 
-      #                      choices = NRSBGCNutrients[NRSBGCNutrients$Station %in% input$station & NRSBGCNutrients$name %in% input$parameter,]$SampleDepth_m)
     })
     
     selected <- reactive({
       req(input$date)
       validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
-
+      
       pkg.env$Nuts %>%
         dplyr::filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
@@ -61,7 +59,10 @@ mod_NutrientsBGC_server <- function(id){
     # Create timeseries object the plotOutput function is expecting
     gg_out1 <- reactive({
       
-      interp <- input$interp
+      if(input$parameter == 'Oxygen_umolL' & !("Maria Island" %in% input$station || "Rottnest Island" %in% input$station)){
+        ggplot2::ggplot + ggplot2::geom_blank()
+      } else {
+        interp <- input$interp
       
       if(interp == 'Interpolate'){
         planktonr::pr_plot_NRSEnvContour(selected(), Interpolation = TRUE, Fill_NA = FALSE)
@@ -69,6 +70,7 @@ mod_NutrientsBGC_server <- function(id){
         planktonr::pr_plot_NRSEnvContour(selected(), Interpolation = TRUE, Fill_NA = TRUE, maxGap = 3)
       } else {
         planktonr::pr_plot_NRSEnvContour(selected(), Interpolation = FALSE, Fill_NA = FALSE)
+      }
       }
       
     }) %>% bindCache(input$station, input$parameter, input$date, input$interp)
@@ -86,9 +88,9 @@ mod_NutrientsBGC_server <- function(id){
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 
-      
-      planktonr::pr_plot_NRSmap(selected())
-      
+
+        planktonr::pr_plot_NRSmap(selected())
+ 
     }, bg = "transparent") %>% bindCache(input$station)
     
     # add text information 
@@ -97,7 +99,7 @@ mod_NutrientsBGC_server <- function(id){
       
       if(input$parameter == 'Oxygen_umolL') {
         paste("A contour plot of nutrients from the NRS around Australia, as a time series and a monthly climatology by depth. 
-      If raw data is used the dots represent actual samples. <b>NOTE: Oxygen data is only available for Maria Island and Rottnest Island</b>")
+      If raw data is used the dots represent actual samples. <br> <br> <b>NOTE: Oxygen data is only available for Maria Island and Rottnest Island</b>")
       } else {
         "A contour plot of nutrients from the NRS around Australia, as a time series and a monthly climatology by depth. 
       If raw data is used the dots represent actual samples"
@@ -106,8 +108,15 @@ mod_NutrientsBGC_server <- function(id){
     }) %>% bindCache(input$parameter)
     
     # Parameter Definition
-    output$ParamDefb <- fParamDefServer(selected) # Download csv of data
     
+    output$ParamDefb <- if(input$parameter == 'Oxygen_umolL'){
+            shiny::renderText({
+              paste("<h6><strong>", planktonr::pr_relabel('Oxygen_umolL', style = "plotly"), ":</strong> ",
+              pkg.env$ParamDef %>% dplyr::filter(Parameter == 'Oxygen_umolL') %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+              })
+    } else {
+      fParamDefServer(selected) # Download csv of data
+    } %>% bindCache(input$parameter)
     
   })
 }
