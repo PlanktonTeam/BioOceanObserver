@@ -121,27 +121,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
                             label = strong("Interpolate data?"),
                             choices = c("Interpolate", "Raw data", "Interpolate with gap filling"),
                             selected = "Raw data"),
-    )#,
-
-    # shiny::conditionalPanel(
-    #   condition = paste0("input.", tabsetPanel_id, " == 4 && input.navbar == 'Microbes'"),
-    #   shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
-    #   selectInput(inputId = ns("p1"), label = 'Select an y parameter', 
-    #               choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), selected = "Bacterial_Temperature_Index_KD"),
-    #   shiny::htmlOutput(ns("ParamDefm1")),
-    #   selectInput(inputId = ns("p2"), label = 'Select a x parameter',
-    #               choices = c(planktonr::pr_relabel(unique(pkg.env$Pico$Parameters), style = "simple"), "Trichodesmium",
-    #                           planktonr::pr_relabel(unique(ctd$Parameters), style = "simple")), selected = "Prochlorococcus_cellsmL"), #TODO pkg.env
-    #   #TODO Tricho needs to be added to pr_relabel if we keep this in
-    #   shiny::htmlOutput(ns("ParamDefm2"))
-    # ),
-    # 
-    # shiny::conditionalPanel(
-    #   condition = paste0("input.", tabsetPanel_id, " == 5 && input.navbar == 'Microbes'"),
-    #   shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
-    #   selectInput(inputId = ns("p1"), label = 'Select a parameter', 
-    #               choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), selected = "Bacterial_Temperature_Index_KD")
-    # )
+    )
     
   ) # End of shiny::sidebarpanel
 
@@ -460,30 +440,36 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4){ #dat 1
 
   shiny::sidebarPanel(
     shiny::conditionalPanel(
-      condition = "input.navbar == 'Relationships'",
-      plotOutput(ns("plotmap")),
-      shiny::HTML("<h6><strong>Select a station:</strong></h5>"),
-      shiny::checkboxGroupInput(inputId = ns("Site"), label = NULL, choices = ChoiceSite, selected = SelectedVar),
-      shiny::HTML("<h6><strong>Select a group for the y axis:</strong></h5>"),
-      shiny::selectizeInput(inputId = ns('groupy'), label = NULL, choices = ChoicesGroupy,
+        tags$head(tags$style(HTML("
+                              .shiny-split-layout > div {overflow: visible;}
+                                    "))),
+        condition = "input.navbar == 'Relationships'",
+        plotOutput(ns("plotmap")),   
+        shiny::HTML("<h6><strong>Select a station:</strong></h5>"),           
+        shiny::checkboxGroupInput(inputId = ns("Site"), label = NULL, choices = ChoiceSite, selected = SelectedVar),
+        shiny::HTML("<h6><strong>Select a group & variable for the y axis:</strong></h5>"),
+        shiny::splitLayout(
+          shiny::selectizeInput(inputId = ns('groupy'), label = NULL, choices = ChoicesGroupy,
                             selected = SelectedGroupy),
-      shiny::HTML("<h6><strong>Select a y variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('py'), label = NULL, choices = NULL),
-      shiny::htmlOutput(ns("ParamDefy"))
-    ),    
+          shiny::selectizeInput(inputId = ns('py'), label = NULL, choices = NULL)
+          
+        ),
+        shiny::htmlOutput(ns("ParamDefy"))
+      ),    
     shiny::conditionalPanel(
       condition = paste0("input.navbar == 'Relationships' && input.", tabsetPanel_id," == 1"),
-      shiny::HTML("<h6><strong>Select a group for the x axis:</strong></h5>"),
-      shiny::selectizeInput(inputId = ns('groupx'), label = NULL, choices = ChoicesGroupx,
+      shiny::HTML("<h6><strong>Select a group & variable for the x axis:</strong></h5>"),
+      shiny::splitLayout(
+        shiny::selectizeInput(inputId = ns('groupx'), label = NULL, choices = ChoicesGroupx,
                             selected = SelectedGroupx),
-      shiny::HTML("<h6><strong>Select a x variable:</strong></h6>"),
-      shiny::selectizeInput(inputId = ns('px'), label = NULL, choices = NULL),
+      shiny::selectizeInput(inputId = ns('px'), label = NULL, choices = NULL)
+      ),
       shiny::htmlOutput(ns("ParamDefx")),
       shiny::HTML("<h6><strong>Overlay trend line?</strong></h6>"),
       shiny::selectizeInput(inputId = ns("smoother"), label = NULL, 
                             choices = c("Smoother", "Linear", "None"), selected = "None")
+      )
     )
-  )
 }
 
 #' Generic BOO Plankton Panel
