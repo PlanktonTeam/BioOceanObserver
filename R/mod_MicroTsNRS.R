@@ -28,9 +28,9 @@ mod_MicroTsNRS_server <- function(id){
     # Sidebar ----------------------------------------------------------
     observeEvent(input$all, {
       if(input$all == TRUE){
-        params <- planktonr::pr_relabel(unique(dat$Parameters), style = "simple")
+        params <- planktonr::pr_relabel(unique(pkg.env$datNRSm$Parameters), style = "simple")
       } else {
-        params <- planktonr::pr_relabel(unique((dat %>% 
+        params <- planktonr::pr_relabel(unique((pkg.env$datNRSm %>% 
                                         dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters)))$Parameters), style = "simple")
       }
       shiny::updateSelectInput(session, 'parameterm', choices = params, selected = "Bacterial_Temperature_Index_KD")
