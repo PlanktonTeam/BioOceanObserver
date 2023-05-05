@@ -13,7 +13,7 @@ mod_RelNRS_ui <- function(id){
   tagList(
     sidebarLayout(
       fRelationSidebar(id = id, tabsetPanel_id = "relNRS", dat1 = pkg.env$datNRSz, dat2 = pkg.env$datNRSp, 
-                       dat3 = pkg.env$datNRSm, dat4 = ctd), #TODO pkg.env$
+                       dat3 = pkg.env$datNRSm, dat4 = pkg.env$ctd), 
       fRelationPanel(id = id, tabsetPanel_id = "relNRS")
     )
   )
@@ -33,14 +33,17 @@ mod_RelNRS_server <- function(id){
         } else if (input$groupy %in% 'Phytoplankton'){
         dat <- pkg.env$datNRSp %>%
           dplyr::mutate(SampleDepth_m = 10)
-        } else if (input$groupy %in% 'Microbes - NRS'){
+        } else if (input$groupy %in% 'Microbes - NRS' & input$all == TRUE){
         dat <- pkg.env$datNRSm %>% 
-          dplyr::select(-c("TripCode_depth")) %>%
           dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10) 
+        } else if (input$groupy %in% 'Microbes - NRS' & input$all == FALSE){
+          dat <- pkg.env$datNRSm %>% 
+            dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10) %>% 
+            dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters))
         } else if (input$groupy %in% 'Physical'){
-        dat <- ctd  #TODO pkg.env$
+        dat <- pkg.env$ctd  
         }
-    }) %>% bindCache(input$groupy)
+    }) %>% bindCache(input$groupy, input$all)
     
     observeEvent(daty(), {
       vars <- c("Biomass_mgm3", "PhytoAbundance_CellsL", "Bacterial_Temperature_Index_KD", "CTD_Temperature_degC")
@@ -62,7 +65,7 @@ mod_RelNRS_server <- function(id){
               dplyr::select(-c("TripCode_depth")) %>%
               dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10) 
             } else if (input$groupx %in% 'Physical'){
-              dat1 <- ctd  #TODO pkg.env$
+              dat1 <- pkg.env$ctd  
               }       
     }) %>% bindCache(input$groupx)
 

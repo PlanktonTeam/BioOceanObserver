@@ -12,8 +12,8 @@ mod_RelCS_ui <- function(id){
   
   tagList(
     sidebarLayout(
-      fRelationSidebar(id = id, tabsetPanel_id = "RelCS", dat1 = datCSm, dat4 = CSChem, dat3 = pkg.env$datNRSp,
-                       dat2 = pkg.env$datNRSm), #TODO pkg.env$
+      fRelationSidebar(id = id, tabsetPanel_id = "RelCS", dat1 = pkg.env$datCSm, dat4 = pkg.env$CSChem, dat3 = pkg.env$datNRSp,
+                       dat2 = pkg.env$datNRSm), 
       fRelationPanel(id = id, tabsetPanel_id = "RelCS")
     )
   )
@@ -26,7 +26,7 @@ mod_RelCS_server <- function(id){
   moduleServer(id, function(input, output, session, RelCS){
     
     daty <- reactive({
-      dat <- datCSm  #TODO pkg.env$
+      dat <- pkg.env$datCSm 
     }) %>% bindCache(input$groupy)
     
     observeEvent(daty(), {
@@ -35,7 +35,7 @@ mod_RelCS_server <- function(id){
     })
     
     datx <- reactive({
-      dat1 <- CSChem  #TODO pkg.env$        
+      dat1 <- pkg.env$CSChem         
     }) %>% bindCache(input$groupx)
     
     observeEvent(datx(), {
