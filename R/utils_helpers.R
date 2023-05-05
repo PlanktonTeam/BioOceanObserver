@@ -77,9 +77,12 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
       shiny::selectInput(inputId = ns("parameterm"), 
                          label = NULL, 
-                         choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), 
+                         choices = selectedVar, 
                          selected = selectedVar),
       shiny::htmlOutput(ns("ParamDefm")),
+      shiny::checkboxInput(inputId = ns("all"), 
+                           label = strong("Tick for more microbial parameters"), 
+                           value = FALSE),
       shiny::br()
     ),
     
@@ -454,7 +457,10 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4){ #dat 1
           shiny::selectizeInput(inputId = ns('py'), label = NULL, choices = NULL)
           
         ),
-        shiny::htmlOutput(ns("ParamDefy"))
+        shiny::htmlOutput(ns("ParamDefy")),
+        shiny::checkboxInput(inputId = ns("all"), 
+                             label = strong("Tick for more microbial parameters"), 
+                             value = FALSE),
       ),    
     shiny::conditionalPanel(
       condition = paste0("input.navbar == 'Relationships' && input.", tabsetPanel_id," == 1"),

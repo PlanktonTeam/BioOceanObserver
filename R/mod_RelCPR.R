@@ -12,8 +12,8 @@ mod_RelCPR_ui <- function(id){
   
   tagList(
     sidebarLayout(
-      fRelationSidebar(id = id, tabsetPanel_id = "RelCPR", dat1 = datCPRz, dat2 = pkg.env$datCPRp, dat4 = pkg.env$PolCPR, 
-                       dat3 = pkg.env$datNRSm), #TODO pkg.env$
+      fRelationSidebar(id = id, tabsetPanel_id = "RelCPR", dat1 = pkg.env$datCPRz, dat2 = pkg.env$datCPRp, dat4 = pkg.env$PolCPR, 
+                       dat3 = pkg.env$datNRSm), 
       fRelationPanel(id = id, tabsetPanel_id = "RelCPR")
     )
   )

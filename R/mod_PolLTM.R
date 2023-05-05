@@ -43,7 +43,6 @@ mod_PolLTM_server <- function(id){
       
       selectedDataLTM <- pkg.env$PolLTM %>% 
         dplyr::filter(.data$StationName %in% input$SiteLTM,
-                      .data$SampleDepth_m < 15,
                       !.data$Parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL")) 
       
     }) %>% bindCache(input$SiteLTM)
