@@ -64,13 +64,8 @@ mod_MicroTsCS_server <- function(id){
       "A plot of selected indices from the NRS around Australia, as a time series, a monthly climatology and an annual mean averaged across all depths."
     })
     output$PlotExp3 <- renderText({
-      "A contour plot of microbial indices from the NRS around Australia, as a time series and a monthly climatology by depth.
-      If raw data is used the dots represent actual samples"
+      "A plot of microbial indices from the NRS around Australia, as a time series and a monthly climatology averaged to the nearest 10m."
     })
-    output$PlotExp4 <- renderText({
-      "A plot of microbial indices against abundance measure from the NRS around Australia"
-    })
-
 
 
     # Plot Trends -------------------------------------------------------------
@@ -158,48 +153,23 @@ mod_MicroTsCS_server <- function(id){
 
     # Plots by depths ---------------------------------------------------------
 
-    ## Coastal samples are all at around 2m
+    observeEvent({input$CSmts == 3}, {
 
-    # Plots by Parameters ---------------------------------------------------------
+      gg_out3 <- reactive({
 
-    # observeEvent({input$CSmts == 5}, {
-    # 
-    #   selectedData1 <- reactive({
-    #     req(input$Site)
-    #     req(input$p1)
-    #     validate(need(!is.na(input$Site), "Error: Please select a station."))
-    #     validate(need(!is.na(input$p1), "Error: Please select a parameter."))
-    # 
-    #     selectedData1 <- datCSm %>% #pkg.env$datCSm %>%
-    #       dplyr::filter(.data$State %in% input$Site,
-    #                     .data$Parameters %in% c(input$p1),
-    #                     dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-    #       tidyr::pivot_wider(id_cols = c("StationName", "SampleTime_Local"),
-    #                          names_from = "Parameters", values_from = "Values", values_fn = mean)
-    # 
-    #   }) %>% bindCache(input$p1, input$Site, input$DatesSlide[1], input$DatesSlide[2])
-    # 
-    #   gg_out5 <- reactive({
-    # 
-    #     p1 <- planktonr::pr_plot_box(selectedData1(), input$p1) +
-    #       ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-    #                      legend.position = "none") 
-    #     
-    #     p2 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "Coastal", trans = 'identity') +
-    #       planktonr::theme_pr()  
-    #     
-    #     p1 / p2
-    # 
-    #   }) %>% bindCache(input$p1, input$Site, input$DatesSlide[1], input$DatesSlide[2])
-    # 
-    #   output$timeseries5 <- renderPlot({
-    #     gg_out5()
-    #   })
-    # 
-    #   # Download -------------------------------------------------------
-    #   output$downloadData5 <- fDownloadButtonServer(input, selectedData1(), "Compare") # Download csv of data
-    #   output$downloadPlot5 <- fDownloadPlotServer(input, gg_id = gg_out5(), "Compare") # Download figure
-    # 
-    # })
+        trend <-  input$smoother
+        planktonr::pr_plot_Enviro(selectedData(), Trend = trend)
+        
+      }) %>% bindCache(input$p1, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$smoother)
+
+      output$timeseries3 <- renderPlot({
+        gg_out3()
+      }, height = function() {length(unique(selectedData()$SampleDepth_m)) * 200}) 
+
+      # Download -------------------------------------------------------
+      output$downloadData3 <- fDownloadButtonServer(input, selectedData(), "Compare") # Download csv of data
+      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3(), "Compare") # Download figure
+
+    })
   })
 }
