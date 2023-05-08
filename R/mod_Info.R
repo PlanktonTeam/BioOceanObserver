@@ -17,8 +17,12 @@ mod_info_ui <- function(id){
                            shiny::h4("Does the app use real time data?"),
                            shiny::p("No, to keep the App efficient the data is harvested from the AODN monthly and pre-wrangled."),
                            shiny::h4("Where is the data behind the APP available from?"),
-                           shiny::p("All the data is accesible through direct download from the AODN portal or
-                                    by using the pr_get_xxx functions in planktonr"),
+                           shiny::p("All the non-genomic data is accesible through direct download from the AODN portal or
+                                    by using the pr_get_xxx functions in planktonr. The raw genomic data is available through AMB data portal,
+                                    the calculated indices are available through the Australian Microbiome, Microbial Ocean Atlas git page"),
+                           shiny::HTML("<li>AODN Portal <a href = https://portal.aodn.org.au/ target = _blank> Website</a>"),
+                           shiny::HTML("<li>AMB portal <a href = https://data.bioplatforms.com/organization/about/australian-microbiome target = _blank> Website</a>"),
+                           shiny::HTML("<li>AMB github <a href = https://github.com/AusMicrobiome/microbial_ocean_atlas target = _blank> Website</a>"),
                            shiny::h4("How can I make these figures myself?"),
                            shiny::p("Download the data and make your own plots using planktonr. 
                                     Vignettes are available in planktonr to help you navigate the data and package"),
@@ -65,10 +69,13 @@ mod_info_ui <- function(id){
                            shiny::HTML("<li>A.J. Richardson, A.W. Walne, A.W.G. John, T.D. Jonas, J.A. Lindley, D.W. Sims, D. Stevens, M. Witt, (2006). <em>Using continuous plankton recorder data</em>. Progress in Oceanography, 68.1, doi: 10.1016/j.pocean.2005.09.011. <a href = https://www.sciencedirect.com/science/article/pii/S0079661105001424?via%3Dihub target = _blank> Website</a>."),
                            shiny::HTML("<li>IMOS National Reference Stations website. <a href = https://imos.org.au/facilities/nationalmooringnetwork/nrs target = _blank> Website</a>."),
                            shiny::HTML("<li>IMOS Continuous PLankton Recorder Survey website. <a href = https://imos.org.au/facilities/shipsofopportunity/auscontinuousplanktonrecorder target = _blank> Website</a>."),
-                           
+                           shiny::HTML("<li> Australian MIcrobiome Scientific Manual. <a href = https://confluence.csiro.au/display/ASM/Ausmicrobiome+Scientific+Manual target = _blank> Website</a>."),
+                           shiny::br(),
+                           shiny::br(),
                            shiny::h5("These references are also good resources for visualising this data"),
                            shiny::HTML("<li>Richardson A.J, Eriksen R,S, Moltmann T, Hodgson-Johnston I, Wallis J.R. (2020). <em>State and Trends of Australia's Ocean Report</em>. Integrated Marine Observing System (IMOS). <a href = https://www.imosoceanreport.org.au/about/ target = _blank> Website</a>."),
                            shiny::HTML("<li>Richardson A.J, Eriksen R.S, Rochester, W. (2015) <em>Plankton 2015: State of Australia's Oceans</em>. CSIRO report. ISBN 978-1-4863-0566-7 (EPDF). <a href = https://imos.org.au/fileadmin/user_upload/shared/Data_Tools/15-00245_OA_Plankton2015_20ppBrochure_WEB_151116.pdf target = _blank> Website</a>."),
+                           shiny::HTML("<li>Brown, M., van de Kamp, J., Ostrowski, M. <em>et al</em>. (2018). Systematic, <em>continental scale temporal monitoring of marine pelagic microbiota by the Australian Marine Microbial Biodiversity Initiative</em>. Sci Data 5, 180130. doi.org/10.1038/sdata.2018.130 <a href = https://doi.org/10.1038/sdata.2018.130 target = _blank> Website</a>."),
                            shiny::br(),
                            shiny::br(),
                            shiny::h4("Package citations"),
@@ -122,6 +129,12 @@ mod_info_ui <- function(id){
                                      PHB also collects at 75 and 100m. MAI at 70 & 80m. Prior to July 2017 water column samples were taken, these have been excluded here."),
                            shiny::HTML('<center><img src = "www/NRSMooringDesign.png"></center>'),
                            shiny::HTML('<center>Schematic of the NRS moorings showing depths and instrumentation</center>'),
+                           shiny::br(),
+                           shiny::br(),
+                           shiny::h2("Coastal Stations"),
+                           shiny::h5("Nutrients, picoplankton and microbial samples are collected at the Coastal Station in Botany Bay, the Derwent, the GBR and Port Phillip Bay. 
+                                     Details for this sampling can be found in the Australian Microbiome Scientifc Manual."), 
+                           shiny::HTML("<a href = https://confluence.csiro.au/display/ASM/Ausmicrobiome+Scientific+Manual target = _blank> Website</a>."),
                            shiny::br(),
                            shiny::br(),
                            shiny::h2("CPR"),
