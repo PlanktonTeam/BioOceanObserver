@@ -35,7 +35,7 @@ Tricho <- planktonr::pr_get_NRSData(Type = 'Phytoplankton', Variable = "abundanc
 datNRSm <- datNRSm %>% dplyr::bind_rows(Tricho)
 rm(Tricho)
 
-datCSm  <- planktonr::pr_get_NRSMicro("Coastal") ## microbial data
+datCSm  <- planktonr::pr_get_NRSMicro("Coastal") %>% droplevels()   ## microbial data
 
 datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>% #TODO move the MLD calcs to planktonr
   tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
