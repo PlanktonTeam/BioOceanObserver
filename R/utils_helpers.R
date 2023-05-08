@@ -108,24 +108,26 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       shiny::br(),
       shiny::br()
     ),
-    
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 3 && input.navbar != 'Microbes'"), # Plankton
       shiny::checkboxInput(inputId = ns("scaler3"),
                            label = strong("Change the plot scale to proportion"),
                            value = FALSE),
     ),
-    
-    
-    
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 3 && input.navbar == 'Microbes'"), # Micro
+      condition = paste0("input.", tabsetPanel_id, " == 3 && input.mic == 'mts'"), # MicroNRS
       shiny::selectizeInput(inputId = ns("interp"),
                             label = strong("Interpolate data?"),
                             choices = c("Interpolate", "Raw data", "Interpolate with gap filling"),
                             selected = "Raw data"),
+    ),
+    shiny::conditionalPanel(
+      condition = paste0("input.", tabsetPanel_id, " == 3 && input.mic == 'mtsCS'"), # MicroCoastal
+      shiny::selectizeInput(inputId = ns("smoother"),
+                            label = strong("Overlay trend line?"),
+                            choices = c("None", "Linear", "Smoother"),
+                            selected = "None"),
     )
-    
   ) # End of shiny::sidebarpanel
 
 }
@@ -167,7 +169,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                              fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
                          )
                        },
-                       if (tabsetPanel_id == "NRSmts"){
+                       if (tabsetPanel_id %in% c("NRSmts", "CSmts")){
                          shiny::tabPanel("Trend analysis by depth", value = 3,
                                          h6(textOutput(ns("PlotExp3"), container = span)),
                                          plotOutput(ns("timeseries3"), height = 'auto') %>%
