@@ -25,9 +25,8 @@ NRSStation <- planktonr::pr_get_NRSStation() %>%
 
 datNRSz <- planktonr::pr_get_Indices("NRS", "Z") 
 datNRSp <- planktonr::pr_get_Indices("NRS", "P") 
-datNRSm <- planktonr::pr_get_NRSMicro("NRS") %>%  ## microbial data
-  tidyr::drop_na() %>% 
-  dplyr::select(-"TripCode_depth")
+datNRSm <- planktonr::pr_get_NRSMicro("NRS") %>%  ## NRS microbial data
+  tidyr::drop_na() 
 Tricho <- planktonr::pr_get_NRSData(Type = 'Phytoplankton', Variable = "abundance", Subset = "genus") %>% 
   dplyr::select(dplyr::any_of(colnames(datNRSm)), Values = "Trichodesmium")  %>% 
   dplyr::filter(!.data$StationCode %in% c("NWS", "SOTS_RAS", "NA"))%>% 
@@ -35,7 +34,10 @@ Tricho <- planktonr::pr_get_NRSData(Type = 'Phytoplankton', Variable = "abundanc
 datNRSm <- datNRSm %>% dplyr::bind_rows(Tricho)
 rm(Tricho)
 
-datCSm  <- planktonr::pr_get_NRSMicro("Coastal") %>% droplevels()   ## microbial data
+datCSm  <- planktonr::pr_get_NRSMicro("Coastal") %>% ## coastal microbial data
+  droplevels() %>% 
+  dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
+                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'day'))
 
 datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>% #TODO move the MLD calcs to planktonr
   tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
