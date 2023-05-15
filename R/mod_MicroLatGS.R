@@ -24,10 +24,10 @@ mod_MicroLatGS_ui <- function(id){
           shiny::HTML("<h5><strong>Latitudes:</strong></h5>"),
           shiny::sliderInput(nsMicroLatGS("LatSlide"), 
                              label = NULL, 
-                             min = floor(min(datGSm$Latitude),0), #TODO pkg.env$
-                             max = floor(max(datGSm$Latitude),0), #TODO pkg.env$
-                             value = c(floor(min(datGSm$Latitude),0), #TODO pkg.env$
-                                       floor(max(datGSm$Latitude),0)) #TODO pkg.env$
+                             min = floor(min(datGSm$Latitude)), #TODO pkg.env$
+                             max = floor(max(datGSm$Latitude)), #TODO pkg.env$
+                             value = c(floor(min(datGSm$Latitude)), #TODO pkg.env$
+                                       floor(max(datGSm$Latitude))) #TODO pkg.env$
                              ),
           shiny::HTML("<h5><strong>Max depth to plot:</strong></h5>"),
           shiny::numericInput(nsMicroLatGS("Depth"), label = NULL, value = 100, min = 10, max = max(datGSm$SampleDepth_m), step = NA),#TODO pkg.env$
@@ -42,7 +42,8 @@ mod_MicroLatGS_ui <- function(id){
                                value = FALSE),
           shiny::br()
       ),
-      shiny::mainPanel(h6(textOutput(nsMicroLatGS("PlotExp1"), container = span)),
+      shiny::mainPanel(h4(textOutput(nsMicroLatGS("voyageTitle"), container = span)),
+                       h6(textOutput(nsMicroLatGS("PlotExp1"), container = span)),
                        plotOutput(nsMicroLatGS("timeseries1")) %>% 
                          shinycssloaders::withSpinner(color="#0dc5c1"),
                        div(style="display:inline-block; float:right; width:60%",
@@ -95,10 +96,12 @@ mod_MicroLatGS_server <- function(id){
     }, bg = "transparent") %>% bindCache(input$LatSlide[1], input$LatSlide[2])
 
     # Add text information
+    output$voyageTitle <- renderText({
+      "GO-SHIP P15S 2016."
+    })
     output$PlotExp1 <- renderText({
       "A plot of selected microbial indices from GO-SHIP P15 plotted latitudinally as points and a raster."
     })
-
 
     # Plot Trends -------------------------------------------------------------
 
