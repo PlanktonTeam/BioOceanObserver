@@ -27,7 +27,8 @@ app_ui <- function(request) {
                     shiny::tabPanel("Microbes",
                                     shiny::tabsetPanel(id = 'mic', type = "pills",
                                                        shiny::tabPanel(value = "mts", "Time Series NRS", mod_MicroTsNRS_ui("MicroTsNRS_ui_1")),
-                                                       shiny::tabPanel(value = "mtsCS", "Time Series Coastal", mod_MicroTsCS_ui("MicroTsCS_ui_1"))
+                                                       shiny::tabPanel(value = "mtsCS", "Time Series Coastal", mod_MicroTsCS_ui("MicroTsCS_ui_1")),
+                                                       shiny::tabPanel(value = "GSlat", "Voyage data", mod_MicroLatGS_ui("MicroLatGS_ui_1"))
                                                        # shiny::tabPanel("Composition")
                                     )),
                     shiny::tabPanel("Phytoplankton",
