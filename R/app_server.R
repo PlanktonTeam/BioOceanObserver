@@ -137,7 +137,9 @@ app_server <- function( input, output, session ) {
     if(input$mic == "mtsCS"){
       mod_MicroTsCS_server("MicroTsCS_ui_1")
     }
-    
+    if(input$mic == "GSlat"){
+      mod_MicroLatGS_server("MicroLatGS_ui_1")
+    }
   })
     
 

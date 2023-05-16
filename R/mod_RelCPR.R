@@ -86,7 +86,7 @@ mod_RelCPR_server <- function(id){
         tidyr::drop_na() %>% 
         planktonr::pr_reorder()
       
-    }) %>% bindCache(input$py, input$px, input$Site, input$groupy, input$groupx, input$smoother)
+    }) %>% bindCache(input$py, input$px, input$Site, input$smoother)
     
     # Parameter Definition
     output$ParamDefy <-   shiny::renderText({
@@ -101,7 +101,7 @@ mod_RelCPR_server <- function(id){
     # Sidebar Map
     output$plotmap <- renderPlot({
       planktonr::pr_plot_CPRmap(selectedData())
-    }, bg = "transparent") %>% bindCache(input$Site, input$py)
+    }, bg = "transparent") %>% bindCache(input$Site)
     
     # Add text information 
     output$PlotExp1 <- shiny::renderText({
@@ -125,7 +125,7 @@ mod_RelCPR_server <- function(id){
 
       planktonr::pr_plot_scatter(selectedData(), x, y, trend)
 
-      }) %>% bindCache(input$py, input$px, input$Site, input$groupy, input$groupx, input$smoother)
+      }) %>% bindCache(input$py, input$px, input$Site, input$smoother)
       
       output$scatter1 <- renderPlot({
         gg_out1()
