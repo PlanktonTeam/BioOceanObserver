@@ -21,16 +21,21 @@ mod_MicroLatGS_ui <- function(id){
           shiny::plotOutput(nsMicroLatGS("plotmap"),
                             height = "300px", 
                             width = "100%"),
-          shiny::HTML("<h5><strong>Latitudes:</strong></h5>"),
+          shiny::HTML("<h5><strong>Latitude range to plot:</strong></h5>"),
           shiny::sliderInput(nsMicroLatGS("LatSlide"), 
                              label = NULL, 
-                             min = floor(min(datGSm$Latitude)), #TODO pkg.env$
-                             max = floor(max(datGSm$Latitude)), #TODO pkg.env$
-                             value = c(floor(min(datGSm$Latitude)), #TODO pkg.env$
-                                       floor(max(datGSm$Latitude))) #TODO pkg.env$
+                             min = floor(min(pkg.env$datGSm$Latitude)),
+                             max = floor(max(pkg.env$datGSm$Latitude)), 
+                             value = c(min(pkg.env$datGSm$Latitude),
+                                       max(pkg.env$datGSm$Latitude)) 
                              ),
-          shiny::HTML("<h5><strong>Max depth to plot:</strong></h5>"),
-          shiny::numericInput(nsMicroLatGS("Depth"), label = NULL, value = 100, min = 10, max = max(datGSm$SampleDepth_m), step = NA),#TODO pkg.env$
+          shiny::HTML("<h5><strong>Depth range to plot:</strong></h5>"),
+          shiny::sliderInput(nsMicroLatGS("DepthSlide"), 
+                             label = NULL, 
+                             min = floor(min(pkg.env$datGSm$SampleDepth_m)), 
+                             max = floor(max(pkg.env$datGSm$SampleDepth_m)), 
+                             value = c(min(pkg.env$datGSm$SampleDepth_m), 100)
+          ),
           shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
           shiny::selectInput(inputId = nsMicroLatGS("parameterm"), 
                              label = NULL, 
@@ -64,9 +69,9 @@ mod_MicroLatGS_server <- function(id){
     # Sidebar ----------------------------------------------------------
     observeEvent(input$all, {
       if(input$all == TRUE){
-        params <- planktonr::pr_relabel(unique(datGSm$Parameters), style = "simple") #TODO pkg.env$
+        params <- planktonr::pr_relabel(unique(pkg.env$datGSm$Parameters), style = "simple") 
       } else {
-        params <- planktonr::pr_relabel(unique((datGSm %>% #TODO pkg.env$
+        params <- planktonr::pr_relabel(unique((pkg.env$datGSm %>% 
                                                   dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters)))$Parameters), style = "simple")
       }
       shiny::updateSelectInput(session, 'parameterm', choices = params, selected = "Bacterial_Temperature_Index_KD")
@@ -74,14 +79,15 @@ mod_MicroLatGS_server <- function(id){
     
     selectedData <- reactive({
 
-      selectedData <- datGSm %>% #pkg.env$datCSm %>%
+      selectedData <- pkg.env$datGSm %>%
         dplyr::filter(.data$Parameters %in% input$parameterm,
-                      dplyr::between(.data$Latitude, input$LatSlide[1], input$LatSlide[2])) %>%
+                      dplyr::between(.data$Latitude, input$LatSlide[1], input$LatSlide[2]),
+                      dplyr::between(.data$SampleDepth_m, input$DepthSlide[1], input$DepthSlide[2])) %>%
         droplevels() %>%
         dplyr::mutate(name = as.factor(.data$Parameters)) %>% 
         tidyr::drop_na()
 
-    }) %>% bindCache(input$parameterm, input$LatSlide[1], input$LatSlide[2])
+    }) %>% bindCache(input$parameterm, input$LatSlide[1], input$LatSlide[2], input$DepthSlide[1], input$DepthSlide[2])
 
     shiny::exportTestValues(
       MicroLatGS = {ncol(selectedData())},
@@ -92,7 +98,7 @@ mod_MicroLatGS_server <- function(id){
 
     # Sidebar Map
     output$plotmap <- renderPlot({
-      planktonr::pr_plot_Voyagemap(datGSm, selectedData(), Country = c("Australia", "New Zealand")) 
+      planktonr::pr_plot_Voyagemap(pkg.env$datGSm, selectedData(), Country = c("Australia", "New Zealand")) 
     }, bg = "transparent") %>% bindCache(input$LatSlide[1], input$LatSlide[2])
 
     # Add text information
@@ -100,7 +106,7 @@ mod_MicroLatGS_server <- function(id){
       "GO-SHIP P15S 2016."
     })
     output$PlotExp1 <- renderText({
-      "A plot of selected microbial indices from GO-SHIP P15 plotted latitudinally as points and a raster."
+      "A plot of selected microbial indices from voyage data plotted latitudinally as points and a raster."
     })
 
     # Plot Trends -------------------------------------------------------------
@@ -109,12 +115,12 @@ mod_MicroLatGS_server <- function(id){
 
       gg_out1 <- reactive({
 
-        if (is.null(datGSm$StationName)) #pkg.env$datCSm$StationName))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+        if (is.null(pkg.env$datGSm$Latitude))  
           return(NULL)
 
-        planktonr::pr_plot_latitude(selectedData(), maxDepth = input$Depth, Fill_NA = TRUE, maxGap = 3)
+        planktonr::pr_plot_latitude(selectedData(), Fill_NA = TRUE, maxGap = 3)
 
-      }) %>% bindCache(input$parameterm, input$LatSlide[1], input$LatSlide[2], input$Depth)
+      }) %>% bindCache(input$parameterm, input$LatSlide[1], input$LatSlide[2], input$DepthSlide[1], input$DepthSlide[2])
 
       output$timeseries1 <- renderPlot({
         gg_out1()
