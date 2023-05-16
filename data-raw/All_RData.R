@@ -101,7 +101,9 @@ ctd <- planktonr::pr_get_NRSCTD() %>%
 
 CSChem <- planktonr::pr_get_CSChem() %>% dplyr::filter(Parameters %in% c("Chla_mgm3", "Temperature_degC",
                                                                          "Salinity_psu")) %>% 
-  dplyr::mutate(Parameters = ifelse(Parameters == "Salinity_psu", "Salinity", Parameters))
+  dplyr::mutate(Parameters = ifelse(Parameters == "Salinity_psu", "Salinity", Parameters),
+                SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
+                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'day'))
 
 # Get Sat data ------------------------------------------------------------
 
