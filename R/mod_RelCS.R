@@ -13,7 +13,7 @@ mod_RelCS_ui <- function(id){
   tagList(
     sidebarLayout(
       fRelationSidebar(id = id, tabsetPanel_id = "RelCS", dat1 = pkg.env$datCSm, dat4 = pkg.env$CSChem, dat3 = pkg.env$datNRSp,
-                       dat2 = pkg.env$datNRSm), 
+                       dat2 = datNRSm), 
       fRelationPanel(id = id, tabsetPanel_id = "RelCS")
     )
   )
@@ -25,22 +25,29 @@ mod_RelCS_ui <- function(id){
 mod_RelCS_server <- function(id){
   moduleServer(id, function(input, output, session, RelCS){
     
+    # Sidebar ----------------------------------------------------------
+
     daty <- reactive({
-      dat <- pkg.env$datCSm 
-    }) %>% bindCache(input$groupy)
+      if(input$all == TRUE){
+        dat <- pkg.env$datCSm 
+      } else {
+        dat <- pkg.env$datCSm %>% 
+          dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters))  
+        }
+    }) %>% bindCache(input$all)
     
     observeEvent(daty(), {
       choicesy <- planktonr::pr_relabel(unique(daty()$Parameters), style = "simple")
-      shiny::updateSelectizeInput(session, 'py', choices = choicesy, selected = "Bacterial_Temperature_Index_KD")
+      shiny::updateSelectizeInput(session, 'py', choices = choicesy, selected = 'Bacterial_Temperature_Index_KD')
     })
     
     datx <- reactive({
-      dat1 <- pkg.env$CSChem         
+      dat1 <- CSChem         
     }) %>% bindCache(input$groupx)
     
     observeEvent(datx(), {
       choicesx <- planktonr::pr_relabel(unique(datx()$Parameters), style = "simple")
-      shiny::updateSelectizeInput(session, 'px', choices = choicesx, selected = "Temperature_degC")
+      shiny::updateSelectizeInput(session, 'px', choices = choicesx, selected = 'Temperature_degC')
     })
     
     selectedData <- reactive({
@@ -57,7 +64,7 @@ mod_RelCS_server <- function(id){
         tidyr::pivot_wider(id_cols = dplyr::any_of(vars),
                            names_from = "Parameters", values_from = "Values", values_fn = mean) %>%
         tidyr::drop_na() 
-      
+
     }) %>% bindCache(input$Site, input$py, input$px)
     
     # Parameter Definition
@@ -74,7 +81,7 @@ mod_RelCS_server <- function(id){
     # Sidebar Map
     output$plotmap <- renderPlot({
       planktonr::pr_plot_NRSmap(selectedData(), Survey = 'Coastal')
-    }, bg = "transparent") %>% bindCache(input$Site, input$py)
+    }, bg = "transparent") %>% bindCache(input$Site)
     
     # Add text information 
     output$PlotExp1 <- shiny::renderText({
@@ -95,13 +102,13 @@ mod_RelCS_server <- function(id){
         y <- rlang::string(input$py)
         x <- rlang::string(input$px)
         
-        planktonr::pr_plot_scatter(selectedData(), x, y, trend)
+        planktonr::pr_plot_scatter(selectedData(), x, y, Trend = trend)
         
-      }) %>% bindCache(input$py, input$px, input$Site, input$groupy, input$smoother)
+      }) %>% bindCache(input$py, input$px, input$Site, input$smoother)
       
       output$scatter1 <- renderPlot({
         gg_out1()
-      }, height = 300)
+      }, height = function() {length(unique(selectedData()$SampleDepth_m)) * 200})
       
       # Download -------------------------------------------------------
       output$downloadData1 <- fDownloadButtonServer(input, selectedData(), "Scatter") # Download csv of data
