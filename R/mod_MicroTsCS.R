@@ -11,7 +11,7 @@ mod_MicroTsCS_ui <- function(id){
   nsMicroTsCS <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, tabsetPanel_id = "CSmts", dat = datCSm),#dat = pkg.env$datCSm),
+      fPlanktonSidebar(id = id, tabsetPanel_id = "CSmts", dat = pkg.env$datCSm),
       fPLanktonPanel(id = id,  tabsetPanel_id = "CSmts"),
 
     )
@@ -26,9 +26,20 @@ mod_MicroTsCS_server <- function(id){
   moduleServer(id, function(input, output, session, CSmts){
 
     # Sidebar ----------------------------------------------------------
+    observeEvent(input$all, {
+      if(input$all == TRUE){
+        params <- planktonr::pr_relabel(unique(pkg.env$datCSm$Parameters), style = "simple")
+      } else {
+        params <- planktonr::pr_relabel(unique((pkg.env$datCSm %>% 
+                                                  dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters)))$Parameters), style = "simple")
+      }
+      shiny::updateSelectInput(session, 'parameterm', choices = params, selected = "Bacterial_Temperature_Index_KD")
+    })
+    
+    
     selectedData <- reactive({
 
-      selectedData <- datCSm %>% #pkg.env$datCSm %>%
+      selectedData <- pkg.env$datCSm %>%
         dplyr::filter(.data$State %in% input$Site,
                       .data$Parameters %in% input$parameterm,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
@@ -74,7 +85,7 @@ mod_MicroTsCS_server <- function(id){
 
       gg_out1 <- reactive({
 
-        if (is.null(datCSm$StationName)) #pkg.env$datCSm$StationName))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+        if (is.null(pkg.env$datCSm$StationName))  ## was reading datNRSi() as function so had to change to this, there should always be a code
           return(NULL)
 
         if(input$scaler1){
@@ -112,7 +123,7 @@ mod_MicroTsCS_server <- function(id){
 
       gg_out2 <- reactive({
 
-        if (is.null(datCSm$StationName)) #pkg.env$datCSm$StationName))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+        if (is.null(pkg.env$datCSm$StationName))  ## was reading datNRSi() as function so had to change to this, there should always be a code
           return(NULL)
 
         trans <- 'identity'

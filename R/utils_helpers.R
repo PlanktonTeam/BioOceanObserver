@@ -426,6 +426,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4){ #dat 1
     SelectedGroupy = 'Microbes - Coastal'
     SelectedGroupx = 'Physical'
     selectedParamy = 'Bacterial_Temperature_Index_KD'
+    selectedParamx = 'Temperature_degC'
   } else if (stringr::str_detect(id, "NRS") == TRUE){
     ChoiceSite = unique(sort(dat1$StationName))
     ChoicesGroupy = c("Zooplankton", "Phytoplankton", "Microbes - NRS", "Physical")
@@ -434,6 +435,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4){ #dat 1
     SelectedGroupy = 'Zooplankton'
     SelectedGroupx = 'Physical'
     selectedParamy = 'Biomass_mgm3'
+    selectedParamx = 'CTD_Temperature_degC'
   } else if (stringr::str_detect(id, "CPR") == TRUE){
     ChoiceSite = unique(sort(dat1$BioRegion))
     ChoicesGroupy = c("Zooplankton", "Phytoplankton", "Physical")
@@ -441,10 +443,10 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4){ #dat 1
     SelectedVar = 'Temperate East'
     SelectedGroupy = 'Zooplankton'
     SelectedGroupx = 'Physical'
-    selectedParamy = 'Biomass_mgm3'
-    
+    selectedParamy = 'BiomassIndex_mgm3'
+    selectedParamx = 'SST'
   }
-  selectedParamx = 'CTD_Temperature_degC'
+  
   
   shiny::sidebarPanel(
     shiny::conditionalPanel(
@@ -459,7 +461,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4){ #dat 1
         shiny::splitLayout(
           shiny::selectizeInput(inputId = ns('groupy'), label = NULL, choices = ChoicesGroupy,
                             selected = SelectedGroupy),
-          shiny::selectizeInput(inputId = ns('py'), label = NULL, choices = NULL, selected = selectedParamy)
+          shiny::selectizeInput(inputId = ns('py'), label = NULL, choices = selectedParamy, selected = selectedParamy)
           
         ),
         shiny::htmlOutput(ns("ParamDefy")),
@@ -473,7 +475,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4){ #dat 1
       shiny::splitLayout(
         shiny::selectizeInput(inputId = ns('groupx'), label = NULL, choices = ChoicesGroupx,
                             selected = SelectedGroupx),
-      shiny::selectizeInput(inputId = ns('px'), label = NULL, choices = NULL, selected = selectedParamx)
+      shiny::selectizeInput(inputId = ns('px'), label = NULL, choices = selectedParamx, selected = selectedParamx)
       ),
       shiny::htmlOutput(ns("ParamDefx")),
       shiny::HTML("<h6><strong>Overlay trend line?</strong></h6>"),
