@@ -38,6 +38,7 @@ datCSm  <- planktonr::pr_get_NRSMicro("Coastal") %>% ## coastal microbial data
   droplevels() %>% 
   dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'day'))
+datGSm <- planktonr::pr_get_NRSMicro("GO-SHIP")
 
 datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>% #TODO move the MLD calcs to planktonr
   tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
@@ -100,7 +101,9 @@ ctd <- planktonr::pr_get_NRSCTD() %>%
 
 CSChem <- planktonr::pr_get_CSChem() %>% dplyr::filter(Parameters %in% c("Chla_mgm3", "Temperature_degC",
                                                                          "Salinity_psu")) %>% 
-  dplyr::mutate(Parameters = ifelse(Parameters == "Salinity_psu", "Salinity", Parameters))
+  dplyr::mutate(Parameters = ifelse(Parameters == "Salinity_psu", "Salinity", Parameters),
+                SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
+                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'day'))
 
 # Get Sat data ------------------------------------------------------------
 
@@ -316,7 +319,8 @@ usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   PolNRS, PolCPR, PolLTM, 
                   NRSinfo, CPRinfo, NRSStation,
                   datCPRz, datCPRp, PCI,
-                  datNRSz, datNRSp, datNRSm, datCSm, datNRSw,
+                  datNRSz, datNRSp,  datNRSw,
+                  datNRSm, datCSm, datGSm,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
                   stiz, stip, daynightz, daynightp,
                   SpInfoP, SpInfoZ, LFData, LFDataAbs,

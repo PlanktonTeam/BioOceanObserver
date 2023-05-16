@@ -62,7 +62,6 @@ mod_RelNRS_server <- function(id){
             dplyr::mutate(SampleDepth_m = 10)
           } else if (input$groupx %in% 'Microbes - NRS'){
             dat1 <- pkg.env$datNRSm %>% 
-              dplyr::select(-c("TripCode_depth")) %>%
               dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10) 
             } else if (input$groupx %in% 'Physical'){
               dat1 <- pkg.env$ctd  
@@ -92,7 +91,7 @@ mod_RelNRS_server <- function(id){
         tidyr::drop_na() %>% 
         planktonr::pr_reorder()
       
-    }) %>% bindCache(input$Site, input$py, input$px, input$groupy, input$groupx)
+    }) %>% bindCache(input$Site, input$py, input$px)
     
   # Parameter Definition
   output$ParamDefy <-   shiny::renderText({
@@ -107,7 +106,7 @@ mod_RelNRS_server <- function(id){
     # Sidebar Map
     output$plotmap <- renderPlot({
       planktonr::pr_plot_NRSmap(selectedData())
-    }, bg = "transparent") %>% bindCache(input$Site, input$py)
+    }, bg = "transparent") %>% bindCache(input$Site)
 
     # Add text information 
     output$PlotExp1 <- shiny::renderText({
@@ -130,7 +129,7 @@ mod_RelNRS_server <- function(id){
     
     planktonr::pr_plot_scatter(selectedData(), x, y, trend)
 
-    }) %>% bindCache(input$Site, input$py, input$px, input$groupy, input$groupx, input$smoother)
+    }) %>% bindCache(input$Site, input$py, input$px, input$smoother)
 
     output$scatter1 <- renderPlot({
       gg_out1()
@@ -154,7 +153,7 @@ mod_RelNRS_server <- function(id){
 
         planktonr::pr_plot_box(selectedData(), y)
         
-      }) %>% bindCache(input$py, input$Site, input$groupy, input$groupx)
+      }) %>% bindCache(input$py, input$Site)
       
       output$box2 <- renderPlot({
         gg_out2()
