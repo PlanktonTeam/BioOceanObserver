@@ -141,7 +141,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
   shiny::mainPanel(
     shiny::tabsetPanel(id = tabsetPanel_id, type = "pills",
                        shiny::tabPanel("Trend Analysis", value = 1,
-                                       h6(textOutput(ns("PlotExp1"), container = span)),
+                                       shiny::htmlOutput(ns("PlotExp1")),
                                        plotOutput(ns("timeseries1"), height = "auto") %>% 
                                          shinycssloaders::withSpinner(color="#0dc5c1"),
                                        div(style="display:inline-block; float:right; width:60%",
@@ -150,7 +150,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                            fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
                        ),
                        shiny::tabPanel("Climatologies", value = 2,
-                                       h6(textOutput(ns("PlotExp2"), container = span)),  
+                                       shiny::htmlOutput(ns("PlotExp2")),  
                                        plotOutput(ns("timeseries2"), height = 800) %>% 
                                          shinycssloaders::withSpinner(color="#0dc5c1"),
                                        div(style="display:inline-block; float:right; width:60%",
@@ -171,7 +171,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                        },
                        if (tabsetPanel_id %in% c("NRSmts", "CSmts")){
                          shiny::tabPanel("Trend analysis by depth", value = 3,
-                                         h6(textOutput(ns("PlotExp3"), container = span)),
+                                         shiny::htmlOutput(ns("PlotExp3")),
                                          plotOutput(ns("timeseries3"), height = 'auto') %>%
                                            shinycssloaders::withSpinner(color="#0dc5c1"),
                                          div(style="display:inline-block; float:right; width:60%",
@@ -501,7 +501,7 @@ fRelationPanel <- function(id, tabsetPanel_id){
                                                  fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"))
                              ),
                              shiny::tabPanel("Box plots", value = 2,
-                                             h6(textOutput(ns("PlotExp2"), container = span)),  
+                                             shiny::htmlOutput(ns("PlotExp2")),  
                                              plotOutput(ns("box2"), height = 800) %>%
                                                shinycssloaders::withSpinner(color="#0dc5c1"),
                                              div(style="display:inline-block; float:right; width:60%",
