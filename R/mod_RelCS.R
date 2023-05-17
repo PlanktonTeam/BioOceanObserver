@@ -42,7 +42,7 @@ mod_RelCS_server <- function(id){
     })
     
     datx <- reactive({
-      dat1 <- CSChem         
+      dat1 <- pkg.env$CSChem         
     }) %>% bindCache(input$groupx)
     
     observeEvent(datx(), {
@@ -64,7 +64,7 @@ mod_RelCS_server <- function(id){
         tidyr::pivot_wider(id_cols = dplyr::any_of(vars),
                            names_from = "Parameters", values_from = "Values", values_fn = mean) %>%
         tidyr::drop_na() 
-
+      
     }) %>% bindCache(input$Site, input$py, input$px)
     
     # Parameter Definition
@@ -85,12 +85,20 @@ mod_RelCS_server <- function(id){
     
     # Add text information 
     output$PlotExp1 <- shiny::renderText({
-      "A scatter plot of selected indices against oceanographic parameters measured from the NRS around Australia"
-    }) 
+      if(rlang::string(input$py) %in% colnames(selectedData())){
+        "A scatter plot of selected indices against oceanographic parameters measured from the NRS around Australia"
+      } else {  
+        paste("A scatter plot of selected indices against oceanographic parameters measured from the NRS around Australia <br> <br> <b>NOTE: Not enough data for plot</b>")
+      }
+    })  %>% bindCache(input$py)
     # Add text information 
     output$PlotExp2 <- shiny::renderText({
-      "A box plot of selected indices showing range of each parameter at the NRS around Australia"
-    }) 
+      if(rlang::string(input$py) %in% colnames(selectedData())){
+        "A box plot of selected indices showing range of each parameter at the NRS around Australia"
+      } else {
+         paste("A box plot of selected indices showing range of each parameter at the NRS around Australia <br> <br> <b>NOTE: Not enough data for plot</b>")
+        }
+    })  %>% bindCache(input$py)
     
     ## scatter plot
     # Plot Trends -------------------------------------------------------------
@@ -98,16 +106,19 @@ mod_RelCS_server <- function(id){
       
       gg_out1 <- reactive({
         
-        trend <- input$smoother
-        y <- rlang::string(input$py)
-        x <- rlang::string(input$px)
-        
-        planktonr::pr_plot_scatter(selectedData(), x, y, Trend = trend)
-        
-      }) %>% bindCache(input$py, input$px, input$Site, input$smoother)
+         trend <- input$smoother
+         y <- rlang::string(input$py)
+         x <- rlang::string(input$px)
+
+         if(y %in% colnames(selectedData()) & x %in% colnames(selectedData())){
+           planktonr::pr_plot_scatter(selectedData(), x, y, Trend = trend)
+         } else {
+           ggplot2::ggplot + ggplot2::geom_blank()
+         }
+         }) %>% bindCache(input$py, input$px, input$Site, input$smoother)
       
       output$scatter1 <- renderPlot({
-        gg_out1()
+           gg_out1()
       }, height = function() {length(unique(selectedData()$SampleDepth_m)) * 200})
       
       # Download -------------------------------------------------------
@@ -124,7 +135,11 @@ mod_RelCS_server <- function(id){
         
         y <- rlang::string(input$py)
 
-        planktonr::pr_plot_box(selectedData(), y)
+        if(y %in% colnames(selectedData())){
+          planktonr::pr_plot_box(selectedData(), y)
+        } else {
+          ggplot2::ggplot + ggplot2::geom_blank()
+        }
         
       }) %>% bindCache(input$py, input$Site)
       

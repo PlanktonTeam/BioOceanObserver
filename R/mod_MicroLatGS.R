@@ -25,7 +25,7 @@ mod_MicroLatGS_ui <- function(id){
           shiny::sliderInput(nsMicroLatGS("LatSlide"), 
                              label = NULL, 
                              min = floor(min(pkg.env$datGSm$Latitude)),
-                             max = floor(max(pkg.env$datGSm$Latitude)), 
+                             max = ceiling(max(pkg.env$datGSm$Latitude)), 
                              value = c(min(pkg.env$datGSm$Latitude),
                                        max(pkg.env$datGSm$Latitude)) 
                              ),
@@ -48,7 +48,7 @@ mod_MicroLatGS_ui <- function(id){
           shiny::br()
       ),
       shiny::mainPanel(h4(textOutput(nsMicroLatGS("voyageTitle"), container = span)),
-                       h6(textOutput(nsMicroLatGS("PlotExp1"), container = span)),
+                       shiny::htmlOutput(nsMicroLatGS("PlotExp1")),
                        plotOutput(nsMicroLatGS("timeseries1")) %>% 
                          shinycssloaders::withSpinner(color="#0dc5c1"),
                        div(style="display:inline-block; float:right; width:60%",
@@ -106,8 +106,14 @@ mod_MicroLatGS_server <- function(id){
       "GO-SHIP P15S 2016."
     })
     output$PlotExp1 <- renderText({
-      "A plot of selected microbial indices from voyage data plotted latitudinally as points and a raster."
-    })
+      if(length(selectedData()$Parameters)>50){
+        "A plot of selected microbial indices from voyage data plotted latitudinally as points and a raster."
+      } else {
+        paste("A plot of selected microbial indices from voyage data plotted latitudinally as points and a raster. 
+              <br> <br> <b>NOTE: Not enough data for plot</b>")
+        }
+    }) %>% bindCache(input$parameterm)
+
 
     # Plot Trends -------------------------------------------------------------
 
@@ -115,11 +121,11 @@ mod_MicroLatGS_server <- function(id){
 
       gg_out1 <- reactive({
 
-        if (is.null(pkg.env$datGSm$Latitude))  
-          return(NULL)
-
-        planktonr::pr_plot_latitude(selectedData(), Fill_NA = TRUE, maxGap = 3)
-
+        if(length(selectedData()$Parameters)>50){
+          planktonr::pr_plot_latitude(selectedData(), Fill_NA = TRUE, maxGap = 3)
+        } else {
+          ggplot2::ggplot + ggplot2::geom_blank()
+        }
       }) %>% bindCache(input$parameterm, input$LatSlide[1], input$LatSlide[2], input$DepthSlide[1], input$DepthSlide[2])
 
       output$timeseries1 <- renderPlot({

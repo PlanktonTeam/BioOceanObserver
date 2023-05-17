@@ -60,9 +60,13 @@ mod_RelNRS_server <- function(id){
         } else if (input$groupx %in% 'Phytoplankton'){
           dat1 <- pkg.env$datNRSp %>%
             dplyr::mutate(SampleDepth_m = 10)
-          } else if (input$groupx %in% 'Microbes - NRS'){
-            dat1 <- pkg.env$datNRSm %>% 
-              dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10) 
+        } else if (input$groupx %in% 'Microbes - NRS' & input$all == TRUE){
+          dat <- pkg.env$datNRSm %>% 
+            dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10) 
+        } else if (input$groupx %in% 'Microbes - NRS' & input$all == FALSE){
+          dat <- pkg.env$datNRSm %>% 
+            dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10) %>% 
+            dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters))
             } else if (input$groupx %in% 'Physical'){
               dat1 <- pkg.env$ctd  
               }       
@@ -110,12 +114,22 @@ mod_RelNRS_server <- function(id){
 
     # Add text information 
     output$PlotExp1 <- shiny::renderText({
-      "A scatter plot of selected indices against oceanographic parameters measured from the NRS around Australia"
-    }) 
+      if(rlang::string(input$py) %in% colnames(selectedData()) & rlang::string(input$px) %in% colnames(selectedData()) & length(unique(selectedData()$SampleDepth_m)) > 0){
+        "A scatter plot of selected indices against oceanographic parameters measured from the NRS around Australia"}
+      else{
+        paste("A scatter plot of selected indices against oceanographic parameters measured from the NRS around Australia 
+        <br> <br> <b>NOTE: Not enough data for plot</b>")
+      }
+    }) %>% bindCache(input$py, input$px, input$Site)
     # Add text information 
     output$PlotExp2 <- shiny::renderText({
-      "A box plot of selected indices showing range of each parameter at the NRS around Australia"
-    }) 
+      if(rlang::string(input$py) %in% colnames(selectedData())){
+        "A box plot of selected indices showing range of each parameter at the NRS around Australia"}
+      else{
+        paste("A box plot of selected indices showing range of each parameter at the NRS around Australia 
+              <br> <br> <b>NOTE: Not enough data for plot</b>")
+      }
+    }) %>% bindCache(input$py, input$Site)
     
     ## scatter plot
     # Plot Trends -------------------------------------------------------------
@@ -123,11 +137,15 @@ mod_RelNRS_server <- function(id){
       
       gg_out1 <- reactive({
       
-    trend <- input$smoother
-    y <- rlang::string(input$py)
-    x <- rlang::string(input$px)
-    
-    planktonr::pr_plot_scatter(selectedData(), x, y, trend)
+          trend <- input$smoother
+          y <- rlang::string(input$py)
+          x <- rlang::string(input$px)
+
+     if(y %in% colnames(selectedData()) & x %in% colnames(selectedData()) & length(unique(selectedData()$SampleDepth_m)) > 0){
+          planktonr::pr_plot_scatter(selectedData(), x, y, trend)
+        } else{
+          ggplot2::ggplot + ggplot2::geom_blank()
+          }
 
     }) %>% bindCache(input$Site, input$py, input$px, input$smoother)
 
@@ -135,8 +153,11 @@ mod_RelNRS_server <- function(id){
       gg_out1()
     }, height = function() {
       if(input$groupy != 'Microbes - NRS')
-      {300} else
-      {length(unique(selectedData()$SampleDepth_m)) * 200}})
+      {300} else if(length(unique(selectedData()$SampleDepth_m)) < 2) 
+        {300}
+      else {
+        length(unique(selectedData()$SampleDepth_m)) * 200}
+      })
 
     # Download -------------------------------------------------------
     output$downloadData1 <- fDownloadButtonServer(input, selectedData(), "Scatter") # Download csv of data
@@ -149,10 +170,13 @@ mod_RelNRS_server <- function(id){
     observeEvent({input$relNRS == 2}, {
       
       gg_out2 <- reactive({
-        y <- rlang::string(input$py)
+          y <- rlang::string(input$py)
 
+        if(y %in% colnames(selectedData())){
         planktonr::pr_plot_box(selectedData(), y)
-        
+        } else{
+          ggplot2::ggplot + ggplot2::geom_blank()
+        }
       }) %>% bindCache(input$py, input$Site)
       
       output$box2 <- renderPlot({

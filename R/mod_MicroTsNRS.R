@@ -88,9 +88,8 @@ mod_MicroTsNRS_server <- function(id){
       
       gg_out1 <- reactive({
         
-        if (is.null(pkg.env$datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
-          return(NULL)
-        
+        if(length(selectedData()$Parameters)>0){
+          
         if(input$scaler1){
           trans <- 'log10'
         } else {
@@ -102,6 +101,9 @@ mod_MicroTsNRS_server <- function(id){
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
         
         p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
+        } else {
+          ggplot2::ggplot + ggplot2::geom_blank()
+        }
         
       }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
