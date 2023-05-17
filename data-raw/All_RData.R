@@ -38,6 +38,7 @@ datCSm  <- planktonr::pr_get_NRSMicro("Coastal") %>% ## coastal microbial data
   droplevels() %>% 
   dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'day'))
+
 datGSm <- planktonr::pr_get_NRSMicro("GO-SHIP")
 
 datNRSw <- planktonr::pr_get_Indices("NRS", "W") %>% #TODO move the MLD calcs to planktonr
