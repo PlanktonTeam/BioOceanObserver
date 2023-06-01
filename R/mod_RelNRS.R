@@ -13,7 +13,7 @@ mod_RelNRS_ui <- function(id){
   tagList(
     sidebarLayout(
       fRelationSidebar(id = id, tabsetPanel_id = "relNRS", dat1 = pkg.env$datNRSz, dat2 = pkg.env$datNRSp, 
-                       dat3 = pkg.env$datNRSm, dat4 = pkg.env$ctd), 
+                       dat3 = pkg.env$datNRSm, dat4 = pkg.env$ctd, dat5 = pkg.env$Nuts), 
       fRelationPanel(id = id, tabsetPanel_id = "relNRS")
     )
   )
@@ -42,11 +42,20 @@ mod_RelNRS_server <- function(id){
             dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters))
         } else if (input$groupy %in% 'Physical'){
         dat <- pkg.env$ctd  
+        } else if (input$groupy %in% 'Chemical'){
+          dat <- pkg.env$Nuts  %>% dplyr::group_by(.data$StationName, .data$StationCode, .data$SampleTime_Local, .data$Parameters) %>% 
+            dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE),
+                             .groups = 'drop') %>%
+            dplyr::mutate(SampleDepth_m = 10)
         }
+      
+      dat <- dat %>% 
+        dplyr::mutate(SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'month')) 
+      
     }) %>% bindCache(input$groupy, input$all)
     
     observeEvent(daty(), {
-      vars <- c("Biomass_mgm3", "PhytoAbundance_CellsL", "Bacterial_Temperature_Index_KD", "CTD_Temperature_degC")
+      vars <- c("Biomass_mgm3", "PhytoAbundance_CellsL", "Bacterial_Temperature_Index_KD", "CTD_Temperature_degC", "Silicate_umolL")
       sv <- daty() %>% dplyr::filter(Parameters %in% vars) 
       sv <- unique(sv$Parameters)
       choicesy <- planktonr::pr_relabel(unique(daty()$Parameters), style = "simple")
@@ -61,19 +70,27 @@ mod_RelNRS_server <- function(id){
           dat1 <- pkg.env$datNRSp %>%
             dplyr::mutate(SampleDepth_m = 10)
         } else if (input$groupx %in% 'Microbes - NRS' & input$all == TRUE){
-          dat <- pkg.env$datNRSm %>% 
+          dat1 <- pkg.env$datNRSm %>% 
             dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10) 
         } else if (input$groupx %in% 'Microbes - NRS' & input$all == FALSE){
-          dat <- pkg.env$datNRSm %>% 
+          dat1 <- pkg.env$datNRSm %>% 
             dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10) %>% 
             dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters))
             } else if (input$groupx %in% 'Physical'){
               dat1 <- pkg.env$ctd  
-              }       
-    }) %>% bindCache(input$groupx)
+            } else if (input$groupx %in% 'Chemical'){
+              dat1 <- pkg.env$Nuts %>% dplyr::group_by(.data$StationName, .data$StationCode, .data$SampleTime_Local, .data$Parameters) %>% 
+                dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE),
+                                 .groups = 'drop') %>%
+                dplyr::mutate(SampleDepth_m = 10)
+            }       
+      dat1 <- dat1 %>% 
+        dplyr::mutate(SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'month')) 
+    
+      }) %>% bindCache(input$groupx)
 
     observeEvent(datx(), {
-      vars <- c("Biomass_mgm3", "PhytoAbundance_CellsL", "Bacterial_Temperature_Index_KD", "CTD_Temperature_degC")
+      vars <- c("Biomass_mgm3", "PhytoAbundance_CellsL", "Bacterial_Temperature_Index_KD", "CTD_Temperature_degC", "Silicate_umolL")
       sv <- datx() %>% dplyr::filter(Parameters %in% vars) 
       sv <- unique(sv$Parameters)
       choicesx <- planktonr::pr_relabel(unique(datx()$Parameters), style = "simple")
@@ -85,7 +102,7 @@ mod_RelNRS_server <- function(id){
       x <- rlang::string(input$px)
       vars <- c("StationName", "StationCode", "SampleTime_Local", "SampleDepth_m") # only microbes has depth data
       
-      selectedData <- daty() %>%  
+      selectedData <- daty() %>%   
         dplyr::bind_rows(datx()) %>%
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$Parameters %in% c(x, y)) %>%

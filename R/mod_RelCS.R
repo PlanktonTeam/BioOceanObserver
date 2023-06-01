@@ -12,8 +12,8 @@ mod_RelCS_ui <- function(id){
   
   tagList(
     sidebarLayout(
-      fRelationSidebar(id = id, tabsetPanel_id = "RelCS", dat1 = pkg.env$datCSm, dat4 = pkg.env$CSChem, dat3 = pkg.env$datNRSp,
-                       dat2 = datNRSm), 
+      fRelationSidebar(id = id, tabsetPanel_id = "RelCS", dat1 = pkg.env$datCSm, dat2 = datNRSm, dat3 = pkg.env$datNRSp,
+                       dat4 = pkg.env$CSChem, dat5 = pkg.env$CSChem), 
       fRelationPanel(id = id, tabsetPanel_id = "RelCS")
     )
   )
