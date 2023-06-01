@@ -115,7 +115,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
                            value = FALSE),
     ),
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 3 && input.mic == 'mts'"), # MicroNRS
+      condition = paste0("input.", tabsetPanel_id, " == 3 && input.mic == 'mts' && input.navbar == 'Microbes'"), # MicroNRS
       shiny::selectizeInput(inputId = ns("interp"),
                             label = strong("Interpolate data?"),
                             choices = c("Interpolate", "Raw data", "Interpolate with gap filling"),
@@ -415,7 +415,7 @@ fEnviroSidebar <- function(id, dat = NULL){
 # Generic BOO relationships sidebar panel function
 #' 
 #' @noRd
-fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4){ #dat 1-3 group data vars, dat4 physical params
+fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ #dat 1-3 group data vars, dat4 physical, dat5 chemical params
   ns <- NS(id)
   
   if(stringr::str_detect(id, "CS") == TRUE){
@@ -429,8 +429,8 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4){ #dat 1
     selectedParamx = 'Temperature_degC'
   } else if (stringr::str_detect(id, "NRS") == TRUE){
     ChoiceSite = unique(sort(dat1$StationName))
-    ChoicesGroupy = c("Zooplankton", "Phytoplankton", "Microbes - NRS", "Physical")
-    ChoicesGroupx = c("Zooplankton", "Phytoplankton", "Microbes - NRS", "Physical")
+    ChoicesGroupy = c("Zooplankton", "Phytoplankton", "Microbes - NRS", "Physical", "Chemical")
+    ChoicesGroupx = c("Zooplankton", "Phytoplankton", "Microbes - NRS", "Physical", "Chemical")
     SelectedVar = 'Maria Island'
     SelectedGroupy = 'Zooplankton'
     SelectedGroupx = 'Physical'

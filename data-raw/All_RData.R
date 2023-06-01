@@ -30,7 +30,8 @@ datNRSm <- planktonr::pr_get_NRSMicro("NRS") %>%  ## NRS microbial data
 Tricho <- planktonr::pr_get_NRSData(Type = 'Phytoplankton', Variable = "abundance", Subset = "genus") %>% 
   dplyr::select(dplyr::any_of(colnames(datNRSm)), Values = "Trichodesmium")  %>% 
   dplyr::filter(!.data$StationCode %in% c("NWS", "SOTS_RAS", "NA"))%>% 
-  dplyr::mutate(Parameters = "Trichodesmium")
+  dplyr::mutate(Parameters = "Trichodesmium") %>% 
+  planktonr::pr_reorder()
 datNRSm <- datNRSm %>% dplyr::bind_rows(Tricho)
 rm(Tricho)
 
@@ -59,12 +60,14 @@ datCPRz <- planktonr::pr_get_Indices("CPR", "Z", near_dist_km = 250) %>%
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
   select(-c("Sample_ID", "tz")) %>% 
+  planktonr::pr_remove_outliers(2) %>% 
   droplevels()
 
 datCPRp <- planktonr::pr_get_Indices("CPR", "P", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
   select(-c("Sample_ID", "tz")) %>% 
+  planktonr::pr_remove_outliers(2) %>% 
   droplevels()
 
 PCI <- planktonr::pr_get_PCIData()
