@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# IMOS Biological Observer <a href='https://github.com/PlanktonTeam/IMOS_BioOceanObserver'><img src='inst/app/www/BOO_Hex.png' style="float:right; height:200px;"></a>
+# Biological Ocean Observer <a href='https://github.com/PlanktonTeam/IMOS_BioOceanObserver'><img src='inst/app/www/BOO_Hex.png' style="float:right; height:200px;"></a>
 
 <!-- badges: start -->
 
@@ -12,7 +12,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 IMOS_BioOceanObserver](https://img.shields.io/github/issues/PlanktonTeam/IMOS_BioOceanObserver)](https://github/PlanktonTeam/IMOS_BioOceanObserver/issues)
 <!-- badges: end -->
 
-The goal of the IMOS Biological Observatory is to increase the
+The goal of the Biological Ocean Observer is to increase the
 availability of IMOS Biological data by allowing users to visualise,
 interact and download data products and code.
 
@@ -25,9 +25,9 @@ By contributing to this project, you agree to abide by its terms.
 
 ## Installation
 
-If you wish to run the Biological Ocean Observer, are a power user, or
-would like to contribute to its development, you can install the
-development version from [GitHub](https://github.com/) using:
+If you wish to run the Biological Ocean Observer offline, are a power
+user, or would like to contribute to its development, you can install
+the development version from [GitHub](https://github.com/) using:
 
 ``` r
 devtools::install_github("PlanktonTeam/IMOS_BioOceanObserver")
@@ -42,5 +42,5 @@ run_app()
 
 Please note however, that the above download and installation is not
 required if you simply want to use the Biological Ocean Observer. The
-latest version will also be available on the [Shiny
-Server](%22https://shiny.csiro.au/BioOceanObserver%22)
+latest version will always be available on the [Shiny
+Server](https://shiny.csiro.au/BioOceanObserver)
