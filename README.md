@@ -9,7 +9,7 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/PlanktonTeam/IMOS_BioOceanObserver/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/PlanktonTeam/IMOS_BioOceanObserver/actions/workflows/R-CMD-check.yaml)
 [![issues -
-IMOS_BioOceanObserver](https://img.shields.io/github/issues/PlanktonTeam/IMOS_BioOceanObserver)](https://github/PlanktonTeam/IMOS_BioOceanObserver/issues)
+IMOS_BioOceanObserver](https://img.shields.io/github/issues/PlanktonTeam/IMOS_BioOceanObserver)](https://github.com/PlanktonTeam/IMOS_BioOceanObserver/issues)
 <!-- badges: end -->
 
 The goal of the Biological Ocean Observer is to increase the
