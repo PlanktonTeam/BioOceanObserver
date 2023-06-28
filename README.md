@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# IMOS Biological Observer
+# IMOS Biological Observer <a href='https://github.com/PlanktonTeam/IMOS_BioOceanObserver'><img src='inst/app/www/BOO_Hex.png' style="float:right; height:200px;"></a>
 
 <!-- badges: start -->
 
