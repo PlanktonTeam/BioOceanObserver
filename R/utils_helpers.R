@@ -591,6 +591,12 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
       } else if (papersize == "A2") {
         ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 420, height = 594, units = "mm")
       }
+      ## TODO If we include pdf downloads we can use code like this.
+      # cairo_pdf fixes an error with displaying unicode symbols.
+      # library(Cairo)
+      # file = stringr::str_replace(file, ".png", ".pdf")
+      # ggplot2::ggsave(file, plot = gg_id, width = 420, height = 594, units = "mm", 
+      #                 device = cairo_pdf, family="Arial Unicode MS")
     })
 }
 
