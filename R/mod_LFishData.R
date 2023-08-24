@@ -47,6 +47,9 @@ mod_LFishData_server <- function(id){
                         "GearMesh_um", "Bathymetry_m")) %>% 
         dplyr::mutate(Temperature_degC = round(.data$Temperature_degC, digits = 1),
                       Salinity_psu = round(.data$Salinity_psu, digits = 2),
+                      Abundance_1000m3 = round(.data$Abundance_1000m3, digits = 4),
+                      Latitude = round(.data$Latitude, digits = 2),
+                      Longitude = round(.data$Longitude, digits = 2),
                       Volume_m3 = round(.data$Volume_m3),
                       Vessel = as.factor(.data$Vessel),
                       Project = as.factor(.data$Project),
