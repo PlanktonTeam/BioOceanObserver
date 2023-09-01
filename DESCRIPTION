@@ -1,13 +1,13 @@
-Package: imosboo
-Title: Visualisation of IMOS biological data
-Version: 0.9.3.0000
+Package: biooceanobserver
+Title: Visualisation of biological and oceanographic data
+Version: 0.0.1
 Authors@R: c(
-    person("Claire H.", "Davies", email = 'claire.davies@csiro.au', role = c("aut", "cre"),
+    person("Claire H.", "Davies", email = "claire.davies@csiro.au", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-0424-1835")),
-    person("Jason D.", "Everett", email = 'jase.everett@gmail.com', role = "aut",
+    person("Jason D.", "Everett", role = "aut",
            comment = c(ORCID = "0000-0002-6681-8054"))
-    )
-Description: A visualisation tool for IMOS biologial data.
+  )
+Description: A visualisation tool for biologial and oceanographic data.
 License: MIT + file LICENSE
 Imports: 
     bslib,
@@ -23,9 +23,7 @@ Imports:
     lubridate,
     magrittr,
     patchwork,
-    pracma,
     planktonr (>= 0.5.6),
-    purrr (>= 1.0.1),
     rlang,
     shiny (>= 1.6.0),
     shinycssloaders,

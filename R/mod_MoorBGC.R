@@ -89,7 +89,7 @@ mod_MoorBGC_server <- function(id){
     
     selectedClim <- reactive({
       req(input$station)
-      validate(need(!is.na(input$station), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$station), "Error: Please select a station."))
       
       selectedClim <- pr_get_MoorClimPlotData(pkg.env$MooringClim, input$station, 5)
       
@@ -97,7 +97,7 @@ mod_MoorBGC_server <- function(id){
     
     selectedTS <- reactive({
       req(input$station)
-      validate(need(!is.na(input$station), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$station), "Error: Please select a station."))
       
       selectedTS <- pr_get_MoorTSPlotData(pkg.env$MooringTS, input$station, 5) 
       

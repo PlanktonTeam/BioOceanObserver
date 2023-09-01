@@ -31,8 +31,8 @@ mod_PhytoTsNRS_server <- function(id){
     selectedData <- reactive({ #TODO - This reactive encompasses things from 1/2 AND 3. Can we split them?
       req(input$Site)
       req(input$parameter)
-      validate(need(!is.na(input$Site), "Error: Please select a station."))
-      validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
+      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       selectedData <- pkg.env$datNRSp %>%
         dplyr::filter(.data$StationName %in% input$Site,
@@ -128,7 +128,7 @@ mod_PhytoTsNRS_server <- function(id){
       
       selectedDataFG <- reactive({
         req(input$Site)
-        validate(need(!is.na(input$Site), "Error: Please select a station."))
+        shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
         
         selectedDataFG <- pkg.env$NRSfgp %>%
           dplyr::filter(.data$StationName %in% input$Site,

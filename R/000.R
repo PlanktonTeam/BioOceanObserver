@@ -44,7 +44,7 @@ pkg.env <- new.env(parent = emptyenv())
     }, error = function(e) { 
       # Warn that data is not up-to-date
       cat(file=stderr(), as.character(e))
-      cat(file=stderr(), "Building the imosboo package using built in sysdata.rda. If this message appears when running the app, the data being served is not up-to-date.\n")
+      cat(file=stderr(), "Building the biooceanobserver package using built in sysdata.rda. If this message appears when running the app, the data being served is not up-to-date.\n")
       pkg.env$new.data <- FALSE
     }) 
   })

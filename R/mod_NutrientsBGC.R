@@ -26,14 +26,14 @@ mod_NutrientsBGC_server <- function(id){
     observe({
       req(input$station)
       req(input$parameter)
-      validate(need(!is.na(input$station), "Error: Please select a station."))
-      validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
+      shiny::validate(need(!is.na(input$station), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
     })
     
     selected <- reactive({
       req(input$date)
-      validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
-      validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
+      shiny::validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
+      shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       
       pkg.env$Nuts %>%
         dplyr::filter(.data$StationName %in% input$station,

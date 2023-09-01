@@ -1,16 +1,12 @@
 {
   "export": {
-    "ZooSpatial_ui_1-ZooSpatial": null,
+    "ZooSpatial_ui_1-ZooSpatial": 6,
     "ZooSpatial_ui_1-ZooSpatialFreqisFactor": "NULL",
     "ZooSpatial_ui_1-ZooSpatialLatisNumeric": "NULL",
     "ZooSpatial_ui_1-ZooSpatialLongisNumeric": "NULL",
-    "ZooSpatial_ui_1-ZooSpatialRows": [
-
-    ],
-    "ZooSpatial_ui_1-ZooSpatialSeasonisChr": "NULL",
-    "ZooSpatial_ui_1-ZooSpatialTaxonisChr": "NULL",
-    "ZooSpatial_ui_1-ZooSpatialfreqsampisNumeric": "NULL",
-    "ZooTsCPR_ui_1-ZtsCPR": 11,
+    "ZooSpatial_ui_1-ZooSpatialRows": true,
+    "ZooSpatial_ui_1-ZooSpatialSeasonisChr": "character",
+    "ZooTsCPR_ui_1-ZtsCPR": 8,
     "ZooTsCPR_ui_1-ZtsCPRDateisDate": [
       "POSIXct",
       "POSIXt"
@@ -22,7 +18,7 @@
     "ZooTsCPR_ui_1-ZtsCPRValuesisNumeric": "numeric",
     "ZooTsCPR_ui_1-ZtsCPRYearisNumeric": "numeric",
     "ZooTsNRS_ui_1-ZtsNRS": 11,
-    "ZooTsNRS_ui_1-ZtsNRSCodeisChr": "character",
+    "ZooTsNRS_ui_1-ZtsNRSCodeisChr": "factor",
     "ZooTsNRS_ui_1-ZtsNRSDateisDate": [
       "POSIXct",
       "POSIXt"
