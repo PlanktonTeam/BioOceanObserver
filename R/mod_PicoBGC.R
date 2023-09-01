@@ -26,8 +26,8 @@ mod_PicoBGC_server <- function(id){
     observe({
       req(input$station)
       req(input$parameter)
-      validate(need(!is.na(input$station), "Error: Please select a station."))
-      validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
+      shiny::validate(need(!is.na(input$station), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       # updateSelectizeInput(session, "depth", "Select a depth", server = TRUE, 
       #                      choices = NRSBGCPico[NRSBGCPico$Station %in% input$station & NRSBGCPico$name %in% input$parameter,]$SampleDepth_m)
     })
@@ -36,8 +36,8 @@ mod_PicoBGC_server <- function(id){
       
       # browser()
       req(input$date)
-      validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
-      validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
+      shiny::validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
+      shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       pkg.env$Pico %>%
         dplyr::filter(.data$StationName %in% input$station,
                       .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),

@@ -42,7 +42,7 @@ mod_ZooSpatial_server <- function(id){
     ZSdatar <- reactive({
       
       req(input$species)
-      validate(need(!is.na(input$species), "Error: Please select a species"))
+      shiny::validate(need(!is.na(input$species), "Error: Please select a species"))
       
       ZSdatar <- pkg.env$fMapDataz %>%
         dplyr::filter(.data$Species == input$species) 
@@ -132,7 +132,7 @@ mod_ZooSpatial_server <- function(id){
       selectedSTI <- reactive({
         
         req(input$species1)
-        validate(need(!is.na(input$species1), "Error: Please select a species"))
+        shiny::validate(need(!is.na(input$species1), "Error: Please select a species"))
         
         selectedSTI <- pkg.env$stiz %>% 
           dplyr::filter(.data$Species %in% input$species1) 
@@ -142,7 +142,7 @@ mod_ZooSpatial_server <- function(id){
       # sti plot
       output$STIs <- renderPlot({
         
-        validate(
+        shiny::validate(
           need(nrow(selectedSTI()) > 20, "Not enough data for this copepod species")
         )
         
@@ -161,7 +161,7 @@ mod_ZooSpatial_server <- function(id){
       selecteddn <- reactive({
         
         req(input$species2)
-        validate(need(!is.na(input$species2), "Error: Please select a species"))
+        shiny::validate(need(!is.na(input$species2), "Error: Please select a species"))
         
         selecteddn <- pkg.env$daynightz %>% 
           dplyr::filter(.data$Species %in% input$species2) 
@@ -172,7 +172,7 @@ mod_ZooSpatial_server <- function(id){
       # daynight plot
       output$DNs <- renderPlot({
         
-        validate(
+        shiny::validate(
           need(length(unique(selecteddn()$daynight)) == 2 | nrow(selecteddn()) > 20, "Not enough data for this copepod species to plot")
         )
         

@@ -42,7 +42,7 @@ mod_PhytoSpatial_server <- function(id){
     PSdatar <- reactive({
       
       req(input$species)
-      validate(need(!is.na(input$species), "Error: Please select a species"))
+      shiny::validate(need(!is.na(input$species), "Error: Please select a species"))
 
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
       
@@ -131,7 +131,7 @@ mod_PhytoSpatial_server <- function(id){
       selectedSTI <- reactive({
         
         req(input$species1)
-        validate(need(!is.na(input$species1), "Error: Please select a species"))
+        shiny::validate(need(!is.na(input$species1), "Error: Please select a species"))
         
         selectedSTI <- pkg.env$stip %>% 
           dplyr::filter(.data$Species %in% input$species1) 
@@ -156,7 +156,7 @@ mod_PhytoSpatial_server <- function(id){
       selecteddn <- reactive({
         
         req(input$species2)
-        validate(need(!is.na(input$species2), "Error: Please select a species"))
+        shiny::validate(need(!is.na(input$species2), "Error: Please select a species"))
         
         selecteddn <- pkg.env$daynightp %>% 
           dplyr::filter(.data$Species %in% input$species2) 

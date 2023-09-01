@@ -19,9 +19,9 @@
 ## to change the name in the app_sys() function in app_config.R /!\
 ## 
 golem::fill_desc(
-  pkg_name = "imosboo", # The Name of the package containing the App 
-  pkg_title = "Visualisation of IMOS biological data", # The Title of the package containing the App 
-  pkg_description = "A visualisation tool for IMOS biologial data.", # The Description of the package containing the App 
+  pkg_name = "biooceanobserver", # The Name of the package containing the App 
+  pkg_title = "Visualisation of biological and oceanographic data", # The Title of the package containing the App 
+  pkg_description = "A visualisation tool for biologial and oceanographic data.", # The Description of the package containing the App 
   author_first_name = "Claire H.", # Your First Name
   author_last_name = "Davies", # Your Last Name
   author_email = "claire.davies@csiro.au", # Your Email

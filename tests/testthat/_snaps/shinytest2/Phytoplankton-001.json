@@ -1,15 +1,11 @@
 {
   "export": {
-    "PhytoSpatial_ui_1-PhytoSpatial": null,
-    "PhytoSpatial_ui_1-PhytoSpatialFreqisFactor": "NULL",
-    "PhytoSpatial_ui_1-PhytoSpatialLatisNumeric": "NULL",
-    "PhytoSpatial_ui_1-PhytoSpatialLongisNumeric": "NULL",
-    "PhytoSpatial_ui_1-PhytoSpatialRows": [
-
-    ],
-    "PhytoSpatial_ui_1-PhytoSpatialSeasonisChr": "NULL",
-    "PhytoSpatial_ui_1-PhytoSpatialTaxonisChr": "NULL",
-    "PhytoSpatial_ui_1-PhytoSpatialfreqsampisNumeric": "NULL",
+    "PhytoSpatial_ui_1-PhytoSpatialFreqisFactor": "factor",
+    "PhytoSpatial_ui_1-PhytoSpatialLatisNumeric": "numeric",
+    "PhytoSpatial_ui_1-PhytoSpatialLongisNumeric": "numeric",
+    "PhytoSpatial_ui_1-PhytoSpatialRows": true,
+    "PhytoSpatial_ui_1-PhytoSpatialSeasonisChr": "character",
+    "PhytoSpatial_ui_1-PhytoSpatialSpeciesisChr": "character",
     "PhytoTsCPR_ui_1-PhytoFGCPR": 6,
     "PhytoTsCPR_ui_1-PhytoFGCPRDateisDate": [
       "POSIXct",
@@ -21,7 +17,7 @@
     "PhytoTsCPR_ui_1-PhytoFGCPRRows": true,
     "PhytoTsCPR_ui_1-PhytoFGCPRValuesisNumeric": "numeric",
     "PhytoTsCPR_ui_1-PhytoFGCPRYearisNumeric": "numeric",
-    "PhytoTsCPR_ui_1-PhytoTsCPR": 11,
+    "PhytoTsCPR_ui_1-PhytoTsCPR": 8,
     "PhytoTsCPR_ui_1-PhytoTsCPRDateisDate": [
       "POSIXct",
       "POSIXt"

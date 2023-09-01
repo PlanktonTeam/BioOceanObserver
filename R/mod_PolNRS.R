@@ -38,7 +38,7 @@ mod_PolNRS_server <- function(id){
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
       req(input$Site)
-      validate(need(!is.na(input$Site), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedData <- pkg.env$PolNRS %>% 
         dplyr::filter(.data$StationName %in% input$Site)
