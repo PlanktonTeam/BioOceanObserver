@@ -76,7 +76,7 @@ golem::add_rstudioconnect_file()
 # Documentation
 
 ## Vignette ----
-usethis::use_vignette("imosboo")
+usethis::use_vignette("biooceanobserver")
 devtools::build_vignettes()
 
 ## Building the website
