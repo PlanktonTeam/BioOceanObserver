@@ -41,9 +41,9 @@ mod_home_ui <- function(id){
                                     shiny::br(),
                                     shiny::br(),
                                     shiny::HTML("This project is entirely open source, as are all the IMOS data underlying it. All the 
-                            code for this tool are freely available on <a href='https://github.com/PlanktonTeam/IMOS_BioOceanObserver', target = '_blank'>GitHub</a>. 
+                            code for this tool are freely available on <a href='https://github.com/PlanktonTeam/BioOceanObserver', target = '_blank'>GitHub</a>. 
                             We welcome collaborators and pull requests are gratefully accepted. If you encounter a problem with this website or have any feedback, 
-                                             please <a href='https://github.com/PlanktonTeam/IMOS_BioOceanObserver/issues', target = '_blank'>log an issue on GitHub</a>
+                                             please <a href='https://github.com/PlanktonTeam/BioOceanObserver/issues', target = '_blank'>log an issue on GitHub</a>
                                                 or <a href='mailto:imos.operations@utas.edu.au?subject=Biological Ocean Observer'>email the IMOS Office</a>."),
                                     shiny::br(),
                                     shiny::br(),
@@ -79,7 +79,7 @@ mod_home_ui <- function(id){
                                     shiny::br(),
                                     shiny::br(),
                                     shiny::h3("Licencing"),
-                                    shiny::HTML("The code for this application is published under an <a href = 'https://github.com/PlanktonTeam/IMOS_BioOceanObserver/blob/master/LICENSE', target = '_blank'> MIT licence</a>."),
+                                    shiny::HTML("The code for this application is published under an <a href = 'https://github.com/PlanktonTeam/BioOceanObserver/blob/master/LICENSE', target = '_blank'> MIT licence</a>."),
                                     shiny::br(),
                                     shiny::br()
                              )))),

@@ -81,7 +81,7 @@ devtools::build_vignettes()
 
 ## Building the website
 usethis::use_pkgdown()
-pkgdown::build_site('https://github.com/PlanktonTeam/IMOS_BioOceanObserver', examples = FALSE)
+pkgdown::build_site('https://github.com/PlanktonTeam/BioOceanObserver', examples = FALSE)
 
 ## Code Coverage----
 ## Set the code coverage service ("codecov" or "coveralls")

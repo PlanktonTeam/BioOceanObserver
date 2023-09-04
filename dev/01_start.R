@@ -25,7 +25,7 @@ golem::fill_desc(
   author_first_name = "Claire H.", # Your First Name
   author_last_name = "Davies", # Your Last Name
   author_email = "claire.davies@csiro.au", # Your Email
-  repo_url = "https://github.com/PlanktonTeam/IMOS_BioOceanObserver" # The URL of the GitHub Repo (optional) 
+  repo_url = "https://github.com/PlanktonTeam/BioOceanObserver" # The URL of the GitHub Repo (optional) 
 )     
 
 ## Set {golem} options ----

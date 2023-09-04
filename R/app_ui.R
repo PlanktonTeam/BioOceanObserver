@@ -69,12 +69,10 @@ app_ui <- function(request) {
                                       value = "info", mod_info_ui("info_1"))
                     ),
                     navbarMenu("", icon = icon("share-nodes"),
-                               shiny::tabPanel(tags$a("", href = "https://twitter.com/intent/tweet?text=Check%20out%20the%20amazing%20new%20IMOS%20Biological%20Observer%20https%3A//shiny.csiro.au/BioOceanObserver/", target = "_blank",
+                               shiny::tabPanel(tags$a("", href = "https://twitter.com/intent/tweet?text=Check%20out%20the%20amazing%20new%20Biological%20Observer%20https%3A//shiny.csiro.au/BioOceanObserver/", target = "_blank",
                                                       list(icon("twitter"), "Twitter"))),
                                shiny::tabPanel(tags$a("", href = "https://www.facebook.com/sharer/sharer.php?u=https%3A//shiny.csiro.au/BioOceanObserver/", target = "_blank",
                                                       list(icon("facebook"), "Facebook"))),
-                               # shiny::tabPanel(tags$a("", href = "http://pinterest.com/pin/create/button/?url=https%3A%2F%2Fjaseeverett.shinyapps.io%2FIMOS_BioOceanObserver", target = "_blank",
-                               # list(icon("pinterest-p"), "Pinterest"))),
                                shiny::tabPanel(tags$a("", href = "https://www.linkedin.com/shareArticle?mini=true&url=https%3A//shiny.csiro.au/BioOceanObserver/", target = "_blank",
                                                       list(icon("linkedin"), "LinkedIn"))))
                     )
