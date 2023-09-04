@@ -1,6 +1,6 @@
 Package: biooceanobserver
 Title: Visualisation of biological and oceanographic data
-Version: 0.0.1
+Version: 0.2.0
 Authors@R: c(
     person("Claire H.", "Davies", email = "claire.davies@csiro.au", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-0424-1835")),
