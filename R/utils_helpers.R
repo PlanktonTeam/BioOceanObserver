@@ -735,7 +735,9 @@ LeafletObs <- function(sdf, name, Type = "PA"){
 fParamDefServer <- function(selectedData){
   shiny::renderText({
     paste("<h6><strong>", planktonr::pr_relabel(unique(selectedData()$Parameters), style = "plotly"), ":</strong> ",
-          pkg.env$ParamDef %>% dplyr::filter(Parameter == unique(selectedData()$Parameters)) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+          pkg.env$ParamDef %>% 
+            dplyr::filter(.data$Parameter == unique(selectedData()$Parameters)) %>% 
+            dplyr::pull("Definition"), ".</h6>", sep = "")
   })
 }
 

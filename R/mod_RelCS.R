@@ -70,12 +70,16 @@ mod_RelCS_server <- function(id){
     # Parameter Definition
     output$ParamDefy <-   shiny::renderText({
       paste("<h6><strong>", planktonr::pr_relabel(input$py, style = "plotly"), ":</strong> ",
-            pkg.env$ParamDef %>% dplyr::filter(Parameter == input$py) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+            pkg.env$ParamDef %>% 
+              dplyr::filter(.data$Parameter == input$py) %>% 
+              dplyr::pull("Definition"), ".</h6>", sep = "")
     })
     # Parameter Definition
     output$ParamDefx <- shiny::renderText({
       paste("<h6><strong>", planktonr::pr_relabel(input$px, style = "plotly"), ":</strong> ",
-            pkg.env$ParamDef %>% dplyr::filter(Parameter == input$px) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+            pkg.env$ParamDef %>% 
+              dplyr::filter(.data$Parameter == input$px) %>%
+              dplyr::pull("Definition"), ".</h6>", sep = "")
     })
     
     # Sidebar Map
@@ -91,6 +95,7 @@ mod_RelCS_server <- function(id){
         paste("A scatter plot of selected indices against oceanographic parameters measured from the NRS around Australia <br> <br> <b>NOTE: Not enough data for plot</b>")
       }
     })  %>% bindCache(input$py)
+    
     # Add text information 
     output$PlotExp2 <- shiny::renderText({
       if(rlang::string(input$py) %in% colnames(selectedData())){
