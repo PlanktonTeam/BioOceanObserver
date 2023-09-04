@@ -27,8 +27,8 @@ mod_ZooTsNRS_server <- function(id){
     selectedData <- reactive({
       req(input$Site)
       req(input$parameter)
-      validate(need(!is.na(input$Site), "Error: Please select a station."))
-      validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
+      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       selectedData <- pkg.env$datNRSz %>% 
         dplyr::filter(.data$StationName %in% input$Site,
@@ -141,7 +141,7 @@ mod_ZooTsNRS_server <- function(id){
     observeEvent({input$NRSzts == 3}, {
       selectedDataFG <- reactive({
         req(input$Site)
-        validate(need(!is.na(input$Site), "Error: Please select a station."))
+        shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
         selectedDataFG <- pkg.env$NRSfgz %>% 
           dplyr::filter(.data$StationName %in% input$Site,
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%

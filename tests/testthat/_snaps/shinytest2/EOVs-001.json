@@ -1,6 +1,6 @@
 {
   "export": {
-    "PolCPR_ui_1-Polcpr": 11,
+    "PolCPR_ui_1-Polcpr": 10,
     "PolCPR_ui_1-PolcprAnomalyisNumeric": "numeric",
     "PolCPR_ui_1-PolcprDateisDate": [
       "POSIXct",
@@ -14,15 +14,15 @@
     "PolCPR_ui_1-PolcprValuesisNumeric": "numeric",
     "PolCPR_ui_1-PolcprYearisNumeric": "numeric",
     "PolCPR_ui_1-PolcprsdisNumeric": "numeric",
-    "PolLTM_ui_1-PolLTM": 13,
+    "PolLTM_ui_1-PolLTM": 11,
     "PolLTM_ui_1-PolLTMAnomalyisNumeric": "numeric",
-    "PolLTM_ui_1-PolLTMCodeisChr": "character",
+    "PolLTM_ui_1-PolLTMCodeisChr": "factor",
     "PolLTM_ui_1-PolLTMDateisDate": "NULL",
-    "PolLTM_ui_1-PolLTMDepthisNumeric": "numeric",
+    "PolLTM_ui_1-PolLTMDepthisNumeric": "NULL",
     "PolLTM_ui_1-PolLTMMeansisNumeric": "numeric",
     "PolLTM_ui_1-PolLTMMonthisNumeric": "numeric",
     "PolLTM_ui_1-PolLTMParametersisChr": "character",
-    "PolLTM_ui_1-PolLTMProjectisChr": "character",
+    "PolLTM_ui_1-PolLTMProjectisChr": "NULL",
     "PolLTM_ui_1-PolLTMRows": true,
     "PolLTM_ui_1-PolLTMStationisChr": "factor",
     "PolLTM_ui_1-PolLTMValuesisNumeric": "numeric",
@@ -30,7 +30,7 @@
     "PolLTM_ui_1-PolLTMsdisNumeric": "numeric",
     "PolNRS_ui_1-PolNRS": 11,
     "PolNRS_ui_1-PolNRSAnomalyisNumeric": "numeric",
-    "PolNRS_ui_1-PolNRSCodeisChr": "character",
+    "PolNRS_ui_1-PolNRSCodeisChr": "factor",
     "PolNRS_ui_1-PolNRSDateisDate": [
       "POSIXct",
       "POSIXt"

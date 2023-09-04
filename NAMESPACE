@@ -2,7 +2,6 @@
 
 export("%>%")
 export(run_app)
-import(jsonlite)
 import(patchwork)
 import(shiny)
 importFrom(golem,activate_js)

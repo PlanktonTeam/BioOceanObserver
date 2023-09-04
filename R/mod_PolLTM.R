@@ -39,7 +39,7 @@ mod_PolLTM_server <- function(id){
     # Sidebar ----------------------------------------------------------
     selectedDataLTM <- reactive({
       req(input$SiteLTM)
-      validate(need(!is.na(input$SiteLTM), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$SiteLTM), "Error: Please select a station."))
       
       selectedDataLTM <- pkg.env$PolLTM %>% 
         dplyr::filter(.data$StationName %in% input$SiteLTM,
