@@ -91,7 +91,7 @@ CPRfgp <- planktonr::pr_get_FuncGroups("CPR", "P", near_dist_km = 250) %>%
 # BGC Environmental variables data ----------------------------------------
 
 Nuts <- planktonr::pr_get_NRSEnvContour('Chemistry') %>% 
-  dplyr::filter(Parameters != "SecchiDepth_m") 
+  dplyr::filter(.data$Parameters != "SecchiDepth_m") 
 Pigs <- planktonr::pr_get_NRSPigments(Format = "binned") %>% 
   planktonr::pr_remove_outliers(2)
 Pico <- planktonr::pr_get_NRSEnvContour('Pico')
@@ -103,7 +103,8 @@ ctd <- planktonr::pr_get_NRSCTD() %>%
   dplyr::filter(SampleDepth_m %in% datNRSm$SampleDepth_m) %>% 
   tidyr::pivot_longer(-c(dplyr::any_of(colnames(datNRSm))), values_to = "Values", names_to = "Parameters") 
 
-CSChem <- planktonr::pr_get_CSChem() %>% dplyr::filter(Parameters %in% c("Chla_mgm3", "Temperature_degC",
+CSChem <- planktonr::pr_get_CSChem() %>% 
+  dplyr::filter(.data$Parameters %in% c("Chla_mgm3", "Temperature_degC",
                                                                          "Salinity_psu")) %>% 
   dplyr::mutate(Parameters = ifelse(Parameters == "Salinity_psu", "Salinity", Parameters),
                 SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,

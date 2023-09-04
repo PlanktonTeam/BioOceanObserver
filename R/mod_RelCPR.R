@@ -42,7 +42,8 @@ mod_RelCPR_server <- function(id){
     
     observeEvent(daty(), {
       vars <- c("BiomassIndex_mgm3", "PhytoAbundance_Cellsm3", "SST")
-      sv <- daty() %>% dplyr::filter(Parameters %in% vars) 
+      sv <- daty() %>% 
+        dplyr::filter(.data$Parameters %in% vars) 
       sv <- unique(sv$Parameters)
       choicesy <- planktonr::pr_relabel(unique(daty()$Parameters), style = "simple")
       shiny::updateSelectizeInput(session, 'py', choices = choicesy)
@@ -64,7 +65,8 @@ mod_RelCPR_server <- function(id){
     
     observeEvent(datx(), {
       vars <- c("BiomassIndex_mgm3", "PhytoAbundance_Cellsm3", "SST")
-      sv <- datx() %>% dplyr::filter(Parameters %in% vars) 
+      sv <- datx() %>% 
+        dplyr::filter(.data$Parameters %in% vars) 
       sv <- unique(sv$Parameters)
       choicesx <- planktonr::pr_relabel(unique(datx()$Parameters), style = "simple")
       shiny::updateSelectizeInput(session, 'px', choices = choicesx)
@@ -91,11 +93,11 @@ mod_RelCPR_server <- function(id){
     # Parameter Definition
     output$ParamDefy <-   shiny::renderText({
       paste("<h6><strong>", planktonr::pr_relabel(input$py, style = "plotly"), ":</strong> ",
-            pkg.env$ParamDef %>% dplyr::filter(Parameter == input$py) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+            pkg.env$ParamDef %>% dplyr::filter(.data$Parameter == input$py) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
     })
     output$ParamDefx <-   shiny::renderText({
       paste("<h6><strong>", planktonr::pr_relabel(input$px, style = "plotly"), ":</strong> ",
-            pkg.env$ParamDef %>% dplyr::filter(Parameter == input$px) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
+            pkg.env$ParamDef %>% dplyr::filter(.data$Parameter == input$px) %>% dplyr::pull("Definition"), ".</h6>", sep = "")
     })  
     
     # Sidebar Map
