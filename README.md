@@ -1,15 +1,15 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# Biological Ocean Observer <a href='https://github.com/PlanktonTeam/IMOS_BioOceanObserver'><img src='inst/app/www/BOO_Hex.png' style="float:right; height:200px;"></a>
+# Biological Ocean Observer <a href='https://github.com/PlanktonTeam/BioOceanObserver'><img src='inst/app/www/BOO_Hex.png' style="float:right; height:200px;"></a>
 
 <!-- badges: start -->
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![R-CMD-check](https://github.com/PlanktonTeam/IMOS_BioOceanObserver/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/PlanktonTeam/IMOS_BioOceanObserver/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/PlanktonTeam/BioOceanObserver/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/PlanktonTeam/BioOceanObserver/actions/workflows/R-CMD-check.yaml)
 [![issues -
-IMOS_BioOceanObserver](https://img.shields.io/github/issues/PlanktonTeam/IMOS_BioOceanObserver)](https://github.com/PlanktonTeam/IMOS_BioOceanObserver/issues)
+BioOceanObserver](https://img.shields.io/github/issues/PlanktonTeam/BioOceanObserver)](https://github.com/PlanktonTeam/BioOceanObserver/issues)
 <!-- badges: end -->
 
 The goal of the Biological Ocean Observer is to increase the
@@ -30,13 +30,13 @@ user, or would like to contribute to its development, you can install
 the development version from [GitHub](https://github.com/) using:
 
 ``` r
-devtools::install_github("PlanktonTeam/IMOS_BioOceanObserver")
+devtools::install_github("PlanktonTeam/BioOceanObserver")
 ```
 
 and run the application using:
 
 ``` r
-library(imosboo)
+library(biooceanobserver)
 run_app()
 ```
 
