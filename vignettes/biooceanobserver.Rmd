@@ -1,8 +1,8 @@
 ---
-title: "imosboo"
+title: "biooceanobserver"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{imosboo}
+  %\VignetteIndexEntry{biooceanobserver}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,7 +20,7 @@ You can access the APP here [links](https://jaseeverett.shinyapps.io/IMOS_BioOce
 
 
 ```{r setup}
-library(imosboo)
+library(biooceanobserver)
 ```
 
 

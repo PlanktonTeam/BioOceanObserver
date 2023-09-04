@@ -28,8 +28,8 @@ mod_ZooTsCPR_server <- function(id){
     selectedData <- reactive({
       req(input$region)
       req(input$parameter)
-      validate(need(!is.na(input$region), "Error: Please select a region"))
-      validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
+      shiny::validate(need(!is.na(input$region), "Error: Please select a region"))
+      shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       ## Need to make these factors load automatically...... if possible
       selectedData <- pkg.env$datCPRz %>% 
@@ -138,7 +138,7 @@ mod_ZooTsCPR_server <- function(id){
       
       selectedDataFG <- reactive({
         req(input$region)
-        validate(need(!is.na(input$region), "Error: Please select a bioregion"))
+        shiny::validate(need(!is.na(input$region), "Error: Please select a bioregion"))
         
         selectedDataFG <- pkg.env$CPRfgz %>% 
           dplyr::filter(.data$BioRegion %in% input$region,

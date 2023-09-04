@@ -41,7 +41,7 @@ mod_PolCPR_server <- function(id){
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
       req(input$Site)
-      validate(need(!is.na(input$Site), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedData <- pkg.env$PolCPR %>% 
         dplyr::filter(.data$BioRegion %in% input$Site) 
@@ -50,7 +50,7 @@ mod_PolCPR_server <- function(id){
     
     selectedPCI <- reactive({
       req(input$Site)
-      validate(need(!is.na(input$Site), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedPCI <- pkg.env$PCI %>% 
       dplyr::filter(.data$BioRegion %in% input$Site) 
