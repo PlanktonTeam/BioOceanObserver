@@ -10,10 +10,11 @@
 mod_info_ui <- function(id){
   nsInfo <- NS(id)
   shiny::tagList(
-    tabsetPanel(id = "info",# type = "pills",
+    tabsetPanel(id = "info", type = "pills",
                 tabPanel("Frequently Asked Questions", value = 1,
                          shiny::fluidPage(
-                           shiny::h3(shiny::strong("App")),
+                           shiny::br(),
+                           shiny::h3(shiny::strong("The App")),
                            shiny::h4("Does the app use real time data?"),
                            shiny::p("No, to keep the App efficient the data is harvested from the AODN monthly and pre-wrangled."),
                            shiny::h4("Where is the data behind the APP available from?"),
@@ -34,6 +35,7 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("Technical Information", value = 2,
                          shiny::fluidPage(
+                           shiny::br(),
                            shiny::h3("Data binning"),
                            shiny::h4("Depths"),
                            shiny::p("Depths binned for ease of plotting.
@@ -56,14 +58,59 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("ChangeLog", value = 3,
                          shiny::fluidPage(
-                           shiny::h3("February 2023"),
-                           shiny::h5("Initial release Version")
+                           shiny::br(),
+                           shiny::h3("Changelog for the Biological Ocean Observer"),
+                           shiny::br(),
+                           shiny::h4("July 2021"),
+                           shiny::HTML("<ul>     
+                                          <li>Initial Prototype developed</li>
+                                          <li>Add Zooplankton Data</li>
+                                     </ul>"),
+                           shiny::h4("September 2021"),
+                           shiny::HTML("<ul>     
+                                          <li>Add Phytoplankton Data</li>
+                                          <li>Add Nutrients</li>
+                                          <li>Add Pigments</li>
+                                      </ul>"),
+                           shiny::h4("December 2021"),
+                           shiny::HTML("<ul>
+                                          <li>Add Microbial Data</li>
+                                      </ul>"),
+                           shiny::h4("January 2022"),
+                           shiny::HTML("<ul>
+                                          <li>Add Essential Ocean Variables</li>
+                                      </ul>"),
+                           shiny::h4("July 2022"),
+                           shiny::HTML("<ul>
+                                          <li>Add CTD Data</li>
+                                      </ul>"),
+                           shiny::h4("August 2022"),
+                           shiny::HTML("<ul>
+                                          <li>Add Moorings</li>
+                                      </ul>"),
+                           shiny::h4("November 2022"),
+                           shiny::HTML("<ul>
+                                          <li>Add Larval Fish Data</li>
+                                          <li>Add Picoplankton</li>
+                                          <li>Add Information Page</li>
+                                      </ul>"),
+                           shiny::h4("February 2023"),
+                           shiny::HTML("<ul>
+                                          <li>Initial release Version uploaded</li>
+                                      </ul>"),
+                           shiny::h4("March 2023"),
+                           shiny::HTML("<ul>
+                                          <li>Add Relationships Page</li>
+                                      </ul>"),
+                           shiny::h4("July 2023"),
+                           shiny::HTML("<ul>
+                                          <li>Biological Ocean Observer released at Australian Marine Sciences Conference</li>
+                                      </ul>"),
                          )
                 ),
                 tabPanel("References", value = 4,
                          shiny::fluidPage(
-                           shiny::h4("Funding"),
-                           shiny::HTML("The Microbial Ocean Atlas received investment from the NCRIS-enabled ARDC infrastructure under investment <a href = https://doi.org/10.47486/XN004 target = _blank> Website</a>."),
+                           shiny::br(),
                            shiny::h4("References"),
                            shiny::h5("To further understand the data, collection methods etc."),
                            shiny::HTML("<li>Davies, CH., Sommerville, E. (Eds.) (2017). <em>National Reference Stations Biogeochemical Operations Manual</em>. Version 3.3.1. Integrated Marine Observing System. DOI:10.26198/5c4a56f2a8ae3. <a href = http://dx.doi.org/10.26198/5c4a56f2a8ae3 target = _blank> Website</a>."),
@@ -106,6 +153,7 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("Sampling Details", value = 5,
                          shiny::fluidPage(
+                           shiny::br(),
                            shiny::h2("NRS"),
                            shiny::h6("Note: Ningaloo and Esperance only operated for 3 years and were only sampled seasonally. The data is sparse for these stations and has often been removed for some analysis."),
                            shiny::h6("Note: The NRS sampling period goes from mid 2009 until present. Prior to this some environmental parameters were also collected at the 
@@ -171,7 +219,7 @@ mod_info_server <- function(id){
     
     observeEvent({input$Info == 5}, {
       output$NRSDataTable <- shiny::renderDataTable(
-          pkg.env$NRSStation %>% 
+        pkg.env$NRSStation %>% 
           dplyr::mutate(EndDate = dplyr::case_when(.data$StationCode %in% c('NIN', 'ESP') ~ "2012-03-01",
                                                    .data$StationCode == 'PH4' ~ '2009-02-24')) %>% 
           dplyr::select("StationCode":"StationStartDate", "EndDate", dplyr::everything()) %>% 
@@ -181,12 +229,12 @@ mod_info_server <- function(id){
       )
       
       output$CPRDataTable <- shiny::renderDataTable(
-
-  pkg.env$datCPRTrip %>% 
+        
+        pkg.env$datCPRTrip %>% 
           dplyr::group_by(.data$Region) %>% 
           dplyr::summarise(StartDate = min(.data$Year_Local, na.rm = TRUE),
                            EndDate = max(.data$Year_Local, na.rm = TRUE),
-
+                           
                            MilesTowed = dplyr::n() * 5,
                            SamplesCounted = round(dplyr::n()/4,0),
                            .groups = 'drop') %>% 
