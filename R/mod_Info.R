@@ -10,10 +10,11 @@
 mod_info_ui <- function(id){
   nsInfo <- NS(id)
   shiny::tagList(
-    tabsetPanel(id = "info",# type = "pills",
+    tabsetPanel(id = "info", type = "pills",
                 tabPanel("Frequently Asked Questions", value = 1,
                          shiny::fluidPage(
-                           shiny::h3(shiny::strong("App")),
+                           shiny::br(),
+                           shiny::h3(shiny::strong("The App")),
                            shiny::h4("Does the app use real time data?"),
                            shiny::p("No, to keep the App efficient the data is harvested from the AODN monthly and pre-wrangled."),
                            shiny::h4("Where is the data behind the APP available from?"),
@@ -34,6 +35,7 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("Technical Information", value = 2,
                          shiny::fluidPage(
+                           shiny::br(),
                            shiny::h3("Data binning"),
                            shiny::h4("Depths"),
                            shiny::p("Depths binned for ease of plotting.
@@ -56,6 +58,7 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("ChangeLog", value = 3,
                          shiny::fluidPage(
+                           shiny::br(),
                            shiny::h3("Changelog for the Biological Ocean Observer"),
                            shiny::br(),
                            shiny::h4("July 2021"),
@@ -107,6 +110,7 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("References", value = 4,
                          shiny::fluidPage(
+                           shiny::br(),
                            shiny::h4("References"),
                            shiny::h5("To further understand the data, collection methods etc."),
                            shiny::HTML("<li>Davies, CH., Sommerville, E. (Eds.) (2017). <em>National Reference Stations Biogeochemical Operations Manual</em>. Version 3.3.1. Integrated Marine Observing System. DOI:10.26198/5c4a56f2a8ae3. <a href = http://dx.doi.org/10.26198/5c4a56f2a8ae3 target = _blank> Website</a>."),
@@ -149,6 +153,7 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("Sampling Details", value = 5,
                          shiny::fluidPage(
+                           shiny::br(),
                            shiny::h2("NRS"),
                            shiny::h6("Note: Ningaloo and Esperance only operated for 3 years and were only sampled seasonally. The data is sparse for these stations and has often been removed for some analysis."),
                            shiny::h6("Note: The NRS sampling period goes from mid 2009 until present. Prior to this some environmental parameters were also collected at the 
