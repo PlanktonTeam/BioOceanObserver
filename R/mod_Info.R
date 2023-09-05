@@ -62,8 +62,6 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("References", value = 4,
                          shiny::fluidPage(
-                           shiny::h4("Funding"),
-                           shiny::HTML("The Microbial Ocean Atlas received investment from the NCRIS-enabled ARDC infrastructure under investment <a href = https://doi.org/10.47486/XN004 target = _blank> Website</a>."),
                            shiny::h4("References"),
                            shiny::h5("To further understand the data, collection methods etc."),
                            shiny::HTML("<li>Davies, CH., Sommerville, E. (Eds.) (2017). <em>National Reference Stations Biogeochemical Operations Manual</em>. Version 3.3.1. Integrated Marine Observing System. DOI:10.26198/5c4a56f2a8ae3. <a href = http://dx.doi.org/10.26198/5c4a56f2a8ae3 target = _blank> Website</a>."),
