@@ -56,8 +56,53 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("ChangeLog", value = 3,
                          shiny::fluidPage(
-                           shiny::h3("February 2023"),
-                           shiny::h5("Initial release Version")
+                           shiny::h3("Changelog for the Biological Ocean Observer"),
+                           shiny::br(),
+                           shiny::h4("July 2021"),
+                           shiny::HTML("<ul>     
+                                          <li>Initial Prototype developed</li>
+                                          <li>Add Zooplankton Data</li>
+                                     </ul>"),
+                           shiny::h4("September 2021"),
+                           shiny::HTML("<ul>     
+                                          <li>Add Phytoplankton Data</li>
+                                          <li>Add Nutrients</li>
+                                          <li>Add Pigments</li>
+                                      </ul>"),
+                           shiny::h4("December 2021"),
+                           shiny::HTML("<ul>
+                                          <li>Add Microbial Data</li>
+                                      </ul>"),
+                           shiny::h4("January 2022"),
+                           shiny::HTML("<ul>
+                                          <li>Add Essential Ocean Variables</li>
+                                      </ul>"),
+                           shiny::h4("July 2022"),
+                           shiny::HTML("<ul>
+                                          <li>Add CTD Data</li>
+                                      </ul>"),
+                           shiny::h4("August 2022"),
+                           shiny::HTML("<ul>
+                                          <li>Add Moorings</li>
+                                      </ul>"),
+                           shiny::h4("November 2022"),
+                           shiny::HTML("<ul>
+                                          <li>Add Larval Fish Data</li>
+                                          <li>Add Picoplankton</li>
+                                          <li>Add Information Page</li>
+                                      </ul>"),
+                           shiny::h4("February 2023"),
+                           shiny::HTML("<ul>
+                                          <li>Initial release Version uploaded</li>
+                                      </ul>"),
+                           shiny::h4("March 2023"),
+                           shiny::HTML("<ul>
+                                          <li>Add Relationships Page</li>
+                                      </ul>"),
+                           shiny::h4("July 2023"),
+                           shiny::HTML("<ul>
+                                          <li>Biological Ocean Observer released at Australian Marine Sciences Conference</li>
+                                      </ul>"),
                          )
                 ),
                 tabPanel("References", value = 4,
@@ -169,7 +214,7 @@ mod_info_server <- function(id){
     
     observeEvent({input$Info == 5}, {
       output$NRSDataTable <- shiny::renderDataTable(
-          pkg.env$NRSStation %>% 
+        pkg.env$NRSStation %>% 
           dplyr::mutate(EndDate = dplyr::case_when(.data$StationCode %in% c('NIN', 'ESP') ~ "2012-03-01",
                                                    .data$StationCode == 'PH4' ~ '2009-02-24')) %>% 
           dplyr::select("StationCode":"StationStartDate", "EndDate", dplyr::everything()) %>% 
@@ -179,12 +224,12 @@ mod_info_server <- function(id){
       )
       
       output$CPRDataTable <- shiny::renderDataTable(
-
-  pkg.env$datCPRTrip %>% 
+        
+        pkg.env$datCPRTrip %>% 
           dplyr::group_by(.data$Region) %>% 
           dplyr::summarise(StartDate = min(.data$Year_Local, na.rm = TRUE),
                            EndDate = max(.data$Year_Local, na.rm = TRUE),
-
+                           
                            MilesTowed = dplyr::n() * 5,
                            SamplesCounted = round(dplyr::n()/4,0),
                            .groups = 'drop') %>% 
