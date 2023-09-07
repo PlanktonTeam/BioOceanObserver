@@ -607,11 +607,13 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
   
   downloadData <- shiny::downloadHandler(
     filename = function() {
-      if (gg_prefix == "Policy"){
-        paste0(gg_prefix, "_", format(Sys.time(), "%Y%m%d"), ".csv")
+      if (stringr::str_starts(gg_prefix, "Policy")){
+        paste0(gg_prefix, "_", format(Sys.time(), "%Y%m%d"), ".csv") %>% 
+          stringr::str_replace_all( " ", "")
       } else{
         paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".csv") %>% 
-          stringr::str_replace_all("__", "_") # Replace any double underscores with single ones
+          stringr::str_replace_all("__", "_") %>%  # Replace any double underscores with single ones
+          stringr::str_replace_all( " ", "")
       }
     },
     content = function(file) {
@@ -627,10 +629,12 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
 fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
   downloadPlot <- downloadHandler(
     filename = function() {
-      if (gg_prefix == "Policy"){
-        paste0(gg_prefix, "_", input$Site, "_", format(Sys.time(), "%Y%m%d"), ".png")
+      if ((stringr::str_starts(gg_prefix, "Policy"))){
+        paste0(gg_prefix, "_", input$Site, "_", format(Sys.time(), "%Y%m%d"), ".png") %>% 
+          stringr::str_replace_all( " ", "")
       } else{
-        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png")
+        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png") %>% 
+          stringr::str_replace_all( " ", "")
       }
     },
     content = function(file) {
@@ -638,6 +642,10 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
         ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 297, height = 210, units = "mm")
       } else if (papersize == "A4") {
         ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 210, height = 297, units = "mm")
+      } else if (papersize == "A3") {
+        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 297, height = 420, units = "mm")
+      } else if (papersize == "A3r") {
+        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 420, height = 297, units = "mm")
       } else if (papersize == "A2") {
         ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 420, height = 594, units = "mm")
       }
