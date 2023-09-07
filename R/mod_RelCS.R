@@ -37,7 +37,7 @@ mod_RelCS_server <- function(id){
     }) %>% bindCache(input$all)
     
     observeEvent(daty(), {
-      choicesy <- planktonr::pr_relabel(unique(daty()$Parameters), style = "simple")
+      choicesy <- planktonr::pr_relabel(unique(daty()$Parameters), style = "simple", named = TRUE)
       shiny::updateSelectizeInput(session, 'py', choices = choicesy, selected = 'Bacterial_Temperature_Index_KD')
     })
     
@@ -46,7 +46,7 @@ mod_RelCS_server <- function(id){
     }) %>% bindCache(input$groupx)
     
     observeEvent(datx(), {
-      choicesx <- planktonr::pr_relabel(unique(datx()$Parameters), style = "simple")
+      choicesx <- planktonr::pr_relabel(unique(datx()$Parameters), style = "simple", named = TRUE)
       shiny::updateSelectizeInput(session, 'px', choices = choicesx, selected = 'Temperature_degC')
     })
     

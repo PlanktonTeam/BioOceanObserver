@@ -28,10 +28,10 @@ mod_MicroTsCS_server <- function(id){
     # Sidebar ----------------------------------------------------------
     observeEvent(input$all, {
       if(input$all == TRUE){
-        params <- planktonr::pr_relabel(unique(pkg.env$datCSm$Parameters), style = "simple")
+        params <- planktonr::pr_relabel(unique(pkg.env$datCSm$Parameters), style = "simple", named = TRUE)
       } else {
         params <- planktonr::pr_relabel(unique((pkg.env$datCSm %>% 
-                                                  dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters)))$Parameters), style = "simple")
+                                                  dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters)))$Parameters), style = "simple", named = TRUE)
       }
       shiny::updateSelectInput(session, 'parameterm', choices = params, selected = "Bacterial_Temperature_Index_KD")
     })
@@ -160,7 +160,7 @@ mod_MicroTsCS_server <- function(id){
         p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "Coastal", Trend = "Year", trans = trans) +
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
-        #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple"))
+        #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple", named = TRUE))
 
         # p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
         p1 /

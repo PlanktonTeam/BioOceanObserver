@@ -34,7 +34,6 @@ mod_PicoBGC_server <- function(id){
     
     selected <- reactive({
       
-      # browser()
       req(input$date)
       shiny::validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
@@ -88,7 +87,6 @@ mod_PicoBGC_server <- function(id){
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 
-      # browser()
       planktonr::pr_plot_NRSmap(selected())
     }, bg = "transparent") %>% bindCache(input$station)
     

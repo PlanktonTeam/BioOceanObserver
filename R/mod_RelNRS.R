@@ -59,7 +59,7 @@ mod_RelNRS_server <- function(id){
       sv <- daty() %>% 
         dplyr::filter(.data$Parameters %in% vars) 
       sv <- unique(sv$Parameters)
-      choicesy <- planktonr::pr_relabel(unique(daty()$Parameters), style = "simple")
+      choicesy <- planktonr::pr_relabel(unique(daty()$Parameters), style = "simple", named = TRUE)
       shiny::updateSelectizeInput(session, 'py', choices = choicesy, selected = sv)
     })
       
@@ -95,7 +95,7 @@ mod_RelNRS_server <- function(id){
       sv <- datx() %>% 
         dplyr::filter(.data$Parameters %in% vars) 
       sv <- unique(sv$Parameters)
-      choicesx <- planktonr::pr_relabel(unique(datx()$Parameters), style = "simple")
+      choicesx <- planktonr::pr_relabel(unique(datx()$Parameters), style = "simple", named = TRUE)
       shiny::updateSelectizeInput(session, 'px', choices = choicesx, selected = sv)
     })
     

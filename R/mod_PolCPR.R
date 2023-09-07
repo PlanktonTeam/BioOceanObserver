@@ -14,12 +14,22 @@ mod_PolCPR_ui <- function(id){
       sidebarPanel(
         shiny::plotOutput(nsPolCPR("plotmap")),
         shiny::h6("Note there is very little data in the North and North-west regions"),
-        shiny::radioButtons(inputId = nsPolCPR("Site"), label = "Select a bioregion", 
+        shiny::HTML("<h5><strong>Select a bioregion:</strong></h5>"),
+        shiny::radioButtons(inputId = nsPolCPR("Site"), label = NULL, 
                      choices = unique(sort(pkg.env$PolCPR$BioRegion)), selected = "Temperate East"),
       ),
       mainPanel(id = "EOV Biomass by CPR", 
-                shiny::htmlOutput(nsPolCPR("PlotExp1")),
+                shiny::br(),
+                shiny::h3("Essential Ocean Variables"),
+                shiny::HTML("<a href='https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441'> 
+                        Essential Ocean Variables (EOVs)</a> are the important variables that scientists 
+                        have identified to monitor our oceans. They are chosen based on impact of the measurement and the 
+                        feasiblity to take consistent measurements. They are commonly measured by observing systems and 
+                        frequently used in policy making and input into reporting such as State of Environment."),
+                shiny::hr(style = "border-top: 2px solid #000000;"),
+                shiny::br(),
                 shiny::htmlOutput(nsPolCPR("StationSummary")),
+                shiny::br(),
                 plotOutput(nsPolCPR("timeseries1"), height = 1500) %>% 
                   shinycssloaders::withSpinner(color="#0dc5c1"),
                     div(style="display:inline-block; float:right; width:60%",
@@ -92,14 +102,6 @@ mod_PolCPR_server <- function(id){
       planktonr::pr_plot_CPRmap(selectedData())
     }, bg = "transparent") %>% bindCache(input$Site)
     
-    # Add text information 
-    output$PlotExp1 <- shiny::renderText({
-      paste("Biomass and diversity are the <a href = 'https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441'>
-      Essential Ocean Variables (EOVs)</a> for plankton. These are the important variables that scientists 
-      have identified to monitor our oceans. They are chosen based on impact of the measurement and the 
-      feasiblity to take consistent measurements. They are commonly measured by observing systems and 
-      frequently used in policy making and input into reporting such as State of Environment.", sep = "")
-    }) 
     
     output$StationSummary <- shiny::renderText({ 
       paste("<h4 style='text-align:center; font-weight: bold;'>",input$Site,"</h5>The CPR has been sampling 
@@ -108,6 +110,8 @@ mod_PolCPR_server <- function(id){
             " nautical miles has been towed in this region. The ", input$Site, " bioregion is characterised by ", 
             unique(stationData()$Features), sep = "")
     })
+    
+    col1 <- fEOVutilities(vector = "col", Survey = "CPR")
     
     # Plot Trends -------------------------------------------------------------
     #t, l, b, r
@@ -127,31 +131,26 @@ mod_PolCPR_server <- function(id){
     
     gg_out1 <- reactive({
       
-      p1 <- planktonr::pr_plot_EOVs(outputs(), EOV = "BiomassIndex_mgm3", Survey = 'CPR', 
-                                   trans = "log10", col = pkg.env$col12[2], labels = "no")
-      p2 <- planktonr::pr_plot_EOVs(outputs(), EOV = "PhytoBiomassCarbon_pgm3", Survey = 'CPR', 
-                                   trans = "log10", col = pkg.env$col12[4]) 
+
+      p1 <- planktonr::pr_plot_EOVs(outputs(), EOV = "PhytoBiomassCarbon_pgm3", Survey = 'CPR', trans = "log10", col = col1["PhytoBiomassCarbon_pgm3"], labels = FALSE) 
+      p2 <- planktonr::pr_plot_EOVs(outputs(), EOV = "BiomassIndex_mgm3", Survey = 'CPR', trans = "log10", col = col1["BiomassIndex_mgm3"])
       
-      p6 <- planktonr::pr_plot_EOVs(outputs(), EOV = "ShannonCopepodDiversity", Survey = 'CPR', 
-                                   trans = "log10", col = pkg.env$col12[1], labels = "no") #check these col names with new indices data from AODN
-      p7 <- planktonr::pr_plot_EOVs(outputs(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', 
-                                   trans = "log10", col = pkg.env$col12[3])
+      p3 <- planktonr::pr_plot_EOVs(outputs(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE)
+      p4 <- planktonr::pr_plot_EOVs(outputs(), EOV = "ShannonCopepodDiversity", Survey = 'CPR', trans = "log10", col = col1["ShannonCopepodDiversity"])
       
-      p4 <- planktonr::pr_plot_EOVs(outputs(), EOV = "SST", Survey = 'CPR', 
-                                   trans = "identity", col = pkg.env$col12[5])
-      p5 <- planktonr::pr_plot_EOVs(outputs(), EOV = "chl_oc3", Survey = 'CPR', 
-                                   trans = "identity", col = pkg.env$col12[3])
+      p5 <- planktonr::pr_plot_EOVs(outputs(), EOV = "SST", Survey = 'CPR', trans = "identity", col = col1["SST"], labels = FALSE)
+      p6 <- planktonr::pr_plot_EOVs(outputs(), EOV = "chl_oc3", Survey = 'CPR', trans = "identity", col = col1["chl_oc3"])
       
-      p3 <- planktonr::pr_plot_PCI(selectedPCI())
+      p7 <- planktonr::pr_plot_PCI(selectedPCI())
       
       patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
         p1 + p2 + 
         grid::textGrob("Diversity EOVs", gp = grid::gpar(fontsize=20)) + 
-        p6 + p7 + 
+        p3 + p4 + 
         grid::textGrob("Physical EOVs from satellite data", gp = grid::gpar(fontsize=20)) + 
-        p4 + p5 + 
+        p5 + p6 + 
         grid::textGrob("Chlorophyll density from Phytoplankton Colour Index", gp = grid::gpar(fontsize=20)) + 
-        p3 +
+        p7 +
         patchwork::plot_layout(design = layout1) & 
         ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
                        axis.title = ggplot2::element_text(size = 12, face = "plain"),
