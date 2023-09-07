@@ -18,14 +18,15 @@ mod_PolNRS_ui <- function(id){
         shiny::conditionalPanel(
           condition = paste0("input.EOV_NRS == 1"), # Only first tab
           shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
-        shiny::checkboxGroupInput(inputId = nsPolNRS("Parameters"), label = NULL, 
-                                  choices = planktonr::pr_relabel(
-                                    c("Biomass_mgm3", "PhytoBiomassCarbon_pgL", "ShannonPhytoDiversity", "ShannonCopepodDiversity", 
-                                      "CTDTemperature_degC", "Salinity", "PigmentChla_mgm3", "Ammonium_umolL", "Nitrate_umolL", 
-                                      "Silicate_umolL", "Phosphate_umolL", "Oxygen_umolL"), style = "simple", named = TRUE),
-                                  selected = c("Biomass_mgm3", "PhytoBiomassCarbon_pgL", "CTDTemperature_degC", "Nitrate_umolL", "Phosphate_umolL"))
+          shiny::checkboxGroupInput(inputId = nsPolNRS("Parameters"), label = NULL, 
+                                    choices = planktonr::pr_relabel(
+                                      c("Biomass_mgm3", "PhytoBiomassCarbon_pgL", "ShannonPhytoDiversity", "ShannonCopepodDiversity", 
+                                        "CTDTemperature_degC", "Salinity", "PigmentChla_mgm3", "Ammonium_umolL", "Nitrate_umolL", 
+                                        "Silicate_umolL", "Phosphate_umolL", "Oxygen_umolL"), style = "simple", named = TRUE),
+                                    selected = c("Biomass_mgm3", "PhytoBiomassCarbon_pgL", "CTDTemperature_degC", "Nitrate_umolL", "Phosphate_umolL")),
+          shiny::HTML("<strong>NOTE:</strong> Oxygen only available at Maria Island NRS.")
         ),
-        shiny::HTML("<strong>NOTE:</strong> Oxygen only available at Maria Island NRS.")
+        
       ),
       shiny::mainPanel(
         shiny::br(),
@@ -151,7 +152,7 @@ mod_PolNRS_server <- function(id){
     observeEvent({input$EOV_NRS == 1}, {
       
       gg_out1 <- reactive({
-       
+        
         p_list <- list()
         for (idx in 1:length(input$Parameters)){
           p <- planktonr::pr_plot_EOVs(outputs(), EOV = input$Parameters[idx], trans = trans1[[input$Parameters[idx]]], col = col1[[input$Parameters[idx]]])
@@ -179,7 +180,7 @@ mod_PolNRS_server <- function(id){
     
     
     observeEvent({input$EOV_NRS == 2}, {
-
+      
       gg_out2 <- reactive({
         p1 <- planktonr::pr_plot_EOVs(outputs(), EOV = "PigmentChla_mgm3", trans = "log10", col = col1["PigmentChla_mgm3"], labels = FALSE) 
         p2 <- planktonr::pr_plot_EOVs(outputs(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col1["PhytoBiomassCarbon_pgL"], labels = FALSE) 
@@ -254,7 +255,7 @@ mod_PolNRS_server <- function(id){
       output$timeseries4 <- renderPlot({
         gg_out4()
       })
-    
+      
       
       # Download -------------------------------------------------------
       output$downloadData4 <- fDownloadButtonServer(input, outputs(), "Policy_Phys") # Download csv of data
