@@ -276,7 +276,7 @@ fSpatialPanel <- function(id, tabsetPanel_id){
                                            shinycssloaders::withSpinner(color="#0dc5c1")), 
                            shiny::column(width = 6,
                                          style = "padding:0px; margin:0px;",
-                                         shiny::h4("September - February"),
+                                         shiny::h4("September - November"),
                                          leaflet::leafletOutput(ns("MapSpr"), width = "99%", height = "300px") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1"))
                          )
