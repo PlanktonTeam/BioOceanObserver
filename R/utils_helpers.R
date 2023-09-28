@@ -1,3 +1,53 @@
+# Add some additional datasets
+
+#' EOV colour and transformation
+#'
+#' @noRd 
+fEOVutilities <- function(vector = "col", Survey = "NRS"){
+  
+  if (Survey == "NRS"){
+    disp <- data.frame(param = c("PigmentChla_mgm3", "PhytoBiomassCarbon_pgL", "Biomass_mgm3",
+                                 "ShannonPhytoDiversity", "ShannonCopepodDiversity", "CTDTemperature_degC",
+                                 "Salinity", "Ammonium_umolL", "Nitrate_umolL", "Silicate_umolL",
+                                 "Phosphate_umolL", "Oxygen_umolL"))
+  } else if (Survey == "CPR"){
+    # Change some of the names, but keep the same order so the colours are consistent
+    
+    disp <- data.frame(param = c("chl_oc3", "PhytoBiomassCarbon_pgm3", "BiomassIndex_mgm3",
+                                 "ShannonPhytoDiversity", "ShannonCopepodDiversity", "SST",
+                                 "Salinity", "Ammonium_umolL", "Nitrate_umolL", "Silicate_umolL",
+                                 "Phosphate_umolL", "Oxygen_umolL"))
+    
+  } else if (Survey == "LTM"){
+    # Change some of the names, but keep the same order so the colours are consistent
+    
+    disp <- data.frame(param = c("chl_oc3", "PhytoBiomassCarbon_pgm3", "BiomassIndex_mgm3",
+                                 "ShannonPhytoDiversity", "ShannonCopepodDiversity", "Temperature_degC",
+                                 "Salinity", "Ammonium_umolL", "Nitrate_umolL", "Silicate_umolL",
+                                 "Phosphate_umolL", "Oxygen_umolL"))
+    
+  }
+  
+  
+  disp <- disp %>% 
+    dplyr::mutate(col = pkg.env$col12,
+                  trans = c("log10", "log10", "log10", "log10", "log10", "identity", "identity",
+                            "identity", "identity", "identity", "log10", "identity"))
+  
+  if (vector == "col"){
+    # Colours in named vector
+    dat <- disp$col
+    names(dat) <- disp$param  
+  } else if (vector == "trans"){
+    # Transformations in named vector
+    dat <- disp$trans
+    names(dat) <- disp$param
+  }
+  
+  return(dat)
+  
+}
+
 #' BOO Plankton Sidebar
 #'
 #' @noRd 
@@ -94,7 +144,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
       shiny::selectInput(inputId = ns("parameter"), 
                          label = NULL, 
-                         choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), 
+                         choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
                          selected = selectedVar),
       shiny::htmlOutput(ns("ParamDef")),
       shiny::br()
@@ -377,7 +427,7 @@ fEnviroSidebar <- function(id, dat = NULL){
         shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
         shiny::selectInput(inputId = ns("parameter"), 
                            label = NULL, 
-                           choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple"), 
+                           choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
                            selected = selectedVar),
         shiny::htmlOutput(ns("ParamDefb")),
         shiny::br()
@@ -557,11 +607,13 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
   
   downloadData <- shiny::downloadHandler(
     filename = function() {
-      if (gg_prefix == "Policy"){
-        paste0(gg_prefix, "_", format(Sys.time(), "%Y%m%d"), ".csv")
+      if (stringr::str_starts(gg_prefix, "Policy")){
+        paste0(gg_prefix, "_", format(Sys.time(), "%Y%m%d"), ".csv") %>% 
+          stringr::str_replace_all( " ", "")
       } else{
         paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".csv") %>% 
-          stringr::str_replace_all("__", "_") # Replace any double underscores with single ones
+          stringr::str_replace_all("__", "_") %>%  # Replace any double underscores with single ones
+          stringr::str_replace_all( " ", "")
       }
     },
     content = function(file) {
@@ -577,10 +629,12 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
 fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
   downloadPlot <- downloadHandler(
     filename = function() {
-      if (gg_prefix == "Policy"){
-        paste0(gg_prefix, "_", input$Site, "_", format(Sys.time(), "%Y%m%d"), ".png")
+      if ((stringr::str_starts(gg_prefix, "Policy"))){
+        paste0(gg_prefix, "_", input$Site, "_", format(Sys.time(), "%Y%m%d"), ".png") %>% 
+          stringr::str_replace_all( " ", "")
       } else{
-        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png")
+        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png") %>% 
+          stringr::str_replace_all( " ", "")
       }
     },
     content = function(file) {
@@ -588,6 +642,10 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
         ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 297, height = 210, units = "mm")
       } else if (papersize == "A4") {
         ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 210, height = 297, units = "mm")
+      } else if (papersize == "A3") {
+        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 297, height = 420, units = "mm")
+      } else if (papersize == "A3r") {
+        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 420, height = 297, units = "mm")
       } else if (papersize == "A2") {
         ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 420, height = 594, units = "mm")
       }
