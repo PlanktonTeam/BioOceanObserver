@@ -27,6 +27,7 @@ Imports:
     shinycssloaders,
     stringr,
     tidyr,
+    vctrs (>= 0.6.0),
     vroom
 Encoding: UTF-8
 LazyData: true
