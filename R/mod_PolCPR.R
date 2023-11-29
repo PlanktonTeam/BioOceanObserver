@@ -84,10 +84,10 @@ mod_PolCPR_server <- function(id){
     outputs <- reactive({
       outputs <- planktonr::pr_get_Coeffs(selectedData())
     }) %>% bindCache(input$Site)
-    
+
     info <- reactive({
-      info <- outputs() %>% 
-        dplyr::select(.data$slope, .data$p, .data$Parameters) %>% 
+      info <- outputs() %>%
+        dplyr::select(.data$slope, .data$p, .data$Parameters) %>%
         unique %>%
         dplyr::arrange(.data$Parameters)
     }) %>% bindCache(input$Site)

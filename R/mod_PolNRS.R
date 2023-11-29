@@ -115,10 +115,10 @@ mod_PolNRS_server <- function(id){
     outputs <- reactive({
       outputs <- planktonr::pr_get_Coeffs(selectedData())
     }) %>% bindCache(input$Site, input$Parameters)
-    
+
     info <- reactive({
-      info <- outputs() %>% 
-        dplyr::select(.data$slope, .data$p, .data$Parameters) %>% 
+      info <- outputs() %>%
+        dplyr::select(.data$slope, .data$p, .data$Parameters) %>%
         unique()
     }) %>% bindCache(input$Site)
     
