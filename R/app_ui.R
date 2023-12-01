@@ -74,7 +74,10 @@ app_ui <- function(request) {
                                shiny::tabPanel(tags$a("", href = "https://www.facebook.com/sharer/sharer.php?u=https%3A//shiny.csiro.au/BioOceanObserver/", target = "_blank",
                                                       list(icon("facebook"), "Facebook"))),
                                shiny::tabPanel(tags$a("", href = "https://www.linkedin.com/shareArticle?mini=true&url=https%3A//shiny.csiro.au/BioOceanObserver/", target = "_blank",
-                                                      list(icon("linkedin"), "LinkedIn"))))
+                                                      list(icon("linkedin"), "LinkedIn")))),
+                    navbarMenu("", icon = img(src = "www/github-mark/github-mark-white.png", style="padding-right:5px", height = 30),
+                               shiny::tabPanel(tags$a("", href = "https://github.com/PlanktonTeam/BioOceanObserver", target = "_blank", "BioOceanObserver repo")),
+                               shiny::tabPanel(tags$a("", href = "https://github.com/PlanktonTeam/planktonr", target = "_blank", "planktonr repo")))
                     )
 }
 
