@@ -159,7 +159,7 @@ mod_info_ui <- function(id){
                            shiny::h6("Note: The NRS sampling period goes from mid 2009 until present. Prior to this some environmental parameters were also collected at the 
                                      Long Term Monitoring Stations - ROT, MAI, PH4. These are shown on the Long Term Monitoring tab under EOVs. Generally though in this 
                                      APP we concentrate on the visualisation of the NRS period where more parameters have been collected in a consistent manner across stations"),
-                           shiny::dataTableOutput(nsInfo("NRSDataTable")),
+                           DT::DTOutput(nsInfo("NRSDataTable")),
                            shiny::h4("Zooplankton"),
                            shiny::h5("Zooplankton is collected with a Heron drop net sampling only on the descent, 60cm diameter, 100 micron mesh net. This is a depth integrated sample analysed by light microscopy"),
                            shiny::h4("Phytoplankton"),
@@ -188,7 +188,7 @@ mod_info_ui <- function(id){
                            shiny::br(),
                            shiny::br(),
                            shiny::h2("CPR"),
-                           shiny::dataTableOutput(nsInfo("CPRDataTable")),
+                           DT::DTOutput(nsInfo("CPRDataTable")),
                            shiny::h4("PCI"),
                            shiny::h5("Silks are cut into 5nm segments. Phytoplankton colour index is counted on every segment towed"),
                            shiny::h4("Phytoplankton"),
@@ -201,11 +201,11 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("Phytoplankton Species Details", value = 6, 
                          shiny::h2("Phytoplankton Species Information"),
-                         shiny::dataTableOutput(nsInfo("PDataTable")),
+                         DT::DTOutput(nsInfo("PDataTable")),
                 ),
                 tabPanel("Zooplankton Species Details", value = 7, 
                          shiny::h2("Zooplankton Species Information"),
-                         shiny::dataTableOutput(nsInfo("ZDataTable")),
+                         DT::DTOutput(nsInfo("ZDataTable")),
                 ),
     )
   )
@@ -218,7 +218,7 @@ mod_info_server <- function(id){
   moduleServer( id, function(input, output, session){
     
     observeEvent({input$Info == 5}, {
-      output$NRSDataTable <- shiny::renderDataTable(
+      output$NRSDataTable <- DT::renderDT(
         pkg.env$NRSStation %>% 
           dplyr::mutate(EndDate = dplyr::case_when(.data$StationCode %in% c('NIN', 'ESP') ~ "2012-03-01",
                                                    .data$StationCode == 'PH4' ~ '2009-02-24')) %>% 
@@ -228,7 +228,7 @@ mod_info_server <- function(id){
                         `Sampling Effort` = "SamplingEffort", Region = "ManagementRegion")
       )
       
-      output$CPRDataTable <- shiny::renderDataTable(
+      output$CPRDataTable <- DT::renderDT(
         
         pkg.env$datCPRTrip %>% 
           dplyr::group_by(.data$Region) %>% 
@@ -247,14 +247,14 @@ mod_info_server <- function(id){
     })
     
     observeEvent({input$Info == 6}, {
-      output$PDataTable <- shiny::renderDataTable(
+      output$PDataTable <- DT::renderDT(
         pkg.env$SpInfoP, 
         options = list(
           pageLength = 250))
     })
     
     observeEvent({input$Info == 7}, {
-      output$ZDataTable <- shiny::renderDataTable(
+      output$ZDataTable <- DT::renderDT(
         pkg.env$SpInfoZ, 
         options = list(
           pageLength = 250))

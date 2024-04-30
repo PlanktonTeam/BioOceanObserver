@@ -18,7 +18,6 @@ mod_LFishData_ui <- function(id){
                                      options = list(dropdownParent = 'body')),
         )),
       shiny::fluidRow(
-        # shiny::dataTableOutput(nsLFishData("SpeciesTable")),  
         DT::DTOutput(nsLFishData("SpeciesTable")),
       ),
       
