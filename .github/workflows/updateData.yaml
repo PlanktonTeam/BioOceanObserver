@@ -3,9 +3,7 @@
 name: updateData
 
 # Controls when the workflow will run
-on:
-  schedule:
-    - cron: "1 1 1 * *"
+on: workflow_dispatch
 
 # A workflow to run r script to update data
 jobs:
