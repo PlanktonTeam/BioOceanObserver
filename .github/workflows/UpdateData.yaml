@@ -13,6 +13,11 @@ jobs:
           packages: |
             any::tidyverse
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
+          
       - name: Check out repository
         uses: actions/checkout@v3
 
