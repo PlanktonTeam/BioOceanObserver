@@ -23,15 +23,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
+      - name: Set git user id
+        run: |
+          git config --local user.email "claire.davies@csiro.au"
+          git config --local user.name "clairedavies"    
+          
       - name: Import data
         run: Rscript -e 'source("data-raw/All_RData.R")'
 
       - name: Commit results
-        run: |
-          git config --local user.email "claire.davies@csiro.au"
-          git config --local user.name "clairedavies"
           git add R/sysdata.rda
           git commit -m 'Data updated' || echo "No changes to commit"
-          git push origin main --force-with-lease || echo "No changes to commit"
+          git push --force   || echo "No changes to commit"
 
 
