@@ -28,8 +28,8 @@ jobs:
 
       - name: Commit results
         run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
+          git config --local user.email "claire.davies@csiro.au"
+          git config --local user.name "ClaireDavies"
           git add R/sysdata.rda
           git commit -m 'Data updated' || echo "No changes to commit"
           git push origin main --force-with-lease || echo "No changes to commit"
