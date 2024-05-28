@@ -17,6 +17,7 @@ jobs:
         with:
           packages: |
             any::tidyverse
+            any::tidync
 
       - name: Check out repository
         uses: actions/checkout@v3
