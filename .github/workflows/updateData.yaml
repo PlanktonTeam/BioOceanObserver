@@ -54,7 +54,11 @@ jobs:
         shell: Rscript {0}
 
       - name: Install tidyverse
-        run: Rscript -e 'install.packages("tidyverse")'
+        run: |
+          Rscript -e 'install.packages("httr")'
+          Rscript -e 'install.packages("gargle")'
+          Rscript -e 'install.packages("curl")'
+          Rscript -e 'install.packages("tidyverse")'
         
       - name: Generate data
         run: 
