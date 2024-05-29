@@ -34,6 +34,6 @@ jobs:
           git config user.name "clairedavies"
           git add R/sysdata.rda
           git commit -m 'Data updated'
-          git push origin main --force
+          git push --force
 
 
