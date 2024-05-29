@@ -22,9 +22,7 @@ jobs:
 
       - name: Check out repository
         uses: actions/checkout@v3
-        with:
-          persist-credentials: false
-       
+               
       - name: Import data
         run: Rscript -e 'source("data-raw/All_RData.R")'
 
