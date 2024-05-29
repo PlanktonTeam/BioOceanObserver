@@ -28,8 +28,10 @@ jobs:
 
       - name: Commit results
         run: |
+          git config user.email "claire.davies@csiro.au"
+          git config user.name "clairedavies"
           git add R/sysdata.rda
-          git commit -m 'Data updated' --author "clairedavies <claire.davies@csiro.au>"
+          git commit -m 'Data updated'
           git push --force origin main
 
 
