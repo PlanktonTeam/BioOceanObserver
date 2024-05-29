@@ -32,6 +32,7 @@ jobs:
         run: Rscript -e 'source("data-raw/All_RData.R")'
 
       - name: Commit results
+        run: |
           git add R/sysdata.rda
           git commit -m 'Data updated' || echo "No changes to commit"
           git push --force   || echo "No changes to commit"
