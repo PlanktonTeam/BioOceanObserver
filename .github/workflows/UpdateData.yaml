@@ -40,16 +40,7 @@ jobs:
           add_timestamp: true
           commit_prefix: "[AUTO-COMMIT]"
           commit_message: "Data Updated"
-          target_branch: "updateData"
 
-      - name: Create pull request
-        uses: devops-infra/action-pull-request@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          body: "**Automated pull request**<br><br>Replaced Data"
-          title: ${{ github.event.commits[0].message }}
-
-  
       # - name: Auto-merge Pull Request (Use with caution!)
       #   uses: pascalgn/automerge-action@v0.15.6  # Replace with the latest version if needed
       #   env:
