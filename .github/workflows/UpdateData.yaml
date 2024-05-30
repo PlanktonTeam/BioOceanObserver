@@ -33,6 +33,9 @@ jobs:
         with:
           persist-credentials: false
       
+      - name: Import data
+        run: Rscript -e 'source("data-raw/All_RData.R")'
+        
       - name: Commit and push changes
         uses: devops-infra/action-commit-push@master
         with:
