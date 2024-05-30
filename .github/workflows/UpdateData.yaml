@@ -35,15 +35,12 @@ jobs:
       - name: Import data
         run: Rscript -e 'source("data-raw/All_RData.R")'
       
-      - name: Setup git
+      - name: Commit results
+        env:
+          PT_SECRET: ${{ secrets.PT_SECRET }}  # Use a secret token with appropriate permissions
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-  
-      - name: Commit results
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use a secret token with appropriate permissions
-        run: |
           git add R/sysdata.rda
           git commit -m 'Data updated'
           git push
