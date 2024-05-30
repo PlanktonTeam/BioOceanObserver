@@ -1,12 +1,6 @@
 on:
   schedule:
-    - cron: 0 0 * * 1 # schedule to run at midnight on Monday each week
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    - cron: 0 0 * * 1 # schedule to run at midnight on Sunday (UTC) each week
 
 name: Update Data
 
