@@ -3,8 +3,6 @@
 on:
   push:
     branches: main
-  pull_request:
-    branches: main
 
 name: Update Data
 
@@ -39,7 +37,7 @@ jobs:
           package: gh  # Only needed if you also use gh commands in the workflow
 
       - name: Create branch
-        run: git branch new data-branch
+        run: git checkout -b dataUpdate
 
       - name: Import data
         run: Rscript -e 'source("data-raw/All_RData.R")'
@@ -51,7 +49,7 @@ jobs:
         run: git commit -m "Data updated"
 
       - name: Create pull request
-        run: gh pr create -B data-branch -t main --title "[AUTO] Update Data"
+        run: gh pr create -B dataUpdate -t main --title "[AUTO] Update Data"
 
       - name: Auto-merge Pull Request (Use with caution!)
         uses: pascalgn/automerge-action@v0.15.6  # Replace with the latest version if needed
