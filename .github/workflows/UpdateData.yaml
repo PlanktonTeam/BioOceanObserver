@@ -36,13 +36,22 @@ jobs:
       - name: Import data
         run: Rscript -e 'source("data-raw/All_RData.R")'
         
-      - name: Commit and push changes
-        uses: devops-infra/action-commit-push@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          add_timestamp: true
-          commit_prefix: "[AUTO-COMMIT]"
-          commit_message: "Data Updated"
+      - name: Commit results
+        run: |
+          git add R/sysdata.rda
+          git commit -m 'Data updated'
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use a secret token with appropriate permissions
+     
+        
+      # - name: Commit and push changes
+      #   uses: devops-infra/action-commit-push@master
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     add_timestamp: true
+      #     commit_prefix: "[AUTO-COMMIT]"
+      #     commit_message: "Data Updated"
 
       # - name: Auto-merge Pull Request (Use with caution!)
       #   uses: pascalgn/automerge-action@v0.15.6  # Replace with the latest version if needed
