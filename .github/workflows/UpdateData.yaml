@@ -43,24 +43,3 @@ jobs:
           git commit -m 'Data updated'
           git push https://jaseeverett:${GH_TOKEN}@github.com/PlanktonTeam/BioOceanObserver.git main
         
-
-      # - name: Commit and push changes
-      #   uses: devops-infra/action-commit-push@master
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     add_timestamp: true
-      #     commit_prefix: "[AUTO-COMMIT]"
-      #     commit_message: "Data Updated"
-
-      # - name: Auto-merge Pull Request (Use with caution!)
-      #   uses: pascalgn/automerge-action@v0.15.6  # Replace with the latest version if needed
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use a secret token with appropriate permissions
-
-
-      # - name: create pull request
-      #   run: gh pr create -B main --title 'Update Data'
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-# 
-      
