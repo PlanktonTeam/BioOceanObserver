@@ -3,6 +3,8 @@
 on:
   push:
     branches: main
+  pull_request:
+    branches: main
 
 name: Update Data
 
@@ -30,33 +32,28 @@ jobs:
         uses: actions/checkout@v4        
         with:
           persist-credentials: false
-               
-      - name: Install gh cli (optional)
-        uses: actions/setup-node@v3
+      
+      - name: Commit and push changes
+        uses: devops-infra/action-commit-push@master
         with:
-          package: gh  # Only needed if you also use gh commands in the workflow
-
-      - name: Create branch
-        run: git checkout -b dataUpdate
-
-      - name: Import data
-        run: Rscript -e 'source("data-raw/All_RData.R")'
-
-      - name: Stage changes
-        run: git add R/sysdata.rda
-
-      - name: Commit changes
-        run: git commit -m "Data updated"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          add_timestamp: true
+          commit_prefix: "[AUTO-COMMIT]"
+          commit_message: "Data Updated"
+          target_branch: "updateData"
 
       - name: Create pull request
-        run: gh pr create -B dataUpdate -t main --title "[AUTO] Update Data"
+        uses: devops-infra/action-pull-request@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          body: "**Automated pull request**<br><br>Replaced Data"
+          title: ${{ github.event.commits[0].message }}
 
-      - name: Auto-merge Pull Request (Use with caution!)
-        uses: pascalgn/automerge-action@v0.15.6  # Replace with the latest version if needed
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use a secret token with appropriate permissions
-
-
+  
+      # - name: Auto-merge Pull Request (Use with caution!)
+      #   uses: pascalgn/automerge-action@v0.15.6  # Replace with the latest version if needed
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use a secret token with appropriate permissions
 
 
       # - name: create pull request
@@ -64,17 +61,4 @@ jobs:
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 # 
-      # - name: Commit and push changes
-      #   uses: devops-infra/action-commit-push@master
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     add_timestamp: true
-      #     commit_prefix: "[AUTO-COMMIT]"
-      #     commit_message: "Data Updated"
-      # 
-      # - name: Create pull request
-      #   uses: devops-infra/action-pull-request@master
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     body: "**Automated pull request**<br><br>Replaced Data"
-      #     title: ${{ github.event.commits[0].message }}
+      
