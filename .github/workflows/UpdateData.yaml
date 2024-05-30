@@ -1,7 +1,8 @@
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * 1' # schedule to run at midnight on Sunday (UTC) each week
+    - cron: '*/5 * * * *' # schedule to run at midnight on Sunday (UTC) each week
+    # - cron: '0 0 * * 1' # schedule to run at midnight on Sunday (UTC) each week
   
 name: Update Data
 
