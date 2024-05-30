@@ -1,4 +1,10 @@
-on: workflow_dispatch
+# on: workflow_dispatch # Claires original one. Want to try this first
+
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
 
 jobs:
   import-data:
@@ -28,12 +34,15 @@ jobs:
       - name: Import data
         run: Rscript -e 'source("data-raw/All_RData.R")'
 
-      - name: Commit results
-        run: |
-          git config user.email "21113590+clairedavies@users.noreply.github.com"
-          git config user.name "clairedavies"
-          git add R/sysdata.rda
-          git commit -m 'Data updated'
-          git push --force
+      - name: Commit and push changes
+        uses: devops-infra/action-commit-push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          commit_prefix: "[AUTO-COMMIT] Data Updated"
 
-
+      - name: Create pull request
+        uses: devops-infra/action-pull-request@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          body: "**Automated pull request**<br><br>Replaced Data"
+          title: ${{ github.event.commits[0].message }}
