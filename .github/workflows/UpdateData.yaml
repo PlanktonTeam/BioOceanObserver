@@ -25,6 +25,7 @@ jobs:
             any::tidyverse
             any::tidync
             any::usethis
+            any::remotes
 
       - name: Install planktonr
         run: |
