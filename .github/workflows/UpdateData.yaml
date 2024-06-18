@@ -26,7 +26,7 @@ jobs:
             any::tidync
             any::usethis
 
-       - name: Install planktonr
+      - name: Install planktonr
         run: |
           Rscript -e "remotes::install_github('PlanktonTeam/planktonr')"
 
