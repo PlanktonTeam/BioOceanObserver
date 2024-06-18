@@ -26,6 +26,10 @@ jobs:
             any::tidync
             any::usethis
 
+       - name: Install planktonr
+        run: |
+          Rscript -e "remotes::install_github('PlanktonTeam/planktonr')"
+
       - name: Check out repository
         uses: actions/checkout@v4        
         with:
