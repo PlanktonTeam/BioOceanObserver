@@ -27,7 +27,8 @@ app_ui <- function(request) {
                     shiny::tabPanel("Microbes",
                                     shiny::tabsetPanel(id = 'mic', type = "pills",
                                                        shiny::tabPanel(value = "mts", "Time Series NRS", mod_MicroTsNRS_ui("MicroTsNRS_ui_1")),
-                                                       # shiny::tabPanel("Diversity"),
+                                                       shiny::tabPanel(value = "mtsCS", "Time Series Coastal", mod_MicroTsCS_ui("MicroTsCS_ui_1")),
+                                                       shiny::tabPanel(value = "GSlat", "Voyage data", mod_MicroLatGS_ui("MicroLatGS_ui_1"))
                                                        # shiny::tabPanel("Composition")
                                     )),
                     shiny::tabPanel("Phytoplankton",
@@ -51,25 +52,32 @@ app_ui <- function(request) {
                                     )),
                     shiny::tabPanel("Environmental Data",
                                     shiny::tabsetPanel(id = 'env', type = "pills",
-                                                       shiny::tabPanel(value = "bgc", "NRS BGC Nutrients", mod_NutrientsBGC_ui("NutrientsBGC_ui_1")),
-                                                       shiny::tabPanel(value = "pico", "NRS BGC Picoplankton", mod_PicoBGC_ui("PicoBGC_ui_1")),
-                                                       shiny::tabPanel(value = "pigs", "NRS BGC Pigments", mod_PigmentsBGC_ui("PigmentsBGC_ui_1")),
-                                                       shiny::tabPanel(value = "water", "NRS BGC Water", mod_WaterBGC_ui("WaterBGC_ui_1")),
+                                                       shiny::tabPanel(value = "bgc", "NRS Biogeochemistry", mod_NutrientsBGC_ui("NutrientsBGC_ui_1")),
+                                                       shiny::tabPanel(value = "pico", "NRS Picoplankton", mod_PicoBGC_ui("PicoBGC_ui_1")),
+                                                       shiny::tabPanel(value = "pigs", "NRS Pigments", mod_PigmentsBGC_ui("PigmentsBGC_ui_1")),
+                                                       shiny::tabPanel(value = "water", "NRS CTD", mod_WaterBGC_ui("WaterBGC_ui_1")),
                                                        shiny::tabPanel(value = 'moor', "NRS Moorings", mod_MoorBGC_ui("MoorBGC_ui_1"))
+                                    )),
+                    shiny::tabPanel("Relationships",
+                                    shiny::tabsetPanel(id = 'rel', type = "pills",
+                                                       shiny::tabPanel(value = "nrsRel", "NRS relationship", mod_RelNRS_ui("RelNRS_ui_1")),
+                                                       shiny::tabPanel(value = "csRel", "Coastal Stations relationship", mod_RelCS_ui("RelCS_ui_1")),
+                                                       shiny::tabPanel(value = "cprRel", "CPR relationship", mod_RelCPR_ui("RelCPR_ui_1"))
                                     )),
                     shiny::tabPanel("Information",
                                     fluidPage(
                                       value = "info", mod_info_ui("info_1"))
                     ),
                     navbarMenu("", icon = icon("share-nodes"),
-                               shiny::tabPanel(tags$a("", href = "https://twitter.com/intent/tweet?text=Check%20out%20the%20amazing%20new%20IMOS%20Biological%20Observer%20https%3A//shiny.csiro.au/BioOceanObserver/", target = "_blank",
+                               shiny::tabPanel(tags$a("", href = "https://twitter.com/intent/tweet?text=Check%20out%20the%20amazing%20new%20Biological%20Observer%20https%3A//shiny.csiro.au/BioOceanObserver/", target = "_blank",
                                                       list(icon("twitter"), "Twitter"))),
                                shiny::tabPanel(tags$a("", href = "https://www.facebook.com/sharer/sharer.php?u=https%3A//shiny.csiro.au/BioOceanObserver/", target = "_blank",
                                                       list(icon("facebook"), "Facebook"))),
-                               # shiny::tabPanel(tags$a("", href = "http://pinterest.com/pin/create/button/?url=https%3A%2F%2Fjaseeverett.shinyapps.io%2FIMOS_BioOceanObserver", target = "_blank",
-                               # list(icon("pinterest-p"), "Pinterest"))),
                                shiny::tabPanel(tags$a("", href = "https://www.linkedin.com/shareArticle?mini=true&url=https%3A//shiny.csiro.au/BioOceanObserver/", target = "_blank",
-                                                      list(icon("linkedin"), "LinkedIn"))))
+                                                      list(icon("linkedin"), "LinkedIn")))),
+                    navbarMenu("", icon = img(src = "www/github-mark/github-mark-white.png", style="padding-right:5px", height = 30),
+                               shiny::tabPanel(tags$a("", href = "https://github.com/PlanktonTeam/BioOceanObserver", target = "_blank", "BioOceanObserver repo")),
+                               shiny::tabPanel(tags$a("", href = "https://github.com/PlanktonTeam/planktonr", target = "_blank", "planktonr repo")))
                     )
 }
 
@@ -97,7 +105,7 @@ golem_add_external_resources <- function(){
     # for example, you can add shinyalert::useShinyalert()
     
     # Script for CSIRO branding tab ----
-    tags$script(type="text/javascript", src="https://www.csiro.au/themes/default/js/csirotab.min.js"),
+    tags$script(type="text/javascript", src="csirotab.min.js"),
     # Custom CSIRO styling CSS for modal ----
     tags$link(rel = "stylesheet", type = "text/css", href = "css/csiromodal.css"),
     # Google fonts ----

@@ -13,11 +13,21 @@ mod_PolLTM_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         plotOutput(nsPolLTM("plotmap")),
-        radioButtons(inputId = nsPolLTM("SiteLTM"), label = "Select a station", choices = unique(sort(pkg.env$PolLTM$StationName)), selected = "Port Hacking")
+        shiny::HTML("<h5><strong>Select a station:</strong></h5>"),
+        radioButtons(inputId = nsPolLTM("SiteLTM"), label = NULL, choices = unique(sort(pkg.env$PolLTM$StationName)), selected = "Port Hacking")
       ),
       mainPanel(id = "EOV paramters from Long Term Monitoring", 
-                shiny::htmlOutput(nsPolLTM("PlotExp1")),
+                shiny::br(),
+                shiny::h3("Essential Ocean Variables"),
+                shiny::HTML("<a href='https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441'> 
+                        Essential Ocean Variables (EOVs)</a> are the important variables that scientists 
+                        have identified to monitor our oceans. They are chosen based on impact of the measurement and the 
+                        feasiblity to take consistent measurements. They are commonly measured by observing systems and 
+                        frequently used in policy making and input into reporting such as State of Environment."),
+                shiny::hr(style = "border-top: 2px solid #000000;"),
+                shiny::br(),
                 shiny::htmlOutput(nsPolLTM("StationSummary")),
+                shiny::br(),
                 plotOutput(nsPolLTM("timeseries1"), height = 1000) %>% 
                   shinycssloaders::withSpinner(color="#0dc5c1"), 
                 div(style="display:inline-block; float:right; width:60%",
@@ -39,11 +49,10 @@ mod_PolLTM_server <- function(id){
     # Sidebar ----------------------------------------------------------
     selectedDataLTM <- reactive({
       req(input$SiteLTM)
-      validate(need(!is.na(input$SiteLTM), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$SiteLTM), "Error: Please select a station."))
       
       selectedDataLTM <- pkg.env$PolLTM %>% 
         dplyr::filter(.data$StationName %in% input$SiteLTM,
-                      .data$SampleDepth_m < 15,
                       !.data$Parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL")) 
       
     }) %>% bindCache(input$SiteLTM)
@@ -68,12 +77,12 @@ mod_PolLTM_server <- function(id){
     outputs <- reactive({
       outputs <- planktonr::pr_get_Coeffs(selectedDataLTM())
     }) %>% bindCache(input$SiteLTM)
-    
+
     info <- reactive({
       info <- outputs() %>% dplyr::select(.data$slope, .data$p, .data$Parameters) %>% unique() %>%
         dplyr::arrange(.data$Parameters)
     }) %>% bindCache(input$SiteLTM)
-    
+
     stationData <- reactive({
       stationData <- pkg.env$NRSinfo %>% dplyr::filter(.data$StationName == input$SiteLTM) 
     }) %>% bindCache(input$SiteLTM)
@@ -83,15 +92,6 @@ mod_PolLTM_server <- function(id){
       planktonr::pr_plot_NRSmap(selectedDataLTM())
     }, bg = "transparent") %>% bindCache(input$SiteLTM)
     
-    # Add text information 
-    output$PlotExp1 <- shiny::renderText({
-      paste("Biomass and diversity are the <a href = 'https://www.goosocean.org/index.php?option=com_content&view=article&layout=edit&id=283&Itemid=441'>
-      Essential Ocean Variables (EOVs)</a> for plankton. These are the important variables that scientists 
-      have identified to monitor our oceans. They are chosen based on impact of the measurement and the 
-      feasiblity to take consistent measurements. They are commonly measured by observing systems and 
-      frequently used in policy making and input into reporting such as State of Environment.", sep = "")
-    }) 
-    
     output$StationSummary <- shiny::renderText({ 
       paste("<h4 style='text-align:center; font-weight: bold;'>",input$SiteLTM,"</h5>The ", input$SiteLTM, 
             " Longterm Monitoring Station is located at ", round(stationData()$Latitude,2), 
@@ -100,6 +100,8 @@ mod_PolLTM_server <- function(id){
             ". The station has been sampled since ", format(min(selectedDataLTM()$SampleTime_Local), "%A %d %B %Y"), " ", stationData()$now,
             ". ", input$SiteLTM, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, 
             " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = "")})
+    
+    col1 <- fEOVutilities(vector = "col", Survey = "LTM")
     
     # Plot Trends -------------------------------------------------------------
     #t, l, b, r
@@ -115,17 +117,17 @@ mod_PolLTM_server <- function(id){
     
     gg_out1 <- reactive({
       
-      p1 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Nitrate_umolL", Survey = "LTM", trans = "identity", col = pkg.env$col12[9], labels = "no")
-      p2 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Phosphate_umolL", Survey = "LTM", trans = "identity", col = pkg.env$col12[11], labels = "no") 
-      p4 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Silicate_umolL", Survey = "LTM", trans = "identity", col = pkg.env$col12[10], labels = "no") 
-      p7 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Temperature_degC", Survey = "LTM", trans = "identity", col = pkg.env$col12[5], labels = "no")
-      p3 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Salinity", Survey = "LTM", trans = "identity", col = pkg.env$col12[7])
+      p1 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Nitrate_umolL", Survey = "LTM", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
+      p2 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Phosphate_umolL", Survey = "LTM", trans = "identity", col = col1["Phosphate_umolL"], labels = FALSE) 
+      p4 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Silicate_umolL", Survey = "LTM", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE) 
+      p7 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Temperature_degC", Survey = "LTM", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
+      p3 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Salinity", Survey = "LTM", trans = "identity", col = col1["Salinity"])
       
       
       patchwork::wrap_elements(
-        grid::textGrob("Physcial EOVs", gp = grid::gpar(fontsize=20))) + 
+        grid::textGrob("Physical EOVs", gp = grid::gpar(fontsize=20))) + 
         p7 + p3 + 
-        grid::textGrob("Biocehmical EOVs", gp = grid::gpar(fontsize=20)) + 
+        grid::textGrob("Biochemical EOVs", gp = grid::gpar(fontsize=20)) + 
         p1 + p2 + p4 + 
         patchwork::plot_layout(design = layout1) &
         ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),

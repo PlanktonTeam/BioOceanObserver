@@ -10,15 +10,20 @@
 mod_info_ui <- function(id){
   nsInfo <- NS(id)
   shiny::tagList(
-    tabsetPanel(id = "info",# type = "pills",
+    tabsetPanel(id = "info", type = "pills",
                 tabPanel("Frequently Asked Questions", value = 1,
                          shiny::fluidPage(
-                           shiny::h3(shiny::strong("App")),
+                           shiny::br(),
+                           shiny::h3(shiny::strong("The App")),
                            shiny::h4("Does the app use real time data?"),
                            shiny::p("No, to keep the App efficient the data is harvested from the AODN monthly and pre-wrangled."),
                            shiny::h4("Where is the data behind the APP available from?"),
-                           shiny::p("All the data is accesible through direct download from the AODN portal or
-                                    by using the pr_get_xxx functions in planktonr"),
+                           shiny::p("All the non-genomic data is accesible through direct download from the AODN portal or
+                                    by using the pr_get_xxx functions in planktonr. The raw genomic data is available through AMB data portal,
+                                    the calculated indices are available through the Australian Microbiome, Microbial Ocean Atlas git page"),
+                           shiny::HTML("<li>AODN Portal <a href = https://portal.aodn.org.au/ target = _blank> Website</a>"),
+                           shiny::HTML("<li>AMB portal <a href = https://data.bioplatforms.com/organization/about/australian-microbiome target = _blank> Website</a>"),
+                           shiny::HTML("<li>AMB github <a href = https://github.com/AusMicrobiome/microbial_ocean_atlas target = _blank> Website</a>"),
                            shiny::h4("How can I make these figures myself?"),
                            shiny::p("Download the data and make your own plots using planktonr. 
                                     Vignettes are available in planktonr to help you navigate the data and package"),
@@ -30,6 +35,7 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("Technical Information", value = 2,
                          shiny::fluidPage(
+                           shiny::br(),
                            shiny::h3("Data binning"),
                            shiny::h4("Depths"),
                            shiny::p("Depths binned for ease of plotting.
@@ -52,12 +58,59 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("ChangeLog", value = 3,
                          shiny::fluidPage(
-                           shiny::h3("February 2023"),
-                           shiny::h5("Initial release Version")
+                           shiny::br(),
+                           shiny::h3("Changelog for the Biological Ocean Observer"),
+                           shiny::br(),
+                           shiny::h4("July 2021"),
+                           shiny::HTML("<ul>     
+                                          <li>Initial Prototype developed</li>
+                                          <li>Add Zooplankton Data</li>
+                                     </ul>"),
+                           shiny::h4("September 2021"),
+                           shiny::HTML("<ul>     
+                                          <li>Add Phytoplankton Data</li>
+                                          <li>Add Nutrients</li>
+                                          <li>Add Pigments</li>
+                                      </ul>"),
+                           shiny::h4("December 2021"),
+                           shiny::HTML("<ul>
+                                          <li>Add Microbial Data</li>
+                                      </ul>"),
+                           shiny::h4("January 2022"),
+                           shiny::HTML("<ul>
+                                          <li>Add Essential Ocean Variables</li>
+                                      </ul>"),
+                           shiny::h4("July 2022"),
+                           shiny::HTML("<ul>
+                                          <li>Add CTD Data</li>
+                                      </ul>"),
+                           shiny::h4("August 2022"),
+                           shiny::HTML("<ul>
+                                          <li>Add Moorings</li>
+                                      </ul>"),
+                           shiny::h4("November 2022"),
+                           shiny::HTML("<ul>
+                                          <li>Add Larval Fish Data</li>
+                                          <li>Add Picoplankton</li>
+                                          <li>Add Information Page</li>
+                                      </ul>"),
+                           shiny::h4("February 2023"),
+                           shiny::HTML("<ul>
+                                          <li>Initial release Version uploaded</li>
+                                      </ul>"),
+                           shiny::h4("March 2023"),
+                           shiny::HTML("<ul>
+                                          <li>Add Relationships Page</li>
+                                      </ul>"),
+                           shiny::h4("July 2023"),
+                           shiny::HTML("<ul>
+                                          <li>Biological Ocean Observer released at Australian Marine Sciences Conference</li>
+                                      </ul>"),
                          )
                 ),
                 tabPanel("References", value = 4,
                          shiny::fluidPage(
+                           shiny::br(),
                            shiny::h4("References"),
                            shiny::h5("To further understand the data, collection methods etc."),
                            shiny::HTML("<li>Davies, CH., Sommerville, E. (Eds.) (2017). <em>National Reference Stations Biogeochemical Operations Manual</em>. Version 3.3.1. Integrated Marine Observing System. DOI:10.26198/5c4a56f2a8ae3. <a href = http://dx.doi.org/10.26198/5c4a56f2a8ae3 target = _blank> Website</a>."),
@@ -65,10 +118,13 @@ mod_info_ui <- function(id){
                            shiny::HTML("<li>A.J. Richardson, A.W. Walne, A.W.G. John, T.D. Jonas, J.A. Lindley, D.W. Sims, D. Stevens, M. Witt, (2006). <em>Using continuous plankton recorder data</em>. Progress in Oceanography, 68.1, doi: 10.1016/j.pocean.2005.09.011. <a href = https://www.sciencedirect.com/science/article/pii/S0079661105001424?via%3Dihub target = _blank> Website</a>."),
                            shiny::HTML("<li>IMOS National Reference Stations website. <a href = https://imos.org.au/facilities/nationalmooringnetwork/nrs target = _blank> Website</a>."),
                            shiny::HTML("<li>IMOS Continuous PLankton Recorder Survey website. <a href = https://imos.org.au/facilities/shipsofopportunity/auscontinuousplanktonrecorder target = _blank> Website</a>."),
-                           
+                           shiny::HTML("<li> Australian MIcrobiome Scientific Manual. <a href = https://confluence.csiro.au/display/ASM/Ausmicrobiome+Scientific+Manual target = _blank> Website</a>."),
+                           shiny::br(),
+                           shiny::br(),
                            shiny::h5("These references are also good resources for visualising this data"),
                            shiny::HTML("<li>Richardson A.J, Eriksen R,S, Moltmann T, Hodgson-Johnston I, Wallis J.R. (2020). <em>State and Trends of Australia's Ocean Report</em>. Integrated Marine Observing System (IMOS). <a href = https://www.imosoceanreport.org.au/about/ target = _blank> Website</a>."),
                            shiny::HTML("<li>Richardson A.J, Eriksen R.S, Rochester, W. (2015) <em>Plankton 2015: State of Australia's Oceans</em>. CSIRO report. ISBN 978-1-4863-0566-7 (EPDF). <a href = https://imos.org.au/fileadmin/user_upload/shared/Data_Tools/15-00245_OA_Plankton2015_20ppBrochure_WEB_151116.pdf target = _blank> Website</a>."),
+                           shiny::HTML("<li>Brown, M., van de Kamp, J., Ostrowski, M. <em>et al</em>. (2018). Systematic, <em>continental scale temporal monitoring of marine pelagic microbiota by the Australian Marine Microbial Biodiversity Initiative</em>. Sci Data 5, 180130. doi.org/10.1038/sdata.2018.130 <a href = https://doi.org/10.1038/sdata.2018.130 target = _blank> Website</a>."),
                            shiny::br(),
                            shiny::br(),
                            shiny::h4("Package citations"),
@@ -97,12 +153,13 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("Sampling Details", value = 5,
                          shiny::fluidPage(
+                           shiny::br(),
                            shiny::h2("NRS"),
                            shiny::h6("Note: Ningaloo and Esperance only operated for 3 years and were only sampled seasonally. The data is sparse for these stations and has often been removed for some analysis."),
                            shiny::h6("Note: The NRS sampling period goes from mid 2009 until present. Prior to this some environmental parameters were also collected at the 
                                      Long Term Monitoring Stations - ROT, MAI, PH4. These are shown on the Long Term Monitoring tab under EOVs. Generally though in this 
                                      APP we concentrate on the visualisation of the NRS period where more parameters have been collected in a consistent manner across stations"),
-                           shiny::dataTableOutput(nsInfo("NRSDataTable")),
+                           DT::DTOutput(nsInfo("NRSDataTable")),
                            shiny::h4("Zooplankton"),
                            shiny::h5("Zooplankton is collected with a Heron drop net sampling only on the descent, 60cm diameter, 100 micron mesh net. This is a depth integrated sample analysed by light microscopy"),
                            shiny::h4("Phytoplankton"),
@@ -124,8 +181,14 @@ mod_info_ui <- function(id){
                            shiny::HTML('<center>Schematic of the NRS moorings showing depths and instrumentation</center>'),
                            shiny::br(),
                            shiny::br(),
+                           shiny::h2("Coastal Stations"),
+                           shiny::h5("Nutrients, picoplankton and microbial samples are collected at the Coastal Station in Botany Bay, the Derwent, the GBR and Port Phillip Bay. 
+                                     Details for this sampling can be found in the Australian Microbiome Scientifc Manual."), 
+                           shiny::HTML("<a href = https://confluence.csiro.au/display/ASM/Ausmicrobiome+Scientific+Manual target = _blank> Website</a>."),
+                           shiny::br(),
+                           shiny::br(),
                            shiny::h2("CPR"),
-                           shiny::dataTableOutput(nsInfo("CPRDataTable")),
+                           DT::DTOutput(nsInfo("CPRDataTable")),
                            shiny::h4("PCI"),
                            shiny::h5("Silks are cut into 5nm segments. Phytoplankton colour index is counted on every segment towed"),
                            shiny::h4("Phytoplankton"),
@@ -138,11 +201,11 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("Phytoplankton Species Details", value = 6, 
                          shiny::h2("Phytoplankton Species Information"),
-                         shiny::dataTableOutput(nsInfo("PDataTable")),
+                         DT::DTOutput(nsInfo("PDataTable")),
                 ),
                 tabPanel("Zooplankton Species Details", value = 7, 
                          shiny::h2("Zooplankton Species Information"),
-                         shiny::dataTableOutput(nsInfo("ZDataTable")),
+                         DT::DTOutput(nsInfo("ZDataTable")),
                 ),
     )
   )
@@ -155,8 +218,8 @@ mod_info_server <- function(id){
   moduleServer( id, function(input, output, session){
     
     observeEvent({input$Info == 5}, {
-      output$NRSDataTable <- shiny::renderDataTable(
-          pkg.env$NRSStation %>% 
+      output$NRSDataTable <- DT::renderDT(
+        pkg.env$NRSStation %>% 
           dplyr::mutate(EndDate = dplyr::case_when(.data$StationCode %in% c('NIN', 'ESP') ~ "2012-03-01",
                                                    .data$StationCode == 'PH4' ~ '2009-02-24')) %>% 
           dplyr::select("StationCode":"StationStartDate", "EndDate", dplyr::everything()) %>% 
@@ -165,13 +228,13 @@ mod_info_server <- function(id){
                         `Sampling Effort` = "SamplingEffort", Region = "ManagementRegion")
       )
       
-      output$CPRDataTable <- shiny::renderDataTable(
-
-  pkg.env$datCPRTrip %>% 
+      output$CPRDataTable <- DT::renderDT(
+        
+        pkg.env$datCPRTrip %>% 
           dplyr::group_by(.data$Region) %>% 
           dplyr::summarise(StartDate = min(.data$Year_Local, na.rm = TRUE),
                            EndDate = max(.data$Year_Local, na.rm = TRUE),
-
+                           
                            MilesTowed = dplyr::n() * 5,
                            SamplesCounted = round(dplyr::n()/4,0),
                            .groups = 'drop') %>% 
@@ -184,14 +247,14 @@ mod_info_server <- function(id){
     })
     
     observeEvent({input$Info == 6}, {
-      output$PDataTable <- shiny::renderDataTable(
+      output$PDataTable <- DT::renderDT(
         pkg.env$SpInfoP, 
         options = list(
           pageLength = 250))
     })
     
     observeEvent({input$Info == 7}, {
-      output$ZDataTable <- shiny::renderDataTable(
+      output$ZDataTable <- DT::renderDT(
         pkg.env$SpInfoZ, 
         options = list(
           pageLength = 250))

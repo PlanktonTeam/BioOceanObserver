@@ -1,0 +1,57 @@
+on:
+  workflow_dispatch:
+  schedule:
+    # - cron: '*/5 * * * *' # schedule to run every 5 mins
+    - cron: '0 0 * * 1' # schedule to run at midnight on Sunday (UTC) each week
+  
+name: Update Data
+
+jobs:
+  import-data:
+    runs-on: ubuntu-latest
+    
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+    
+    steps:
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
+          
+      - name: Install packages
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::tidyverse
+            any::tidync
+            any::usethis
+            any::remotes
+
+      - name: Install planktonr
+        run: |
+          Rscript -e "remotes::install_github('PlanktonTeam/planktonr')"
+
+      - name: Check out repository
+        uses: actions/checkout@v4        
+        with:
+          persist-credentials: false
+          ref: ${{ github.ref_name }}
+      
+      - name: Import data
+        run: Rscript -e 'source("data-raw/All_RData.R")'
+      
+      - name: Commit results
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # Use a secret token with appropriate permissions
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add R/sysdata.rda
+          git commit -m 'Data updated'
+          git push https://jaseeverett:${GH_TOKEN}@github.com/PlanktonTeam/BioOceanObserver.git main
+        

@@ -26,6 +26,16 @@ mod_MicroTsNRS_server <- function(id){
   moduleServer(id, function(input, output, session, NRSmts){
     
     # Sidebar ----------------------------------------------------------
+    observeEvent(input$all, {
+      if(input$all == TRUE){
+        params <- planktonr::pr_relabel(unique(pkg.env$datNRSm$Parameters), style = "simple", named = TRUE)
+      } else {
+        params <- planktonr::pr_relabel(unique((pkg.env$datNRSm %>% 
+                                        dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters)))$Parameters), style = "simple", named = TRUE)
+      }
+      shiny::updateSelectInput(session, 'parameterm', choices = params, selected = "Bacterial_Temperature_Index_KD")
+    })
+    
     selectedData <- reactive({
       
       selectedData <- pkg.env$datNRSm %>% 
@@ -40,7 +50,7 @@ mod_MicroTsNRS_server <- function(id){
     shiny::exportTestValues(
       MicroTs = {ncol(selectedData())},
       MicroTsRows = {nrow(selectedData()) > 0},
-      MicroTsYearisNumeric = {class(selectedData()$Year)},
+      MicroTsYearisNumeric = {class(selectedData()$Year_Local)},
       MicroTsMonthisNumeric = {class(selectedData()$Month_Local)},
       MicroTsDepthisNumeric = {class(selectedData()$SampleDepth_m)},
       MicroTsDateisDate = {class(selectedData()$SampleTime_Local)},
@@ -78,9 +88,8 @@ mod_MicroTsNRS_server <- function(id){
       
       gg_out1 <- reactive({
         
-        if (is.null(pkg.env$datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
-          return(NULL)
-        
+        if(length(selectedData()$Parameters)>0){
+          
         if(input$scaler1){
           trans <- 'log10'
         } else {
@@ -92,6 +101,9 @@ mod_MicroTsNRS_server <- function(id){
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
         
         p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
+        } else {
+          ggplot2::ggplot + ggplot2::geom_blank()
+        }
         
       }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
@@ -133,7 +145,7 @@ mod_MicroTsNRS_server <- function(id){
         p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) + 
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
         
-        #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple"))
+        #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple", named = TRUE))
         
         # p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
         p1 / 
@@ -200,55 +212,6 @@ mod_MicroTsNRS_server <- function(id){
       
     })
     
-    # Plots by Parameters ---------------------------------------------------------
-    
-    observeEvent({input$NRSmts == 4}, {
-      
-      selectedData1 <- reactive({
-        req(input$Site)
-        req(input$p1)
-        validate(need(!is.na(input$Site), "Error: Please select a station."))
-        validate(need(!is.na(input$p1), "Error: Please select a parameter."))
-        
-        selectedData1 <- pkg.env$datNRSm %>% 
-          dplyr::filter(.data$StationName %in% input$Site,
-                        .data$Parameters %in% c(input$p1, input$p2),
-                        dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-          tidyr::pivot_wider(id_cols = c("StationName", "SampleDepth_m", "SampleTime_Local"), 
-                             names_from = "Parameters", values_from = "Values", values_fn = mean)
-        
-      }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
-      
-      gg_out4 <- reactive({
-        
-        # When we move to a planktonr function for this, we can use this:
-        # pr_plot_scatter(selectedData1(), x = colnames(selectedData1()[, 5]), y = colnames(selectedData1()[, 4]))
-        
-        #TODO This needs to be converted to a planktonr function. At the moment it can't use planktonr colours without :::
-        
-        x <- rlang::sym(colnames(selectedData1()[, 5]))
-        y <- rlang::sym(colnames(selectedData1()[, 4]))
-        
-        titlex <- planktonr::pr_relabel(rlang::as_string(x), style = "ggplot")
-        titley <- planktonr::pr_relabel(rlang::as_string(y), style = "ggplot")
-        
-        ggplot2::ggplot(data = selectedData1()) +
-          ggplot2::geom_point(ggplot2::aes(!!x, !!y, colour = .data$StationName)) +
-          ggplot2::xlab(titlex) + 
-          ggplot2::ylab(titley) + 
-          ggplot2::scale_colour_manual(values = planktonr:::colNRSName) +
-          planktonr::theme_pr()
-        
-      }) %>% bindCache(input$p1, input$p2, input$Site, input$DatesSlide[1], input$DatesSlide[2])
-      
-      output$timeseries4 <- renderPlot({
-        gg_out4()
-      })
-      
-      # Download -------------------------------------------------------
-      output$downloadData4 <- fDownloadButtonServer(input, selectedData1(), "Compare") # Download csv of data
-      output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4(), "Compare") # Download figure
-      
-    })
+
   })
 }

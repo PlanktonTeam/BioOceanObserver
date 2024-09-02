@@ -1,40 +1,48 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# imosboo
+# Biological Ocean Observer <a href="https://github.com/PlanktonTeam/BioOceanObserver"><img src="inst/app/www/BOO_Hex.png" align="right" height="139"/>
 
 <!-- badges: start -->
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![R-CMD-check](https://github.com/PlanktonTeam/BioOceanObserver/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/PlanktonTeam/BioOceanObserver/actions/workflows/R-CMD-check.yaml)
+[![issues -
+BioOceanObserver](https://img.shields.io/github/issues/PlanktonTeam/BioOceanObserver)](https://github.com/PlanktonTeam/BioOceanObserver/issues)
+[![Weekly Data
+Update](https://github.com/PlanktonTeam/BioOceanObserver/actions/workflows/UpdateData.yaml/badge.svg)](https://github.com/PlanktonTeam/BioOceanObserver/actions/workflows/UpdateData.yaml)
 <!-- badges: end -->
 
-The goal of imosboo is to increase the availability of IMOS Biological
-data by allowing users to visualise, interact and download data products
-and code.
+The goal of the Biological Ocean Observer is to increase the
+availability of IMOS Biological data by allowing users to visualise,
+interact and download data products and code.
 
 ## Code of Conduct
 
-Please note that the imosboo project is released with a [Contributor
-Code of
+Please note that the Biological Ocean Observer project is released with
+a [Contributor Code of
 Conduct](https://contributor-covenant.org/version/2/0/CODE_OF_CONDUCT.html).
 By contributing to this project, you agree to abide by its terms.
 
 ## Installation
 
-You can install the development version from
-[GitHub](https://github.com/) with:
+If you wish to run the Biological Ocean Observer offline, are a power
+user, or would like to contribute to its development, you can install
+the development version from [GitHub](https://github.com/) using:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("PlanktonTeam/IMOS_BioOceanObserver")
+devtools::install_github("PlanktonTeam/BioOceanObserver")
 ```
 
-## Example
-
-This is a basic example which shows you how to solve a common problem:
+and run the application using:
 
 ``` r
-library(imosboo)
-## basic example code
+library(biooceanobserver)
+run_app()
 ```
+
+Please note however, that the above download and installation is not
+required if you simply want to use the Biological Ocean Observer. The
+latest version will always be available on the [Shiny
+Server](https://shiny.csiro.au/BioOceanObserver)

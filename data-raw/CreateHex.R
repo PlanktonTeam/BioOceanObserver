@@ -11,57 +11,60 @@
 
 library(hexSticker)
 # 
-# 
-# sticker("IMOS_Crop.png", 
-#         package="", 
-#         p_size=5, 
-#         p_y = 1.7,
-#         s_x=1, 
-#         s_y=1, 
-#         s_width=0.92,
-#         s_height=0.4,
-#         h_fill = "#3B6E8F",
-#         h_color = "white",
-#         url = "www.imos.org.au",
-#         u_color = "white",
-#         u_family = "sans",
-#         dpi = 800,
-#         asp = 1,
-#         filename="IMOS_Hex.png")
+
+sticker("data-raw/IMOS_Cropped.png", #"data-raw/IMOS_logo-stacked-reversed-01.png"
+        package="",
+        p_size=5,
+        p_y = 1.7,
+        s_x=1,
+        s_y=1,
+        s_width=0.92,
+        s_height=0.4,
+        h_fill = "#3B6E8F",
+        h_color = "white",
+        url = "www.imos.org.au",
+        u_color = "white",
+        u_size = 15,
+        u_x = 0.999,
+        u_y = 0.1,
+        # u_family = "sans",
+        dpi = 800,
+        asp = 1,
+        filename="data-raw/IMOS_Hex.png")
 
 
-hexSticker::sticker("data-raw/Sapphirina_m_NSI_20161116_5x_jup_8st_ED.JPG", 
+hexSticker::sticker("data-raw/Sapphirina_m_NSI_20161116_5x_jup_8st_ED_crop.JPG", 
                     package="Biological\n Ocean Observer", 
                     p_y = 1.5,
                     p_color = "white",
-                    p_size = 45,
+                    p_size = 50,
                     s_x = 1, 
                     s_y = 0.85, 
                     s_width = 0.9,
                     h_fill = "black",
-                    h_color = "white",
-                    url = "https://shiny.csiro.au/BioOceanObserver",
+                    h_color = "#191919", # "#171717",# "#aaa9ad", #"#404c50",# "#29338a", "#36c3e2",# "#048bb8",# "#0f1838", #"#4e3d52", #"#36444d",
+                    url = "shiny.csiro.au/BioOceanObserver",
                     u_color = "white",
                     u_family = "sans",
-                    u_size = 12,
-                    u_x = 1.04,
-                    u_y = 0.1,
+                    u_size = 16,
+                    u_x = 1.0,
+                    u_y = 0.08,
                     dpi = 1000,
                     asp = 1,
-                    filename="inst/app/www/BOO_HexRaw.png", 
-                    white_around_sticker = TRUE,
+                    filename="inst/app/www/BOO_Hex.png", 
+                    # white_around_sticker = TRUE,
                     lineheight = 0.1)
 
-
-# Code from https://github.com/GuangchuangYu/hexSticker/issues/39
-library(magick)
-p <- image_read("inst/app/www/BOO_HexRaw.png")
-
-pp <- p %>%
-  image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+0+0") %>%
-  image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+517+0") %>%
-  image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+0+599") #%>%
-  # image_fill(color = "transparent", refcolor = "white", fuzz = 4, point = "+517+599") # This one seems to find some text as well
-
-image_write(image = pp, path = "inst/app/www/BOO_Hex.png")
+# 
+# # Code from https://github.com/GuangchuangYu/hexSticker/issues/39
+# library(magick)
+# p <- image_read("inst/app/www/BOO_HexRaw.png")
+# 
+# pp <- p %>%
+#   image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+0+1") %>%
+#   image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+517+0") %>%
+#   image_fill(color = "transparent", refcolor = "white", fuzz = 50, point = "+0+599") #%>%
+#   # image_fill(color = "transparent", refcolor = "white", fuzz = 4, point = "+517+599") # This one seems to find some text as well
+# 
+# image_write(image = pp, path = "inst/app/www/BOO_Hex.png")
 

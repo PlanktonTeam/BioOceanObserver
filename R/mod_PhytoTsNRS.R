@@ -31,8 +31,8 @@ mod_PhytoTsNRS_server <- function(id){
     selectedData <- reactive({ #TODO - This reactive encompasses things from 1/2 AND 3. Can we split them?
       req(input$Site)
       req(input$parameter)
-      validate(need(!is.na(input$Site), "Error: Please select a station."))
-      validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
+      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       selectedData <- pkg.env$datNRSp %>%
         dplyr::filter(.data$StationName %in% input$Site,
@@ -49,7 +49,7 @@ mod_PhytoTsNRS_server <- function(id){
     
     # add text information
     output$PlotExp1 <- renderText({
-      "A plot of selected phytoplantkon Parameters from the NRS around Australia, as a time series and a monthly climatology by station."
+      "A plot of selected phytoplankton Parameters from the NRS around Australia, as a time series and a monthly climatology by station."
     })
     output$PlotExp2 <- renderText({
       "A plot of selected indicies from the NRS around Australia, as a time series, a monthly climatology and an annual mean"
@@ -128,7 +128,7 @@ mod_PhytoTsNRS_server <- function(id){
       
       selectedDataFG <- reactive({
         req(input$Site)
-        validate(need(!is.na(input$Site), "Error: Please select a station."))
+        shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
         
         selectedDataFG <- pkg.env$NRSfgp %>%
           dplyr::filter(.data$StationName %in% input$Site,

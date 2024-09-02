@@ -2,7 +2,7 @@
 #' 
 #' @param input,output,session Internal Parameters for {shiny}. 
 #'     DO NOT REMOVE.
-#' @import shiny patchwork jsonlite
+#' @import shiny patchwork
 #' @importFrom rlang .data
 #' @noRd
 #' 
@@ -62,6 +62,10 @@ app_server <- function( input, output, session ) {
     
     if(input$navbar == "Environmental Data") {
       mod_NutrientsBGC_server("NutrientsBGC_ui_1")
+    }
+    
+    if(input$navbar == "Relationships") {
+      mod_RelNRS_server("RelNRS_ui_1")
     }
     
     if(input$navbar == "Information") {
@@ -125,8 +129,20 @@ app_server <- function( input, output, session ) {
     }
   })
   
+  # Microbes -------------------------------------------------------------
   
-  
+  observeEvent(input$mic, {
+    
+    ### Microbes Coastal Data
+    if(input$mic == "mtsCS"){
+      mod_MicroTsCS_server("MicroTsCS_ui_1")
+    }
+    if(input$mic == "GSlat"){
+      mod_MicroLatGS_server("MicroLatGS_ui_1")
+    }
+  })
+    
+
   # Larval Fish -------------------------------------------------------------
   
   # Season Larval Fish
@@ -171,4 +187,17 @@ app_server <- function( input, output, session ) {
       mod_MoorBGC_server("MoorBGC_ui_1")
     }
   })
-}
+
+# Environmental -----------------------------------------------------------
+
+  # Coastal Microbes
+  observeEvent(input$rel, {
+    if(input$rel == "csRel"){
+      mod_RelCS_server("RelCS_ui_1")
+    }
+    
+    if(input$rel == "cprRel"){
+      mod_RelCPR_server("RelCPR_ui_1")
+    }
+  })
+  }
