@@ -231,20 +231,23 @@ rm(PM, PM_NRS, PM_CPR)
 
 #TODO when these are accessible from AODN, make into a real planktonr function and change file path
 pr_get_mooringTS <- function(Stations, Depth, Names){
+  
+  
   if(Stations == "PHB"){
-    file <- tidync::tidync(file.path("data-raw/LMTS", "PH100_CLIM.nc"))
+    file <- ncdf4::nc_open(file.path("data-raw/LMTS", "PH100_CLIM.nc"))
   } else {
-    file <- tidync::tidync(file.path("data-raw/LMTS", paste0("NRS", Stations, "_CLIM.nc")))
+    file <- ncdf4::nc_open(file.path("data-raw/LMTS", paste0("NRS", Stations, "_CLIM.nc")))
   }
   
-  out <- file %>%
-    tidync::hyper_filter(DEPTH = DEPTH == Depth, 
-                         TIME = index < 366) %>% # ignoring leap years
-    tidync::hyper_tibble() %>%
-    dplyr::rename(DOY = "TIME") %>%
-    dplyr::mutate(StationCode = Stations, 
-                  Names = Names)
+  all_depth <- ncdf4::ncvar_get(file, "DEPTH")
+  i <- which(all_depth == Depth)
   
+  # CLIM[DEPTH, TIME]
+  tibble::tibble(CLIM = ncdf4::ncvar_get(file, varid = "CLIM", count = c(1, 365), start = c(i, 1)),
+                  DOY = 1:365,
+                  StationCode = Stations,
+                  Names = Names)
+                                          
 }
 
 Stations <- planktonr::pr_get_NRSStation() %>%
@@ -271,7 +274,7 @@ pr_get_mooringClim <- function(Stations){
     file <- tidync::tidync(file.path("data-raw/LMTS", paste0("NRS", Stations, "_CLIM.nc")))
   }
   
-  df <- tidync::hyper_tibble(file) %>%
+  tidync::hyper_tibble(file) %>%
     dplyr::mutate(StationCode = Stations)
 }  
 
