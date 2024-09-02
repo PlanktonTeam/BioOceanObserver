@@ -244,7 +244,7 @@ pr_get_mooringTS <- function(Stations, Depth, Names){
   
   # CLIM[DEPTH, TIME]
   tibble::tibble(CLIM = ncdf4::ncvar_get(file, varid = "CLIM", count = c(1, 365), start = c(i, 1)),
-                  DOY = 1:365,
+                  DOY = ncdf4::ncvar_get(file, varid = "TIME", count = 365, start = 1),
                   StationCode = Stations,
                   Names = Names)
                                           
@@ -275,7 +275,9 @@ pr_get_mooringClim <- function(Stations){
   }
   
   tidync::hyper_tibble(file) %>%
-    dplyr::mutate(StationCode = Stations)
+    dplyr::mutate(StationCode = Stations,
+                  TIME = as.numeric(TIME),
+                  DEPTH = as.numeric(DEPTH))
 }  
 
 MooringClim <- purrr::map_dfr(Stations, pr_get_mooringClim) %>%
