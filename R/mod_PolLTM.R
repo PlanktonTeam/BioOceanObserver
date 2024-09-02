@@ -77,12 +77,12 @@ mod_PolLTM_server <- function(id){
     outputs <- reactive({
       outputs <- planktonr::pr_get_Coeffs(selectedDataLTM())
     }) %>% bindCache(input$SiteLTM)
-    
+
     info <- reactive({
       info <- outputs() %>% dplyr::select(.data$slope, .data$p, .data$Parameters) %>% unique() %>%
         dplyr::arrange(.data$Parameters)
     }) %>% bindCache(input$SiteLTM)
-    
+
     stationData <- reactive({
       stationData <- pkg.env$NRSinfo %>% dplyr::filter(.data$StationName == input$SiteLTM) 
     }) %>% bindCache(input$SiteLTM)

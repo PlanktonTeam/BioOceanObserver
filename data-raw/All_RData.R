@@ -1,6 +1,9 @@
 ## script for all RData 
 library(tidyverse)
 
+
+modified_time <- lubridate::now()
+
 # Set up colours for the app ----------------------------------------------
 
 col12 <- RColorBrewer::brewer.pal(12, "Paired") %>% 
@@ -331,7 +334,8 @@ usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   SpInfoP, SpInfoZ, LFData, LFDataAbs,
                   datNRSTrip, datCPRTrip,
                   PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
-                  ParamDef, col12, overwrite = TRUE, internal = TRUE)
+                  ParamDef, col12, modified_time,
+                  overwrite = TRUE, internal = TRUE)
 
 
 

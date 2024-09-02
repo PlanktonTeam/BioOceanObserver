@@ -6,25 +6,25 @@
 fEOVutilities <- function(vector = "col", Survey = "NRS"){
   
   if (Survey == "NRS"){
-    disp <- data.frame(param = c("PigmentChla_mgm3", "PhytoBiomassCarbon_pgL", "Biomass_mgm3",
-                                 "ShannonPhytoDiversity", "ShannonCopepodDiversity", "CTDTemperature_degC",
-                                 "Salinity", "Ammonium_umolL", "Nitrate_umolL", "Silicate_umolL",
-                                 "Phosphate_umolL", "Oxygen_umolL"))
+    disp <- data.frame(param = c("PigmentChla_mgm3", "Oxygen_umolL", "PhytoBiomassCarbon_pgL", 
+                                 "ShannonPhytoDiversity", "Biomass_mgm3", "ShannonCopepodDiversity", "Nitrate_umolL",
+                                 "Salinity", "Ammonium_umolL", "CTDTemperature_degC", "Silicate_umolL",
+                                 "Phosphate_umolL"))
   } else if (Survey == "CPR"){
     # Change some of the names, but keep the same order so the colours are consistent
     
-    disp <- data.frame(param = c("chl_oc3", "PhytoBiomassCarbon_pgm3", "BiomassIndex_mgm3",
-                                 "ShannonPhytoDiversity", "ShannonCopepodDiversity", "SST",
-                                 "Salinity", "Ammonium_umolL", "Nitrate_umolL", "Silicate_umolL",
-                                 "Phosphate_umolL", "Oxygen_umolL"))
+    disp <- data.frame(param = c("chl_oc3", "Oxygen_umolL", "PhytoBiomassCarbon_pgm3", 
+                                 "ShannonPhytoDiversity", "BiomassIndex_mgm3", "ShannonCopepodDiversity", "Nitrate_umolL", 
+                                 "Salinity", "Ammonium_umolL", "SST", "Silicate_umolL",
+                                 "Phosphate_umolL"))
     
   } else if (Survey == "LTM"){
     # Change some of the names, but keep the same order so the colours are consistent
     
-    disp <- data.frame(param = c("chl_oc3", "PhytoBiomassCarbon_pgm3", "BiomassIndex_mgm3",
-                                 "ShannonPhytoDiversity", "ShannonCopepodDiversity", "Temperature_degC",
-                                 "Salinity", "Ammonium_umolL", "Nitrate_umolL", "Silicate_umolL",
-                                 "Phosphate_umolL", "Oxygen_umolL"))
+    disp <- data.frame(param = c("chl_oc3", "Oxygen_umolL", "PhytoBiomassCarbon_pgm3",
+                                 "ShannonPhytoDiversity", "BiomassIndex_mgm3", "ShannonCopepodDiversity", "Nitrate_umolL", 
+                                 "Salinity", "Ammonium_umolL", "Temperature_degC", "Silicate_umolL",
+                                 "Phosphate_umolL"))
     
   }
   
@@ -326,7 +326,7 @@ fSpatialPanel <- function(id, tabsetPanel_id){
                                            shinycssloaders::withSpinner(color="#0dc5c1")), 
                            shiny::column(width = 6,
                                          style = "padding:0px; margin:0px;",
-                                         shiny::h4("September - February"),
+                                         shiny::h4("September - November"),
                                          leaflet::leafletOutput(ns("MapSpr"), width = "99%", height = "300px") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1"))
                          )

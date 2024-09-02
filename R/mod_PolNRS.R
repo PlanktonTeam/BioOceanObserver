@@ -24,7 +24,7 @@ mod_PolNRS_ui <- function(id){
                                         "CTDTemperature_degC", "Salinity", "PigmentChla_mgm3", "Ammonium_umolL", "Nitrate_umolL", 
                                         "Silicate_umolL", "Phosphate_umolL", "Oxygen_umolL"), style = "simple", named = TRUE),
                                     selected = c("Biomass_mgm3", "PhytoBiomassCarbon_pgL", "CTDTemperature_degC", "Nitrate_umolL", "Phosphate_umolL")),
-          shiny::HTML("<strong>NOTE:</strong> Oxygen only available at Maria Island NRS.")
+          shiny::HTML("<strong>NOTE:</strong> Oxygen only available at Maria Island & Rottnest Island")
         ),
         
       ),
@@ -115,10 +115,10 @@ mod_PolNRS_server <- function(id){
     outputs <- reactive({
       outputs <- planktonr::pr_get_Coeffs(selectedData())
     }) %>% bindCache(input$Site, input$Parameters)
-    
+
     info <- reactive({
-      info <- outputs() %>% 
-        dplyr::select(.data$slope, .data$p, .data$Parameters) %>% 
+      info <- outputs() %>%
+        dplyr::select(.data$slope, .data$p, .data$Parameters) %>%
         unique()
     }) %>% bindCache(input$Site)
     

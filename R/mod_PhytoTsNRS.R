@@ -49,7 +49,7 @@ mod_PhytoTsNRS_server <- function(id){
     
     # add text information
     output$PlotExp1 <- renderText({
-      "A plot of selected phytoplantkon Parameters from the NRS around Australia, as a time series and a monthly climatology by station."
+      "A plot of selected phytoplankton Parameters from the NRS around Australia, as a time series and a monthly climatology by station."
     })
     output$PlotExp2 <- renderText({
       "A plot of selected indicies from the NRS around Australia, as a time series, a monthly climatology and an annual mean"

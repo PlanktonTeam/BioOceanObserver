@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# Biological Ocean Observer <a href='https://github.com/PlanktonTeam/BioOceanObserver'><img src='inst/app/www/BOO_Hex.png' style="float:right; height:200px;"></a>
+# Biological Ocean Observer <a href="https://github.com/PlanktonTeam/BioOceanObserver"><img src="inst/app/www/BOO_Hex.png" align="right" height="139"/>
 
 <!-- badges: start -->
 
@@ -10,6 +10,8 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 [![R-CMD-check](https://github.com/PlanktonTeam/BioOceanObserver/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/PlanktonTeam/BioOceanObserver/actions/workflows/R-CMD-check.yaml)
 [![issues -
 BioOceanObserver](https://img.shields.io/github/issues/PlanktonTeam/BioOceanObserver)](https://github.com/PlanktonTeam/BioOceanObserver/issues)
+[![Weekly Data
+Update](https://github.com/PlanktonTeam/BioOceanObserver/actions/workflows/UpdateData.yaml/badge.svg)](https://github.com/PlanktonTeam/BioOceanObserver/actions/workflows/UpdateData.yaml)
 <!-- badges: end -->
 
 The goal of the Biological Ocean Observer is to increase the
