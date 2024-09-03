@@ -141,7 +141,7 @@ mod_PolCPR_server <- function(id){
       p5 <- planktonr::pr_plot_EOVs(outputs(), EOV = "SST", Survey = 'CPR', trans = "identity", col = col1["SST"], labels = FALSE)
       p6 <- planktonr::pr_plot_EOVs(outputs(), EOV = "chl_oc3", Survey = 'CPR', trans = "identity", col = col1["chl_oc3"])
       
-      p7 <- planktonr::pr_plot_PCI(selectedPCI())
+      p7 <- planktonr::pr_plot_PCImap(selectedPCI())
       
       patchwork::wrap_elements(grid::textGrob("Biomass EOVs", gp = grid::gpar(fontsize=20))) + 
         p1 + p2 + 
