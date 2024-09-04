@@ -607,11 +607,20 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
   
   downloadData <- shiny::downloadHandler(
     filename = function() {
+      
       if (stringr::str_starts(gg_prefix, "Policy")){
-        paste0(gg_prefix, "_", format(Sys.time(), "%Y%m%d"), ".csv") %>% 
+        paste0(gg_prefix, "_",  input$Site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".csv") %>% 
           stringr::str_replace_all( " ", "")
       } else{
-        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".csv") %>% 
+        paste0(gg_prefix, "_", 
+               input$parameter, "_",
+               data.frame(StationName = input$Site) %>% 
+                 planktonr::pr_add_StationCode() %>% 
+                 dplyr::arrange(StationCode) %>% 
+                 dplyr::pull(StationCode) %>% 
+                 stringr::str_flatten(), "_",
+               lubridate::year(input$DatesSlide[1]), "to", lubridate::year(input$DatesSlide[2]), "_D",
+               format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".csv") %>% 
           stringr::str_replace_all("__", "_") %>%  # Replace any double underscores with single ones
           stringr::str_replace_all( " ", "")
       }
@@ -631,10 +640,18 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
   downloadPlot <- downloadHandler(
     filename = function() {
       if ((stringr::str_starts(gg_prefix, "Policy"))){
-        paste0(gg_prefix, "_", input$Site, "_", format(Sys.time(), "%Y%m%d"), ".png") %>% 
+        paste0(gg_prefix, "_", input$Site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".png") %>% 
           stringr::str_replace_all( " ", "")
       } else{
-        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png") %>% 
+        paste0(gg_prefix, "_", 
+               input$parameter, "_",
+               data.frame(StationName = input$Site) %>% 
+                 planktonr::pr_add_StationCode() %>% 
+                 dplyr::arrange(StationCode) %>% 
+                 dplyr::pull(StationCode) %>% 
+                 stringr::str_flatten(), "_",
+               lubridate::year(input$DatesSlide[1]), "to", lubridate::year(input$DatesSlide[2]), "_D",
+               format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png") %>% 
           stringr::str_replace_all( " ", "")
       }
     },
