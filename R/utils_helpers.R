@@ -607,17 +607,26 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
   
   downloadData <- shiny::downloadHandler(
     filename = function() {
+      
       if (stringr::str_starts(gg_prefix, "Policy")){
-        paste0(gg_prefix, "_", format(Sys.time(), "%Y%m%d"), ".csv") %>% 
+        paste0(gg_prefix, "_",  input$Site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".csv") %>% 
           stringr::str_replace_all( " ", "")
       } else{
-        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".csv") %>% 
+        paste0(gg_prefix, "_", 
+               input$parameter, "_",
+               data.frame(StationName = input$Site) %>% 
+                 planktonr::pr_add_StationCode() %>% 
+                 dplyr::arrange(StationCode) %>% 
+                 dplyr::pull(StationCode) %>% 
+                 stringr::str_flatten(), "_",
+               lubridate::year(input$DatesSlide[1]), "to", lubridate::year(input$DatesSlide[2]), "_D",
+               format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".csv") %>% 
           stringr::str_replace_all("__", "_") %>%  # Replace any double underscores with single ones
           stringr::str_replace_all( " ", "")
       }
     },
     content = function(file) {
-      vroom::vroom_write(input_dat, file, delim = ",")
+      vroom::vroom_write(input_dat(), file, delim = ",")
     })
   return(downloadData)
 }
@@ -627,27 +636,36 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
 #'
 #' @noRd 
 fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
+  
   downloadPlot <- downloadHandler(
     filename = function() {
       if ((stringr::str_starts(gg_prefix, "Policy"))){
-        paste0(gg_prefix, "_", input$Site, "_", format(Sys.time(), "%Y%m%d"), ".png") %>% 
+        paste0(gg_prefix, "_", input$Site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".png") %>% 
           stringr::str_replace_all( " ", "")
       } else{
-        paste0(gg_prefix, "_", input$parameter, "_", format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png") %>% 
+        paste0(gg_prefix, "_", 
+               input$parameter, "_",
+               data.frame(StationName = input$Site) %>% 
+                 planktonr::pr_add_StationCode() %>% 
+                 dplyr::arrange(StationCode) %>% 
+                 dplyr::pull(StationCode) %>% 
+                 stringr::str_flatten(), "_",
+               lubridate::year(input$DatesSlide[1]), "to", lubridate::year(input$DatesSlide[2]), "_D",
+               format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png") %>% 
           stringr::str_replace_all( " ", "")
       }
     },
     content = function(file) {
       if (papersize == "A4r"){
-        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 297, height = 210, units = "mm")
+        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 297, height = 210, units = "mm")
       } else if (papersize == "A4") {
-        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 210, height = 297, units = "mm")
+        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 210, height = 297, units = "mm")
       } else if (papersize == "A3") {
-        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 297, height = 420, units = "mm")
+        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 297, height = 420, units = "mm")
       } else if (papersize == "A3r") {
-        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 420, height = 297, units = "mm")
+        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 420, height = 297, units = "mm")
       } else if (papersize == "A2") {
-        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 420, height = 594, units = "mm")
+        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 420, height = 594, units = "mm")
       }
       ## TODO If we include pdf downloads we can use code like this.
       # cairo_pdf fixes an error with displaying unicode symbols.

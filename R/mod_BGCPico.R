@@ -32,7 +32,7 @@ mod_PicoBGC_server <- function(id){
       #                      choices = NRSBGCPico[NRSBGCPico$Station %in% input$station & NRSBGCPico$name %in% input$parameter,]$SampleDepth_m)
     })
     
-    selected <- reactive({
+    selectedData <- reactive({
       
       req(input$date)
       shiny::validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
@@ -47,16 +47,16 @@ mod_PicoBGC_server <- function(id){
     }) %>% bindCache(input$station, input$parameter, input$date)
     
     shiny::exportTestValues(
-      PicoBGC = {ncol(selected())},
-      PicoBGCRows = {nrow(selected()) > 0},
-      PicoBGCProjectisChr = {class(selected()$Project)},
-      PicoBGCMonthisNumeric = {class(selected()$Month_Local)},
-      PicoBGCDepthisNumeric = {class(selected()$SampleDepth_m)},
-      PicoBGCDateisDate = {class(selected()$SampleTime_Local)},
-      PicoBGCStationisFactor = {class(selected()$StationName)},
-      PicoBGCCodeisChr = {class(selected()$StationCode)},
-      PicoBGCParametersisChr = {class(selected()$Parameters)},
-      PicoBGCValuesisNumeric = {class(selected()$Values)}
+      PicoBGC = {ncol(selectedData())},
+      PicoBGCRows = {nrow(selectedData()) > 0},
+      PicoBGCProjectisChr = {class(selectedData()$Project)},
+      PicoBGCMonthisNumeric = {class(selectedData()$Month_Local)},
+      PicoBGCDepthisNumeric = {class(selectedData()$SampleDepth_m)},
+      PicoBGCDateisDate = {class(selectedData()$SampleTime_Local)},
+      PicoBGCStationisFactor = {class(selectedData()$StationName)},
+      PicoBGCCodeisChr = {class(selectedData()$StationCode)},
+      PicoBGCParametersisChr = {class(selectedData()$Parameters)},
+      PicoBGCValuesisNumeric = {class(selectedData()$Values)}
     )
     
     # Create timeseries object the plotOutput function is expecting
@@ -65,11 +65,11 @@ mod_PicoBGC_server <- function(id){
       interp <- input$interp
       
       if(interp == 'Interpolate'){
-        planktonr::pr_plot_NRSEnvContour(selected(), Interpolation = TRUE, Fill_NA = FALSE)
+        planktonr::pr_plot_NRSEnvContour(selectedData(), Interpolation = TRUE, Fill_NA = FALSE)
       } else if (interp == 'Interpolate with gap filling'){
-        planktonr::pr_plot_NRSEnvContour(selected(), Interpolation = TRUE, Fill_NA = TRUE, maxGap = 3)
+        planktonr::pr_plot_NRSEnvContour(selectedData(), Interpolation = TRUE, Fill_NA = TRUE, maxGap = 3)
       } else {
-        planktonr::pr_plot_NRSEnvContour(selected(), Interpolation = FALSE, Fill_NA = FALSE)
+        planktonr::pr_plot_NRSEnvContour(selectedData(), Interpolation = FALSE, Fill_NA = FALSE)
       }
       
     }) %>% bindCache(input$station, input$parameter, input$date, input$interp)
@@ -77,17 +77,17 @@ mod_PicoBGC_server <- function(id){
     output$timeseries1 <- renderPlot({
       gg_out1()
     }, height = function() {
-      if(length(unique(selected()$StationName)) < 2) 
+      if(length(unique(selectedData()$StationName)) < 2) 
       {300} else 
-      {length(unique(selected()$StationName)) * 200}})
+      {length(unique(selectedData()$StationName)) * 200}})
     
     # Download -------------------------------------------------------
-    output$downloadData1 <- fDownloadButtonServer(input, selected(), "Pico") # Download csv of data
-    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Pico") # Download figure
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Pico") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Pico") # Download figure
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(selected())
+      planktonr::pr_plot_NRSmap(selectedData())
     }, bg = "transparent") %>% bindCache(input$station)
     
     # add text information 
@@ -97,7 +97,7 @@ mod_PicoBGC_server <- function(id){
     }) 
     
     # Parameter Definition
-    output$ParamDefb <- fParamDefServer(selected) # Download csv of data
+    output$ParamDefb <- fParamDefServer(selectedData) # Download csv of data
     
     
   })

@@ -85,8 +85,8 @@ mod_ZooTsCPR_server <- function(id){
       }, height = function() {length(unique(selectedData()$BioRegion)) * 200})
       
       # Download -------------------------------------------------------
-      output$downloadData1 <- fDownloadButtonServer(input, selectedData(), "Trend") # Download csv of data
-      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Trend") # Download figure
+      output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Trend") # Download csv of data
+      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Trend") # Download figure
       
       # Parameter Definition
       output$ParamDef <- fParamDefServer(selectedData)
@@ -125,8 +125,8 @@ mod_ZooTsCPR_server <- function(id){
       })
       
       # Download -------------------------------------------------------
-      output$downloadData2 <- fDownloadButtonServer(input, selectedData(), "Climate") # Download csv of data
-      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2(), "Climate") # Download figure
+      output$downloadData2 <- fDownloadButtonServer(input, selectedData, "Climate") # Download csv of data
+      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Climate") # Download figure
       
       # Parameter Definition
       output$ParamDef <- fParamDefServer(selectedData)
@@ -167,8 +167,8 @@ mod_ZooTsCPR_server <- function(id){
         {length(unique(selectedDataFG()$BioRegion)) * 200}})
       
       # Download -------------------------------------------------------
-      output$downloadData3 <- fDownloadButtonServer(input, selectedDataFG(), "FuncGroup") # Download csv of data
-      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3(), "FuncGroup") # Download figure
+      output$downloadData3 <- fDownloadButtonServer(input, selectedDataFG, "FuncGroup") # Download csv of data
+      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "FuncGroup") # Download figure
       
     })
     

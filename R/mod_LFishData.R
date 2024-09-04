@@ -77,7 +77,7 @@ mod_LFishData_server <- function(id){
     
     
     # Download -------------------------------------------------------
-    output$downloadData1 <- fDownloadButtonServer(input, SpeciesTabler(), 
+    output$downloadData1 <- fDownloadButtonServer(input, SpeciesTabler, 
                                                   stringr::str_remove_all(input$species, ":|\\(|\\)") %>% 
                                                     stringr::str_replace_all(" ", "_")) # Download csv of data
     
