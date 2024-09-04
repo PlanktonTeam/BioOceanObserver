@@ -183,8 +183,8 @@ mod_RelNRS_server <- function(id){
       })
 
     # Download -------------------------------------------------------
-    output$downloadData1 <- fDownloadButtonServer(input, selectedData(), "Scatter") # Download csv of data
-    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Scatter") # Download figure
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Scatter") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Scatter") # Download figure
 
     })
     
@@ -207,8 +207,8 @@ mod_RelNRS_server <- function(id){
       })
       
       # Download -------------------------------------------------------
-      output$downloadData2 <- fDownloadButtonServer(input, selectedData(), "Scatter") # Download csv of data
-      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2(), "Scatter") # Download figure
+      output$downloadData2 <- fDownloadButtonServer(input, selectedData, "Scatter") # Download csv of data
+      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Scatter") # Download figure
       
     })
   }

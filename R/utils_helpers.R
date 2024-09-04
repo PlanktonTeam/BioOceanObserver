@@ -617,7 +617,7 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
       }
     },
     content = function(file) {
-      vroom::vroom_write(input_dat, file, delim = ",")
+      vroom::vroom_write(input_dat(), file, delim = ",")
     })
   return(downloadData)
 }
@@ -627,6 +627,7 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
 #'
 #' @noRd 
 fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
+  
   downloadPlot <- downloadHandler(
     filename = function() {
       if ((stringr::str_starts(gg_prefix, "Policy"))){
@@ -639,15 +640,15 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
     },
     content = function(file) {
       if (papersize == "A4r"){
-        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 297, height = 210, units = "mm")
+        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 297, height = 210, units = "mm")
       } else if (papersize == "A4") {
-        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 210, height = 297, units = "mm")
+        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 210, height = 297, units = "mm")
       } else if (papersize == "A3") {
-        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 297, height = 420, units = "mm")
+        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 297, height = 420, units = "mm")
       } else if (papersize == "A3r") {
-        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 420, height = 297, units = "mm")
+        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 420, height = 297, units = "mm")
       } else if (papersize == "A2") {
-        ggplot2::ggsave(file, plot = gg_id, device = "png", dpi = 500, width = 420, height = 594, units = "mm")
+        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 420, height = 594, units = "mm")
       }
       ## TODO If we include pdf downloads we can use code like this.
       # cairo_pdf fixes an error with displaying unicode symbols.

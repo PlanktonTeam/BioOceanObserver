@@ -133,8 +133,8 @@ mod_MicroLatGS_server <- function(id){
       }, height = function() {800}) 
 
       # Download -------------------------------------------------------
-      output$downloadData1 <- fDownloadButtonServer(input, selectedData(), "Trend") # Download csv of data
-      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Trend") # Download figure
+      output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Trend") # Download csv of data
+      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Trend") # Download figure
 
       # Parameter Definition
       output$ParamDefm <- fParamDefServer(selectedData) # Download csv of data

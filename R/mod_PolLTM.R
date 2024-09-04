@@ -47,41 +47,33 @@ mod_PolLTM_server <- function(id){
     ns <- session$ns
     
     # Sidebar ----------------------------------------------------------
-    selectedDataLTM <- reactive({
+    selectedData <- reactive({
       req(input$SiteLTM)
       shiny::validate(need(!is.na(input$SiteLTM), "Error: Please select a station."))
       
-      selectedDataLTM <- pkg.env$PolLTM %>% 
+      selectedData <- pkg.env$PolLTM %>% 
         dplyr::filter(.data$StationName %in% input$SiteLTM,
-                      !.data$Parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL")) 
+                      !.data$Parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL")) %>% 
+        planktonr::pr_get_Coeffs()
       
     }) %>% bindCache(input$SiteLTM)
     
     shiny::exportTestValues(
-      PolLTM = {ncol(selectedDataLTM())},
-      PolLTMRows = {nrow(selectedDataLTM()) > 0},
-      PolLTMYearisNumeric = {class(selectedDataLTM()$Year_Local)},
-      PolLTMMonthisNumeric = {class(selectedDataLTM()$Month_Local)},
-      PolLTMMeansisNumeric = {class(selectedDataLTM()$means)},
-      PolLTMsdisNumeric = {class(selectedDataLTM()$sd)},
-      PolLTMAnomalyisNumeric = {class(selectedDataLTM()$anomaly)},
-      PolLTMDepthisNumeric = {class(selectedDataLTM()$SampleDepth_m)},
-      PolLTMDateisDate = {class(selectedDataLTM()$SampleTimee_Local)},
-      PolLTMProjectisChr = {class(selectedDataLTM()$Project)},
-      PolLTMStationisChr = {class(selectedDataLTM()$StationName)},
-      PolLTMCodeisChr = {class(selectedDataLTM()$StationCode)},
-      PolLTMParametersisChr = {class(selectedDataLTM()$Parameters)},
-      PolLTMValuesisNumeric = {class(selectedDataLTM()$Values)}
+      PolLTM = {ncol(selectedData())},
+      PolLTMRows = {nrow(selectedData()) > 0},
+      PolLTMYearisNumeric = {class(selectedData()$Year_Local)},
+      PolLTMMonthisNumeric = {class(selectedData()$Month_Local)},
+      PolLTMMeansisNumeric = {class(selectedData()$means)},
+      PolLTMsdisNumeric = {class(selectedData()$sd)},
+      PolLTMAnomalyisNumeric = {class(selectedData()$anomaly)},
+      PolLTMDepthisNumeric = {class(selectedData()$SampleDepth_m)},
+      PolLTMDateisDate = {class(selectedData()$SampleTimee_Local)},
+      PolLTMProjectisChr = {class(selectedData()$Project)},
+      PolLTMStationisChr = {class(selectedData()$StationName)},
+      PolLTMCodeisChr = {class(selectedData()$StationCode)},
+      PolLTMParametersisChr = {class(selectedData()$Parameters)},
+      PolLTMValuesisNumeric = {class(selectedData()$Values)}
     )
-    
-    outputs <- reactive({
-      outputs <- planktonr::pr_get_Coeffs(selectedDataLTM())
-    }) %>% bindCache(input$SiteLTM)
-
-    info <- reactive({
-      info <- outputs() %>% dplyr::select(.data$slope, .data$p, .data$Parameters) %>% unique() %>%
-        dplyr::arrange(.data$Parameters)
-    }) %>% bindCache(input$SiteLTM)
 
     stationData <- reactive({
       stationData <- pkg.env$NRSinfo %>% dplyr::filter(.data$StationName == input$SiteLTM) 
@@ -89,7 +81,7 @@ mod_PolLTM_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(selectedDataLTM())
+      planktonr::pr_plot_NRSmap(selectedData())
     }, bg = "transparent") %>% bindCache(input$SiteLTM)
     
     output$StationSummary <- shiny::renderText({ 
@@ -97,7 +89,7 @@ mod_PolLTM_server <- function(id){
             " Longterm Monitoring Station is located at ", round(stationData()$Latitude,2), 
             "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ". The water depth at the station is ", 
             round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, 
-            ". The station has been sampled since ", format(min(selectedDataLTM()$SampleTime_Local), "%A %d %B %Y"), " ", stationData()$now,
+            ". The station has been sampled since ", format(min(selectedData()$SampleTime_Local), "%A %d %B %Y"), " ", stationData()$now,
             ". ", input$SiteLTM, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, 
             " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = "")})
     
@@ -117,11 +109,11 @@ mod_PolLTM_server <- function(id){
     
     gg_out1 <- reactive({
       
-      p1 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Nitrate_umolL", Survey = "LTM", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
-      p2 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Phosphate_umolL", Survey = "LTM", trans = "identity", col = col1["Phosphate_umolL"], labels = FALSE) 
-      p4 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Silicate_umolL", Survey = "LTM", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE) 
-      p7 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Temperature_degC", Survey = "LTM", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
-      p3 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Salinity", Survey = "LTM", trans = "identity", col = col1["Salinity"])
+      p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Nitrate_umolL", Survey = "LTM", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
+      p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Phosphate_umolL", Survey = "LTM", trans = "identity", col = col1["Phosphate_umolL"], labels = FALSE) 
+      p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Silicate_umolL", Survey = "LTM", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE) 
+      p7 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Temperature_degC", Survey = "LTM", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
+      p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Salinity", Survey = "LTM", trans = "identity", col = col1["Salinity"])
       
       
       patchwork::wrap_elements(
@@ -142,7 +134,7 @@ mod_PolLTM_server <- function(id){
     })
     
     # Download -------------------------------------------------------
-    output$downloadData1 <- fDownloadButtonServer(input, outputs(), "Policy") # Download csv of data
-    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Policy", papersize = "A2") # Download figure
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Policy") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Policy", papersize = "A2") # Download figure
     
   })}

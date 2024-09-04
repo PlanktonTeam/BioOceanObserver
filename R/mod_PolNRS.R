@@ -94,7 +94,8 @@ mod_PolNRS_server <- function(id){
       shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedData <- pkg.env$PolNRS %>% 
-        dplyr::filter(.data$StationName %in% input$Site)
+        dplyr::filter(.data$StationName %in% input$Site) %>% 
+        planktonr::pr_get_Coeffs()
       
     }) %>% bindCache(input$Site, input$Parameters)
     
@@ -112,15 +113,6 @@ mod_PolNRS_server <- function(id){
       PolNRSParametersisChr = {class(selectedData()$Parameters)},
       PolNRSValuesisNumeric = {class(selectedData()$Values)}
     )
-    outputs <- reactive({
-      outputs <- planktonr::pr_get_Coeffs(selectedData())
-    }) %>% bindCache(input$Site, input$Parameters)
-
-    info <- reactive({
-      info <- outputs() %>%
-        dplyr::select(.data$slope, .data$p, .data$Parameters) %>%
-        unique()
-    }) %>% bindCache(input$Site)
     
     stationData <- reactive({
       stationData <- pkg.env$NRSinfo %>% 
@@ -155,7 +147,7 @@ mod_PolNRS_server <- function(id){
         
         p_list <- list()
         for (idx in 1:length(input$Parameters)){
-          p <- planktonr::pr_plot_EOVs(outputs(), EOV = input$Parameters[idx], trans = trans1[[input$Parameters[idx]]], col = col1[[input$Parameters[idx]]])
+          p <- planktonr::pr_plot_EOVs(selectedData(), EOV = input$Parameters[idx], trans = trans1[[input$Parameters[idx]]], col = col1[[input$Parameters[idx]]])
           p_list[[idx]] <- p
         }
         
@@ -173,8 +165,8 @@ mod_PolNRS_server <- function(id){
       })
       
       # Download -------------------------------------------------------
-      output$downloadData1 <- fDownloadButtonServer(input, outputs(), "Policy_Select") # Download csv of data
-      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Policy_Select", papersize = "A4") # Download figure  
+      output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Policy_Select") # Download csv of data
+      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Policy_Select", papersize = "A4") # Download figure  
       
     })
     
@@ -182,11 +174,11 @@ mod_PolNRS_server <- function(id){
     observeEvent({input$EOV_NRS == 2}, {
       
       gg_out2 <- reactive({
-        p1 <- planktonr::pr_plot_EOVs(outputs(), EOV = "PigmentChla_mgm3", trans = "log10", col = col1["PigmentChla_mgm3"], labels = FALSE) 
-        p2 <- planktonr::pr_plot_EOVs(outputs(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col1["PhytoBiomassCarbon_pgL"], labels = FALSE) 
-        p3 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Biomass_mgm3", trans = "log10", col = col1["Biomass_mgm3"], labels = FALSE) 
-        p4 <- planktonr::pr_plot_EOVs(outputs(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE)
-        p5 <- planktonr::pr_plot_EOVs(outputs(), EOV = "ShannonCopepodDiversity", trans = "log10", col = col1["ShannonCopepodDiversity"]) 
+        p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "PigmentChla_mgm3", trans = "log10", col = col1["PigmentChla_mgm3"], labels = FALSE) 
+        p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col1["PhytoBiomassCarbon_pgL"], labels = FALSE) 
+        p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Biomass_mgm3", trans = "log10", col = col1["Biomass_mgm3"], labels = FALSE) 
+        p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE)
+        p5 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonCopepodDiversity", trans = "log10", col = col1["ShannonCopepodDiversity"]) 
         
         patchwork::wrap_elements(p1 / p2 / p3 / p4 / p5) &
           ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
@@ -201,23 +193,23 @@ mod_PolNRS_server <- function(id){
       })
       
       # Download -------------------------------------------------------
-      output$downloadData2 <- fDownloadButtonServer(input, outputs(), "Policy_Bio") # Download csv of data
-      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2(), "Policy_Bio", papersize = "A4") # Download figure  
+      output$downloadData2 <- fDownloadButtonServer(input, selectedData, "Policy_Bio") # Download csv of data
+      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Policy_Bio", papersize = "A4") # Download figure  
       
     })
     
     observeEvent({input$EOV_NRS == 3}, {
       
       gg_out3 <- reactive({
-        p1 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Ammonium_umolL", trans = "identity", col = col1["Ammonium_umolL"], labels = FALSE)
-        p2 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Nitrate_umolL", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
-        p3 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Silicate_umolL", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE)
+        p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Ammonium_umolL", trans = "identity", col = col1["Ammonium_umolL"], labels = FALSE)
+        p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Nitrate_umolL", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
+        p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Silicate_umolL", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE)
         
         if(input$Site %in% c('Maria Island', 'Rottnest Island')){
-          p4 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = FALSE)
-          p5 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Oxygen_umolL", trans = "identity", col = col1["Oxygen_umolL"])
+          p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = FALSE)
+          p5 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Oxygen_umolL", trans = "identity", col = col1["Oxygen_umolL"])
         } else {
-          p4 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = TRUE)
+          p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = TRUE)
           p5 <- ggplot2::ggplot() + ggplot2::geom_blank() + ggplot2::theme_void()
         }
         
@@ -234,15 +226,15 @@ mod_PolNRS_server <- function(id){
       })
       
       # Download -------------------------------------------------------
-      output$downloadData3 <- fDownloadButtonServer(input, outputs(), "Policy_Chem") # Download csv of data
-      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3(), "Policy_Chem", papersize = "A4") # Download figure  
+      output$downloadData3 <- fDownloadButtonServer(input, selectedData, "Policy_Chem") # Download csv of data
+      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "Policy_Chem", papersize = "A4") # Download figure  
       
     })
     
     observeEvent({input$EOV_NRS == 4}, {
       gg_out4 <- reactive({
-        p1 <- planktonr::pr_plot_EOVs(outputs(), EOV = "CTDTemperature_degC", trans = "identity", col = col1["CTDTemperature_degC"], labels = FALSE)
-        p2 <- planktonr::pr_plot_EOVs(outputs(), EOV = "Salinity", trans = "identity", col = col1["Salinity"])
+        p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "CTDTemperature_degC", trans = "identity", col = col1["CTDTemperature_degC"], labels = FALSE)
+        p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Salinity", trans = "identity", col = col1["Salinity"])
         
         patchwork::wrap_elements(p1 / p2) &
           ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
@@ -258,8 +250,8 @@ mod_PolNRS_server <- function(id){
       
       
       # Download -------------------------------------------------------
-      output$downloadData4 <- fDownloadButtonServer(input, outputs(), "Policy_Phys") # Download csv of data
-      output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4(), "Policy_Phys", papersize = "A4") # Download figure  
+      output$downloadData4 <- fDownloadButtonServer(input, selectedData, "Policy_Phys") # Download csv of data
+      output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4, "Policy_Phys", papersize = "A4") # Download figure  
     })
     
     

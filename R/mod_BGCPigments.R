@@ -32,7 +32,7 @@ mod_PigmentsBGC_server <- function(id){
       #                      choices = NRSBGCPigments[NRSBGCPigments$Station %in% input$station & NRSBGCPigments$name %in% input$parameter,]$SampleDepth_m)
     })
     
-    selected <- reactive({
+    selectedData <- reactive({
       req(input$date)
       shiny::validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
@@ -47,37 +47,37 @@ mod_PigmentsBGC_server <- function(id){
     }) %>% bindCache(input$station, input$parameter, input$date)
     
     shiny::exportTestValues(
-      PigsBGC = {ncol(selected())},
-      PigsBGCRows = {nrow(selected()) > 0},
-      PigsBGCProjectisChr = {class(selected()$Project)},
-      PigsBGCMonthisNumeric = {class(selected()$Month_Local)},
-      PigsBGCDepthisNumeric = {class(selected()$SampleDepth_m)},
-      PigsBGCDateisDate = {class(selected()$SampleTime_Local)},
-      PigsBGCStationisFactor = {class(selected()$StationName)},
-      PigsBGCCodeisChr = {class(selected()$StationCode)},
-      PigsBGCParametersisChr = {class(selected()$Parameters)},
-      PigsBGCValuesisNumeric = {class(selected()$Values)}
+      PigsBGC = {ncol(selectedData())},
+      PigsBGCRows = {nrow(selectedData()) > 0},
+      PigsBGCProjectisChr = {class(selectedData()$Project)},
+      PigsBGCMonthisNumeric = {class(selectedData()$Month_Local)},
+      PigsBGCDepthisNumeric = {class(selectedData()$SampleDepth_m)},
+      PigsBGCDateisDate = {class(selectedData()$SampleTime_Local)},
+      PigsBGCStationisFactor = {class(selectedData()$StationName)},
+      PigsBGCCodeisChr = {class(selectedData()$StationCode)},
+      PigsBGCParametersisChr = {class(selectedData()$Parameters)},
+      PigsBGCValuesisNumeric = {class(selectedData()$Values)}
     )
     
     
     # Create timeseries object the plotOutput function is expecting
     gg_out1 <- reactive({
       trend <-  input$smoother
-      planktonr::pr_plot_Enviro(selected(), Trend = trend)
+      planktonr::pr_plot_Enviro(selectedData(), Trend = trend)
     }) %>% bindCache(input$station, input$parameter, input$date, input$smoother)
     
     output$timeseries1 <- renderPlot({
       gg_out1()
-    }, height = function() {length(unique(selected()$SampleDepth_m)) * 200}) 
+    }, height = function() {length(unique(selectedData()$SampleDepth_m)) * 200}) 
     
     # Download -------------------------------------------------------
-    output$downloadData1 <- fDownloadButtonServer(input, selected(), "Pigs") # Download csv of data
-    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Pigs") # Download figure
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Pigs") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Pigs") # Download figure
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 
       
-      planktonr::pr_plot_NRSmap(selected())
+      planktonr::pr_plot_NRSmap(selectedData())
       
     }, bg = "transparent") %>% bindCache(input$station)
     
@@ -87,7 +87,7 @@ mod_PigmentsBGC_server <- function(id){
     }) 
     
     # Parameter Definition
-    output$ParamDefb <- fParamDefServer(selected) # Download csv of data
+    output$ParamDefb <- fParamDefServer(selectedData) # Download csv of data
     
     
   })

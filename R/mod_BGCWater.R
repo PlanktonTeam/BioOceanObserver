@@ -30,7 +30,7 @@ mod_WaterBGC_server <- function(id){
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
     })
     
-    selected <- reactive({
+    selectedData <- reactive({
       req(input$date)
       shiny::validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
@@ -44,21 +44,21 @@ mod_WaterBGC_server <- function(id){
     }) %>% bindCache(input$station, input$parameter, input$date)
     
     shiny::exportTestValues(
-      WaterBGC = {ncol(selected())},
-      WaterBGCRows = {nrow(selected()) > 0},
-      WaterBGCProjectisChr = {class(selected()$Project)},
-      WaterBGCMonthisNumeric = {class(selected()$Month_Local)},
-      WaterBGCDateisDate = {class(selected()$SampleTime_Local)},
-      WaterBGCStationisFactor = {class(selected()$StationName)},
-      WaterBGCCodeisChr = {class(selected()$StationCode)},
-      WaterBGCparametersisChr = {class(selected()$Parameters)},
-      WaterBGCValuesisNumeric = {class(selected()$Values)}
+      WaterBGC = {ncol(selectedData())},
+      WaterBGCRows = {nrow(selectedData()) > 0},
+      WaterBGCProjectisChr = {class(selectedData()$Project)},
+      WaterBGCMonthisNumeric = {class(selectedData()$Month_Local)},
+      WaterBGCDateisDate = {class(selectedData()$SampleTime_Local)},
+      WaterBGCStationisFactor = {class(selectedData()$StationName)},
+      WaterBGCCodeisChr = {class(selectedData()$StationCode)},
+      WaterBGCparametersisChr = {class(selectedData()$Parameters)},
+      WaterBGCValuesisNumeric = {class(selectedData()$Values)}
     )
     
     # Create timeseries object the plotOutput function is expecting
     gg_out1 <-  reactive({
-      p1 <- planktonr::pr_plot_Trends(selected(), Trend = "Raw", Survey = "NRS", method = "lm", trans = 'identity')
-      p2 <- planktonr::pr_plot_Trends(selected(), Trend = "Month", Survey = "NRS", method = "loess", trans = 'identity') +
+      p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = 'identity')
+      p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = 'identity') +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
       
@@ -66,15 +66,15 @@ mod_WaterBGC_server <- function(id){
     
     output$timeseries1 <- renderPlot({
       gg_out1()
-    }, height = function() {length(unique(selected()$StationName)) * 200})
+    }, height = function() {length(unique(selectedData()$StationName)) * 200})
     
     # Download -------------------------------------------------------
-    output$downloadData1 <- fDownloadButtonServer(input, selected(), "water") # Download csv of data
-    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "water") # Download figure
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData, "water") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "water") # Download figure
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(selected())
+      planktonr::pr_plot_NRSmap(selectedData())
     }, bg = "transparent") %>% bindCache(input$station)
     
     # add text information 
@@ -83,7 +83,7 @@ mod_WaterBGC_server <- function(id){
     }) 
     
     # Parameter Definition
-    output$ParamDefb <- fParamDefServer(selected) # Download csv of data
+    output$ParamDefb <- fParamDefServer(selectedData) # Download csv of data
     
   })
 }

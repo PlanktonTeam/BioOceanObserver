@@ -54,7 +54,8 @@ mod_PolCPR_server <- function(id){
       shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedData <- pkg.env$PolCPR %>% 
-        dplyr::filter(.data$BioRegion %in% input$Site) 
+        dplyr::filter(.data$BioRegion %in% input$Site) %>% 
+        planktonr::pr_get_Coeffs()
       
       }) %>% bindCache(input$Site)
     
@@ -81,17 +82,7 @@ mod_PolCPR_server <- function(id){
       PolcprValuesisNumeric = {class(selectedData()$Values)}
     )
     
-    outputs <- reactive({
-      outputs <- planktonr::pr_get_Coeffs(selectedData())
-    }) %>% bindCache(input$Site)
 
-    info <- reactive({
-      info <- outputs() %>%
-        dplyr::select(.data$slope, .data$p, .data$Parameters) %>%
-        unique %>%
-        dplyr::arrange(.data$Parameters)
-    }) %>% bindCache(input$Site)
-    
     stationData <- reactive({
       stationData <- pkg.env$CPRinfo %>% 
         dplyr::filter(.data$BioRegion == input$Site) 
@@ -132,14 +123,14 @@ mod_PolCPR_server <- function(id){
     gg_out1 <- reactive({
       
 
-      p1 <- planktonr::pr_plot_EOVs(outputs(), EOV = "PhytoBiomassCarbon_pgm3", Survey = 'CPR', trans = "log10", col = col1["PhytoBiomassCarbon_pgm3"], labels = FALSE) 
-      p2 <- planktonr::pr_plot_EOVs(outputs(), EOV = "BiomassIndex_mgm3", Survey = 'CPR', trans = "log10", col = col1["BiomassIndex_mgm3"])
+      p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "PhytoBiomassCarbon_pgm3", Survey = 'CPR', trans = "log10", col = col1["PhytoBiomassCarbon_pgm3"], labels = FALSE) 
+      p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "BiomassIndex_mgm3", Survey = 'CPR', trans = "log10", col = col1["BiomassIndex_mgm3"])
       
-      p3 <- planktonr::pr_plot_EOVs(outputs(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE)
-      p4 <- planktonr::pr_plot_EOVs(outputs(), EOV = "ShannonCopepodDiversity", Survey = 'CPR', trans = "log10", col = col1["ShannonCopepodDiversity"])
+      p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE)
+      p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonCopepodDiversity", Survey = 'CPR', trans = "log10", col = col1["ShannonCopepodDiversity"])
       
-      p5 <- planktonr::pr_plot_EOVs(outputs(), EOV = "SST", Survey = 'CPR', trans = "identity", col = col1["SST"], labels = FALSE)
-      p6 <- planktonr::pr_plot_EOVs(outputs(), EOV = "chl_oc3", Survey = 'CPR', trans = "identity", col = col1["chl_oc3"])
+      p5 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "SST", Survey = 'CPR', trans = "identity", col = col1["SST"], labels = FALSE)
+      p6 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "chl_oc3", Survey = 'CPR', trans = "identity", col = col1["chl_oc3"])
       
       p7 <- planktonr::pr_plot_PCImap(selectedPCI())
       
@@ -164,7 +155,7 @@ mod_PolCPR_server <- function(id){
     })
     
     # Download -------------------------------------------------------
-    output$downloadData1 <- fDownloadButtonServer(input, outputs(), "Policy") # Download csv of data
-    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1(), "Policy", papersize = "A2") # Download figure
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Policy") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Policy", papersize = "A2") # Download figure
     
   })}
