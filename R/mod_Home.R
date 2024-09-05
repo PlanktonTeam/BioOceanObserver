@@ -118,18 +118,7 @@ mod_home_ui <- function(id){
                          plotOutput(nsHome("SpAccum")) %>% 
                            shinycssloaders::withSpinner(color="#0dc5c1"),
                          shiny::br(),
-                         shiny::br(),  
-                         shiny::h3("Fun Facts"),
-                         shiny::h6("(Refresh the page for a different one)"),
-                         shiny::textOutput(nsHome("Fact")),
-                         shiny::br(),
-                         shiny::br(),  
-                         shiny::h3("IMOS Plankton Paper"),
-                         shiny::h6("(Refresh the page for a different one)"),
-                         shiny::textOutput(nsHome("Paper")),
-                         shiny::br(),
                          shiny::br()
-                         
                 ),
                 
     ) 
@@ -179,13 +168,6 @@ mod_home_server <- function(id){
         return(p)
       })
       
-      output$Paper <- shiny::renderText({
-        planktonr::pr_get_Papers()
-      })
-      
-      output$Fact <- shiny::renderText({
-        planktonr::pr_get_Facts()
-      })
       
       output$TaxaPie <- shiny::renderPlot({
         
