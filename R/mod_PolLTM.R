@@ -85,13 +85,15 @@ mod_PolLTM_server <- function(id){
     }, bg = "transparent") %>% bindCache(input$SiteLTM)
     
     output$StationSummary <- shiny::renderText({ 
+      
       paste("<h4 style='text-align:center; font-weight: bold;'>",input$SiteLTM,"</h5>The ", input$SiteLTM, 
             " Longterm Monitoring Station is located at ", round(stationData()$Latitude,2), 
             "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ". The water depth at the station is ", 
             round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, 
-            ". The station has been sampled since ", format(min(selectedData()$SampleTime_Local), "%A %d %B %Y"), " ", stationData()$now,
+            ". The station has been sampled since ", format(min(selectedData()$SampleDate), "%A %d %B %Y"), " ", stationData()$now,
             ". ", input$SiteLTM, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, 
-            " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = "")})
+            " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = "")
+      })
     
     col1 <- fEOVutilities(vector = "col", Survey = "LTM")
     
