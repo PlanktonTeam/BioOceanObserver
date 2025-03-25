@@ -62,7 +62,7 @@ mod_MicroTsNRS_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(selectedData())
+      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
     }, bg = "transparent") %>% bindCache(input$Site)
     
     # Add text information 
@@ -96,8 +96,8 @@ mod_MicroTsNRS_server <- function(id){
           trans <- 'identity'
         }
         
-        p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = trans)
-        p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = trans) +
+        p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", method = "lm", trans = trans)
+        p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", method = "loess", trans = trans) +
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
         
         p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
@@ -136,13 +136,13 @@ mod_MicroTsNRS_server <- function(id){
           trans <- 'log10'
         }
         
-        p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "NRS", trans = trans) + 
+        p1 <- planktonr::pr_plot_TimeSeries(selectedData(), trans = trans) + 
           ggplot2::theme(legend.position = "none")
         
-        p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Month", trans = trans) + 
+        p2 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Month", trans = trans) + 
           ggplot2::theme(legend.position = "none")
         
-        p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "NRS", Trend = "Year", trans = trans) + 
+        p3 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Year", trans = trans) + 
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
         
         #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple", named = TRUE))

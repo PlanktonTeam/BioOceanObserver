@@ -1,14 +1,14 @@
-﻿Category,Parameter,Definition,
+﻿Category,Parameter,Definition
 Phytoplankton,AvgCellVol_um3,Average cell volume of phytoplankton, calculated from average cell size of the species found in the sample
-Phytoplankton,DiatomDinoflagellateRatio,The ratio of diatoms to dinoflagellates,
-Phytoplankton,DiatomEvenness,Evenness of diatom species calculated using Pielou's Evenness Index,
-Phytoplankton,DinoflagellateEvenness,Evenness of dinoflagellate species calculated using Pielou's Evenness Index,
-Phytoplankton,NoDiatomSpecies_Sample,Number of diatom species in the sample,
-Phytoplankton,NoDinoSpecies_Sample,Number of dinoflagellate species in the sample,
-Phytoplankton,NoPhytoSpecies_Sample,Total umber of phytoplankton species in the sample,
-Phytoplankton,PCI,Phytoplankton Colour Index calculated by how green the CPR silks are,
-Phytoplankton,PhytoAbundance_CellsL,Abundance of phytoplankton cells per litre,
-Phytoplankton,PhytoAbundance_Cellsm3,Abundance of phytoplankton cells per cubic metre,
+Phytoplankton,DiatomDinoflagellateRatio,The ratio of diatoms to dinoflagellates
+Phytoplankton,DiatomEvenness,Evenness of diatom species calculated using Pielou's Evenness Index
+Phytoplankton,DinoflagellateEvenness,Evenness of dinoflagellate species calculated using Pielou's Evenness Index
+Phytoplankton,NoDiatomSpecies_Sample,Number of diatom species in the sample
+Phytoplankton,NoDinoSpecies_Sample,Number of dinoflagellate species in the sample
+Phytoplankton,NoPhytoSpecies_Sample,Total umber of phytoplankton species in the sample
+Phytoplankton,PCI,Phytoplankton Colour Index calculated by how green the CPR silks are
+Phytoplankton,PhytoAbundance_CellsL,Abundance of phytoplankton cells per litre
+Phytoplankton,PhytoAbundance_Cellsm3,Abundance of phytoplankton cells per cubic metre
 Phytoplankton,PhytoBiomassCarbon_pgL,Carbon biomass of phytoplankton, calculated from the average cell carbon of each species found in the sample
 Phytoplankton,PhytoBiomassCarbon_pgm3,Carbon biomass of phytoplankton, calculated from the average cell carbon of each species found in the sample
 Phytoplankton,PhytoEvenness,Evenness of phytoplankton species calculated using Pielou's Evenness Index,

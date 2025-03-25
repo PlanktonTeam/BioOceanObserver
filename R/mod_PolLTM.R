@@ -109,11 +109,11 @@ mod_PolLTM_server <- function(id){
     
     gg_out1 <- reactive({
       
-      p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Nitrate_umolL", Survey = "LTM", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
-      p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Phosphate_umolL", Survey = "LTM", trans = "identity", col = col1["Phosphate_umolL"], labels = FALSE) 
-      p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Silicate_umolL", Survey = "LTM", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE) 
-      p7 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Temperature_degC", Survey = "LTM", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
-      p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Salinity", Survey = "LTM", trans = "identity", col = col1["Salinity"])
+      p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Nitrate_umolL", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
+      p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Phosphate_umolL", trans = "identity", col = col1["Phosphate_umolL"], labels = FALSE) 
+      p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Silicate_umolL", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE) 
+      p7 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Temperature_degC", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
+      p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Salinity", trans = "identity", col = col1["Salinity"])
       
       
       patchwork::wrap_elements(

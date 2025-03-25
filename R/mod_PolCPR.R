@@ -90,7 +90,7 @@ mod_PolCPR_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_CPRmap(selectedData())
+      planktonr::pr_plot_CPRmap(unique(selectedData()$BioRegion))
     }, bg = "transparent") %>% bindCache(input$Site)
     
     
@@ -123,14 +123,14 @@ mod_PolCPR_server <- function(id){
     gg_out1 <- reactive({
       
 
-      p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "PhytoBiomassCarbon_pgm3", Survey = 'CPR', trans = "log10", col = col1["PhytoBiomassCarbon_pgm3"], labels = FALSE) 
-      p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "BiomassIndex_mgm3", Survey = 'CPR', trans = "log10", col = col1["BiomassIndex_mgm3"])
+      p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "PhytoBiomassCarbon_pgm3", trans = "log10", col = col1["PhytoBiomassCarbon_pgm3"], labels = FALSE) 
+      p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "BiomassIndex_mgm3", trans = "log10", col = col1["BiomassIndex_mgm3"])
       
-      p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonPhytoDiversity", Survey = 'CPR', trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE)
-      p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonCopepodDiversity", Survey = 'CPR', trans = "log10", col = col1["ShannonCopepodDiversity"])
+      p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE)
+      p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonCopepodDiversity", trans = "log10", col = col1["ShannonCopepodDiversity"])
       
-      p5 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "SST", Survey = 'CPR', trans = "identity", col = col1["SST"], labels = FALSE)
-      p6 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "chl_oc3", Survey = 'CPR', trans = "identity", col = col1["chl_oc3"])
+      p5 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "SST", trans = "identity", col = col1["SST"], labels = FALSE)
+      p6 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "chl_oc3", trans = "identity", col = col1["chl_oc3"])
       
       p7 <- planktonr::pr_plot_PCImap(selectedPCI())
       

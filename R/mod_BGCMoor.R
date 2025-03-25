@@ -23,12 +23,16 @@ mod_MoorBGC_server <- function(id){
   moduleServer( id, function(input, output, session){
     
     pr_get_MoorClimPlotData <- function(df, Station, noYear){ #TODO Move to planktonr
+      
+      browser()
+      
       df <- data.frame(SampleDate = seq.Date(to = lubridate::ceiling_date(Sys.Date(), "year"),
                                              from = lubridate::ceiling_date(Sys.Date() - lubridate::years(noYear), "year"),
                                              by = "day")) %>% 
         dplyr::mutate(TIME = lubridate::yday(.data$SampleDate) + 10956, 
+                      TIME = as.character(TIME),
                       year = lubridate::year(.data$SampleDate)) %>% 
-        dplyr::inner_join(df %>% dplyr::filter(.data$StationName %in% Station), by = 'TIME') %>%
+        dplyr::inner_join(df %>% dplyr::filter(.data$StationName %in% Station), by = "TIME") %>% # TODO What about depth?
         unique()
     }
     
@@ -121,8 +125,7 @@ mod_MoorBGC_server <- function(id){
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 
-      
-      planktonr::pr_plot_NRSmap(selectedClim())
+      planktonr::pr_plot_NRSmap(unique(selectedClim()$StationCode))
     }, bg = "transparent") %>% bindCache(input$station)
     
     # add climate plot
