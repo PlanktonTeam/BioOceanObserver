@@ -41,6 +41,7 @@ Tricho <- planktonr::pr_get_NRSData(Type = 'Phytoplankton', Variable = "abundanc
 datNRSm <- datNRSm %>% dplyr::bind_rows(Tricho)
 rm(Tricho)
 
+
 datCSm  <- planktonr::pr_get_NRSMicro(Survey = "Coastal") %>% ## coastal microbial data
   droplevels() %>% 
   dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
@@ -281,8 +282,9 @@ pr_get_mooringClim <- function(Stations){
   
   tidync::hyper_tibble(file) %>%
     dplyr::mutate(StationCode = Stations,
-                  TIME = as.character(lubridate::yday(TIME)),
-                  DEPTH = as.numeric(DEPTH))
+                  TIME = lubridate::yday(TIME),
+                  DEPTH = as.numeric(DEPTH)) %>% 
+    dplyr::summarise(CLIM = mean(CLIM, na.rm = TRUE), .by = tidyselect::all_of(c("DEPTH", "TIME", "StationCode"))) # Get rid of the extra day that causes trouble with the join later
 }  
 
 MooringClim <- purrr::map_dfr(Stations, pr_get_mooringClim) %>%
