@@ -21,13 +21,13 @@ Imports:
     lubridate,
     magrittr,
     patchwork,
-    planktonr (>= 0.6.1),
+    planktonr (>= 0.6.2),
     rlang (>= 1.1.0),
     shiny (>= 1.6.0),
     shinycssloaders,
     stringr,
+    tibble,
     tidyr,
-    vctrs (>= 0.6.0),
     vroom
 Encoding: UTF-8
 LazyData: true
