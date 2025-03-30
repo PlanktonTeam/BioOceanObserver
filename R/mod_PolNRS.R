@@ -94,9 +94,7 @@ mod_PolNRS_server <- function(id){
       shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedData <- pkg.env$PolNRS %>% 
-        dplyr::filter(.data$StationName %in% input$Site) %>% 
-        planktonr::pr_get_Coeffs()
-
+        dplyr::filter(.data$StationName %in% input$Site)
       
     }) %>% bindCache(input$Site, input$Parameters)
     

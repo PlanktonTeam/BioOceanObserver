@@ -54,8 +54,7 @@ mod_PolCPR_server <- function(id){
       shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
       
       selectedData <- pkg.env$PolCPR %>% 
-        dplyr::filter(.data$BioRegion %in% input$Site) %>% 
-        planktonr::pr_get_Coeffs()
+        dplyr::filter(.data$BioRegion %in% input$Site)
       
       }) %>% bindCache(input$Site)
     
@@ -122,7 +121,6 @@ mod_PolCPR_server <- function(id){
     
     gg_out1 <- reactive({
       
-
       p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "PhytoBiomassCarbon_pgm3", trans = "log10", col = col1["PhytoBiomassCarbon_pgm3"], labels = FALSE) 
       p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "BiomassIndex_mgm3", trans = "log10", col = col1["BiomassIndex_mgm3"])
       
