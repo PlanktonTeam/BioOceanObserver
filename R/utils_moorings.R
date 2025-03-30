@@ -3,8 +3,8 @@ pr_get_MoorClimPlotData <- function(df, Station, noYear){ #TODO Move to plankton
   
   # browser()
   
-  df <- tibble::tibble(SampleDate = seq.Date(to = lubridate::ceiling_date(Sys.Date(), "year"),
-                                         from = lubridate::ceiling_date(Sys.Date() - lubridate::years(noYear), "year"),
+  df <- tibble::tibble(SampleDate = seq.Date(to = lubridate::floor_date(Sys.Date(), "year"), # JDE 31/3/2025: Changed from ceiling_date to floor_date or it was showing climatology for dates not yet happened
+                                         from = lubridate::floor_date(Sys.Date() - lubridate::years(noYear), "year"),
                                          by = "day")) %>% 
     dplyr::mutate(TIME = lubridate::yday(.data$SampleDate),
                   year = lubridate::year(.data$SampleDate)) %>% 
@@ -44,8 +44,8 @@ pr_plot_MoorClim <- function(df){ #TODO Move to planktonr
 }
 
 pr_get_MoorTSPlotData <- function(df, Station, noYear){
-  df <- data.frame(SampleDate = seq.Date(to = lubridate::ceiling_date(Sys.Date(), "year"),
-                                         from = lubridate::ceiling_date(Sys.Date() - lubridate::years(noYear), "year"),
+  df <- data.frame(SampleDate = seq.Date(to = lubridate::floor_date(Sys.Date(), "year"), # See note above re ceiling date_
+                                         from = lubridate::floor_date(Sys.Date() - lubridate::years(noYear), "year"),
                                          by = "day")) %>% 
     dplyr::mutate(DOY = lubridate::yday(.data$SampleDate) + 10956) %>% 
     dplyr::inner_join(df %>% dplyr::filter(.data$StationName %in% Station), by = 'DOY') %>%
