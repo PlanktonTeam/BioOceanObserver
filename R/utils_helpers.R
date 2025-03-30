@@ -77,7 +77,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     }
   } else if (stringr::str_detect(id, "CS") == TRUE){ # Microbes Coastal
     choices <- unique(sort(dat$State))
-    selectedSite <- c("TAS")
+    selectedSite <- c("GBR")
     idSite <- "Site"
     selectedVar = "Bacterial_Temperature_Index_KD"
   } 
