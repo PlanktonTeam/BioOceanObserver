@@ -52,7 +52,7 @@ mod_ZooTsCPR_server <- function(id){
     )
     
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_CPRmap(selectedData()) 
+      planktonr::pr_plot_CPRmap(unique(selectedData()$BioRegion))
     }, bg = "transparent") %>% bindCache(input$region)
     
     # add text information 
@@ -73,8 +73,8 @@ mod_ZooTsCPR_server <- function(id){
         
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
         
-        p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "CPR", method = "lm", trans = trans)
-        p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "CPR", method = "loess", trans = trans) + 
+        p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", method = "lm", trans = trans)
+        p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", method = "loess", trans = trans) + 
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
         
         p1 + p2 + patchwork::plot_layout(widths = c(3,1))
@@ -104,13 +104,13 @@ mod_ZooTsCPR_server <- function(id){
         if (identical(input$region, "")) return(NULL)
         if (identical(input$parameter, "")) return(NULL)
         
-        p1 <- planktonr::pr_plot_TimeSeries(selectedData(), Survey = "CPR", trans = trans) + 
+        p1 <- planktonr::pr_plot_TimeSeries(selectedData(), trans = trans) + 
           ggplot2::theme(legend.position = "none")
         
-        p2 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Month", trans = trans) +
+        p2 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Month", trans = trans) +
           ggplot2::theme(legend.position = "none")
         
-        p3 <- planktonr::pr_plot_Climatology(selectedData(), Survey = "CPR", Trend = "Year", trans = trans) + 
+        p3 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Year", trans = trans) + 
           ggplot2::theme(axis.title.y = ggplot2::element_blank(),
                          legend.position = "bottom")
         

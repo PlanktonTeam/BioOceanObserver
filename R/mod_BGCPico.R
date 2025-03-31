@@ -87,7 +87,7 @@ mod_PicoBGC_server <- function(id){
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(selectedData())
+      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
     }, bg = "transparent") %>% bindCache(input$station)
     
     # add text information 

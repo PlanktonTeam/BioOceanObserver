@@ -53,8 +53,7 @@ mod_PolLTM_server <- function(id){
       
       selectedData <- pkg.env$PolLTM %>% 
         dplyr::filter(.data$StationName %in% input$SiteLTM,
-                      !.data$Parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL")) %>% 
-        planktonr::pr_get_Coeffs()
+                      !.data$Parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL"))
       
     }) %>% bindCache(input$SiteLTM)
     
@@ -85,13 +84,16 @@ mod_PolLTM_server <- function(id){
     }, bg = "transparent") %>% bindCache(input$SiteLTM)
     
     output$StationSummary <- shiny::renderText({ 
+      browser()
+      
       paste("<h4 style='text-align:center; font-weight: bold;'>",input$SiteLTM,"</h5>The ", input$SiteLTM, 
             " Longterm Monitoring Station is located at ", round(stationData()$Latitude,2), 
             "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ". The water depth at the station is ", 
             round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, 
             ". The station has been sampled since ", format(min(selectedData()$SampleTime_Local), "%A %d %B %Y"), " ", stationData()$now,
             ". ", input$SiteLTM, " is part of ", stationData()$Node, " and is in the ", stationData()$ManagementRegion, 
-            " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = "")})
+            " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = "")
+      })
     
     col1 <- fEOVutilities(vector = "col", Survey = "LTM")
     
@@ -109,11 +111,11 @@ mod_PolLTM_server <- function(id){
     
     gg_out1 <- reactive({
       
-      p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Nitrate_umolL", Survey = "LTM", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
-      p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Phosphate_umolL", Survey = "LTM", trans = "identity", col = col1["Phosphate_umolL"], labels = FALSE) 
-      p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Silicate_umolL", Survey = "LTM", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE) 
-      p7 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Temperature_degC", Survey = "LTM", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
-      p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Salinity", Survey = "LTM", trans = "identity", col = col1["Salinity"])
+      p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Nitrate_umolL", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
+      p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Phosphate_umolL", trans = "identity", col = col1["Phosphate_umolL"], labels = FALSE) 
+      p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Silicate_umolL", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE) 
+      p7 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Temperature_degC", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
+      p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Salinity", trans = "identity", col = col1["Salinity"])
       
       
       patchwork::wrap_elements(

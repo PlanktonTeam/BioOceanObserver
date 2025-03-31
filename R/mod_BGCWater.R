@@ -57,8 +57,8 @@ mod_WaterBGC_server <- function(id){
     
     # Create timeseries object the plotOutput function is expecting
     gg_out1 <-  reactive({
-      p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", Survey = "NRS", method = "lm", trans = 'identity')
-      p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", Survey = "NRS", method = "loess", trans = 'identity') +
+      p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", method = "lm", trans = 'identity')
+      p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", method = "loess", trans = 'identity') +
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
       
@@ -74,7 +74,7 @@ mod_WaterBGC_server <- function(id){
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(selectedData())
+      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
     }, bg = "transparent") %>% bindCache(input$station)
     
     # add text information 

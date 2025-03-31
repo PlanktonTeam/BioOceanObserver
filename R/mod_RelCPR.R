@@ -102,7 +102,7 @@ mod_RelCPR_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({
-      planktonr::pr_plot_CPRmap(selectedData())
+      planktonr::pr_plot_CPRmap(unique(selectedData()$BioRegion))
     }, bg = "transparent") %>% bindCache(input$Site)
     
     # Add text information 

@@ -144,8 +144,8 @@ mod_home_server <- function(id){
     observeEvent({input$home == 3}, {
       
       output$gantt <- shiny::renderPlot({
-        ggCPR <- planktonr::pr_plot_Gantt(pkg.env$datCPRTrip, Survey = "CPR")
-        ggNRS <- planktonr::pr_plot_Gantt(pkg.env$datNRSTrip, Survey = "NRS")
+        ggCPR <- planktonr::pr_plot_Gantt(pkg.env$datCPRTrip)
+        ggNRS <- planktonr::pr_plot_Gantt(pkg.env$datNRSTrip)
         
         p <- patchwork::wrap_plots(ggCPR, ggNRS, ncol = 1) &
           ggplot2::theme(text = ggplot2::element_text(size = 16, face = "bold"))
@@ -157,10 +157,10 @@ mod_home_server <- function(id){
     observeEvent({input$home == 4}, {
       
       output$SpAccum <- shiny::renderPlot({
-        p1 <- planktonr::pr_plot_TaxaAccum(pkg.env$PSpNRSAccum, Survey = "NRS", Type = "P") 
-        p2 <- planktonr::pr_plot_TaxaAccum(pkg.env$PSpCPRAccum, Survey = "CPR", Type = "P")
-        p3 <- planktonr::pr_plot_TaxaAccum(pkg.env$ZSpNRSAccum, Survey = "NRS", Type = "Z")
-        p4 <- planktonr::pr_plot_TaxaAccum(pkg.env$ZSpCPRAccum, Survey = "CPR", Type = "Z")
+        p1 <- planktonr::pr_plot_TaxaAccum(pkg.env$PSpNRSAccum) 
+        p2 <- planktonr::pr_plot_TaxaAccum(pkg.env$PSpCPRAccum)
+        p3 <- planktonr::pr_plot_TaxaAccum(pkg.env$ZSpNRSAccum)
+        p4 <- planktonr::pr_plot_TaxaAccum(pkg.env$ZSpCPRAccum)
         
         p <- patchwork::wrap_plots(p1, p2, p3, p4, ncol = 4) &
           ggplot2::theme(text = ggplot2::element_text(size = 16, face = "bold"),
