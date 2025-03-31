@@ -258,7 +258,7 @@ pr_get_mooringTS <- function(Stations, Depth, Names){
 
 Stations <- planktonr::pr_get_NRSStation() %>%
   dplyr::select('StationCode') %>%
-  dplyr::filter(!.data$StationCode %in% c("NIN", "ESP", "PH4"))
+  dplyr::filter(!.data$StationCode %in% c("NIN", "ESP", "PH4", "VBM"))
 Stations <- rep(Stations$StationCode, 3)
 
 Depths <- c(rep(0, 7), 
