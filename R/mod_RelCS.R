@@ -84,7 +84,7 @@ mod_RelCS_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
+      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "Coastal")
     }, bg = "transparent") %>% bindCache(input$Site)
     
     # Add text information 

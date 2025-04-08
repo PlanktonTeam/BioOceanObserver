@@ -80,7 +80,7 @@ mod_PolLTM_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
+      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "LTM")
     }, bg = "transparent") %>% bindCache(input$SiteLTM)
     
     output$StationSummary <- shiny::renderText({ 
