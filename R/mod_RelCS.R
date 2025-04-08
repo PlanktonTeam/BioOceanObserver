@@ -56,8 +56,6 @@ mod_RelCS_server <- function(id){
       x <- rlang::string(input$px)
       vars <- c("StationName", "StationCode", "SampleTime_Local", "SampleDepth_m", "State") # only microbes has depth data
       
-      browser()
-      
       selectedData <- daty() %>%  
         dplyr::bind_rows(datx()) %>% 
         dplyr::filter(.data$State %in% input$Site,
@@ -86,7 +84,7 @@ mod_RelCS_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({
-      planktonr::pr_plot_NRSmap(selectedData())
+      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "Coastal")
     }, bg = "transparent") %>% bindCache(input$Site)
     
     # Add text information 

@@ -80,11 +80,10 @@ mod_PolLTM_server <- function(id){
     
     # Sidebar Map
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(selectedData())
+      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "LTM")
     }, bg = "transparent") %>% bindCache(input$SiteLTM)
     
     output$StationSummary <- shiny::renderText({ 
-      browser()
       
       paste("<h4 style='text-align:center; font-weight: bold;'>",input$SiteLTM,"</h5>The ", input$SiteLTM, 
             " Longterm Monitoring Station is located at ", round(stationData()$Latitude,2), 

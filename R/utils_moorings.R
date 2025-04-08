@@ -1,8 +1,6 @@
 
 pr_get_MoorClimPlotData <- function(df, Station, noYear){ #TODO Move to planktonr
   
-  # browser()
-  
   df <- tibble::tibble(SampleDate = seq.Date(to = lubridate::floor_date(Sys.Date(), "year"), # JDE 31/3/2025: Changed from ceiling_date to floor_date or it was showing climatology for dates not yet happened
                                          from = lubridate::floor_date(Sys.Date() - lubridate::years(noYear), "year"),
                                          by = "day")) %>% 
