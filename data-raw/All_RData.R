@@ -31,7 +31,8 @@ datNRSz <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Zooplankton")
 
 datNRSp <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Phytoplankton") 
 
-datNRSm <- planktonr::pr_get_NRSMicro(Survey = "NRS") %>%  tidyr::drop_na() ## NRS microbial data
+datNRSm <- planktonr::pr_get_NRSMicro(Survey = "NRS") %>% 
+  tidyr::drop_na() ## NRS microbial data
 
 Tricho <- planktonr::pr_get_NRSData(Type = 'Phytoplankton', Variable = "abundance", Subset = "genus") %>% 
   dplyr::select(dplyr::any_of(colnames(datNRSm)), Values = "Trichodesmium")  %>% 
@@ -45,7 +46,9 @@ rm(Tricho)
 datCSm  <- planktonr::pr_get_NRSMicro(Survey = "Coastal") %>% ## coastal microbial data
   droplevels() %>% 
   dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
-                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'day'))
+                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
+  dplyr::filter(Values != -9999) %>% 
+  tidyr::drop_na(Values)
 
 datGSm <- planktonr::pr_get_NRSMicro(Survey = "GO-SHIP")
 
@@ -58,7 +61,7 @@ datNRSw <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Water") %>% #TODO m
   tidyr::pivot_longer(-c("TripCode", "Year_Local", "Month_Local", "SampleTime_Local", "StationName", "StationCode"), 
                       names_to = "Parameters", values_to = "Values") %>%
   dplyr::filter(Values > 0, 
-                !(Values == 5.964 & StationCode == 'YON')) %>%   
+                !(Values == 5.964 & StationCode == "YON")) %>%   
   planktonr::pr_remove_outliers(2) 
 
 # CPR time series data ----------------------------------------------------
@@ -111,11 +114,11 @@ ctd <- planktonr::pr_get_NRSCTD() %>%
   tidyr::pivot_longer(-c(dplyr::any_of(colnames(datNRSm))), values_to = "Values", names_to = "Parameters") 
 
 CSChem <- planktonr::pr_get_CSChem() %>% 
-  dplyr::filter(.data$Parameters %in% c("Chla_mgm3", "Temperature_degC",
-                                                                         "Salinity_psu")) %>% 
+  dplyr::filter(.data$Parameters %in% c("Chla_mgm3", "Temperature_degC", "Salinity_psu")) %>% 
   dplyr::mutate(Parameters = ifelse(Parameters == "Salinity_psu", "Salinity", Parameters),
                 SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
-                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'day'))
+                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'day')) %>% 
+  dplyr::filter(Values != -9999)
 
 # Get Sat data ------------------------------------------------------------
 
