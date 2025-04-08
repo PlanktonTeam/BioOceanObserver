@@ -472,7 +472,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
     ChoiceSite = unique(sort(dat1$State))
     ChoicesGroupy = 'Microbes - Coastal'
     ChoicesGroupx = 'Physical'
-    SelectedVar = 'TAS'
+    SelectedVar = 'GBR'
     SelectedGroupy = 'Microbes - Coastal'
     SelectedGroupx = 'Physical'
     selectedParamy = 'Bacterial_Temperature_Index_KD'
