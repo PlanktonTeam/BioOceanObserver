@@ -22,12 +22,12 @@ pkg.env <- new.env(parent = emptyenv())
     # Access data from local server (fastest)
     # The variable data.url is a string that is the url to the served data and is defined in a local config.rda file.
     # If config.rda doesn't exist, this step results in an error that is then handled.
-    cat(file=stderr(), "Attempting to access data from data.url declared in config.rda.\n")
-    load("config.rda")
+    cat(file=stderr(), "Attempting to access data from Bowen\n")
+    thredds_url <- "https://data-cbr.it.csiro.au/thredds/fileServer/catch_all/imosboo/BOODataUpload/archive/20250529_sysdata.rda"
     tmp <- tempfile(fileext='.rda')   
-    httr::GET(data.url, httr::write_disk(tmp))
+    httr::GET(thredds_url, httr::write_disk(tmp))
     load(tmp)
-    cat(file=stderr(), paste0("Up-to-date data accessed from ", data.url,".\n"))
+    cat(file=stderr(), paste0("Up-to-date data accessed from Bowen\n"))
     pkg.env$new.data <- TRUE
   }, error = function(e) { 
     cat(file=stderr(), as.character(e))
