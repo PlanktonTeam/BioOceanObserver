@@ -65,11 +65,9 @@ mod_NutrientsBGC_server <- function(id){
         interp <- input$interp
       
       if(interp == 'Interpolate'){
-        planktonr::pr_plot_NRSEnvContour(selectedData(), Interpolation = TRUE, Fill_NA = FALSE)
-      } else if (interp == 'Interpolate with gap filling'){
-        planktonr::pr_plot_NRSEnvContour(selectedData(), Interpolation = TRUE, Fill_NA = TRUE, maxGap = 3)
+        planktonr::pr_plot_NRSEnvContour(selectedData(), na.fill = TRUE)
       } else {
-        planktonr::pr_plot_NRSEnvContour(selectedData(), Interpolation = FALSE, Fill_NA = FALSE)
+        planktonr::pr_plot_NRSEnvContour(selectedData(), na.fill = FALSE)
       }
       }
       

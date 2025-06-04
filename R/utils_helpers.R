@@ -168,7 +168,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       condition = paste0("input.", tabsetPanel_id, " == 3 && input.mic == 'mts' && input.navbar == 'Microbes'"), # MicroNRS
       shiny::selectizeInput(inputId = ns("interp"),
                             label = strong("Interpolate data?"),
-                            choices = c("Interpolate", "Raw data", "Interpolate with gap filling"),
+                            choices = c("Interpolate", "Raw data"),
                             selected = "Raw data"),
     ),
     shiny::conditionalPanel(
@@ -386,7 +386,7 @@ fEnviroSidebar <- function(id, dat = NULL){
     ignoreStat <- c("PH4") # Stations to ignore
   }
   if (id == "MoorBGC_ui_1"){
-    ignoreStat <- c("PH4", "NIN", "ESP") # Stations to ignore
+    ignoreStat <- c("PH4", "NIN", "ESP", 'VBM') # Stations to ignore
   }
   
   shiny::sidebarPanel(
@@ -451,7 +451,7 @@ fEnviroSidebar <- function(id, dat = NULL){
         condition = "input.env == 'moor' | input.env == 'pico' | input.env == 'bgc'",
         shiny::HTML("<h5><strong>Interpolate data?</strong></h5>"),
         selectizeInput(inputId = ns("interp"), label = NULL, 
-                       choices = c("Interpolate", "Raw data", "Interpolate with gap filling"), 
+                       choices = c("Interpolate", "Raw data"), 
                        selected = "Interpolate")
       )
     },
@@ -616,8 +616,8 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
                input$parameter, "_",
                data.frame(StationName = input$Site) %>% 
                  planktonr::pr_add_StationCode() %>% 
-                 dplyr::arrange(StationCode) %>% 
-                 dplyr::pull(StationCode) %>% 
+                 dplyr::arrange(.data$StationCode) %>% 
+                 dplyr::pull(.data$StationCode) %>% 
                  stringr::str_flatten(), "_",
                lubridate::year(input$DatesSlide[1]), "to", lubridate::year(input$DatesSlide[2]), "_D",
                format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".csv") %>% 
@@ -647,8 +647,8 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
                input$parameter, "_",
                data.frame(StationName = input$Site) %>% 
                  planktonr::pr_add_StationCode() %>% 
-                 dplyr::arrange(StationCode) %>% 
-                 dplyr::pull(StationCode) %>% 
+                 dplyr::arrange(.data$StationCode) %>% 
+                 dplyr::pull(.data$StationCode) %>% 
                  stringr::str_flatten(), "_",
                lubridate::year(input$DatesSlide[1]), "to", lubridate::year(input$DatesSlide[2]), "_D",
                format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png") %>% 
