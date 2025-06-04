@@ -187,11 +187,9 @@ mod_MicroTsNRS_server <- function(id){
         interp <-  input$interp
         
         if(interp == 'Interpolate'){
-          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), Interpolation = TRUE, Fill_NA = FALSE)
-        } else if (interp == 'Interpolate with gap filling'){
-          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), Interpolation = TRUE, Fill_NA = TRUE, maxGap = 3)
+          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), na.fill = TRUE)
         } else {
-          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), Interpolation = FALSE, Fill_NA = FALSE)
+          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), na.fill = FALSE)
         }
         
       }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$interp)

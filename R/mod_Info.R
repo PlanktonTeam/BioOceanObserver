@@ -43,7 +43,7 @@ mod_info_ui <- function(id){
                                     The samples taken at defined depths have been included here as they are more informative. All data can be sourced direct from the AODN or by using planktonr"),
                            shiny::h4("Contour plots"),
                            shiny::p("There is an option to interpolate the data in the contour plots used for the environmental data taken at defined depths. The base method does not fill in NAs in the dataset. 
-                                     Use the option 'fill' NAs if you want to fill in missing values, the maximum gap interpolated over is set at 3."),
+                                     Use the option na.fill = TRUE if you want to interpolate."),
                            shiny::br(),
                            shiny::h3("Outliers"),
                            shiny::p("Outliers are removed when they are greater than 2 standard deviations from the mean. Negative values for nutrients etc. are also set 

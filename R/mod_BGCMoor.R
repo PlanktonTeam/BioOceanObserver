@@ -26,7 +26,7 @@ mod_MoorBGC_server <- function(id){
       req(input$station)
       shiny::validate(need(!is.na(input$station), "Error: Please select a station."))
       
-      selectedClim <- pr_get_MoorClimPlotData(pkg.env$MooringClim, input$station, 5)
+      selectedClim <- pr_get_MoorClimPlotData(pkg.env$MooringClim, input$station, 5) %>% droplevels()
       
     }) %>% bindCache(input$station)
     
@@ -34,25 +34,9 @@ mod_MoorBGC_server <- function(id){
       req(input$station)
       shiny::validate(need(!is.na(input$station), "Error: Please select a station."))
       
-      selectedTS <- pr_get_MoorTSPlotData(pkg.env$MooringTS, input$station, 5) 
+      selectedTS <- pr_get_MoorTSPlotData(pkg.env$MooringTS, input$station, 5) %>% droplevels()
       
     }) %>% bindCache(input$station)
-    
-    # shiny::exportTestValues(
-    #   MoorTs = {ncol(selectedTS())},
-    #   MoorTsRows = {nrow(selectedTS()) > 0},
-    #   MoorTsDateisDate = {class(selectedTS()$SampleDate)},
-    #   MoorTsStationisFactor = {class(selectedTS()$StationName)},
-    #   MoorTsCodeisChr = {class(selectedTS()$StationCode)},
-    #   MoorClim = {ncol(selectedClim())},
-    #   MoorClimRows = {nrow(selectedClim()) > 0},
-    #   MoorClimDateisDate = {class(selectedClim()$SampleDate)},
-    #   MoorClimStationisFactor = {class(selectedClim()$StationName)},
-    #   MoorClimCodeisChr = {class(selectedClim()$StationCode)},
-    #   MoorClimTime = {class(selectedClim()$TIME)},
-    #   MoorClimClim = {class(selectedClim()$CLIM)},
-    #   MoorClimDepth = {class(selectedClim()$DEPTH)},
-    # )
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 

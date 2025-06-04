@@ -13,14 +13,6 @@ pr_get_MoorClimPlotData <- function(df, Station, noYear){ #TODO Move to plankton
 }
 
 pr_plot_MoorClim <- function(df){ #TODO Move to planktonr
-  # years <- paste0(unique(df$year), "-01")
-  # noYears <- length(years) - 1
-  # df$seq <- c(rep(1:(365 * noYears), each = ((max(df$DEPTH) + 1))), rep((365 * noYears) + 1, (max(df$DEPTH) + 1)))
-  # labbreak <- c(1, (1 + (max(df$TIME)) * 1),
-  #               (1 + (max(df$TIME)) * 2),
-  #               (1 + (max(df$TIME)) * 3),
-  #               (1 + (max(df$TIME)) * 4),
-  #               (1 +(max(df$TIME)) * 5))
   legtit <- planktonr::pr_relabel("Temperature_degC", style = 'ggplot')
   
   climtsplot <- ggplot2::ggplot(df) +
@@ -29,7 +21,6 @@ pr_plot_MoorClim <- function(df){ #TODO Move to planktonr
     ggplot2::scale_color_viridis_c(option = 'plasma', name = legtit) +
     ggplot2::facet_wrap(~ .data$StationName, scales = 'free', ncol = 1) +
     ggplot2::scale_y_reverse(expand=c(0,0)) +
-    #ggplot2::scale_x_continuous(breaks = labbreak, labels = years, expand=c(0,0)) +
     ggplot2::scale_x_date(breaks = '1 year', expand=c(0,0), date_labels = "%Y") +
     ggplot2::labs(x = "Years", y = "Depth (m)") +
     ggplot2::theme_bw(base_size = 16) + 
