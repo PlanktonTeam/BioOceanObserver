@@ -51,14 +51,22 @@ fEOVutilities <- function(vector = "col", Survey = "NRS"){
 #' BOO Plankton Sidebar
 #'
 #' @noRd 
-fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
+fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added for SOTS phytoplankton
   ns <- NS(id)
   
-  if (stringr::str_detect(id, "NRS") == TRUE){ # NRS
-    choices <- unique(sort(dat$StationName))
+  if(stringr::str_detect(id, "NRS") == TRUE){ # NRS
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
     idSite <- "Site"
-    
+
+    if(exists('dat1') == TRUE){
+      df <- dat %>% 
+        dplyr::bind_rows(dat1) %>% 
+        planktonr::pr_reorder()
+      choices <- unique(sort(df$StationName))
+    } else {
+      choices <- unique(sort(dat$StationName))
+    }
+        
     if (stringr::str_detect(id, "Micro") == TRUE){ # Microbes + NRS
       selectedVar <- "Bacterial_Temperature_Index_KD"
     } else if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + NRS

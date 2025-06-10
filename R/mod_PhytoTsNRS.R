@@ -11,7 +11,7 @@ mod_PhytoTsNRS_ui <- function(id){
   nsPhytoTsNRS <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, tabsetPanel_id = "NRSpts", dat = pkg.env$datNRSp),
+      fPlanktonSidebar(id = id, tabsetPanel_id = "NRSpts", dat = pkg.env$datNRSp, dat1 = pkg.env$SOTSp),
       fPLanktonPanel(id = id, tabsetPanel_id = "NRSpts")
     )
   )
@@ -35,16 +35,17 @@ mod_PhytoTsNRS_server <- function(id){
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       selectedData <- pkg.env$datNRSp %>%
+        dplyr::bind_rows(pkg.env$SOTSp) %>% 
         dplyr::filter(.data$StationName %in% input$Site,
                       .data$Parameters %in% input$parameter,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-        droplevels()
+                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>% 
+        planktonr::pr_reorder()
       
     }) %>% bindCache(input$parameter,input$Site, input$DatesSlide[1], input$DatesSlide[2])
     # })
     
     output$plotmap <- renderPlot({
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
+      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Type = 'Phytoplankton')
     }, bg = "transparent") %>% bindCache(input$Site)
     
     # add text information
@@ -131,8 +132,10 @@ mod_PhytoTsNRS_server <- function(id){
         shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
         
         selectedDataFG <- pkg.env$NRSfgp %>%
+          dplyr::bind_rows(pkg.env$SOTSfgp) %>% 
           dplyr::filter(.data$StationName %in% input$Site,
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+          planktonr::pr_reorder() %>% 
           droplevels()
         
       }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
