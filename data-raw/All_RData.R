@@ -279,7 +279,7 @@ SOTSdata <- function(file_list){
            Parameters = dplyr::case_when(grepl("CPHL", Parameters) ~ "ChlF_mgm3",
                                          grepl("DOX2", Parameters) ~ "DissolvedOxygen_umolkg",
                                          grepl("MLD", Parameters) ~ "MLD_m",
-                                         grepl("PSAL", Parameters) ~ "Salinty",
+                                         grepl("PSAL", Parameters) ~ "Salinity",
                                          grepl("TEMP", Parameters) ~ "Nitrate_umolL",
                                          grepl("NTRI", Parameters) ~ "MLD_m",
                                          grepl("PHOS", Parameters) ~ "Phosphate_umolL",
@@ -361,8 +361,32 @@ PolCPR <- planktonr::pr_get_EOVs(Survey = "CPR", near_dist_km = 250) %>%
 PolLTM <- planktonr::pr_get_EOVs(Survey = "LTM") %>% 
   planktonr::pr_remove_outliers(2)
 
+var_names <- c("PhytoBiomassCarbon_pgL","ShannonPhytoDiversity",
+               "SST", "Salinity", "ChlF_mgm3",
+               "Nitrate_umolL",  "Silicate_umolL",
+               "Phosphate_umolL", "DissolvedOxygen_umolL")
+
+PolSOTS <- SOTSp %>% dplyr::filter(Parameters %in% var_names) %>% 
+  dplyr::select(-c(tz, TripCode, Year_Local, Latitude, Longitude)) %>% 
+  dplyr::bind_rows(SOTSwater %>% dplyr::filter(Parameters %in% var_names)) %>% 
+  dplyr::bind_rows(NutsSots %>% dplyr::filter(Parameters %in% var_names)) %>% 
+  dplyr::mutate(Year_Local = lubridate::year(SampleTime_Local))
+
+means <- PolSOTS %>% 
+  dplyr::summarise(means = mean(.data$Values, na.rm = TRUE),
+                   sd = stats::sd(.data$Values, na.rm = TRUE),
+                   .by = tidyselect::all_of(c("StationName", "SampleDepth_m", "Parameters")))
+
+PolSOTS <-  PolSOTS %>%
+  dplyr::left_join(means, by = c("StationName", "SampleDepth_m", "Parameters")) %>%
+  dplyr::mutate(anomaly = (.data$Values - means)/sd,
+                Survey = "NRS")
+
+rm(var_names, means)
+
 NRSinfo <- planktonr::pr_get_PolicyInfo(Survey = "NRS")
 CPRinfo <- planktonr::pr_get_PolicyInfo(Survey = "CPR")
+SOTSinfo <- planktonr::pr_get_PolicyInfo(Survey = 'SOTS')
 
 # Species distribution data
 fMapDataz <- planktonr::pr_get_FreqMap(Type = "Zooplankton") %>% 
@@ -494,8 +518,8 @@ ParamDef <- readr::read_csv(file.path("data-raw", "ParameterDefn.csv"), na = cha
 usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   fMapDataz, fMapDatap, 
                   MooringTS, MooringClim,
-                  PolNRS, PolCPR, PolLTM, 
-                  NRSinfo, CPRinfo, NRSStation,
+                  PolNRS, PolCPR, PolLTM, PolSOTS,
+                  NRSinfo, CPRinfo, SOTSinfo, NRSStation,
                   datCPRz, datCPRp, PCI,
                   datNRSz, datNRSp, datNRSw, 
                   datNRSm, datCSm, datGSm,

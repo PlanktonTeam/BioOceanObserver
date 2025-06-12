@@ -26,8 +26,15 @@ fEOVutilities <- function(vector = "col", Survey = "NRS"){
                                  "Salinity", "Ammonium_umolL", "Temperature_degC", "Silicate_umolL",
                                  "Phosphate_umolL"))
     
+  } else if (Survey == "SOTS"){
+    # Change some of the names, but keep the same order so the colours are consistent
+    
+    disp <- data.frame(param = c("ChlF_mgm3", "DissolvedOxygen_umolL", "PhytoBiomassCarbon_pgm3",
+                                 "ShannonPhytoDiversity", "BiomassIndex_mgm3", "ShannonCopepodDiversity", "Nitrate_umolL", 
+                                 "Salinity", "Ammonium_umolL", "SST", "Silicate_umolL",
+                                 "Phosphate_umolL"))
+    
   }
-  
   
   disp <- disp %>% 
     dplyr::mutate(col = pkg.env$col12,
