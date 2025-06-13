@@ -29,9 +29,9 @@ fEOVutilities <- function(vector = "col", Survey = "NRS"){
   } else if (Survey == "SOTS"){
     # Change some of the names, but keep the same order so the colours are consistent
     
-    disp <- data.frame(param = c("ChlF_mgm3", "DissolvedOxygen_umolL", "PhytoBiomassCarbon_pgm3",
+    disp <- data.frame(param = c("ChlF_mgm3", "DissolvedOxygen_umolkg", "PhytoBiomassCarbon_pgL",
                                  "ShannonPhytoDiversity", "BiomassIndex_mgm3", "ShannonCopepodDiversity", "Nitrate_umolL", 
-                                 "Salinity", "Ammonium_umolL", "SST", "Silicate_umolL",
+                                 "Salinity", "Ammonium_umolL", "Temperature_degC", "Silicate_umolL",
                                  "Phosphate_umolL"))
     
   }

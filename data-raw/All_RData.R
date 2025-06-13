@@ -40,7 +40,7 @@ trophy <- planktonr::pr_get_PlanktonInfo(Type = 'Phytoplankton') %>% # for infor
                                            grepl("\\(|\\/|diatom|dino|\\-|group", TaxonName) ~ 'spp.',
                                            TRUE ~ stringr::word(TaxonName, 2)))
 
-main_vars <- c("TripCode", "Year_Local", "Month_Local", "SampleTime_Local", "tz", "Latitude", "Longitude", "StationName", "StationCode", "Method")
+main_vars <- c("TripCode", "Year_Local", "Month_Local", "SampleTime_Local", "tz", "Latitude", "Longitude", "StationName", "StationCode", "Method", "SampleDepth_m")
 
 # SOTS Indices not available from AODN so calculated here 
 #TODO - add a function to planktonr to get this data
@@ -49,7 +49,7 @@ SOTSp <- planktonr::pr_get_NRSData(Type = 'phytoplankton', Variable = 'abundance
   dplyr::filter(grepl('SOTS', StationCode),
                 Method == 'LM') %>% # only use LM at this stage
   tidyr::pivot_longer(-c(Project:Method), names_to = 'TaxonName', values_to = 'abund') %>% 
-  dplyr::select(StationName:Month_Local, SampleDepth_m, TaxonName, abund) %>% 
+  dplyr::select(tidyselect::any_of(main_vars), TaxonName, abund) %>% 
   dplyr::left_join(trophy, by = 'TaxonName') %>% 
   dplyr::filter(abund > 0#,
                 #!FunctionalGroup %in% c('Other', 'Silicoflagellate', "Foraminifera", "Ciliate", "Radiozoa")
@@ -280,8 +280,8 @@ SOTSdata <- function(file_list){
                                          grepl("DOX2", Parameters) ~ "DissolvedOxygen_umolkg",
                                          grepl("MLD", Parameters) ~ "MLD_m",
                                          grepl("PSAL", Parameters) ~ "Salinity",
-                                         grepl("TEMP", Parameters) ~ "Nitrate_umolL",
-                                         grepl("NTRI", Parameters) ~ "MLD_m",
+                                         grepl("TEMP", Parameters) ~ "Temperature_degC",
+                                         grepl("NTRI", Parameters) ~ "Nitrate_umolL",
                                          grepl("PHOS", Parameters) ~ "Phosphate_umolL",
                                          grepl("SLCA", Parameters) ~ "Silicate_umolL",
                                          grepl("TALK|ALKA", Parameters) ~ "Alkalinity_umolkg",
@@ -290,8 +290,11 @@ SOTSdata <- function(file_list){
                                          .default = Parameters)) %>%
     dplyr::group_by(StationName, StationCode, Month_Local, SampleTime_Local, Parameters, SampleDepth_m) %>%
     dplyr::summarise(Values = mean(Values, na.rm = TRUE),
-              .groups = 'drop') %>%
-    tidyr::drop_na(Parameters) 
+              .groups = 'drop') %>% 
+    dplyr::mutate(Year_Local = lubridate::year(SampleTime_Local),
+                  SampleDepth_m = round(.data$SampleDepth_m/10, 0)*10) %>% 
+    dplyr::filter(SampleDepth_m %in% c(0, 30, 50, 100, 200, 500)) %>%
+    tidyr::drop_na(Parameters, Values) 
   
 }
 
@@ -362,15 +365,15 @@ PolLTM <- planktonr::pr_get_EOVs(Survey = "LTM") %>%
   planktonr::pr_remove_outliers(2)
 
 var_names <- c("PhytoBiomassCarbon_pgL","ShannonPhytoDiversity",
-               "SST", "Salinity", "ChlF_mgm3",
-               "Nitrate_umolL",  "Silicate_umolL",
+               "SST", "Temperature_degC", "Salinity", "ChlF_mgm3",
+               "Nitrate_umolL",  "Silicate_umolL", "ph",
                "Phosphate_umolL", "DissolvedOxygen_umolL")
 
 PolSOTS <- SOTSp %>% dplyr::filter(Parameters %in% var_names) %>% 
-  dplyr::select(-c(tz, TripCode, Year_Local, Latitude, Longitude)) %>% 
-  dplyr::bind_rows(SOTSwater %>% dplyr::filter(Parameters %in% var_names)) %>% 
-  dplyr::bind_rows(NutsSots %>% dplyr::filter(Parameters %in% var_names)) %>% 
-  dplyr::mutate(Year_Local = lubridate::year(SampleTime_Local))
+  dplyr::select(-c(tz, TripCode, Latitude, Longitude)) %>% 
+  dplyr::mutate(SampleDepth_m = ifelse(SampleDepth_m < 11, 0, 30)) %>% 
+  dplyr::bind_rows(SOTSwater %>% dplyr::filter(Parameters %in% var_names)) %>% # TODO - check for duplicates betweend nuts and water
+  dplyr::bind_rows(NutsSots %>% dplyr::filter(Parameters %in% var_names))
 
 means <- PolSOTS %>% 
   dplyr::summarise(means = mean(.data$Values, na.rm = TRUE),
@@ -380,7 +383,7 @@ means <- PolSOTS %>%
 PolSOTS <-  PolSOTS %>%
   dplyr::left_join(means, by = c("StationName", "SampleDepth_m", "Parameters")) %>%
   dplyr::mutate(anomaly = (.data$Values - means)/sd,
-                Survey = "NRS")
+                Survey = "SOTS")
 
 rm(var_names, means)
 
