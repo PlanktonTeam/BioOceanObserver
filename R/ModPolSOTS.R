@@ -186,7 +186,7 @@ mod_PolSOTS_server <- function(id){
           p_list[[idx]] <- p
         }
         
-        patchwork::wrap_plots(patchwork::wrap_elements(grid::textGrob(lab)) / p_list, ncol = 1, byrow = TRUE)  &
+        patchwork::wrap_plots(patchwork::wrap_elements(grid::textGrob(lab, gp = grid::gpar(fontsize = 20))) / p_list, ncol = 1, byrow = TRUE)  &
           ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
                          axis.title = ggplot2::element_text(size = 12, face = "plain"),
                          axis.text =  ggplot2::element_text(size = 10, face = "plain"),
@@ -245,8 +245,8 @@ mod_PolSOTS_server <- function(id){
         p40 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = FALSE)
         p430 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = FALSE)
 
-        patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m')) / p20 / p30/ p40 /
-                                   patchwork::wrap_elements(grid::textGrob('At 30 m')) /p230 / p330/ p430 ) & #/ p5) &
+        patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m', gp = grid::gpar(fontsize = 20))) / p20 / p30/ p40 /
+                                   patchwork::wrap_elements(grid::textGrob('At 30 m', gp = grid::gpar(fontsize = 20))) /p230 / p330/ p430 ) & #/ p5) &
           ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
                          axis.title = ggplot2::element_text(size = 12, face = "plain"),
                          axis.text =  ggplot2::element_text(size = 10, face = "plain"),
@@ -273,9 +273,9 @@ mod_PolSOTS_server <- function(id){
         p20 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Salinity", trans = "identity", col = col1["Salinity"])
         p2200 <- planktonr::pr_plot_EOVs(selectedData200(), EOV = "Salinity", trans = "identity", col = col1["Salinity"])
         
-        patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m')) / p10 / p20 /
-                                   patchwork::wrap_elements(grid::textGrob('At 200 m')) /p1200 / p2200 / 
-                                   patchwork::wrap_elements(grid::textGrob('At 500 m')) / p1500) &
+        patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m', gp = grid::gpar(fontsize = 20))) / p10 / p20 /
+                                   patchwork::wrap_elements(grid::textGrob('At 200 m', gp = grid::gpar(fontsize = 20))) /p1200 / p2200 / 
+                                   patchwork::wrap_elements(grid::textGrob('At 500 m', gp = grid::gpar(fontsize = 20))) / p1500) &
           ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
                          axis.title = ggplot2::element_text(size = 12, face = "plain"),
                          axis.text =  ggplot2::element_text(size = 10, face = "plain"),

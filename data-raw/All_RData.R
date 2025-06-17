@@ -18,11 +18,13 @@ datNRSTrip <- planktonr::pr_get_NRSTrips(Type = c("P", "Z")) %>%
 datCPRTrip <- planktonr::pr_get_CPRTrips() %>% 
   dplyr::select(c("Latitude", "Year_Local", "Month_Local", "Region", "TripCode"))
 
-NRSStation <- planktonr::pr_get_NRSStation() %>% 
-  dplyr::filter(ProjectName == "NRS") %>% 
+NRSStation <- planktonr::pr_get_Stations(Survey = 'NRS') %>% 
   dplyr::select(-c("IMCRA", "IMCRA_PB", "ProjectName")) %>% 
   dplyr::arrange(desc(Latitude))
 
+SotsStation <- planktonr::pr_get_Stations(Survey = 'SOTS') %>% 
+  dplyr::select(-c("IMCRA", "IMCRA_PB", "ProjectName")) %>% 
+  dplyr::arrange(desc(Latitude))
 
 # NRS indices data --------------------------------------------------------
 
@@ -300,10 +302,14 @@ SOTSdata <- function(file_list){
 
 SOTSwater <- purrr::map(file_list, SOTSdata) %>% 
   purrr::list_rbind() %>% 
-  planktonr::planktonr_dat("Water", "SOTS")
+  dplyr::filter(Parameters %in% c('MLD_m', 'PAR', 'Salinity', 'Temperature_degC', 'ChlF_mgm3', 'DissolvedOxygen_umolkg', 'pH')) %>% # remove duplicate data from below
+  planktonr::planktonr_dat("Water", "SOTS") %>% 
+  planktonr::pr_remove_outliers(2) 
 NutsSots <- purrr::map(file_list_nuts, SOTSdata) %>% 
   purrr::list_rbind() %>% 
-  planktonr::planktonr_dat("Water", "SOTS")
+  dplyr::filter(!Parameters %in% c('Salinity', 'Temperature_degC')) %>% # duplicate data from above
+  planktonr::planktonr_dat("Water", "SOTS") %>% 
+  planktonr::pr_remove_outliers(2) 
 
 # STI data ----------------------------------------------------------------
 
@@ -376,6 +382,7 @@ PolSOTS <- SOTSp %>% dplyr::filter(Parameters %in% var_names) %>%
   dplyr::bind_rows(NutsSots %>% dplyr::filter(Parameters %in% var_names))
 
 means <- PolSOTS %>% 
+  planktonr::pr_remove_outliers(2) %>% 
   dplyr::summarise(means = mean(.data$Values, na.rm = TRUE),
                    sd = stats::sd(.data$Values, na.rm = TRUE),
                    .by = tidyselect::all_of(c("StationName", "SampleDepth_m", "Parameters")))
@@ -522,7 +529,7 @@ usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   fMapDataz, fMapDatap, 
                   MooringTS, MooringClim,
                   PolNRS, PolCPR, PolLTM, PolSOTS,
-                  NRSinfo, CPRinfo, SOTSinfo, NRSStation,
+                  NRSinfo, CPRinfo, SOTSinfo, NRSStation, SotsStation,
                   datCPRz, datCPRp, PCI,
                   datNRSz, datNRSp, datNRSw, 
                   datNRSm, datCSm, datGSm,

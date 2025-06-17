@@ -36,10 +36,11 @@ mod_NutrientsBGC_server <- function(id){
       shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       
       pkg.env$Nuts %>%
+        dplyr::select(-c(TripCode, Project)) %>% 
+        dplyr::bind_rows(pkg.env$NutsSots %>% dplyr::select(-Year_Local)) %>% 
         dplyr::filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
-               .data$Parameters %in% input$parameter) %>%
-        dplyr::mutate(name = as.factor(.data$Parameters)) %>%
+               .data$Parameters %in% input$parameter) %>% 
         tidyr::drop_na() 
     }) %>% bindCache(input$station, input$parameter, input$date)
     
@@ -86,7 +87,7 @@ mod_NutrientsBGC_server <- function(id){
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
+      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Type = 'Phytoplankton')
     }, bg = "transparent") %>% bindCache(input$station)
     
     # add text information 
