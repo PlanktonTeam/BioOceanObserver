@@ -13,7 +13,7 @@ col12 <- RColorBrewer::brewer.pal(12, "Paired") %>%
 
 # Trip Data Information ---------------------------------------------------
 
-datNRSTrip <- planktonr::pr_get_NRSTrips(Type = c("P", "Z")) %>% 
+datNRSTrip <- planktonr::pr_get_NRSTrips() %>% 
   dplyr::select(c("Year_Local", "Month_Local", "StationName"))
 
 datCPRTrip <- planktonr::pr_get_CPRTrips() %>% 
