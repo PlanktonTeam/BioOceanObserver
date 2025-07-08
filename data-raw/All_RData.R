@@ -139,22 +139,22 @@ CSChem <- planktonr::pr_get_CSChem() %>%
 
 # STI data ----------------------------------------------------------------
 
-stizAll <- planktonr::pr_get_STIdata("Z") %>% 
+stizAll <- planktonr::pr_get_STIdata(Type = "Zooplankton") %>% 
   dplyr::group_by(Species) %>% 
   dplyr::summarise(totals = dplyr::n(),
                    .groups = 'drop') %>% 
   dplyr::filter(totals > 19)
 
-stiz <- planktonr::pr_get_STIdata("Z") %>% 
+stiz <- planktonr::pr_get_STIdata(Type = "Zooplankton") %>% 
   dplyr::filter(Species %in% stizAll$Species)
 
-stipAll <- planktonr::pr_get_STIdata("P") %>% 
+stipAll <- planktonr::pr_get_STIdata(Type = "Phytoplankton") %>% 
   dplyr::group_by(Species) %>% 
   dplyr::summarise(totals = dplyr::n(),
                    .groups = 'drop') %>% 
   dplyr::filter(totals > 19)
 
-stip <- planktonr::pr_get_STIdata("P") %>% 
+stip <- planktonr::pr_get_STIdata(Type = "Phytoplankton") %>% 
   dplyr::filter(Species %in% stipAll$Species)
 
 rm(stizAll, stipAll)
@@ -322,10 +322,10 @@ rm(temp)
 
 # Get Taxa Accumulation Info ----------------------------------------------
 
-PSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "P")
-PSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "P")
-ZSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "Z")
-ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Z")
+PSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "Phytoplankton")
+PSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Phytoplankton")
+ZSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "Zooplankton")
+ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Zooplankton")
 
 # Parameter Definitions
 ParamDef <- readr::read_csv(file.path("data-raw", "ParameterDefn.csv"), na = character())
