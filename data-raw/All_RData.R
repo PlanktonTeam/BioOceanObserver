@@ -274,6 +274,7 @@ Names <- c(rep("Surface", 7),
 
 MooringTS <- purrr::pmap_dfr(list(Stations, Depths, Names), pr_get_mooringTS) %>%
   planktonr::pr_add_StationName() %>%
+  planktonr::planktonr_dat(Survey = 'NRS') %>% 
   planktonr::pr_reorder()
 
 pr_get_mooringClim <- function(Stations){
@@ -292,6 +293,7 @@ pr_get_mooringClim <- function(Stations){
 
 MooringClim <- purrr::map_dfr(Stations, pr_get_mooringClim) %>%
   planktonr::pr_add_StationName() %>%
+  planktonr::planktonr_dat(Survey = 'NRS') %>% 
   planktonr::pr_reorder()
 
 
