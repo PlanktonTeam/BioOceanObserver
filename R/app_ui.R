@@ -107,11 +107,11 @@ golem_add_external_resources <- function(){
     # Script for CSIRO branding tab ----
     tags$script(type="text/javascript", src="csirotab.min.js"),
     # Custom CSIRO styling CSS for modal ----
-    tags$link(rel = "stylesheet", type = "text/css", href = "css/csiromodal.css"),
-    # Google fonts ----
-    tags$link(href="https://fonts.googleapis.com/css?family=Open+Sans",
-              rel="stylesheet"),
-    tags$link(href="https://fonts.googleapis.com/css?family=Montserrat",
+    tags$link(rel = "stylesheet", type = "text/css", href = "csiromodal.css"),
+    # IMOS Custom CSS with typography and colors ----
+    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
+    # Google fonts - Poppins and Open Sans ----
+    tags$link(href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap",
               rel="stylesheet")
   )
 }

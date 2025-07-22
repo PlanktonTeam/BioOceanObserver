@@ -7,7 +7,7 @@ Authors@R: c(
     person("Jason D.", "Everett", role = "aut",
            comment = c(ORCID = "0000-0002-6681-8054"))
   )
-Description: A visualisation tool for biologial and oceanographic data.
+Description: A visualisation tool for biological and oceanographic data.
 License: MIT + file LICENSE
 Imports: 
     bslib,
