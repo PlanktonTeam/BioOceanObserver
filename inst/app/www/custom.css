@@ -45,16 +45,28 @@
   --neutral-4: #BCB98A;
   
   /* Typography Scale */
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-size-4xl: 2.25rem;   /* 36px */
-  --font-size-5xl: 3rem;      /* 48px */
+  /* --font-size-xs: 0.75rem;    /* 12px */
+  /* --font-size-sm: 0.875rem;   /* 14px */
+  /* --font-size-base: 1rem;     /* 16px */
+  /* --font-size-lg: 1.125rem;   /* 18px */
+  /* --font-size-xl: 1.25rem;    /* 20px */
+  /* --font-size-2xl: 1.5rem;    /* 24px */
+  /* --font-size-3xl: 1.875rem;  /* 30px */
+  /* --font-size-4xl: 2.25rem;   /* 36px */
+  /* --font-size-5xl: 3rem;      /* 48px */
   
+  /* Typography Scale - Shrunk 1 size from IMOS guidelines*/
+  --font-size-xs: 0.625rem;   /* 10px */
+  --font-size-sm: 0.75rem;    /* 12px */
+  --font-size-base: 0.875rem; /* 14px */
+  --font-size-lg: 1rem;       /* 16px */
+  --font-size-xl: 1.125rem;   /* 18px */
+  --font-size-2xl: 1.25rem;   /* 20px */
+  --font-size-3xl: 1.5rem;    /* 24px */
+  --font-size-4xl: 1.875rem;  /* 30px */
+  --font-size-5xl: 2.5rem;    /* 40px */
+  
+
   /* Line Heights */
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;
@@ -84,7 +96,7 @@ body {
   font-weight: var(--font-weight-normal);
   line-height: var(--line-height-normal) !important;
   color: var(--text-2) !important;
-  background-color: var(--background) !important;
+  background-color: var(--neutral-2) !important;
 }
 
 /* Headings - Poppins */
@@ -115,7 +127,7 @@ h2, .h2 {
 h3, .h3 {
   font-size: var(--font-size-2xl) !important;
   font-weight: var(--font-weight-semibold) !important;
-  color: var(--primary-2) !important;
+  color: var(--primary-1) !important;
 }
 
 h4, .h4 {
@@ -134,7 +146,6 @@ h6, .h6 {
   font-size: var(--font-size-base) !important;
   font-weight: var(--font-weight-semibold) !important;
   color: var(--text-1) !important;
-  text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
@@ -145,16 +156,40 @@ h6, .h6 {
 /* Main Navigation Bar */
 .navbar {
   background-color: var(--primary-5) !important;
-  border-bottom: 3px solid var(--secondary-1) !important;
-  padding: 0.75rem 1rem !important;
+  border-bottom: 0px solid var(--secondary-1) !important;
+  /*padding: 0.75rem 1rem !important; */
   box-shadow: 0 2px 4px rgba(226, 236, 243, 0.3) !important;
 }
 
 .navbar-brand {
   font-family: "Poppins", sans-serif !important;
-  font-size: var(--font-size-xl) !important;
-  font-weight: var(--font-weight-bold) !important;
-  color: var(--primary-2) !important;
+  font-size: var(--font-size-2xl) !important;
+  font-weight: var(--font-weight-semibold) !important;
+  color: var(--primary-1) !important;
+  text-align: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Navbar brand logo styling */
+.navbar-brand img {
+  display: block !important;
+  margin: 0 auto 5px auto !important;
+  height: 30px !important;
+}
+
+/* Navbar brand text styling */
+.navbar-brand .brand-text {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.2 !important;
+}
+
+/* Fix navbar-header height issue */
+.navbar-header {
+  min-height: auto !important;
+  height: auto !important;
+  padding: 8px 0 !important;
 }
 
 .navbar-nav .nav-link {
@@ -162,20 +197,29 @@ h6, .h6 {
   font-size: var(--font-size-base) !important;
   font-weight: var(--font-weight-medium) !important;
   color: var(--primary-2) !important;
-  padding: 0.75rem 1rem !important;
+  padding: 0.375rem 0.5rem !important;
   transition: all 0.3s ease !important;
+}
+
+.navbar-nav .nav-item {
+  margin-left: 0.0125rem !important;
+  margin-right: 0.0125rem !important;
 }
 
 .navbar-nav .nav-link:hover,
 .navbar-nav .nav-link:focus {
   color: var(--primary-1) !important;
   background-color: rgba(59, 110, 143, 0.1) !important;
+  border-radius: 4px !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
 }
 
 .navbar-nav .nav-link.active {
   color: var(--text-3) !important;
-  background-color: var(--secondary-1) !important;
+  background-color: var(--primary-1) !important;
   border-radius: 4px !important;
+  border-bottom: none !important;
 }
 
 /* ========================================
@@ -185,7 +229,7 @@ h6, .h6 {
 /* Tab Navigation */
 .nav-pills .nav-link {
   font-family: "Open Sans", sans-serif !important;
-  font-size: var(--font-size-sm) !important;
+  font-size: var(--font-size-base) !important;
   font-weight: var(--font-weight-medium) !important;
   color: var(--primary-1) !important;
   background-color: var(--neutral-2) !important;
@@ -201,12 +245,15 @@ h6, .h6 {
   color: var(--text-3) !important;
   background-color: var(--primary-1) !important;
   border-color: var(--primary-1) !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
 }
 
 .nav-pills .nav-link.active {
   color: var(--text-3) !important;
   background-color: var(--primary-2) !important;
   border-color: var(--primary-2) !important;
+  text-decoration: none !important;
 }
 
 /* ========================================
@@ -524,6 +571,7 @@ a:focus {
   font-family: "Open Sans", sans-serif !important;
   font-weight: var(--font-weight-semibold) !important;
   color: var(--text-1) !important;
+  font-size: var(--font-size-base) !important;
 }
 
 /* Shiny Output Styling */
@@ -562,9 +610,60 @@ a:focus {
    ACCESSIBILITY IMPROVEMENTS
    ======================================== */
 
-/* Focus States */
+/* Focus States - Context-Specific Colors */
+
+/* Default focus state */
 *:focus {
   outline: 2px solid var(--secondary-1) !important;
+  outline-offset: 2px !important;
+}
+
+/* Navbar link focus - matches active navbar background */
+.navbar-nav .nav-link:focus {
+  outline: 2px solid var(--primary-1) !important;
+  outline-offset: 2px !important;
+}
+
+/* Nav-pills focus - matches active nav-pills background */
+.nav-pills .nav-link:focus {
+  outline: 2px solid var(--primary-2) !important;
+  outline-offset: 2px !important;
+}
+
+/* Nav-pills hover focus - matches hover state */
+.nav-pills .nav-link:hover:focus {
+  outline: 2px solid var(--primary-1) !important;
+  outline-offset: 2px !important;
+}
+
+/* Button focus states - match button backgrounds */
+.btn-primary:focus {
+  outline: 2px solid var(--primary-1) !important;
+  outline-offset: 2px !important;
+}
+
+.btn-secondary:focus {
+  outline: 2px solid var(--secondary-1) !important;
+  outline-offset: 2px !important;
+}
+
+.btn-info:focus {
+  outline: 2px solid var(--state-info) !important;
+  outline-offset: 2px !important;
+}
+
+.btn-success:focus {
+  outline: 2px solid var(--state-complete) !important;
+  outline-offset: 2px !important;
+}
+
+.btn-warning:focus {
+  outline: 2px solid var(--state-warning) !important;
+  outline-offset: 2px !important;
+}
+
+.btn-danger:focus {
+  outline: 2px solid var(--state-error) !important;
   outline-offset: 2px !important;
 }
 
@@ -585,4 +684,292 @@ a:focus {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ========================================
+   HOME PAGE SPECIFIC STYLING
+   ======================================== */
+
+/* BOO Hex logo with text wrap */
+.boo-hex-logo {
+  float: left !important;
+  margin: 0 20px 20px 0 !important;
+  width: 300px !important;
+}
+
+/* Home page footer section */
+.home-footer {
+  background-color: var(--primary-5) !important;
+  padding: 20px !important;
+  margin-top: 30px !important;
+  margin-left: calc(-50vw + 50%) !important;
+  margin-right: calc(-50vw + 50%) !important;
+  width: 100vw !important;
+  position: relative !important;
+}
+
+/* Footer content layout */
+.footer-content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 15px !important;
+}
+
+/* Funding section layout */
+.funding-section {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-bottom: 10px !important;
+  width: 100% !important;
+}
+
+.funding-title {
+  margin-right: 20px !important;
+  margin-bottom: 0 !important;
+}
+
+.funding-logos {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 60px !important;
+  flex-wrap: wrap !important;
+}
+
+.funding-logos img {
+  height: 60px !important;
+}
+
+
+/* Clear float utility */
+.clear-float {
+  clear: both !important;
+}
+
+/* ========================================
+   SHINY APP BACKGROUND AND SIDEBAR STYLING
+   ======================================== */
+
+/* Main content area background - exclude navbar and footer */
+.tab-content,
+.tab-pane {
+  background-color: var(--neutral-2) !important;
+}
+
+/* Target main container but exclude navbar and footer areas */
+.container-fluid:not(.home-footer) {
+  background-color: var(--neutral-2) !important;
+}
+
+/* Ensure navbar maintains its original styling */
+.navbar .container-fluid {
+  background-color: var(--primary-5) !important;
+}
+
+/* Sidebar styling - .well is the core Shiny sidebar panel */
+.well {
+  background-color: var(--primary-5) !important;
+  border: 1px solid var(--primary-4) !important;
+  border-radius: 8px !important;
+}
+
+/* Specific targeting for Shiny sidebar panels */
+.shiny-input-panel,
+.form-group {
+  background-color: transparent !important;
+}
+
+/* Ensure tabset panel containers have correct background */
+.tabbable .tab-content {
+  background-color: var(--neutral-2) !important;
+  border: none !important;
+}
+
+/* Target specific content rows but preserve navbar/footer styling */
+.row:not(.navbar-header):not(.home-footer .row) {
+  background-color: var(--neutral-2) !important;
+}
+
+/* ========================================
+   SHINY UI ELEMENTS ON SIDEBAR STYLING
+   ======================================== */
+
+/* Make Shiny UI elements transparent on sidebar to inherit background color */
+.well .form-control,
+.well .form-select,
+.well select,
+.well input[type="text"],
+.well input[type="number"],
+.well input[type="email"],
+.well input[type="password"],
+.well textarea {
+  background-color: transparent !important;
+  border: 1px solid var(--primary-1) !important;
+  color: var(--text-1) !important;
+}
+
+/* Dropdown/Select elements in sidebar */
+.well select,
+.well .selectize-input,
+.well .selectize-dropdown {
+  background-color: transparent !important;
+  border: 1px solid var(--primary-1) !important;
+  color: var(--text-1) !important;
+}
+
+/* Radio buttons and checkboxes in sidebar */
+.well input[type="radio"],
+.well input[type="checkbox"] {
+  background-color: var(--neutral-2) !important;
+  border: 2px solid var(--primary-1) !important;
+}
+
+/* Selected state for radio buttons and checkboxes in sidebar */
+.well input[type="radio"]:checked,
+.well input[type="checkbox"]:checked {
+  background-color: var(--primary-1) !important;
+  border-color: var(--primary-1) !important;
+}
+
+/* Radio button and checkbox labels in sidebar */
+.well .radio label,
+.well .checkbox label,
+.well .radio-inline,
+.well .checkbox-inline {
+  color: var(--text-1) !important;
+  font-weight: var(--font-weight-medium) !important;
+}
+
+
+/* Shiny input containers in sidebar */
+.well .shiny-input-container {
+  background-color: transparent !important;
+}
+
+
+
+
+/* Date inputs in sidebar */
+.well input[type="date"],
+.well .form-control[type="date"] {
+  background-color: transparent !important;
+  border: 1px solid var(--primary-1) !important;
+  color: var(--text-1) !important;
+}
+
+/* Numeric inputs in sidebar */
+.well .form-control[type="number"] {
+  background-color: transparent !important;
+  border: 1px solid var(--primary-1) !important;
+  color: var(--text-1) !important;
+}
+
+/* Slider inputs in sidebar */
+.well .irs-bar,
+.well .irs-bar-edge {
+  background-color: var(--primary-1) !important;
+}
+
+.well .irs-single,
+.well .irs-from,
+.well .irs-to {
+  background-color: var(--primary-1) !important;
+  color: var(--text-3) !important;
+  font-size: var(--font-size-base) !important;
+  font-weight: var(--font-weight-medium) !important;
+}
+
+/* Date slider specific styling - increase font size for all slider text */
+.irs-single,
+.irs-from,
+.irs-to {
+  font-size: var(--font-size-base) !important;
+  font-weight: var(--font-weight-medium) !important;
+}
+
+/* Orient slider labels inward to prevent overlap outside sidebar */
+.irs-from {
+  transform: translateX(25%) translateY(-40%) !important;
+}
+
+.irs-to {
+  transform: translateX(-25%) translateY(-40%) !important;
+}
+
+/* Slider grid text (min/max labels) */
+.irs-grid-text {
+  font-size: var(--font-size-sm) !important;
+  font-weight: var(--font-weight-normal) !important;
+}
+
+/* Slider handle styling */
+.irs-handle {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Focus states for sidebar elements */
+.well .form-control:focus,
+.well select:focus,
+.well input[type="radio"]:focus,
+.well input[type="checkbox"]:focus {
+  border-color: var(--primary-2) !important;
+  box-shadow: 0 0 0 0.2rem rgba(59, 110, 143, 0.25) !important;
+  outline: none !important;
+}
+
+/* Placeholder text in sidebar inputs */
+.well .form-control::placeholder,
+.well input::placeholder,
+.well textarea::placeholder {
+  color: var(--text-2) !important;
+  opacity: 0.7 !important;
+}
+
+/* Selectize (advanced select) styling for sidebar */
+.well .selectize-control .selectize-input {
+  background-color: transparent !important;
+  border: 1px solid var(--primary-1) !important;
+  color: var(--text-1) !important;
+}
+
+.well .selectize-control .selectize-input input {
+  color: var(--text-1) !important;
+}
+
+.well .selectize-dropdown {
+  background-color: var(--primary-5) !important;
+  border: 1px solid var(--primary-1) !important;
+}
+
+.well .selectize-dropdown .option {
+  background-color: transparent !important;
+  color: var(--text-1) !important;
+}
+
+.well .selectize-dropdown .option:hover,
+.well .selectize-dropdown .option.active {
+  background-color: var(--primary-1) !important;
+  color: var(--text-3) !important;
+}
+
+/* ========================================
+   GITHUB DROPDOWN MENU POSITIONING
+   ======================================== */
+
+/* Right-align the GitHub dropdown menu to prevent cutoff */
+.navbar-nav .dropdown-menu {
+  right: 0 !important;
+  left: auto !important;
+}
+
+/* Specifically target the last navbar menu (GitHub menu) */
+.navbar-nav > li:last-child .dropdown-menu {
+  right: 0 !important;
+  left: auto !important;
 }

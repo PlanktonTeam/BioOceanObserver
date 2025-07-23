@@ -43,7 +43,7 @@ mod_MicroLatGS_ui <- function(id){
                              selected = 'Bacterial_Temperature_Index_KD'),
           shiny::htmlOutput(nsMicroLatGS("ParamDefm")),
           shiny::checkboxInput(inputId = nsMicroLatGS("all"), 
-                               label = strong("Tick for more microbial parameters"), 
+                               label = "Tick for more microbial parameters", 
                                value = FALSE),
           shiny::br()
       ),
@@ -122,7 +122,7 @@ mod_MicroLatGS_server <- function(id){
       gg_out1 <- reactive({
 
         if(length(selectedData()$Parameters)>50){
-          planktonr::pr_plot_latitude(selectedData(), Fill_NA = TRUE, maxGap = 3)
+          planktonr::pr_plot_latitude(selectedData(), na.fill = TRUE)
         } else {
           ggplot2::ggplot + ggplot2::geom_blank()
         }

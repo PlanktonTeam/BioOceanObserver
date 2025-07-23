@@ -107,10 +107,10 @@ mod_NutrientsBGC_server <- function(id){
     
     output$ParamDefb <- if(input$parameter == 'Oxygen_umolL'){
             shiny::renderText({
-              paste("<h6><strong>", planktonr::pr_relabel('Oxygen_umolL', style = "plotly"), ":</strong> ",
+              paste("<p><strong>", planktonr::pr_relabel('Oxygen_umolL', style = "plotly"), ":</strong> ",
               pkg.env$ParamDef %>% 
                 dplyr::filter(.data$Parameter == 'Oxygen_umolL') %>% 
-                dplyr::pull("Definition"), ".</h6>", sep = "")
+                dplyr::pull("Definition"), ".</p>", sep = "")
               })
     } else {
       fParamDefServer(selectedData) # Download csv of data
