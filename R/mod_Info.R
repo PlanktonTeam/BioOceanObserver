@@ -155,34 +155,34 @@ mod_info_ui <- function(id){
                          shiny::fluidPage(
                            shiny::br(),
                            shiny::h2("NRS"),
-                           shiny::h6("Note: Ningaloo and Esperance only operated for 3 years and were only sampled seasonally. The data is sparse for these stations and has often been removed for some analysis."),
-                           shiny::h6("Note: The NRS sampling period goes from mid 2009 until present. Prior to this some environmental parameters were also collected at the 
+                           shiny::p("Note: Ningaloo and Esperance only operated for 3 years and were only sampled seasonally. The data is sparse for these stations and has often been removed for some analysis."),
+                           shiny::p("Note: The NRS sampling period goes from mid 2009 until present. Prior to this some environmental parameters were also collected at the 
                                      Long Term Monitoring Stations - ROT, MAI, PH4. These are shown on the Long Term Monitoring tab under EOVs. Generally though in this 
                                      APP we concentrate on the visualisation of the NRS period where more parameters have been collected in a consistent manner across stations"),
                            DT::DTOutput(nsInfo("NRSDataTable")),
                            shiny::h4("Zooplankton"),
-                           shiny::h5("Zooplankton is collected with a Heron drop net sampling only on the descent, 60cm diameter, 100 micron mesh net. This is a depth integrated sample analysed by light microscopy"),
+                           shiny::p("Zooplankton is collected with a Heron drop net sampling only on the descent, 60cm diameter, 100 micron mesh net. This is a depth integrated sample analysed by light microscopy"),
                            shiny::h4("Phytoplankton"),
-                           shiny::h5("Equal volumes of water are collected from all niskin bottles (0-50m) to make up a 1L composite sample for phytoplankton analysis using light microscopy."),
+                           shiny::p("Equal volumes of water are collected from all niskin bottles (0-50m) to make up a 1L composite sample for phytoplankton analysis using light microscopy."),
                            shiny::h4("Nutrients & Salinity"),
-                           shiny::h5("Duplicate samples are taken from each niskin bottle (0-50m), DAR and YON samples are only 0 - 20m. 
+                           shiny::p("Duplicate samples are taken from each niskin bottle (0-50m), DAR and YON samples are only 0 - 20m. 
                                      PHB also collects at 75 and 100m. MAI at 60, 70 & 80m"),
                            shiny::h4("Carbon"),
-                           shiny::h5("DIC & alkalinity samples are taken from each niskin bottle (0-50m), DAR and YON samples are only 0 - 20m. 
+                           shiny::p("DIC & alkalinity samples are taken from each niskin bottle (0-50m), DAR and YON samples are only 0 - 20m. 
                                      PHB also collects at 60, 75 & 100m. MAI at 70 & 80m"),                         
                            shiny::h4("TSS"),
-                           shiny::h5("Triplicate samples (~4L) and a blank of surface water"),                         
+                           shiny::p("Triplicate samples (~4L) and a blank of surface water"),                         
                            shiny::h4("Pigments"),
-                           shiny::h5("Duplicate samples (~4L) from surface water and the lower WQM (~20m). Prior to July 2017 water column samples were taken, these have been excluded here."),                         
+                           shiny::p("Duplicate samples (~4L) from surface water and the lower WQM (~20m). Prior to July 2017 water column samples were taken, these have been excluded here."),                         
                            shiny::h4("Microbial & Picoplankton"),
-                           shiny::h5("Samples (~2L microbes, ~50-100 uL Picoplankton) are taken from each niskin bottle (0-50m), DAR and YON samples are only 0 - 20m. 
+                           shiny::p("Samples (~2L microbes, ~50-100 uL Picoplankton) are taken from each niskin bottle (0-50m), DAR and YON samples are only 0 - 20m. 
                                      PHB also collects at 75 and 100m. MAI at 70 & 80m. Prior to July 2017 water column samples were taken, these have been excluded here."),
                            shiny::HTML('<center><img src = "www/NRSMooringDesign.png"></center>'),
                            shiny::HTML('<center>Schematic of the NRS moorings showing depths and instrumentation</center>'),
                            shiny::br(),
                            shiny::br(),
                            shiny::h2("Coastal Stations"),
-                           shiny::h5("Nutrients, picoplankton and microbial samples are collected at the Coastal Station in Botany Bay, the Derwent, the GBR and Port Phillip Bay. 
+                           shiny::p("Nutrients, picoplankton and microbial samples are collected at the Coastal Station in Botany Bay, the Derwent, the GBR and Port Phillip Bay. 
                                      Details for this sampling can be found in the Australian Microbiome Scientifc Manual."), 
                            shiny::HTML("<a href = https://confluence.csiro.au/display/ASM/Ausmicrobiome+Scientific+Manual target = _blank> Website</a>."),
                            shiny::br(),
@@ -190,13 +190,13 @@ mod_info_ui <- function(id){
                            shiny::h2("CPR"),
                            DT::DTOutput(nsInfo("CPRDataTable")),
                            shiny::h4("PCI"),
-                           shiny::h5("Silks are cut into 5nm segments. Phytoplankton colour index is counted on every segment towed"),
+                           shiny::p("Silks are cut into 5nm segments. Phytoplankton colour index is counted on every segment towed"),
                            shiny::h4("Phytoplankton"),
-                           shiny::h5("Phytoplankton is counted by light microscopy as a field of view count (0-20) on the silk. Every 4th segment is counted."),
+                           shiny::p("Phytoplankton is counted by light microscopy as a field of view count (0-20) on the silk. Every 4th segment is counted."),
                            shiny::h4("Zooplankton"),
-                           shiny::h5("Zooplankton is washed into a Bogorov tray and counted by light microscopy. Every 4th segment is counted"),
+                           shiny::p("Zooplankton is washed into a Bogorov tray and counted by light microscopy. Every 4th segment is counted"),
                            shiny::h4("Biomass Index"),
-                           shiny::h5("After counting the sample is dried at 60 degrees for 24 hours and weighed for biomass. Note that this index of biomass includes phytoplankton")
+                           shiny::p("After counting the sample is dried at 60 degrees for 24 hours and weighed for biomass. Note that this index of biomass includes phytoplankton")
                          )
                 ),
                 tabPanel("Phytoplankton Species Details", value = 6, 

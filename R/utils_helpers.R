@@ -85,15 +85,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
   shiny::sidebarPanel(
     
     shiny::conditionalPanel(
-      tags$head(tags$style(HTML(
-        ".multicol{
-          height:auto;
-          -webkit-column-count: 2;
-          -moz-column-count: 2;
-          column-count: 2;
-          background-color: #e2ecf3 !important;
-        }"))),
-      condition = "input.phyto == 'ptscpr' | input.zoo == 'ztscpr'", 
+      condition = "input.phyto == 'ptscpr' | input.zoo == 'ztscpr'",
       shiny::HTML("<p>Note there is very little data in the North and North-west regions<p>")
     ),
     
@@ -389,14 +381,6 @@ fEnviroSidebar <- function(id, dat = NULL){
   }
   
   shiny::sidebarPanel(
-    tags$head(tags$style(HTML( #TODO move to custom css
-      ".multicol{
-          height:auto;
-          -webkit-column-count: 2;
-          -moz-column-count: 2;
-          column-count: 2;
-          background-color: #e2ecf3 !important;
-        }"))),
     shiny::plotOutput(ns("plotmap"), width = "100%"),
     shiny::HTML("<h3>Select a station:</h3>"),
     shiny::fluidRow(tags$div(align = "left", 

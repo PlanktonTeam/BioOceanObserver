@@ -12,12 +12,6 @@ mod_MicroLatGS_ui <- function(id){
   tagList(
     sidebarLayout(
       shiny::sidebarPanel(
-          tags$head(tags$style(HTML(
-            ".multicol{
-          height:auto;
-          -webkit-column-count: 2;
-          -moz-column-count: 2;
-          column-count: 2;}"))),
           shiny::plotOutput(nsMicroLatGS("plotmap"),
                             height = "300px", 
                             width = "100%"),

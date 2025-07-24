@@ -1038,3 +1038,16 @@ a:focus {
   right: 0 !important;
   left: auto !important;
 }
+
+/* ========================================
+   MULTICOLUMN LAYOUT STYLING
+   ======================================== */
+
+/* Multi-column layout for checkbox groups and similar elements */
+.multicol {
+  height: auto;
+  -webkit-column-count: 2;
+  -moz-column-count: 2;
+  column-count: 2;
+  background-color: var(--primary-5) !important;
+}
