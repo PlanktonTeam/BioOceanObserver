@@ -157,8 +157,14 @@ h6, .h6 {
 .navbar {
   background-color: var(--primary-5) !important;
   border-bottom: 0px solid var(--secondary-1) !important;
-  /*padding: 0.75rem 1rem !important; */
+  padding: 0.25rem 1rem !important;
   box-shadow: 0 2px 4px rgba(226, 236, 243, 0.3) !important;
+}
+
+/* Align navbar content to bottom */
+.navbar .container-fluid {
+  display: flex !important;
+  align-items: flex-end !important;
 }
 
 .navbar-brand {
@@ -189,7 +195,6 @@ h6, .h6 {
 .navbar-header {
   min-height: auto !important;
   height: auto !important;
-  padding: 8px 0 !important;
 }
 
 .navbar-nav .nav-link {
@@ -202,8 +207,13 @@ h6, .h6 {
 }
 
 .navbar-nav .nav-item {
-  margin-left: 0.0125rem !important;
-  margin-right: 0.0125rem !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Main fix: Remove Bootstrap's flexbox gap between nav items */
+.navbar-nav {
+  gap: 0.25rem !important;
 }
 
 .navbar-nav .nav-link:hover,
@@ -233,7 +243,7 @@ h6, .h6 {
   font-weight: var(--font-weight-medium) !important;
   color: var(--primary-1) !important;
   background-color: var(--neutral-2) !important;
-  border: 1px solid var(--grey-300) !important;
+  border: 1px solid var(--primary-1) !important;
   border-radius: 6px !important;
   margin-right: 0.5rem !important;
   margin-bottom: 0.5rem !important;
@@ -261,22 +271,26 @@ h6, .h6 {
    ======================================== */
 
 /* Primary Buttons */
-.btn-primary {
+.btn-primary, .btn-default {
   background-color: var(--primary-1) !important;
   border-color: var(--primary-1) !important;
   color: var(--text-3) !important;
   font-family: "Open Sans", sans-serif !important;
   font-weight: var(--font-weight-medium) !important;
+  text-decoration: none !important;
   padding: 0.75rem 1.5rem !important;
   border-radius: 6px !important;
   transition: all 0.3s ease !important;
 }
 
 .btn-primary:hover,
-.btn-primary:focus {
+.btn-primary:focus,
+.btn-default:hover,
+.btn-default:focus {
   background-color: var(--primary-2) !important;
   border-color: var(--primary-2) !important;
   color: var(--text-3) !important;
+  text-decoration: none !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 4px 8px rgba(59, 110, 143, 0.3) !important;
 }
@@ -330,29 +344,12 @@ h6, .h6 {
    FORM ELEMENTS
    ======================================== */
 
-/* Input Fields */
-.form-control {
-  font-family: "Open Sans", sans-serif !important;
-  font-size: var(--font-size-base) !important;
-  border: 1px solid var(--grey-300) !important;
-  border-radius: 6px !important;
-  padding: 0.75rem !important;
-  background-color: var(--neutral-2) !important;
-  color: var(--text-2) !important;
-  transition: all 0.3s ease !important;
-}
-
-.form-control:focus {
-  border-color: var(--primary-1) !important;
-  box-shadow: 0 0 0 0.2rem rgba(59, 110, 143, 0.25) !important;
-  background-color: var(--neutral-2) !important;
-}
 
 /* Labels */
 .form-label,
 label {
   font-family: "Open Sans", sans-serif !important;
-  font-size: var(--font-size-sm) !important;
+  font-size: var(--font-size-base) !important;
   font-weight: var(--font-weight-semibold) !important;
   color: var(--text-1) !important;
   margin-bottom: 0.5rem !important;
@@ -606,6 +603,17 @@ a:focus {
   border-bottom-color: var(--primary-1) !important;
 }
 
+.shiny-html-output {
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: var(--font-size-base) !important;
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal) !important;
+  color: var(--text-2) !important;
+  /* background-color: var(--neutral-2) !important; */
+}
+
+
+
 /* ========================================
    ACCESSIBILITY IMPROVEMENTS
    ======================================== */
@@ -820,6 +828,7 @@ a:focus {
   background-color: transparent !important;
   border: 1px solid var(--primary-1) !important;
   color: var(--text-1) !important;
+  font-size: var(--font-size-base) !important;
 }
 
 /* Radio buttons and checkboxes in sidebar */
@@ -843,6 +852,7 @@ a:focus {
 .well .checkbox-inline {
   color: var(--text-1) !important;
   font-weight: var(--font-weight-medium) !important;
+  font-size: var(--font-size-base) !important;
 }
 
 
@@ -936,26 +946,81 @@ a:focus {
   background-color: transparent !important;
   border: 1px solid var(--primary-1) !important;
   color: var(--text-1) !important;
+  font-size: var(--font-size-base) !important;
 }
 
 .well .selectize-control .selectize-input input {
   color: var(--text-1) !important;
+  font-size: var(--font-size-base) !important;
 }
 
 .well .selectize-dropdown {
   background-color: var(--primary-5) !important;
   border: 1px solid var(--primary-1) !important;
+  font-size: var(--font-size-base) !important;
 }
 
 .well .selectize-dropdown .option {
   background-color: transparent !important;
   color: var(--text-1) !important;
+  font-size: var(--font-size-base) !important;
 }
 
 .well .selectize-dropdown .option:hover,
 .well .selectize-dropdown .option.active {
   background-color: var(--primary-1) !important;
   color: var(--text-3) !important;
+}
+
+/* ========================================
+   SELECTIZE INPUT FORM-CONTROL OVERRIDE
+   ======================================== */
+
+/* Remove Bootstrap form-control styling from selectize container divs to prevent double borders */
+.selectize-control.form-control {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: none !important;
+  padding: 0 !important;
+  height: auto !important;
+  min-height: auto !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+/* Ensure selectize input maintains proper styling without form-control interference */
+.selectize-control .selectize-input {
+  border: 1px solid var(--grey-300) !important;
+  border-radius: 6px !important;
+  background-color: var(--neutral-2) !important;
+  color: var(--text-2) !important;
+  font-size: var(--font-size-base) !important;
+  padding: 8px 12px !important;
+  min-height: 34px !important;
+  box-shadow: none !important;
+}
+
+/* Sidebar-specific selectize styling override */
+.well .selectize-control .selectize-input {
+  background-color: transparent !important;
+  border: 1px solid var(--primary-1) !important;
+  color: var(--text-1) !important;
+}
+
+/* Focus state for selectize inputs */
+.selectize-control .selectize-input:focus,
+.selectize-control.focus .selectize-input {
+  border-color: var(--primary-1) !important;
+  box-shadow: 0 0 0 0.2rem rgba(59, 110, 143, 0.25) !important;
+  outline: none !important;
+}
+
+/* Sidebar focus state */
+.well .selectize-control .selectize-input:focus,
+.well .selectize-control.focus .selectize-input {
+  border-color: var(--primary-2) !important;
+  box-shadow: 0 0 0 0.2rem rgba(59, 110, 143, 0.25) !important;
 }
 
 /* ========================================
