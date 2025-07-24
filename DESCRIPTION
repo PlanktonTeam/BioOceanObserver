@@ -1,13 +1,13 @@
 Package: biooceanobserver
 Title: Visualisation of biological and oceanographic data
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: c(
     person("Claire H.", "Davies", email = "claire.davies@csiro.au", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-0424-1835")),
     person("Jason D.", "Everett", role = "aut",
            comment = c(ORCID = "0000-0002-6681-8054"))
   )
-Description: A visualisation tool for biologial and oceanographic data.
+Description: A visualisation tool for biological and oceanographic data.
 License: MIT + file LICENSE
 Imports: 
     bslib,
