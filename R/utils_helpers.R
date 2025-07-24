@@ -134,8 +134,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       shiny::htmlOutput(ns("ParamDefm")),
       shiny::checkboxInput(inputId = ns("all"), 
                            label = "Tick for more microbial parameters", 
-                           value = FALSE),
-      shiny::br()
+                           value = FALSE)
     ),
     
     
@@ -149,7 +148,6 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
                          choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
                          selected = selectedVar),
       shiny::htmlOutput(ns("ParamDef")),
-      shiny::br()
     ),
     
     shiny::conditionalPanel(
@@ -157,7 +155,6 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       shiny::checkboxInput(inputId = ns("scaler1"), 
                            label = "Change the plot scale to log10",
                            value = FALSE),
-      shiny::br()
     ),
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 3 && input.navbar != 'Microbes'"), # Plankton
@@ -168,14 +165,15 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 3 && input.mic == 'mts' && input.navbar == 'Microbes'"), # MicroNRS
       shiny::selectizeInput(inputId = ns("interp"),
-                            label = strong("Interpolate data?"),
+                            label = shiny::strong("Interpolate data?"),
                             choices = c("Interpolate", "Raw data"),
                             selected = "Raw data"),
     ),
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 3 && input.mic == 'mtsCS'"), # MicroCoastal
+      shiny::HTML("<h3>Overlay trend line?</h3>"),
       shiny::selectizeInput(inputId = ns("smoother"),
-                            label = strong("Overlay trend line?"),
+                            label = NULL,
                             choices = c("None", "Linear", "Smoother"),
                             selected = "None"),
     )
@@ -429,7 +427,6 @@ fEnviroSidebar <- function(id, dat = NULL){
                            choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
                            selected = selectedVar),
         shiny::htmlOutput(ns("ParamDefb")),
-        shiny::br()
       )
     },
     
@@ -438,9 +435,11 @@ fEnviroSidebar <- function(id, dat = NULL){
     if (id %in% c("PigmentsBGC_ui_1")){
       shiny::conditionalPanel(
         condition = "input.env == 'pigs'",
-        shiny::HTML("<h4>Overlay trend line?</h4>"),
-        selectizeInput(inputId = ns("smoother"), label = NULL, 
-                       choices = c("Smoother", "Linear", "None"), selected = "None"),
+        shiny::HTML("<h3>Overlay trend line?</h3>"),
+        selectizeInput(inputId = ns("smoother"), 
+                       label = NULL, 
+                       choices = c("Smoother", "Linear", "None"), 
+                       selected = "None"),
       )
     },
     
@@ -448,8 +447,9 @@ fEnviroSidebar <- function(id, dat = NULL){
     if (id %in% c("PicoBGC_ui_1", "NutrientsBGC_ui_1")){
       shiny::conditionalPanel(
         condition = "input.env == 'moor' | input.env == 'pico' | input.env == 'bgc'",
-        shiny::HTML("<h4>Interpolate data?</h4>"),
-        selectizeInput(inputId = ns("interp"), label = NULL, 
+        shiny::HTML("<h3>Interpolate data?</h3>"),
+        selectizeInput(inputId = ns("interp"), 
+                       label = NULL, 
                        choices = c("Interpolate", "Raw data"), 
                        selected = "Interpolate")
       )
@@ -527,7 +527,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
         shiny::selectizeInput(inputId = ns('px'), label = NULL, choices = selectedParamx, selected = selectedParamx)
       ),
       shiny::htmlOutput(ns("ParamDefx")),
-      shiny::HTML("<h4>Overlay trend line?</h4>"),
+      shiny::HTML("<h3>Overlay trend line?</h3>"),
       shiny::selectizeInput(inputId = ns("smoother"), label = NULL, 
                             choices = c("Smoother", "Linear", "None"), selected = "None")
     )
@@ -571,7 +571,7 @@ fButtons <- function(id, button_id, label, Type = "Download") {
   
   shiny::tagList(
     if (Type == "Download"){
-      shiny::downloadButton(ns(button_id), label = label,  class = "btn-danger; btn-lg", #style = "width:48%"
+      shiny::downloadButton(ns(button_id), label = label, 
       )
     } else if (Type == "Action"){
       
@@ -591,7 +591,7 @@ fButtons <- function(id, button_id, label, Type = "Download") {
         wsite <- "window.open('https://planktonteam.github.io/planktonr/index.html')"
       }
       
-      shiny::actionButton(ns(button_id), label = label,  class = "btn-danger; btn-lg", 
+      shiny::actionButton(ns(button_id), label = label,
                           icon = shiny::icon("file-code"),
                           onclick = wsite)
     }

@@ -36,7 +36,7 @@ mod_MicroLatGS_ui <- function(id){
                              max = floor(max(pkg.env$datGSm$SampleDepth_m)), 
                              value = c(min(pkg.env$datGSm$SampleDepth_m), 100)
           ),
-          shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
+          shiny::HTML("<h3>Select a parameter:</h3>"),
           shiny::selectInput(inputId = nsMicroLatGS("parameterm"), 
                              label = NULL, 
                              choices = 'Bacterial_Temperature_Index_KD', 
@@ -45,7 +45,6 @@ mod_MicroLatGS_ui <- function(id){
           shiny::checkboxInput(inputId = nsMicroLatGS("all"), 
                                label = "Tick for more microbial parameters", 
                                value = FALSE),
-          shiny::br()
       ),
       shiny::mainPanel(h4(textOutput(nsMicroLatGS("voyageTitle"), container = span)),
                        shiny::htmlOutput(nsMicroLatGS("PlotExp1")),
