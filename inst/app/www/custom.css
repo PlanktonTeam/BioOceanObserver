@@ -156,9 +156,35 @@ h6, .h6 {
 /* Main Navigation Bar */
 .navbar {
   background-color: var(--primary-5) !important;
-  border-bottom: 0px solid var(--secondary-1) !important;
+  background-image: none !important;
+  background-repeat: no-repeat !important;
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-radius: 0 !important;
   padding: 0.25rem 1rem !important;
   box-shadow: 0 2px 4px rgba(226, 236, 243, 0.3) !important;
+  margin-bottom: 0 !important;
+}
+
+/* Override any Bootstrap navbar variants */
+.navbar-default,
+.navbar-inverse,
+.navbar-light,
+.navbar-dark {
+  background-color: var(--primary-5) !important;
+  background-image: none !important;
+  border: none !important;
+  border-color: transparent !important;
+}
+
+/* Ensure navbar wrapper/container has consistent background */
+.navbar-wrapper,
+.navbar-container {
+  background-color: var(--primary-5) !important;
+  border: none !important;
 }
 
 /* Align navbar content to bottom */
