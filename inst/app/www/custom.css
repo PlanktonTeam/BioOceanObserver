@@ -156,15 +156,63 @@ h6, .h6 {
 /* Main Navigation Bar */
 .navbar {
   background-color: var(--primary-5) !important;
-  border-bottom: 0px solid var(--secondary-1) !important;
+  background-image: none !important;
+  background-repeat: no-repeat !important;
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-radius: 0 !important;
   padding: 0.25rem 1rem !important;
   box-shadow: 0 2px 4px rgba(226, 236, 243, 0.3) !important;
+  margin-bottom: 0 !important;
+}
+
+/* Override any Bootstrap navbar variants */
+.navbar-default,
+.navbar-inverse,
+.navbar-light,
+.navbar-dark {
+  background-color: var(--primary-5) !important;
+  background-image: none !important;
+  border: none !important;
+  border-color: transparent !important;
+}
+
+/* Ensure navbar wrapper/container has consistent background */
+.navbar-wrapper,
+.navbar-container {
+  background-color: var(--primary-5) !important;
+  border: none !important;
 }
 
 /* Align navbar content to bottom */
 .navbar .container-fluid {
   display: flex !important;
   align-items: flex-end !important;
+  background-color: var(--primary-5) !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Ensure all navbar child elements inherit correct background */
+.navbar > *,
+.navbar .container,
+.navbar .container-fluid,
+.navbar-header,
+.navbar-collapse,
+.navbar-nav {
+  background-color: var(--primary-5) !important;
+  border: none !important;
+}
+
+/* Override any potential body or html background bleeding through */
+body .navbar,
+html .navbar {
+  background-color: var(--primary-5) !important;
+  background-image: none !important;
 }
 
 .navbar-brand {
@@ -1050,4 +1098,77 @@ a:focus {
   -moz-column-count: 2;
   column-count: 2;
   background-color: var(--primary-5) !important;
+}
+
+/* ========================================
+   ADDITIONAL NAVBAR FIXES FOR SERVER CONSISTENCY
+   ======================================== */
+
+/* Additional navbar fixes for server environment consistency */
+.navbar-fixed-top,
+.navbar-fixed-bottom,
+.navbar-static-top {
+  background-color: var(--primary-5) !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(226, 236, 243, 0.3) !important;
+}
+
+/* Force override any inherited backgrounds from parent containers */
+.container > .navbar,
+.container-fluid > .navbar,
+div[class*="navbar"] {
+  background-color: var(--primary-5) !important;
+  background-image: none !important;
+  border: none !important;
+}
+
+/* Ensure no margin/padding creates visual gaps that show darker backgrounds */
+.navbar,
+.navbar-header,
+.navbar-collapse {
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* Override Bootstrap's navbar-brand container background */
+.navbar-brand,
+.navbar-brand:hover,
+.navbar-brand:focus {
+  background-color: transparent !important;
+}
+
+/* Comprehensive navbar background override for all possible Bootstrap classes */
+.navbar-default .navbar-nav,
+.navbar-inverse .navbar-nav,
+.navbar-light .navbar-nav,
+.navbar-dark .navbar-nav {
+  background-color: var(--primary-5) !important;
+}
+
+/* Override any potential Bootstrap navbar toggle button backgrounds */
+.navbar-toggle,
+.navbar-toggler {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* Ensure navbar spans full width without gaps */
+.navbar-expand,
+.navbar-expand-sm,
+.navbar-expand-md,
+.navbar-expand-lg,
+.navbar-expand-xl {
+  background-color: var(--primary-5) !important;
+  border: none !important;
+}
+
+/* Final fallback - override any remaining Bootstrap navbar styling */
+nav[class*="navbar"],
+.navbar[class*="navbar-"] {
+  background-color: var(--primary-5) !important;
+  background-image: none !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: 0 2px 4px rgba(226, 236, 243, 0.3) !important;
 }
