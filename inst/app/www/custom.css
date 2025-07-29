@@ -1079,12 +1079,83 @@ a:focus {
 .navbar-nav .dropdown-menu {
   right: 0 !important;
   left: auto !important;
+  /* Add primary-1 border to distinguish from main page background */
+  border: 1px solid var(--primary-1) !important;
+  border-radius: 6px !important;
+  background-color: var(--neutral-2) !important;
+  box-shadow: 0 4px 8px rgba(59, 110, 143, 0.15) !important;
 }
 
 /* Specifically target the last navbar menu (GitHub menu) */
 .navbar-nav > li:last-child .dropdown-menu {
   right: 0 !important;
   left: auto !important;
+  /* Ensure consistent styling for GitHub dropdown */
+  border: 1px solid var(--primary-1) !important;
+  border-radius: 6px !important;
+  background-color: var(--neutral-2) !important;
+  box-shadow: 0 4px 8px rgba(59, 110, 143, 0.15) !important;
+}
+
+/* ========================================
+   DROPDOWN MENU ITEMS HOVER FIX
+   ======================================== */
+
+/* Fix dropdown menu item hover to prevent extra background slivers */
+.navbar-nav .dropdown-menu li {
+  background-color: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.navbar-nav .dropdown-menu li:hover {
+  background-color: transparent !important;
+}
+
+/* Target the outer Shiny-generated anchor tag (disable its hover) */
+.navbar-nav .dropdown-menu li > a:first-child {
+  display: block !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background-color: transparent !important;
+  border: none !important;
+  width: 100% !important;
+  pointer-events: none !important; /* Disable hover on outer anchor */
+}
+
+.navbar-nav .dropdown-menu li > a:first-child:hover {
+  background-color: transparent !important;
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+/* Target the inner anchor tag (the actual link) */
+.navbar-nav .dropdown-menu li > a > a {
+  display: block !important;
+  padding: 0.5rem 1rem !important;
+  color: var(--text-2) !important;
+  text-decoration: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  width: 100% !important;
+  transition: background-color 0.3s ease !important;
+  pointer-events: auto !important; /* Enable hover on inner anchor */
+}
+
+.navbar-nav .dropdown-menu li > a > a:hover,
+.navbar-nav .dropdown-menu li a:hover,
+.navbar-nav .dropdown-menu .dropdown-item:hover,
+.dropdown-menu li > a:hover,
+.dropdown-menu a:hover {
+  background-color: var(--primary-1) !important;
+  color: var(--text-3) !important;
+  text-decoration: none !important;
+}
+
+/* Ensure no other nested elements create hover areas */
+.navbar-nav .dropdown-menu li > a > a > * {
+  background-color: transparent !important;
+  pointer-events: none !important;
 }
 
 /* ========================================
@@ -1118,6 +1189,8 @@ a:focus {
   align-items: center !important;
   justify-content: center !important;
 }
+
+
 
 /* Control the GitHub icon size within the dropdown */
 .navbar-nav .dropdown.nav-item .nav-link i,
