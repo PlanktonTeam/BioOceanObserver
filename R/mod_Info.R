@@ -14,7 +14,6 @@ mod_info_ui <- function(id){
                 tabPanel("Frequently Asked Questions", value = 1,
                          shiny::fluidPage(
                            shiny::HTML("
-                             <br>
                              <h3>The App</h3>
                              <h4>Does the app use real time data?</h4>
                              <p>No, to keep the App efficient the data is harvested from the AODN monthly and pre-wrangled.</p>
@@ -40,7 +39,6 @@ mod_info_ui <- function(id){
                 tabPanel("Technical Information", value = 2,
                          shiny::fluidPage(
                            shiny::HTML("
-                             <br>
                              <h3>Data binning</h3>
                              <h4>Depths</h4>
                              <p>Depths binned for ease of plotting.
@@ -49,11 +47,9 @@ mod_info_ui <- function(id){
                              <h4>Contour plots</h4>
                              <p>There is an option to interpolate the data in the contour plots used for the environmental data taken at defined depths. The base method does not fill in NAs in the dataset. 
                              Use the option na.fill = TRUE if you want to interpolate.</p>
-                             <br>
                              <h3>Outliers</h3>
                              <p>Outliers are removed when they are greater than 2 standard deviations from the mean. Negative values for nutrients etc. are also set 
                              to 0. These options are used in BOO but if you want to keep the outliers you can download the data and plot the figures using planktonr with your chosen settings</p>
-                             <br>
                              <h3>Assigning bioregions to CPR samples</h3>
                              <p>CPR BioRegions have been selected using nearest neighbour. If there is a requriement for only bioregions 
                              to be assigned when they are in the exact region, this can be done with the function in planktonr. 
@@ -65,9 +61,7 @@ mod_info_ui <- function(id){
                 tabPanel("ChangeLog", value = 3,
                          shiny::fluidPage(
                            shiny::HTML("
-                             <br>
                              <h3>Changelog for the Biological Ocean Observer</h3>
-                             <br>
                              <h4>July 2021</h4>
                              <ul>     
                                <li>Initial Prototype developed</li>
@@ -119,7 +113,6 @@ mod_info_ui <- function(id){
                 tabPanel("References", value = 4,
                          shiny::fluidPage(
                            shiny::HTML("
-                             <br>
                              <h3>References</h3>
                              <h4>To further understand the data, collection methods etc.</h4>
                              <ul>
@@ -130,14 +123,12 @@ mod_info_ui <- function(id){
                                <li>IMOS Continuous PLankton Recorder Survey website. <a href = https://imos.org.au/facilities/shipsofopportunity/auscontinuousplanktonrecorder target = _blank> Website</a>.</li>
                                <li>Australian MIcrobiome Scientific Manual. <a href = https://confluence.csiro.au/display/ASM/Ausmicrobiome+Scientific+Manual target = _blank> Website</a>.</li>
                              </ul>
-                             <br><br>
                              <h4>These references are also good resources for visualising this data</h4>
                              <ul>
                                <li>Richardson A.J, Eriksen R,S, Moltmann T, Hodgson-Johnston I, Wallis J.R. (2020). <em>State and Trends of Australia's Ocean Report</em>. Integrated Marine Observing System (IMOS). <a href = https://www.imosoceanreport.org.au/about/ target = _blank> Website</a>.</li>
                                <li>Richardson A.J, Eriksen R.S, Rochester, W. (2015) <em>Plankton 2015: State of Australia's Oceans</em>. CSIRO report. ISBN 978-1-4863-0566-7 (EPDF). <a href = https://imos.org.au/fileadmin/user_upload/shared/Data_Tools/15-00245_OA_Plankton2015_20ppBrochure_WEB_151116.pdf target = _blank> Website</a>.</li>
                                <li>Brown, M., van de Kamp, J., Ostrowski, M. <em>et al</em>. (2018). Systematic, <em>continental scale temporal monitoring of marine pelagic microbiota by the Australian Marine Microbial Biodiversity Initiative</em>. Sci Data 5, 180130. doi.org/10.1038/sdata.2018.130 <a href = https://doi.org/10.1038/sdata.2018.130 target = _blank> Website</a>.</li>
                              </ul>
-                             <br><br>
                              <h3>Package citations</h3>
                              <h4>This Web App is possible thanks to the following packages and the active R community</h4>
                              <ul>
@@ -161,14 +152,15 @@ mod_info_ui <- function(id){
                                <li>Wickham H, Girlich M (2022). <em>tidyr: Tidy Messy Data</em>. R package version 1.2.0, <a href = https://CRAN.R-project.org/package=tidyr target = _blank> Website</a>.</li>
                                <li>Henry L, Wickham H (2022). <em>tidyselect: Select from a Set of Strings</em>. R package version 1.1.2, <a href = https://CRAN.R-project.org/package=tidyselect target = _blank> Website</a>.</li>
                              </ul>
+                             <br>
+                             <br>
                            ")
                          ),
                 ),
                 tabPanel("Sampling Details", value = 5,
                          shiny::fluidPage(
                            shiny::HTML("
-                             <br>
-                             <h2>NRS</h2>
+                             <h3>NRS</h3>
                              <p>Note: Ningaloo and Esperance only operated for 3 years and were only sampled seasonally. The data is sparse for these stations and has often been removed for some analysis.</p>
                              <p>Note: The NRS sampling period goes from mid 2009 until present. Prior to this some environmental parameters were also collected at the 
                              Long Term Monitoring Stations - ROT, MAI, PH4. These are shown on the Long Term Monitoring tab under EOVs. Generally though in this 
@@ -200,7 +192,7 @@ mod_info_ui <- function(id){
                              <p>Nutrients, picoplankton and microbial samples are collected at the Coastal Station in Botany Bay, the Derwent, the GBR and Port Phillip Bay. 
                              Details for this sampling can be found in the Australian Microbiome Scientifc Manual. <a href = https://confluence.csiro.au/display/ASM/Ausmicrobiome+Scientific+Manual target = _blank> Website</a>.</p>
                              <br><br>
-                             <h2>CPR</h2>
+                             <h3>CPR</h3>
                            "),
                            DT::DTOutput(nsInfo("CPRDataTable")),
                            shiny::HTML("
@@ -217,13 +209,13 @@ mod_info_ui <- function(id){
                 ),
                 tabPanel("Phytoplankton Species Details", value = 6, 
                          shiny::fluidPage(
-                           shiny::HTML("<h2>Phytoplankton Species Information</h2>"),
+                           shiny::HTML("<h3>Phytoplankton Species Information</h3>"),
                            DT::DTOutput(nsInfo("PDataTable"))
                          )
                 ),
                 tabPanel("Zooplankton Species Details", value = 7, 
                          shiny::fluidPage(
-                           shiny::HTML("<h2>Zooplankton Species Information</h2>"),
+                           shiny::HTML("<h3>Zooplankton Species Information</h3>"),
                            DT::DTOutput(nsInfo("ZDataTable"))
                          )
                 ),

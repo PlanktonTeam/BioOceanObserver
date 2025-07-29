@@ -252,6 +252,7 @@ html .navbar {
   color: var(--primary-2) !important;
   padding: 0.375rem 0.5rem !important;
   transition: all 0.3s ease !important;
+  border-bottom: none !important;
 }
 
 .navbar-nav .nav-item {
