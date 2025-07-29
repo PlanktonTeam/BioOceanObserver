@@ -1095,16 +1095,44 @@ a:focus {
 .navbar-nav .dropdown.nav-item {
   /* Ensure stable positioning */
   position: relative !important;
+  /* Force height to match other navbar items */
+  height: auto !important;
+  /* Ensure consistent vertical alignment */
+  display: flex !important;
+  align-items: center !important;
 }
 
 /* Target the nav-link inside dropdown nav-item */
 .navbar-nav .dropdown.nav-item .nav-link {
-  /* Set consistent dimensions */
-  padding: 0.375rem 0.5rem !important;
+  /* Reduce padding to minimize gap around icon */
+  padding: 0.25rem 0.375rem !important;
   margin: 0 !important;
   border: none !important;
   background-color: transparent !important;
   transition: color 0.3s ease !important;
+  /* Force height to match other navbar items */
+  height: auto !important;
+  min-height: auto !important;
+  /* Ensure vertical centering */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Control the GitHub icon size within the dropdown */
+.navbar-nav .dropdown.nav-item .nav-link i,
+.navbar-nav .dropdown.nav-item .nav-link .fa,
+.navbar-nav .dropdown.nav-item .nav-link .fas,
+.navbar-nav .dropdown.nav-item .nav-link .fab {
+  /* Increase icon size to fill available space better */
+  font-size: 1.5rem !important;
+  line-height: 1 !important;
+  /* Ensure icon doesn't affect container height */
+  height: 1.5rem !important;
+  width: auto !important;
+  /* Center the icon */
+  display: inline-block !important;
+  vertical-align: middle !important;
 }
 
 /* Hover state for dropdown nav-item - prevent layout shift */
@@ -1113,8 +1141,8 @@ a:focus {
   background-color: rgba(59, 110, 143, 0.1) !important;
   /* Add border-radius like other navbar items but ensure consistent dimensions */
   border-radius: 4px !important;
-  /* Maintain exact same padding */
-  padding: 0.375rem 0.5rem !important;
+  /* Maintain exact same reduced padding */
+  padding: 0.25rem 0.375rem !important;
   /* Change color for visual feedback */
   color: var(--primary-1) !important;
   /* Prevent any box model changes */
@@ -1131,7 +1159,7 @@ a:focus {
 .navbar-nav .dropdown.nav-item .nav-link:focus {
   background-color: transparent !important;
   border-radius: 0 !important;
-  padding: 0.375rem 0.5rem !important;
+  padding: 0.25rem 0.375rem !important;
   color: var(--primary-1) !important;
   border: none !important;
   margin: 0 !important;
@@ -1140,6 +1168,26 @@ a:focus {
   /* Keep focus outline for accessibility */
   outline: 2px solid var(--primary-1) !important;
   outline-offset: 2px !important;
+}
+
+/* Active/Open state for dropdown nav-item - when dropdown menu is visible */
+.navbar-nav .dropdown.nav-item.open .nav-link,
+.navbar-nav .dropdown.nav-item.show .nav-link,
+.navbar-nav .dropdown.nav-item .nav-link.active,
+.navbar-nav .dropdown.nav-item .nav-link[aria-expanded="true"] {
+  /* Match the styling of other active navbar items */
+  background-color: var(--primary-1) !important;
+  color: var(--text-3) !important;
+  /* Use rounded corners like other navbar items */
+  border-radius: 4px !important;
+  /* Keep consistent reduced padding - same as hover and normal states */
+  padding: 0.25rem 0.375rem !important;
+  /* Prevent any box model changes */
+  border: none !important;
+  margin: 0 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
 }
 
 /* ========================================
