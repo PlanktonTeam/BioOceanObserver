@@ -15,7 +15,7 @@ mod_MicroLatGS_ui <- function(id){
           shiny::plotOutput(nsMicroLatGS("plotmap"),
                             height = "300px", 
                             width = "100%"),
-          shiny::HTML("<h5><strong>Latitude range to plot:</strong></h5>"),
+          shiny::HTML("<h3>Latitude range to plot:</h3>"),
           shiny::sliderInput(nsMicroLatGS("LatSlide"), 
                              label = NULL, 
                              min = floor(min(pkg.env$datGSm$Latitude)),
@@ -23,7 +23,7 @@ mod_MicroLatGS_ui <- function(id){
                              value = c(min(pkg.env$datGSm$Latitude),
                                        max(pkg.env$datGSm$Latitude)) 
                              ),
-          shiny::HTML("<h5><strong>Depth range to plot:</strong></h5>"),
+          shiny::HTML("<h3>Depth range to plot:</h3>"),
           shiny::sliderInput(nsMicroLatGS("DepthSlide"), 
                              label = NULL, 
                              min = floor(min(pkg.env$datGSm$SampleDepth_m)), 

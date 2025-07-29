@@ -268,21 +268,21 @@ fSpatialSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3){
       selectizeInput(inputId = ns('species'), label = labeltext, choices = unique(dat1$Species), 
                      selected = selectedVar),
       shiny::checkboxInput(inputId = ns("scaler1"), 
-                           label = strong("Change between frequency or Presence/Absence plot"), 
+                           label = "Change between frequency or Presence/Absence plot", 
                            value = FALSE)
     ),
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 2"), 
       selectizeInput(inputId = ns('species1'), label = labeltext, choices = unique(dat2$Species), 
                      selected = selectedVar),
-      h6("This is a reduced species list that only contains species with enough data to create an STI plot")
+      shiny::p("This is a reduced species list that only contains species with enough data to create an STI plot")
       
     ),
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " == 3"), 
       selectizeInput(inputId = ns('species2'), label = labeltext, choices = unique(dat3$Species), 
                      selected = selectedVar),
-      h6("This is a reduced species list that only contains species with enough data to create a day night plot")
+      shiny::p("This is a reduced species list that only contains species with enough data to create a day night plot")
     ),
   )
 }
@@ -323,12 +323,14 @@ fSpatialPanel <- function(id, tabsetPanel_id){
                          )
                 ),        
                 tabPanel("Species Temperature Index graphs", value = 2, 
-                         h6(textOutput(ns("STIsExp"), container = span)),
-                         plotOutput(ns("STIs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                         shiny::p(textOutput(ns("STIsExp"), container = span)),
+                         plotOutput(ns("STIs"), height = 700) %>% 
+                           shinycssloaders::withSpinner(color="#0dc5c1")
                 ),
                 tabPanel("Species Diurnal Behaviour", value = 3, 
-                         h6(textOutput(ns("SDBsExp"), container = span)),
-                         plotOutput(ns("DNs"), height = 700) %>% shinycssloaders::withSpinner(color="#0dc5c1")
+                         shiny::p(textOutput(ns("SDBsExp"), container = span)),
+                         plotOutput(ns("DNs"), height = 700) %>% 
+                           shinycssloaders::withSpinner(color="#0dc5c1")
                 )
     )
   )

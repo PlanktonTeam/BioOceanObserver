@@ -70,14 +70,14 @@ mod_PhytoSpatial_server <- function(id){
     # add text information ------------------------------------------------------------------------------
     output$DistMapExp <- renderText({
       "This map is either a presence absence map based on the NRS and CPR data for each species or a frequency map based on the 
-      number of times a species is seen in the sample location"
+      number of times a species is seen in the sample location."
     }) 
     output$STIsExp <- renderText({
       paste("Figure of the species STI showing the temperature range at which this species is most common. 
-            A bimodal shape may indicate a sub-species or two species being identified as the same species")
+            A bimodal shape may indicate a sub-species or two species being identified as the same species.")
     }) 
     output$SDBsExp <- renderText({
-      paste("Figure of the diurnal abundances from CPR data. Note that the CPR is towed at ~10m depth so these abundances are representative of surface waters")
+      paste("Figure of the diurnal abundances from CPR data. Note that the CPR is towed at ~10m depth so these abundances are representative of surface waters.")
     }) 
     
     # select initial map  ------------------------------------------------------------------------------
