@@ -13,7 +13,7 @@ mod_PolLTM_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         plotOutput(nsPolLTM("plotmap")),
-        shiny::HTML("<h5><strong>Select a station:</strong></h5>"),
+        shiny::HTML("<h3>Select a station:</h3>"),
         radioButtons(inputId = nsPolLTM("SiteLTM"), label = NULL, choices = unique(sort(pkg.env$PolLTM$StationName)), selected = "Port Hacking")
       ),
       mainPanel(id = "EOV paramters from Long Term Monitoring", 
