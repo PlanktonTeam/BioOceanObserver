@@ -13,8 +13,8 @@ mod_PolCPR_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         shiny::plotOutput(nsPolCPR("plotmap")),
-        shiny::h6("Note there is very little data in the North and North-west regions"),
-        shiny::HTML("<h5><strong>Select a bioregion:</strong></h5>"),
+        shiny::p("Note there is very little data in the North and North-west regions"),
+        shiny::HTML("<h3>Select a bioregion:</h3>"),
         shiny::radioButtons(inputId = nsPolCPR("Site"), label = NULL, 
                      choices = unique(sort(pkg.env$PolCPR$BioRegion)), selected = "Temperate East"),
       ),
@@ -94,7 +94,7 @@ mod_PolCPR_server <- function(id){
     
     
     output$StationSummary <- shiny::renderText({ 
-      paste("<h4 style='text-align:center; font-weight: bold;'>",input$Site,"</h5>The CPR has been sampling 
+      paste("<h3 style='text-align:center;'>",input$Site,"</h3>The CPR has been sampling 
               in the ", input$Site," bioregion since ", format(min(stationData()$SampleStartDate), "%A %d %B %Y"), 
             " and sampling is ongoing.", " Approximately ", format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
             " nautical miles has been towed in this region. The ", input$Site, " bioregion is characterised by ", 

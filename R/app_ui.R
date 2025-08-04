@@ -9,7 +9,9 @@ app_ui <- function(request) {
   # Your application UI logic 
   shiny::navbarPage(golem_add_external_resources(), # Leave this function for adding external resources
                     id = "navbar",  
-                    title = span(img(src = "www/logo.png", style="padding-right:5px", height = 40), "Biological Ocean Observer"),
+                    title = div(
+                                img(src = "www/IMOS_logo-wide-_Colour.png", height = 30),
+                                div("Biological Ocean Observer", class = "brand-text")),
                     windowTitle = "Biological Ocean Observer",
                     theme = bslib::bs_theme(version = 5, 
                                             bootswatch = "flatly",
@@ -69,16 +71,9 @@ app_ui <- function(request) {
                                     fluidPage(
                                       value = "info", mod_info_ui("info_1"))
                     ),
-                    navbarMenu("", icon = icon("share-nodes"),
-                               shiny::tabPanel(tags$a("", href = "https://twitter.com/intent/tweet?text=Check%20out%20the%20amazing%20new%20Biological%20Observer%20https%3A//shiny.csiro.au/BioOceanObserver/", target = "_blank",
-                                                      list(icon("twitter"), "Twitter"))),
-                               shiny::tabPanel(tags$a("", href = "https://www.facebook.com/sharer/sharer.php?u=https%3A//shiny.csiro.au/BioOceanObserver/", target = "_blank",
-                                                      list(icon("facebook"), "Facebook"))),
-                               shiny::tabPanel(tags$a("", href = "https://www.linkedin.com/shareArticle?mini=true&url=https%3A//shiny.csiro.au/BioOceanObserver/", target = "_blank",
-                                                      list(icon("linkedin"), "LinkedIn")))),
-                    navbarMenu("", icon = img(src = "www/github-mark/github-mark-white.png", style="padding-right:5px", height = 30),
-                               shiny::tabPanel(tags$a("", href = "https://github.com/PlanktonTeam/BioOceanObserver", target = "_blank", "BioOceanObserver repo")),
-                               shiny::tabPanel(tags$a("", href = "https://github.com/PlanktonTeam/planktonr", target = "_blank", "planktonr repo")))
+                    shiny::navbarMenu("", icon = icon("github"),
+                               shiny::tabPanel(tags$a(href = "https://github.com/PlanktonTeam/BioOceanObserver", target = "_blank", "BioOceanObserver Repository")),
+                               shiny::tabPanel(tags$a(href = "https://github.com/PlanktonTeam/planktonr", target = "_blank", tags$em("planktonr"), " Repository" )))
                     )
 }
 
@@ -108,11 +103,11 @@ golem_add_external_resources <- function(){
     # Script for CSIRO branding tab ----
     tags$script(type="text/javascript", src="csirotab.min.js"),
     # Custom CSIRO styling CSS for modal ----
-    tags$link(rel = "stylesheet", type = "text/css", href = "css/csiromodal.css"),
-    # Google fonts ----
-    tags$link(href="https://fonts.googleapis.com/css?family=Open+Sans",
-              rel="stylesheet"),
-    tags$link(href="https://fonts.googleapis.com/css?family=Montserrat",
+    tags$link(rel = "stylesheet", type = "text/css", href = "csiromodal.css"),
+    # IMOS Custom CSS with typography and colors ----
+    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
+    # Google fonts - Poppins and Open Sans ----
+    tags$link(href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap",
               rel="stylesheet")
   )
 }

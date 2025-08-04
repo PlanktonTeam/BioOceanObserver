@@ -12,16 +12,10 @@ mod_MicroLatGS_ui <- function(id){
   tagList(
     sidebarLayout(
       shiny::sidebarPanel(
-          tags$head(tags$style(HTML(
-            ".multicol{
-          height:auto;
-          -webkit-column-count: 2;
-          -moz-column-count: 2;
-          column-count: 2;}"))),
           shiny::plotOutput(nsMicroLatGS("plotmap"),
                             height = "300px", 
                             width = "100%"),
-          shiny::HTML("<h5><strong>Latitude range to plot:</strong></h5>"),
+          shiny::HTML("<h3>Latitude range to plot:</h3>"),
           shiny::sliderInput(nsMicroLatGS("LatSlide"), 
                              label = NULL, 
                              min = floor(min(pkg.env$datGSm$Latitude)),
@@ -29,23 +23,22 @@ mod_MicroLatGS_ui <- function(id){
                              value = c(min(pkg.env$datGSm$Latitude),
                                        max(pkg.env$datGSm$Latitude)) 
                              ),
-          shiny::HTML("<h5><strong>Depth range to plot:</strong></h5>"),
+          shiny::HTML("<h3>Depth range to plot:</h3>"),
           shiny::sliderInput(nsMicroLatGS("DepthSlide"), 
                              label = NULL, 
                              min = floor(min(pkg.env$datGSm$SampleDepth_m)), 
                              max = floor(max(pkg.env$datGSm$SampleDepth_m)), 
                              value = c(min(pkg.env$datGSm$SampleDepth_m), 100)
           ),
-          shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
+          shiny::HTML("<h3>Select a parameter:</h3>"),
           shiny::selectInput(inputId = nsMicroLatGS("parameterm"), 
                              label = NULL, 
                              choices = 'Bacterial_Temperature_Index_KD', 
                              selected = 'Bacterial_Temperature_Index_KD'),
           shiny::htmlOutput(nsMicroLatGS("ParamDefm")),
           shiny::checkboxInput(inputId = nsMicroLatGS("all"), 
-                               label = strong("Tick for more microbial parameters"), 
+                               label = "Tick for more microbial parameters", 
                                value = FALSE),
-          shiny::br()
       ),
       shiny::mainPanel(h4(textOutput(nsMicroLatGS("voyageTitle"), container = span)),
                        shiny::htmlOutput(nsMicroLatGS("PlotExp1")),
@@ -122,7 +115,7 @@ mod_MicroLatGS_server <- function(id){
       gg_out1 <- reactive({
 
         if(length(selectedData()$Parameters)>50){
-          planktonr::pr_plot_latitude(selectedData(), Fill_NA = TRUE, maxGap = 3)
+          planktonr::pr_plot_latitude(selectedData(), na.fill = TRUE)
         } else {
           ggplot2::ggplot + ggplot2::geom_blank()
         }

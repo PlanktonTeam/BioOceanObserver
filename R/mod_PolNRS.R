@@ -13,11 +13,11 @@ mod_PolNRS_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         plotOutput(nsPolNRS("plotmap")),
-        shiny::HTML("<h5><strong>Select a station:</strong></h5>"),
+        shiny::HTML("<h3>Select a station:</h3>"),
         shiny::radioButtons(inputId = nsPolNRS("Site"), label = NULL, choices = unique(sort(pkg.env$PolNRS$StationName)), selected = "Maria Island"),
         shiny::conditionalPanel(
           condition = paste0("input.EOV_NRS == 1"), # Only first tab
-          shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
+          shiny::HTML("<h3>Select a parameter:</h3>"),
           shiny::checkboxGroupInput(inputId = nsPolNRS("Parameters"), label = NULL, 
                                     choices = planktonr::pr_relabel(
                                       c("Biomass_mgm3", "PhytoBiomassCarbon_pgL", "ShannonPhytoDiversity", "ShannonCopepodDiversity", 
@@ -125,7 +125,7 @@ mod_PolNRS_server <- function(id){
       bindCache(input$Site)
     
     output$StationSummary <- shiny::renderText({ 
-      paste("<h4 style='text-align:center; font-weight: bold;'>",input$Site,"</h5>The IMOS ", input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), 
+      paste("<h4 style='text-align:center;'>",input$Site,"</h3>The IMOS ", input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), 
             "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ". The water depth at the station is ", 
             round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, 
             ". The station has been sampled since ", format(stationData()$StationStartDate, "%A %d %B %Y"), " ", stationData()$now,
