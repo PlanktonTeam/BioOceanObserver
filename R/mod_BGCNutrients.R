@@ -37,7 +37,6 @@ mod_NutrientsBGC_server <- function(id){
       
       pkg.env$Nuts %>%
         dplyr::select(-c(TripCode, Project)) %>% 
-        dplyr::bind_rows(pkg.env$NutsSots %>% dplyr::select(-Year_Local)) %>% 
         dplyr::filter(.data$StationName %in% input$station,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$Parameters %in% input$parameter) %>% 
@@ -87,7 +86,7 @@ mod_NutrientsBGC_server <- function(id){
     
     # add a map in sidebar
     output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Type = 'Phytoplankton')
+      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
     }, bg = "transparent") %>% bindCache(input$station)
     
     # add text information 

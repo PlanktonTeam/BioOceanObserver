@@ -379,22 +379,22 @@ fEnviroSidebar <- function(id, dat = NULL){
   
   if (id == "NutrientsBGC_ui_1"){
     selectedVar = "Silicate_umolL"
-    ignoreStat <- c("PH4", "NIN", "ESP", "SOTS_RAS") # Stations to ignore
+    ignoreStat <- c("PH4", "NIN", "ESP") # Stations to ignore
   }
   if (id == "PicoBGC_ui_1"){
     selectedVar = "Prochlorococcus_cellsmL"
-    ignoreStat <- c("PH4", "NIN", "ESP", "SOTS_RAS", "SOTS") # Stations to ignore
+    ignoreStat <- c("PH4", "NIN", "ESP") # Stations to ignore
   }
   if (id == "PigmentsBGC_ui_1"){
     selectedVar = "TotalChla"
-    ignoreStat <- c("PH4", "SOTS_RAS", "SOTS") # Stations to ignore
+    ignoreStat <- c("PH4") # Stations to ignore
   }
   if (id == "WaterBGC_ui_1"){
     selectedVar = "CTDTemperature_degC"
-    ignoreStat <- c("PH4", "SOTS_RAS") # Stations to ignore
+    ignoreStat <- c("PH4") # Stations to ignore
   }
   if (id == "MoorBGC_ui_1"){
-    ignoreStat <- c("PH4", "NIN", "ESP", 'VBM', "SOTS_RAS", "SOTS") # Stations to ignore
+    ignoreStat <- c("PH4", "NIN", "ESP", 'VBM') # Stations to ignore
   }
   
   shiny::sidebarPanel(
@@ -405,7 +405,6 @@ fEnviroSidebar <- function(id, dat = NULL){
                              shiny::checkboxGroupInput(inputId = ns("station"),
                                                        label = NULL,
                                                        choices = pkg.env$NRSStation %>% 
-                                                         dplyr::bind_rows(pkg.env$SotsStation) %>% 
                                                          dplyr::filter(!.data$StationCode %in% ignoreStat) %>%
                                                          dplyr::pull(.data$StationName),
                                                        selected = c("North Stradbroke Island", "Maria Island")))),

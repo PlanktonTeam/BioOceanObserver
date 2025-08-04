@@ -227,7 +227,7 @@ SOTSdata <- function(file_list){
   
   dimensions <- names(nc$var)
   
-  variables <- c("NOMINAL_DEPTH_SST", "SST", "NOMINAL_DEPTH_TEMP", "TEMP","NOMINAL_DEPTH_CPHL", 'CPHL', 
+  variables <- c("NOMINAL_DEPTH_TEMP", "TEMP","NOMINAL_DEPTH_CPHL", 'CPHL', # "NOMINAL_DEPTH_SST", "SST", 
                  "NOMINAL_DEPTH_DOX2", 'DOX2', "NOMINAL_DEPTH_PSAL", 'PSAL', 'MLD', 'PAR', 'NOMINAL_DEPTH_PAR',
                  'pHt', 'NOMINAL_DEPTH_pHt', 'NTRI_CONC', "NTRI", "PHOS_CONC", "PHOS", "SLCA_CONC", "SLCA", 
                  "ALKA_CONC", "TALK","TCO2", "DEPTH", "NOMINAL_DEPTH")
@@ -238,35 +238,35 @@ SOTSdata <- function(file_list){
   
   vardat <- function(variablesAvailable){
     if('MLD' %in% variablesAvailable){
-      vdat <- data.frame(ncdf4::ncvar_get(nc, varid = variablesAvailable), dates) 
+      vdat <- data.frame(ncdf4::ncvar_get(nc, varid = variablesAvailable),
+                         dates) 
       colnames(vdat) <- c('0', 'SampleTime_Local')
-      vdat %>% tidyr::pivot_longer(-SampleTime_Local, values_to = 'Values', names_to = 'SampleDepth_m') %>% 
+      vdat %>% tidyr::pivot_longer(-SampleTime_Local, values_to = 'Values', names_to = 'SampleDepth_m') %>%
         dplyr::mutate(SampleDepth_m = as.numeric(SampleDepth_m),
-                      Parameters = paste0(variablesAvailable))  
-    } else if(length(stringr::str_subset(pattern = 'NOMINAL_DEPTH_', dimensions)) > 0) {
-      Depthvars <- ncdf4::ncvar_get(nc, varid=paste0("NOMINAL_DEPTH_", variablesAvailable))
-      vdat <- data.frame(ncdf4::ncvar_get(nc, varid = variablesAvailable), dates) 
-      colnames(vdat) <- c(Depthvars, 'SampleTime_Local')
-      vdat %>% tidyr::pivot_longer(-SampleTime_Local, values_to = 'Values', names_to = 'SampleDepth_m') %>% 
-        dplyr::mutate(SampleDepth_m = as.numeric(SampleDepth_m),
-                      Parameters = paste0(variablesAvailable))  
-    } else if(length(stringr::str_subset(pattern = 'NOMINAL_DEPTH', dimensions)) > 0) {
-      Depthvars <- ncdf4::ncvar_get(nc, varid=paste0("NOMINAL_DEPTH"))
-      vdat <- data.frame(ncdf4::ncvar_get(nc, varid = variablesAvailable), dates) 
-      colnames(vdat) <- c(Depthvars, 'SampleTime_Local')
-      vdat %>% tidyr::pivot_longer(-SampleTime_Local, values_to = 'Values', names_to = 'SampleDepth_m') %>% 
-        dplyr::mutate(SampleDepth_m = as.numeric(SampleDepth_m),
-                      Parameters = paste0(variablesAvailable))  
+                      Parameters = paste0(variablesAvailable))
     } else {
-      Depthvars <- ncdf4::ncvar_get(nc, varid=paste0("DEPTH"))
-      vdat <- data.frame(ncdf4::ncvar_get(nc, varid = variablesAvailable), dates) 
-      colnames(vdat) <- c(Depthvars, 'SampleTime_Local')
-      vdat %>% tidyr::pivot_longer(-SampleTime_Local, values_to = 'Values', names_to = 'SampleDepth_m') %>% 
-        dplyr::mutate(SampleDepth_m = as.numeric(SampleDepth_m),
-                      Parameters = paste0(variablesAvailable))  
+      if(length(stringr::str_subset(pattern = 'NOMINAL_DEPTH_', dimensions)) > 0) {
+        Depthvars <- ncdf4::ncvar_get(nc, varid=paste0("NOMINAL_DEPTH_", variablesAvailable))}
+      else if(length(stringr::str_subset(pattern = 'NOMINAL_DEPTH', dimensions)) > 0) {
+        Depthvars <- ncdf4::ncvar_get(nc, varid=paste0("NOMINAL_DEPTH"))}
+      else {
+        Depthvars <- ncdf4::ncvar_get(nc, varid=paste0("DEPTH"))}
       
+      vdat <- data.frame(ncdf4::ncvar_get(nc, varid = variablesAvailable), SampleTime_Local = dates) 
+      if(grepl('ncdf', colnames(vdat[1]))){names(vdat) = c('X1', 'SampleTime_Local')}
+      qcdat <- data.frame(ncdf4::ncvar_get(nc, varid = paste0(variablesAvailable, "_quality_control")), SampleTime_Local = dates)  
+      if(grepl('ncdf', colnames(qcdat[1]))){names(qcdat) = c('X1', 'SampleTime_Local')}
+      qcdat <- qcdat %>% 
+        tidyr::pivot_longer(-SampleTime_Local, values_to = 'Flags', names_to = 'SampleDepth_m') 
+      vdat %>% 
+        tidyr::pivot_longer(-SampleTime_Local, values_to = 'Values', names_to = 'SampleDepth_m') %>% 
+        dplyr::left_join(qcdat, by = c('SampleDepth_m', 'SampleTime_Local')) %>% 
+        dplyr::filter(Flags %in% c(1, 2)) %>% 
+        dplyr::mutate(SampleDepth_m = Depthvars[as.numeric(gsub("[^0-9]", "", SampleDepth_m))],
+                      Parameters = paste0(variablesAvailable)) %>% 
+        dplyr::summarise(Values = sum(Values, na.rm = TRUE), .by = setdiff(colnames(.), "Values"))
     }
-  }
+    }
   
   df <- purrr::map(variablesAvailable, vardat) %>% 
     purrr::list_rbind()
@@ -297,7 +297,7 @@ SOTSdata <- function(file_list){
                   SampleDepth_m = round(.data$SampleDepth_m/10, 0)*10) %>% 
     dplyr::filter(SampleDepth_m %in% c(0, 30, 50, 100, 200, 500)) %>%
     tidyr::drop_na(Parameters, Values) 
-  
+
 }
 
 SOTSwater <- purrr::map(file_list, SOTSdata) %>% 
