@@ -216,7 +216,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                        ),
                        if(!tabsetPanel_id %in% c("NRSmts", "CSmts")){
                          shiny::tabPanel("Functional groups", value = 3,
-                                         textOutput(ns("PlotExp3"), container = span),  
+                                         shiny::htmlOutput(ns("PlotExp3"), container = span),  
                                          plotOutput(ns("timeseries3"), height = "auto") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1"),
                                          div(style="display:inline-block; float:right; width:60%",

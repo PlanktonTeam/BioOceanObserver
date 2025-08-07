@@ -139,7 +139,7 @@ PCI <- planktonr::pr_get_PCIData()
 
 NRSfgz <- planktonr::pr_get_FuncGroups(Survey = "NRS", Type = "Zooplankton")
 NRSfgp <- planktonr::pr_get_FuncGroups(Survey = "NRS", Type = "Phytoplankton")
-SOTSfgp <- planktonr::pr_get_FuncGroups(Survey = "SOTS", Type = "Phytoplankton")
+SOTSfgp <- planktonr::pr_get_FuncGroups(Survey = "SOTS", Type = "Phytoplankton") 
 
 CPRfgz <- planktonr::pr_get_FuncGroups(Survey = "CPR", Type = "Zooplankton", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
