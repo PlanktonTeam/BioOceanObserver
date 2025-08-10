@@ -53,9 +53,7 @@ SOTSp <- planktonr::pr_get_NRSData(Type = 'phytoplankton', Variable = 'abundance
   tidyr::pivot_longer(-c(Project:Method), names_to = 'TaxonName', values_to = 'abund') %>% 
   dplyr::select(tidyselect::any_of(main_vars), TaxonName, abund) %>% 
   dplyr::left_join(trophy, by = 'TaxonName') %>% 
-  dplyr::filter(abund > 0#,
-                #!FunctionalGroup %in% c('Other', 'Silicoflagellate', "Foraminifera", "Ciliate", "Radiozoa")
-  ) %>%
+  dplyr::filter(abund > 0) %>%
   dplyr::mutate(TaxonName = paste0(genus, " ", species),
                 tz = "Australia/Hobart",
                 StationName = 'Southern Ocean Time Series',
