@@ -30,7 +30,7 @@ app_server <- function( input, output, session ) {
     ))
     
   }
-
+  
   
   ## only run if selected by tab - this should be home page for each Tab level
   ### Snapshot page

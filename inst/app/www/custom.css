@@ -1349,3 +1349,118 @@ nav[class*="navbar"],
   border-color: transparent !important;
   box-shadow: 0 2px 4px rgba(226, 236, 243, 0.3) !important;
 }
+
+/* ========================================
+   BANNER LAYOUT
+   ======================================== */
+
+/* Banner layout for information pages */
+
+/* .key-data-banner {
+  background-color: #003366;
+  color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+} */
+
+.key-data-banner h3 {
+  margin-top: 0;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.key-data-banner {
+  background-color: #white;
+  padding: 10px;
+  border-radius: 4px;
+  color: white;
+}
+
+.image-box {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background-color: white;
+  margin: 2px;
+  text-align: center;
+}
+
+.key-data-streams {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.key-data-streams li {
+  display: flex;
+  align-items: center;
+  margin: 5px 10px 5px 0;
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.key-data-streams li .fa {
+  margin-right: 8px;
+  color: #00bfff;
+  font-size: 18px;
+}
+
+/* ========================================
+   padding for references
+   ======================================== */
+
+/* inden for references and pages of text */
+
+.references h4 {
+  padding-left: 2em;
+}
+
+.references ul {
+  padding-left: 3em;
+}
+
+/* ========================================
+   accordian settings for information buttons
+   ======================================== */
+
+/* accordion banner settings */
+.accordion-item {
+  background-color: var(--neutral-2); !important;  
+  margin-bottom: 1rem;       /* Space between panels */
+  font-size: var(--font-size-base);    /* Text size */
+}
+/* Style the accordion header */
+.accordion-button {
+  background-color: #F7F7F7; !important; /* IMOS primary-5 */
+  color: var(--primary-5);  !important;  /* Header text color */
+  font-weight: bold; !important;
+  font-size: var(--font-size-xl);    !important;     
+  border-radius: 10px !important; /* Rounded header */
+  border-color: var(--secondary-1); !important;
+  padding: 0.4rem 0.75rem; /* control size of button */
+  
+}
+/* Optional: Change hover effect on header */
+.accordion-button:hover {
+  background-color: #F7F7F7; !important; /* IMOS primary-5 */
+  border-color: var(--secondary-1); !important;
+  #color:  #F7F7F7; !important; /* IMOS primary-5 */
+}
+/* Optional: Change hover effect on header */
+.accordion-button:not(.collapsed) {
+  background-color: #F7F7F7; !important; /* IMOS primary-5 */
+  border-color: var(--secondary-1); !important;
+  #color:  #F7F7F7; !important; /* IMOS primary-5 */
+}
+/* Style the accordion body */
+.accordion-body {
+  background-color: var(--neutral-2); !important;   
+  padding: 1rem; !important;   
+  border-top: 1px solid #007B91; !important;   
+  border-radius: 0 0 10px 10px; !important;   
+}
+
