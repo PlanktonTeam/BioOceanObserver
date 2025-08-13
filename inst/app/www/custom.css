@@ -1376,6 +1376,7 @@ nav[class*="navbar"],
   padding: 10px;
   border-radius: 4px;
   color: white;
+  position: center;
 }
 
 .image-box {

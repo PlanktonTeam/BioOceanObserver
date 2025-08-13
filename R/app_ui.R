@@ -33,8 +33,8 @@ app_ui <- function(request) {
                                                        shiny::tabPanel(value = "GSlat", "Voyage data", mod_MicroLatGS_ui("MicroLatGS_ui_1"))
                                                        # shiny::tabPanel("Composition")
                                     )),
-                    shiny::tabPanel("Phytoplankton",
-                                    shiny::tabsetPanel(id = 'phyto', type = "pills",
+                    shiny::tabPanel("Phytoplankton", value = 'phyto1',
+                                    shiny::tabsetPanel(id = 'phyto', type = "pills", 
                                                        shiny::tabPanel(value = "pts", "Time Series NRS", mod_PhytoTsNRS_ui("PhytoTsNRS_ui_1")),
                                                        shiny::tabPanel(value = "ptscpr", "Time Series CPR", mod_PhytoTsCPR_ui("PhytoTsCPR_ui_1")),
                                                        shiny::tabPanel(value = "distp", "Species information", mod_PhytoSpatial_ui("PhytoSpatial_ui_1"))
@@ -99,6 +99,8 @@ golem_add_external_resources <- function(){
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()
     
+    # Script for navigating between modules ----
+    tags$script(type="text/javascript", src="navigate.js"),
     # Script for CSIRO branding tab ----
     tags$script(type="text/javascript", src="csirotab.min.js"),
     # Custom CSIRO styling CSS for modal ----
