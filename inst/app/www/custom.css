@@ -1362,7 +1362,7 @@ nav[class*="navbar"],
   padding: 20px;
   border-radius: 8px;
   margin: 20px 0;
-} */
+} 
 
 .key-data-banner h3 {
   margin-top: 0;
@@ -1377,7 +1377,7 @@ nav[class*="navbar"],
   border-radius: 4px;
   color: white;
   position: center;
-}
+}*/
 
 .image-box {
   padding: 5px;
@@ -1409,6 +1409,15 @@ nav[class*="navbar"],
   color: #00bfff;
   font-size: 18px;
 }
+
+.image-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  margin-top: 30px;
+}
+
 
 /* ========================================
    padding for references
