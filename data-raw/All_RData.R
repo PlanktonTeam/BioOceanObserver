@@ -32,56 +32,7 @@ datNRSz <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Zooplankton")
 
 datNRSp <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Phytoplankton") 
 
-trophy <- planktonr::pr_get_PlanktonInfo(Type = 'Phytoplankton') %>% # for information used in estimating Indices as per NRS data
-  dplyr::select(TaxonName = 'Taxon Name', Trophy = 'Functional Type', Carbon = 'Cell Carbon (pgN cell-1)', CellBioV = 'Cell BioVolume (um3)',
-                FunctionalGroup = 'Functional Group') %>% 
-  dplyr::mutate(genus = dplyr::case_when(stringr::word(TaxonName, 1) == 'cf.' ~ stringr::word(TaxonName, 2),
-                                         TRUE ~ stringr::word(TaxonName, 1)),
-                species = dplyr::case_when(stringr::word(TaxonName, 2) == 'cf.' ~ 'spp.',
-                                           stringr::word(TaxonName, 1) == 'cf.' ~ 'spp.',
-                                           grepl("\\(|\\/|diatom|dino|\\-|group", TaxonName) ~ 'spp.',
-                                           TRUE ~ stringr::word(TaxonName, 2)))
-
-main_vars <- c("TripCode", "Year_Local", "Month_Local", "SampleTime_Local", "tz", "Latitude", "Longitude", "StationName", "StationCode", "Method", "SampleDepth_m")
-
-# SOTS Indices not available from AODN so calculated here 
-#TODO - add a function to planktonr to get this data
-
-SOTSp <- planktonr::pr_get_NRSData(Type = 'phytoplankton', Variable = 'abundance', Subset = 'raw') %>% 
-  dplyr::filter(grepl('SOTS', StationCode),
-                Method == 'LM') %>% # only use LM at this stage
-  tidyr::pivot_longer(-c(Project:Method), names_to = 'TaxonName', values_to = 'abund') %>% 
-  dplyr::select(tidyselect::any_of(main_vars), TaxonName, abund) %>% 
-  dplyr::left_join(trophy, by = 'TaxonName') %>% 
-  dplyr::filter(abund > 0) %>%
-  dplyr::mutate(TaxonName = paste0(genus, " ", species),
-                tz = "Australia/Hobart",
-                StationName = 'Southern Ocean Time Series',
-                StationCode = 'SOTS') %>% 
-  dplyr::group_by(across(tidyselect::any_of(main_vars)), TaxonName, FunctionalGroup, CellBioV, Carbon) %>% 
-  dplyr::summarise(abund = sum(abund, na.rm = TRUE), ## add up all occurrences of spp. within one sample
-                   .groups = 'drop') %>% 
-  dplyr::group_by(across(tidyselect::any_of(main_vars))) %>% 
-  dplyr::summarise(AvgCellVol_um3 = mean(CellBioV*abund/sum(abund), na.rm = TRUE),
-                   DiatomDinoflagellateRatio = sum(abund[grepl('iatom', FunctionalGroup)])/sum(abund[grepl('iatom|Dinof', FunctionalGroup)]),
-                   NoPhytoSpecies_Sample = length(abund[!grepl('NA|spp', TaxonName)]),
-                   NoDiatomSpecies_Sample = length(abund[grepl('iatom', FunctionalGroup) & !grepl('NA|spp', TaxonName)]),
-                   NoDinoSpecies_Sample = length(abund[FunctionalGroup == 'Dinoflagellate' & !grepl('NA|spp', TaxonName)]),
-                   PhytoAbundance_CellsL = sum(abund, na.rm = TRUE),
-                   PhytoBiomassCarbon_pgL = sum(abund * Carbon, na.rm = TRUE),
-                   ShannonPhytoDiversity = vegan::diversity(abund[!grepl('NA|spp', TaxonName)], index = 'shannon'), 
-                   ShannonDiatomDiversity = vegan::diversity(abund[grepl('iatom', FunctionalGroup) & !grepl('NA|spp', TaxonName)], index = 'shannon'), 
-                   ShannonDinoDiversity = vegan::diversity(abund[grepl('Dinof', FunctionalGroup) & !grepl('NA|spp', TaxonName)], index = 'shannon'), 
-                   PhytoEvenness = ShannonPhytoDiversity/log10(NoPhytoSpecies_Sample),
-                   DiatomEvenness = ShannonDiatomDiversity/log10(NoDiatomSpecies_Sample),
-                   DinoflagellateEvenness = ShannonDinoDiversity/log10(NoDinoSpecies_Sample),
-                   .groups = 'drop') %>% 
-  tidyr::pivot_longer(-tidyselect::any_of(main_vars), values_to = 'Values', names_to = 'Parameters') %>% 
-  planktonr::pr_remove_outliers(2) %>% 
-  droplevels() %>% 
-  planktonr::planktonr_dat("Phytoplankton", 'SOTS')
-
-rm( main_vars, trophy)
+SOTSp <- planktonr::pr_get_Indices(Survey = "SOTS", Type = "Phytoplankton") 
 
 datNRSm <- planktonr::pr_get_NRSMicro(Survey = "NRS") %>% 
   tidyr::drop_na() ## NRS microbial data
@@ -174,140 +125,12 @@ CSChem <- planktonr::pr_get_CSChem() %>%
 
 # get SOTS physical and chemical data ----------------------------------
 
-# access the SOTS physical data
-
-thredds_url <- "https://thredds.aodn.org.au/thredds/catalog/IMOS/DWM/SOTS/derived_products/gridded/catalog.html"
-catalog_html <- RCurl::getURL(thredds_url)
-catalog_parsed <- rvest::read_html(catalog_html)
-file_nodes <- rvest::html_nodes(catalog_parsed, "a[href]")
-file_list <- rvest::html_attr(file_nodes, "href")
-file_list <- file_list[grepl("\\.nc$", file_list)] 
-
-# access the SOTS nutrient data
-
-years <- seq(1997, lubridate::year(Sys.Date()), 1)
-
-nutsFiles <- function(years){
-  thredds_url_nuts <- paste0("https://thredds.aodn.org.au/thredds/catalog/IMOS/DWM/SOTS/", years, "/catalog.html")
-  catalog_html <- RCurl::getURL(thredds_url_nuts)
-  catalog_parsed <- rvest::read_html(catalog_html)
-  file_nodes <- rvest::html_nodes(catalog_parsed, "a[href]")
-  file_list <- rvest::html_attr(file_nodes, "href")
-  file_list[grepl("*RAS*", file_list)]  # Assuming you are looking for .nc files
-}
-
-file_list_nuts <- (purrr::compact(purrr::map(years, nutsFiles)) %>% 
-                     purrr::map_df(tibble::as_tibble))$value
-
-
-varlist <- function(file_list){
-  # Construct the full URL if needed
-  full_url <- paste0("https://thredds.aodn.org.au/thredds/dodsC/", sub(".*=", "", file_list))
-  # Open the NetCDF file
-  nc <- ncdf4::nc_open(full_url)
-  dimensions <- data.frame(names(nc$var))
-  ncdf4::nc_close(nc)
-  dimensions
-}
-
-SOTSvar <- purrr::map(file_list, varlist) %>% 
-  purrr::list_rbind() %>% dplyr::distinct() 
-NUTSvar <- purrr::map(file_list_nuts, varlist) %>% 
-  purrr::list_rbind() %>% dplyr::distinct()
-
-# make a dataset in the required format
-
-SOTSdata <- function(file_list){
-  # Construct the full URL if needed
-  full_url <- paste0("https://thredds.aodn.org.au/thredds/dodsC/", sub(".*=", "", file_list))
-  # Open the NetCDF file
-  nc <- ncdf4::nc_open(full_url)
-  
-  dimensions <- names(nc$var)
-  
-  variables <- c("NOMINAL_DEPTH_TEMP", "TEMP","NOMINAL_DEPTH_CPHL", 'CPHL', # "NOMINAL_DEPTH_SST", "SST", 
-                 "NOMINAL_DEPTH_DOX2", 'DOX2', "NOMINAL_DEPTH_PSAL", 'PSAL', 'MLD', 'PAR', 'NOMINAL_DEPTH_PAR',
-                 'pHt', 'NOMINAL_DEPTH_pHt', 'NTRI_CONC', "NTRI", "PHOS_CONC", "PHOS", "SLCA_CONC", "SLCA", 
-                 "ALKA_CONC", "TALK","TCO2", "DEPTH", "NOMINAL_DEPTH")
-  
-  variablesAvailable <- intersect(dimensions, variables) %>% stringr::str_subset(pattern = 'DEPTH', negate = TRUE)
-  
-  dates <- as.POSIXct((nc$dim$TIME)$vals*3600*24, origin = '1950-01-01 00:00:00', tz = 'UTC')
-  
-  vardat <- function(variablesAvailable){
-    if('MLD' %in% variablesAvailable){
-      vdat <- data.frame(ncdf4::ncvar_get(nc, varid = variablesAvailable),
-                         dates) 
-      colnames(vdat) <- c('0', 'SampleTime_Local')
-      vdat %>% tidyr::pivot_longer(-SampleTime_Local, values_to = 'Values', names_to = 'SampleDepth_m') %>%
-        dplyr::mutate(SampleDepth_m = as.numeric(SampleDepth_m),
-                      Parameters = paste0(variablesAvailable))
-    } else {
-      if(length(stringr::str_subset(pattern = 'NOMINAL_DEPTH_', dimensions)) > 0) {
-        Depthvars <- ncdf4::ncvar_get(nc, varid=paste0("NOMINAL_DEPTH_", variablesAvailable))}
-      else if(length(stringr::str_subset(pattern = 'NOMINAL_DEPTH', dimensions)) > 0) {
-        Depthvars <- ncdf4::ncvar_get(nc, varid=paste0("NOMINAL_DEPTH"))}
-      else {
-        Depthvars <- ncdf4::ncvar_get(nc, varid=paste0("DEPTH"))}
-      
-      vdat <- data.frame(ncdf4::ncvar_get(nc, varid = variablesAvailable), SampleTime_Local = dates) 
-      if(grepl('ncdf', colnames(vdat[1]))){names(vdat) = c('X1', 'SampleTime_Local')}
-      qcdat <- data.frame(ncdf4::ncvar_get(nc, varid = paste0(variablesAvailable, "_quality_control")), SampleTime_Local = dates)  
-      if(grepl('ncdf', colnames(qcdat[1]))){names(qcdat) = c('X1', 'SampleTime_Local')}
-      qcdat <- qcdat %>% 
-        tidyr::pivot_longer(-SampleTime_Local, values_to = 'Flags', names_to = 'SampleDepth_m') 
-      vdat %>% 
-        tidyr::pivot_longer(-SampleTime_Local, values_to = 'Values', names_to = 'SampleDepth_m') %>% 
-        dplyr::left_join(qcdat, by = c('SampleDepth_m', 'SampleTime_Local')) %>% 
-        dplyr::filter(Flags %in% c(1, 2)) %>% 
-        dplyr::mutate(SampleDepth_m = Depthvars[as.numeric(gsub("[^0-9]", "", SampleDepth_m))],
-                      Parameters = paste0(variablesAvailable)) %>% 
-        dplyr::summarise(Values = sum(Values, na.rm = TRUE), .by = setdiff(colnames(.), "Values"))
-    }
-    }
-  
-  df <- purrr::map(variablesAvailable, vardat) %>% 
-    purrr::list_rbind()
-  
-  ncdf4::nc_close(nc)
-  
-  df %>% 
-    dplyr::mutate(StationName = 'Southern Ocean Time Series',
-                  StationCode = 'SOTS',
-           Month_Local = lubridate::month(SampleTime_Local),
-           SampleTime_Local = lubridate::floor_date(SampleTime_Local, unit = 'day'),
-           Parameters = dplyr::case_when(grepl("CPHL", Parameters) ~ "ChlF_mgm3",
-                                         grepl("DOX2", Parameters) ~ "DissolvedOxygen_umolkg",
-                                         grepl("MLD", Parameters) ~ "MLD_m",
-                                         grepl("PSAL", Parameters) ~ "Salinity",
-                                         grepl("TEMP", Parameters) ~ "Temperature_degC",
-                                         grepl("NTRI", Parameters) ~ "Nitrate_umolL",
-                                         grepl("PHOS", Parameters) ~ "Phosphate_umolL",
-                                         grepl("SLCA", Parameters) ~ "Silicate_umolL",
-                                         grepl("TALK|ALKA", Parameters) ~ "Alkalinity_umolkg",
-                                         grepl("pHt", Parameters) ~ "pH",
-                                         grepl("TCO", Parameters) ~ "DIC_umolkg",
-                                         .default = Parameters)) %>%
-    dplyr::group_by(StationName, StationCode, Month_Local, SampleTime_Local, Parameters, SampleDepth_m) %>%
-    dplyr::summarise(Values = mean(Values, na.rm = TRUE),
-              .groups = 'drop') %>% 
-    dplyr::mutate(Year_Local = lubridate::year(SampleTime_Local),
-                  SampleDepth_m = round(.data$SampleDepth_m/10, 0)*10) %>% 
-    dplyr::filter(SampleDepth_m %in% c(0, 30, 50, 100, 200, 500)) %>%
-    tidyr::drop_na(Parameters, Values) 
-
-}
-
-SOTSwater <- purrr::map(file_list, SOTSdata) %>% 
-  purrr::list_rbind() %>% 
-  dplyr::filter(Parameters %in% c('MLD_m', 'PAR', 'Salinity', 'Temperature_degC', 'ChlF_mgm3', 'DissolvedOxygen_umolkg', 'pH')) %>% # remove duplicate data from below
-  planktonr::planktonr_dat("Water", "SOTS") %>% 
-  planktonr::pr_remove_outliers(2) 
-NutsSots <- purrr::map(file_list_nuts, SOTSdata) %>% 
-  purrr::list_rbind() %>% 
-  dplyr::filter(!Parameters %in% c('Salinity', 'Temperature_degC')) %>% # duplicate data from above
-  planktonr::planktonr_dat("Water", "SOTS") %>% 
-  planktonr::pr_remove_outliers(2) 
+# SOTSwater <- planktonr::pr_get_SOTSMoorData(Type = 'Physical') %>% 
+#   dplyr::filter(Parameters %in% c('Salinity', 'Temperature_degC')) %>% 
+#   planktonr::pr_remove_outliers(2) 
+# NutsSots <- planktonr::pr_get_SOTSMoorData(Type = 'Nutrients') %>%  
+#   dplyr::filter(!Parameters %in% c('Salinity', 'Temperature_degC')) %>% # duplicate data from above, check if need both
+#   planktonr::pr_remove_outliers(2) 
 
 # STI data ----------------------------------------------------------------
 
@@ -368,29 +191,7 @@ PolCPR <- planktonr::pr_get_EOVs(Survey = "CPR", near_dist_km = 250) %>%
 PolLTM <- planktonr::pr_get_EOVs(Survey = "LTM") #%>% 
   #planktonr::pr_remove_outliers(4)
 
-var_names <- c("PhytoBiomassCarbon_pgL","ShannonPhytoDiversity",
-               "SST", "Temperature_degC", "Salinity", "ChlF_mgm3",
-               "Nitrate_umolL",  "Silicate_umolL", "ph",
-               "Phosphate_umolL", "DissolvedOxygen_umolL")
-
-PolSOTS <- SOTSp %>% dplyr::filter(Parameters %in% var_names) %>% 
-  dplyr::select(-c(tz, TripCode, Latitude, Longitude)) %>% 
-  dplyr::mutate(SampleDepth_m = ifelse(SampleDepth_m < 11, 0, 30)) %>% 
-  dplyr::bind_rows(SOTSwater %>% dplyr::filter(Parameters %in% var_names)) %>% # TODO - check for duplicates betweend nuts and water
-  dplyr::bind_rows(NutsSots %>% dplyr::filter(Parameters %in% var_names))
-
-means <- PolSOTS %>% 
-  planktonr::pr_remove_outliers(2) %>% 
-  dplyr::summarise(means = mean(.data$Values, na.rm = TRUE),
-                   sd = stats::sd(.data$Values, na.rm = TRUE),
-                   .by = tidyselect::all_of(c("StationName", "SampleDepth_m", "Parameters")))
-
-PolSOTS <-  PolSOTS %>%
-  dplyr::left_join(means, by = c("StationName", "SampleDepth_m", "Parameters")) %>%
-  dplyr::mutate(anomaly = (.data$Values - means)/sd,
-                Survey = "SOTS")
-
-rm(var_names, means)
+PolSOTS <- planktonr::pr_get_EOVs(Survey = "SOTS") 
 
 NRSinfo <- planktonr::pr_get_PolicyInfo(Survey = "NRS")
 CPRinfo <- planktonr::pr_get_PolicyInfo(Survey = "CPR")
@@ -534,7 +335,7 @@ usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   datNRSz, datNRSp, datNRSw, 
                   datNRSm, datCSm, datGSm,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-                  SOTSp, SOTSwater, NutsSots, SOTSfgp,
+                  SOTSp, SOTSfgp, # SOTSwater, NutsSots, 
                   stiz, stip, daynightz, daynightp,
                   SpInfoP, SpInfoZ, LFData, LFDataAbs,
                   datNRSTrip, datCPRTrip,
