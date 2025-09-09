@@ -57,3 +57,13 @@ jobs:
           body: "This PR updates the data automatically."
           base: main
           add-paths: R/sysdata.rda
+
+  auto-merge:
+    needs: import-data
+    runs-on: ubuntu-latest
+    if: github.actor == 'github-actions[bot]'
+    steps:
+      - name: Auto-merge PR
+        uses: peter-evans/merge-pull-request@v3
+        with:
+          merge-method: squash
