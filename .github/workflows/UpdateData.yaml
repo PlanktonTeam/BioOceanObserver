@@ -60,7 +60,6 @@ jobs:
           add-paths: R/sysdata.rda
 
       - name: Auto-merge PR
-        if: github.actor == 'github-actions[bot]'
         uses: peter-evans/merge-pull-request@v3
         with:
           pull-request: ${{ steps.cpr.outputs.pull-request-number }}
