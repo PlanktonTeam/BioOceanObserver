@@ -59,8 +59,7 @@ jobs:
           base: main
           add-paths: R/sysdata.rda
 
-      - name: Auto-merge PR
-        uses: peter-evans/merge-pull-request@v3
-        with:
-          pull-request: ${{ steps.cpr.outputs.pull-request-number }}
-          merge-method: squash
+      - name: Enable Pull Request Automerge
+        run: gh pr merge --merge --auto "1"
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
