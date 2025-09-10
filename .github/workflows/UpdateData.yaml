@@ -49,6 +49,7 @@ jobs:
         run: Rscript -e 'source("data-raw/All_RData.R")'
 
       - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@v5
         with:
           commit-message: "Data updated"
@@ -58,12 +59,9 @@ jobs:
           base: main
           add-paths: R/sysdata.rda
 
-  auto-merge:
-    needs: import-data
-    runs-on: ubuntu-latest
-    if: github.actor == 'github-actions[bot]'
-    steps:
       - name: Auto-merge PR
+        if: github.actor == 'github-actions[bot]'
         uses: peter-evans/merge-pull-request@v3
         with:
+          pull-request: ${{ steps.cpr.outputs.pull-request-number }}
           merge-method: squash
