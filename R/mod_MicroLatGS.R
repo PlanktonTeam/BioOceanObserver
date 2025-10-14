@@ -44,7 +44,7 @@ mod_MicroLatGS_ui <- function(id){
                        shiny::htmlOutput(nsMicroLatGS("PlotExp1")),
                        plotOutput(nsMicroLatGS("timeseries1")) %>% 
                          shinycssloaders::withSpinner(color="#0dc5c1"),
-                       div(style="display:inline-block; float:right; width:60%",
+                       div(class="download-button-container",
                            fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                            fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"))
                            )

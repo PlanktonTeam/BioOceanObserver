@@ -236,6 +236,7 @@ html .navbar {
 .navbar-brand .brand-text {
   margin: 0 !important;
   padding: 0 !important;
+  padding-right: 2rem !important; /* Add spacing to the right of brand text */
   line-height: 1.2 !important;
 }
 
@@ -1348,4 +1349,59 @@ nav[class*="navbar"],
   border: none !important;
   border-color: transparent !important;
   box-shadow: 0 2px 4px rgba(226, 236, 243, 0.3) !important;
+}
+
+/* ========================================
+   UTILITY CLASSES FOR COMMON STYLES
+   ======================================== */
+
+/* Modal logo header - CSIRO style */
+.modal-logo-header {
+  padding-right: 3px;
+  padding-top: 3px;
+  float: right;
+}
+
+.modal-logo-img {
+  width: 50px;
+  height: 50px;
+}
+
+.modal-title-text {
+  font-size: 1.1em;
+  margin-bottom: 0;
+  padding-top: 12px;
+}
+
+.modal-emphasis-text {
+  font-size: 1.15em;
+}
+
+/* Right-aligned download button container */
+.download-button-container {
+  display: inline-block;
+  float: right;
+  width: 60%;
+}
+
+/* Centered heading text */
+.centered-heading {
+  text-align: center;
+}
+
+/* Centered heading with bold */
+.centered-heading-bold {
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Horizontal rule separator - bold black line */
+.hr-separator {
+  border-top: 2px solid #000000;
+}
+
+/* Column with no padding or margin */
+.col-no-spacing {
+  padding: 0px;
+  margin: 0px;
 }

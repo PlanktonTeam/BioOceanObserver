@@ -36,7 +36,7 @@ mod_PolNRS_ui <- function(id){
                         have identified to monitor our oceans. They are chosen based on impact of the measurement and the 
                         feasiblity to take consistent measurements. They are commonly measured by observing systems and 
                         frequently used in policy making and input into reporting such as State of Environment."),
-        shiny::hr(style = "border-top: 2px solid #000000;"),
+        shiny::hr(class = "hr-separator"),
         shiny::htmlOutput(nsPolNRS("PlotExp1")),
         shiny::br(),
         shiny::htmlOutput(nsPolNRS("StationSummary")),
@@ -46,7 +46,7 @@ mod_PolNRS_ui <- function(id){
                                            
                                            shiny::plotOutput(nsPolNRS("timeseries1"), height = 5 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
-                                           div(style="display:inline-block; float:right; width:60%",
+                                           div(class="download-button-container",
                                                fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                                                fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                                                fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action"))
@@ -54,7 +54,7 @@ mod_PolNRS_ui <- function(id){
                            shiny::tabPanel("Biological", value = 2,
                                            shiny::plotOutput(nsPolNRS("timeseries2"), height = 5 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
-                                           div(style="display:inline-block; float:right; width:60%",
+                                           div(class="download-button-container",
                                                fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
                                                fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
                                                fButtons(id, button_id = "downloadCode2", label = "Code", Type = "Action"))
@@ -62,7 +62,7 @@ mod_PolNRS_ui <- function(id){
                            shiny::tabPanel("Chemical", value = 3,
                                            shiny::plotOutput(nsPolNRS("timeseries3"), height = 5 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
-                                           div(style="display:inline-block; float:right; width:60%",
+                                           div(class="download-button-container",
                                                fButtons(id, button_id = "downloadPlot3", label = "Plot", Type = "Download"),
                                                fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
                                                fButtons(id, button_id = "downloadCode3", label = "Code", Type = "Action"))
@@ -70,7 +70,7 @@ mod_PolNRS_ui <- function(id){
                            shiny::tabPanel("Physical", value = 4,
                                            shiny::plotOutput(nsPolNRS("timeseries4"), height = 2 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
-                                           div(style="display:inline-block; float:right; width:60%",
+                                           div(class="download-button-container",
                                                fButtons(id, button_id = "downloadPlot4", label = "Plot", Type = "Download"),
                                                fButtons(id, button_id = "downloadData4", label = "Data", Type = "Download"),
                                                fButtons(id, button_id = "downloadCode4", label = "Code", Type = "Action"))
@@ -125,12 +125,12 @@ mod_PolNRS_server <- function(id){
       bindCache(input$Site)
     
     output$StationSummary <- shiny::renderText({ 
-      paste("<h4 style='text-align:center;'>",input$Site,"</h3>The IMOS ", input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), 
-            "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ". The water depth at the station is ", 
-            round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, 
-            ". The station has been sampled since ", format(stationData()$StationStartDate, "%A %d %B %Y"), " ", stationData()$now,
-            ". ", input$Site, " is in the ", stationData()$ManagementRegion, 
-            " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = "")
+      paste('<h4 class="centered-heading">',input$Site,'</h4>The IMOS ', input$Site, ' National Reference Station is located at ', round(stationData()$Latitude,2), 
+            '\u00B0S and ', round(stationData()$Longitude,2), '\u00B0E', '. The water depth at the station is ', 
+            round(stationData()$StationDepth_m,0), 'm and is currently sampled ', stationData()$SamplingEffort, 
+            '. The station has been sampled since ', format(stationData()$StationStartDate, "%A %d %B %Y"), ' ', stationData()$now,
+            '. ', input$Site, ' is in the ', stationData()$ManagementRegion, 
+            ' management bioregion. The station is characterised by ', stationData()$Features, '.', sep = "")
     })
     
     titley <- planktonr::pr_relabel(c("PigmentChla_mgm3"), style = "ggplot")

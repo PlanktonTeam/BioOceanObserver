@@ -26,13 +26,13 @@ mod_PolCPR_ui <- function(id){
                         have identified to monitor our oceans. They are chosen based on impact of the measurement and the 
                         feasiblity to take consistent measurements. They are commonly measured by observing systems and 
                         frequently used in policy making and input into reporting such as State of Environment."),
-                shiny::hr(style = "border-top: 2px solid #000000;"),
+                shiny::hr(class = "hr-separator"),
                 shiny::br(),
                 shiny::htmlOutput(nsPolCPR("StationSummary")),
                 shiny::br(),
                 plotOutput(nsPolCPR("timeseries1"), height = 1500) %>% 
                   shinycssloaders::withSpinner(color="#0dc5c1"),
-                    div(style="display:inline-block; float:right; width:60%",
+                    div(class="download-button-container",
                        fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                        fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                        fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action")))
@@ -94,10 +94,10 @@ mod_PolCPR_server <- function(id){
     
     
     output$StationSummary <- shiny::renderText({ 
-      paste("<h3 style='text-align:center;'>",input$Site,"</h3>The CPR has been sampling 
-              in the ", input$Site," bioregion since ", format(min(stationData()$SampleStartDate), "%A %d %B %Y"), 
-            " and sampling is ongoing.", " Approximately ", format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
-            " nautical miles has been towed in this region. The ", input$Site, " bioregion is characterised by ", 
+      paste('<h3 class="centered-heading">',input$Site,'</h3>The CPR has been sampling 
+              in the ', input$Site,' bioregion since ', format(min(stationData()$SampleStartDate), "%A %d %B %Y"), 
+            ' and sampling is ongoing.', ' Approximately ', format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
+            ' nautical miles has been towed in this region. The ', input$Site, ' bioregion is characterised by ', 
             unique(stationData()$Features), sep = "")
     })
     

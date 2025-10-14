@@ -185,7 +185,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                        shiny::htmlOutput(ns("PlotExp1")),
                                        plotOutput(ns("timeseries1"), height = "auto") %>% 
                                          shinycssloaders::withSpinner(color="#0dc5c1"),
-                                       div(style="display:inline-block; float:right; width:60%",
+                                       div(class="download-button-container",
                                            fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                                            fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                                            fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
@@ -194,7 +194,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                        shiny::htmlOutput(ns("PlotExp2")),  
                                        plotOutput(ns("timeseries2"), height = 800) %>% 
                                          shinycssloaders::withSpinner(color="#0dc5c1"),
-                                       div(style="display:inline-block; float:right; width:60%",
+                                       div(class="download-button-container",
                                            fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
                                            fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
                                            fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
@@ -204,7 +204,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                          textOutput(ns("PlotExp3"), container = span),  
                                          plotOutput(ns("timeseries3"), height = "auto") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1"),
-                                         div(style="display:inline-block; float:right; width:60%",
+                                         div(class="download-button-container",
                                              fButtons(id, button_id = "downloadPlot3", label = "Plot", Type = "Download"),
                                              fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
                                              fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
@@ -215,7 +215,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                          shiny::htmlOutput(ns("PlotExp3")),
                                          plotOutput(ns("timeseries3"), height = "auto") %>%
                                            shinycssloaders::withSpinner(color="#0dc5c1"),
-                                         div(style="display:inline-block; float:right; width:60%",
+                                         div(class="download-button-container",
                                              fButtons(id, button_id = "downloadPlot3", label = "Plot", Type = "Download"),
                                              fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
                                              fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
@@ -300,23 +300,23 @@ fSpatialPanel <- function(id, tabsetPanel_id){
                          p(textOutput(ns("DistMapExp"), container = span)),
                          fluidRow(
                            shiny::column(width = 6,
-                                         style = "padding:0px; margin:0px;",
+                                         class = "col-no-spacing",
                                          shiny::h4("December - February"),
                                          leaflet::leafletOutput(ns("MapSum"), width = "99%", height = "300px") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1")), 
                            shiny::column(width = 6,
-                                         style = "padding:0px; margin:0px;",
+                                         class = "col-no-spacing",
                                          shiny::h4("March - May"),
                                          leaflet::leafletOutput(ns("MapAut"), width = "99%", height = "300px") %>%
                                            shinycssloaders::withSpinner(color="#0dc5c1")
                            ),
                            shiny::column(width = 6,
-                                         style = "padding:0px; margin:0px;",
+                                         class = "col-no-spacing",
                                          shiny::h4("June - August"),
                                          leaflet::leafletOutput(ns("MapWin"), width = "99%", height = "300px") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1")), 
                            shiny::column(width = 6,
-                                         style = "padding:0px; margin:0px;",
+                                         class = "col-no-spacing",
                                          shiny::h4("September - November"),
                                          leaflet::leafletOutput(ns("MapSpr"), width = "99%", height = "300px") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1"))
@@ -346,7 +346,7 @@ fEnviroPanel <- function(id){
     shiny::htmlOutput(ns("PlotExp")),
     plotOutput(ns("timeseries1"), height = "auto") %>% 
       shinycssloaders::withSpinner(color="#0dc5c1"),
-    shiny::div(style="display:inline-block; float:right; width:60%",
+    shiny::div(class="download-button-container",
                fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                if (id == "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData2", label = "Data TS", Type = "Download")},
                if (id == "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData3", label = "Data Clim", Type = "Download")},
@@ -531,7 +531,7 @@ fRelationPanel <- function(id, tabsetPanel_id){
                                        shiny::htmlOutput(ns("PlotExp1")),
                                        plotOutput(ns("scatter1")) %>% 
                                          shinycssloaders::withSpinner(color="#0dc5c1"),
-                                       div(style="display:inline-block; float:right; width:60%",
+                                       div(class="download-button-container",
                                            fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                                            fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"))
                        ),
@@ -539,7 +539,7 @@ fRelationPanel <- function(id, tabsetPanel_id){
                                        shiny::htmlOutput(ns("PlotExp2")),  
                                        plotOutput(ns("box2"), height = 800) %>%
                                          shinycssloaders::withSpinner(color="#0dc5c1"),
-                                       div(style="display:inline-block; float:right; width:60%",
+                                       div(class="download-button-container",
                                            fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
                                            fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"))
                        )
