@@ -48,6 +48,46 @@ fEOVutilities <- function(vector = "col", Survey = "NRS"){
   
 }
 
+#' Convert ggplot map to interactive plotly with tight margins
+#'
+#' @description Takes a ggplot object (typically a map) and converts it to an 
+#' interactive plotly plot with consistent styling - no margins, no axes, 
+#' transparent background, and responsive resizing enabled.
+#'
+#' @param gg_map A ggplot object to convert to plotly
+#' @param tooltip Character vector specifying which aesthetic to show in tooltip.
+#'   Default is "colour" which works well for colored station points.
+#'
+#' @return A plotly object ready for renderPlotly()
+#'
+#' @noRd
+fPlotlyMap <- function(gg_map, tooltip = "colour") {
+  
+  plotly::ggplotly(gg_map, tooltip = tooltip, dynamicTicks = TRUE) %>%
+    plotly::layout(
+      showlegend = FALSE,
+      margin = list(l = 0, r = 0, t = 0, b = 0, pad = 0),
+      xaxis = list(
+        showticklabels = FALSE,
+        showgrid = FALSE,
+        zeroline = FALSE,
+        automargin = FALSE,
+        fixedrange = TRUE
+      ),
+      yaxis = list(
+        showticklabels = FALSE,
+        showgrid = FALSE,
+        zeroline = FALSE,
+        automargin = FALSE,
+        fixedrange = TRUE
+      ),
+      paper_bgcolor = 'rgba(0,0,0,0)',
+      plot_bgcolor = 'rgba(0,0,0,0)'
+    ) %>%
+    plotly::config(displayModeBar = FALSE)
+  
+}
+
 #' BOO Plankton Sidebar
 #'
 #' @noRd 
@@ -92,9 +132,15 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     # Put Map, Station names and date slider on all panels
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " <= 5"), 
-      shiny::plotOutput(ns("plotmap"),
-                        #height = "300px", 
-                        width = "100%"),
+      # Use plotlyOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
+      if(stringr::str_detect(id, "CPR")) {
+        shiny::plotOutput(ns("plotmap"))
+      } else {
+        shiny::tagList(
+          shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+          plotly::plotlyOutput(ns("plotmap"), height = "auto")
+        )
+      },
       shiny::HTML("<h3>Select a station:</h3>"),
       shiny::fluidRow(class = "row_multicol", tags$div(align = "left", 
                                class = "multicol",
@@ -383,7 +429,8 @@ fEnviroSidebar <- function(id, dat = NULL){
   }
   
   shiny::sidebarPanel(
-    shiny::plotOutput(ns("plotmap"), width = "100%"),
+    shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+    plotly::plotlyOutput(ns("plotmap"), height = "auto"),
     shiny::HTML("<h3>Select a station:</h3>"),
     shiny::fluidRow(tags$div(align = "left", 
                              class = "multicol",
@@ -489,7 +536,8 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
                               .shiny-split-layout > div {overflow: visible;}
                                     "))),
       condition = "input.navbar == 'Relationships'",
-      plotOutput(ns("plotmap")),   
+      shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+      plotly::plotlyOutput(ns("plotmap"), height = "auto"),   
       shiny::HTML("<h3>Select a station:</h3>"),
       shiny::checkboxGroupInput(inputId = ns("Site"), label = NULL, choices = ChoiceSite, selected = SelectedVar),
       shiny::HTML("<h4>Select a group & variable for the y axis:</h4>"),

@@ -13,7 +13,7 @@ mod_MicroLatGS_ui <- function(id){
     sidebarLayout(
       shiny::sidebarPanel(
           shiny::plotOutput(nsMicroLatGS("plotmap"),
-                            height = "300px", 
+                            height = "auto", 
                             width = "100%"),
           shiny::HTML("<h3>Latitude range to plot:</h3>"),
           shiny::sliderInput(nsMicroLatGS("LatSlide"), 

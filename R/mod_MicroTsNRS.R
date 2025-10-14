@@ -61,9 +61,10 @@ mod_MicroTsNRS_server <- function(id){
     )
     
     # Sidebar Map
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-    }, bg = "transparent") %>% bindCache(input$Site)
+    output$plotmap <- plotly::renderPlotly({ 
+      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
+      fPlotlyMap(p1, tooltip = "colour")
+    })  # No cache - allows responsive resizing
     
     # Add text information 
     output$PlotExp1 <- renderText({

@@ -75,9 +75,10 @@ mod_PigmentsBGC_server <- function(id){
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Pigs") # Download figure
     
     # add a map in sidebar
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-    }, bg = "transparent") %>% bindCache(input$station)
+    output$plotmap <- plotly::renderPlotly({ 
+      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
+      fPlotlyMap(p1, tooltip = "colour")
+    })  # No cache - allows responsive resizing
     
     # add text information 
     output$PlotExp <- renderText({

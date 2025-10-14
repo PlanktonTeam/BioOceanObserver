@@ -39,9 +39,10 @@ mod_MoorBGC_server <- function(id){
     }) %>% bindCache(input$station)
     
     # add a map in sidebar
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(unique(selectedClim()$StationCode))
-    }, bg = "transparent") %>% bindCache(input$station)
+    output$plotmap <- plotly::renderPlotly({ 
+      p1 <- planktonr::pr_plot_NRSmap(unique(selectedClim()$StationCode))
+      fPlotlyMap(p1, tooltip = "colour")
+    })  # No cache - allows responsive resizing
     
     # add climate plot
     gg_out1 <- reactive({ 

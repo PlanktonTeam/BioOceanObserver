@@ -12,7 +12,8 @@ mod_PolLTM_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        plotOutput(nsPolLTM("plotmap")),
+        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+        plotly::plotlyOutput(nsPolLTM("plotmap"), height = "auto"),
         shiny::HTML("<h3>Select a station:</h3>"),
         radioButtons(inputId = nsPolLTM("SiteLTM"), label = NULL, choices = unique(sort(pkg.env$PolLTM$StationName)), selected = "Port Hacking")
       ),
@@ -79,9 +80,10 @@ mod_PolLTM_server <- function(id){
     }) %>% bindCache(input$SiteLTM)
     
     # Sidebar Map
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "LTM")
-    }, bg = "transparent") %>% bindCache(input$SiteLTM)
+    output$plotmap <- plotly::renderPlotly({ 
+      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "LTM")
+      fPlotlyMap(p1, tooltip = "colour")
+    })  # No cache - allows responsive resizing
     
     output$StationSummary <- shiny::renderText({ 
       

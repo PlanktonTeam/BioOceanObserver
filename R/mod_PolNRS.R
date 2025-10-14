@@ -12,7 +12,8 @@ mod_PolNRS_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        plotOutput(nsPolNRS("plotmap")),
+        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+        plotly::plotlyOutput(nsPolNRS("plotmap"), height = "auto"),
         shiny::HTML("<h3>Select a station:</h3>"),
         shiny::radioButtons(inputId = nsPolNRS("Site"), label = NULL, choices = unique(sort(pkg.env$PolNRS$StationName)), selected = "Maria Island"),
         shiny::conditionalPanel(
@@ -119,10 +120,15 @@ mod_PolNRS_server <- function(id){
     }) %>% bindCache(input$Site)
     
     # Sidebar Map
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-    }, bg = "transparent") %>% 
-      bindCache(input$Site)
+    output$plotmap <- plotly::renderPlotly({ 
+      
+      # Get the ggplot object from planktonr
+      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
+      
+      # Convert to interactive plotly using utility function
+      fPlotlyMap(p1, tooltip = "colour")
+      
+    })  # No cache - allows responsive resizing
     
     output$StationSummary <- shiny::renderText({ 
       paste('<h4 class="centered-heading">',input$Site,'</h4>The IMOS ', input$Site, ' National Reference Station is located at ', round(stationData()$Latitude,2), 

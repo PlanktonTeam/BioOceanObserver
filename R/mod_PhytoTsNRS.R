@@ -43,9 +43,10 @@ mod_PhytoTsNRS_server <- function(id){
     }) %>% bindCache(input$parameter,input$Site, input$DatesSlide[1], input$DatesSlide[2])
     # })
     
-    output$plotmap <- renderPlot({
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-    }, bg = "transparent") %>% bindCache(input$Site)
+    output$plotmap <- plotly::renderPlotly({
+      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
+      fPlotlyMap(p1, tooltip = "colour")
+    })  # No cache - allows responsive resizing
     
     # add text information
     output$PlotExp1 <- renderText({

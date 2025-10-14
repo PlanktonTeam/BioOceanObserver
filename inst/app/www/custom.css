@@ -99,6 +99,13 @@ body {
   background-color: var(--neutral-2) !important;
 }
 
+
+/* Small text - extra small font size */
+.small-text {
+  font-size: var(--font-size-base) !important;
+  color: var(--text-2) !important;
+}
+
 /* Headings - Poppins */
 .h1, .h2, .h3, .h4, .h5, .h6, 
 h1, h2, h3, h4, h5, h6 {
@@ -857,6 +864,46 @@ a:focus {
    SHINY UI ELEMENTS ON SIDEBAR STYLING
    ======================================== */
 
+/* Remove ALL padding/margins from plot outputs in sidebar to maximize map display */
+.well .shiny-plot-output {
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 0 !important;
+  font-size: 0 !important;
+}
+
+/* Override Bootstrap card padding for plot outputs */
+.card .shiny-plot-output,
+.well .shiny-plot-output {
+  --bs-card-spacer-y: 0 !important;
+  --bs-card-spacer-x: 0 !important;
+  padding: 0 !important;
+}
+
+/* Remove any wrapper/container padding around plot outputs */
+.well .shiny-plot-output > * {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Ensure images inside plot outputs fill the container while maintaining aspect ratio */
+.well .shiny-plot-output img {
+  width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* Override shiny-scalable class behavior for sidebar maps */
+.well .shiny-plot-output img.shiny-scalable {
+  width: 100% !important;
+  height: auto !important;
+}
+
 /* Make Shiny UI elements transparent on sidebar to inherit background color */
 .well .form-control,
 .well .form-select,
@@ -1405,3 +1452,4 @@ nav[class*="navbar"],
   padding: 0px;
   margin: 0px;
 }
+

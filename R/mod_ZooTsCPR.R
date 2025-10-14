@@ -53,7 +53,8 @@ mod_ZooTsCPR_server <- function(id){
     
     output$plotmap <- renderPlot({ 
       planktonr::pr_plot_CPRmap(unique(selectedData()$BioRegion))
-    }, bg = "transparent") %>% bindCache(input$region)
+    }, bg = "transparent") %>% 
+      bindCache(unique(selectedData()$BioRegion))
     
     # add text information 
     output$PlotExp1 <- renderText({

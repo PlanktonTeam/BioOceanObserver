@@ -90,7 +90,8 @@ mod_PolCPR_server <- function(id){
     # Sidebar Map
     output$plotmap <- renderPlot({ 
       planktonr::pr_plot_CPRmap(unique(selectedData()$BioRegion))
-    }, bg = "transparent") %>% bindCache(input$Site)
+    }, bg = "transparent") %>% 
+      bindCache(unique(selectedData()$BioRegion))
     
     
     output$StationSummary <- shiny::renderText({ 

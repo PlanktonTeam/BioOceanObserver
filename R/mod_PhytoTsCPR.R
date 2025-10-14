@@ -49,9 +49,10 @@ mod_PhytoTsCPR_server <- function(id){
       PhytoTsCPRValuesisNumeric = {class(selectedData()$Values)}
     )
     
-    output$plotmap <- renderPlot({ # renderCachedPlot plot so cached version can be returned if it exists (code only run once per scenario per session)
+    output$plotmap <- renderPlot({ 
       planktonr::pr_plot_CPRmap(unique(selectedData()$BioRegion))
-    }, bg = "transparent") %>% bindCache(input$region)
+    }, bg = "transparent") %>% 
+      bindCache(unique(selectedData()$BioRegion))
     
     # add text information 
     output$PlotExp1 <- renderText({
