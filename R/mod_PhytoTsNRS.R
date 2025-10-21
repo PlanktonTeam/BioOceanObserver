@@ -29,18 +29,18 @@ mod_PhytoTsNRS_server <- function(id){
     # Sidebar ----------------------------------------------------------
     # observeEvent({input$NRSpt == 1 | input$NRSpt == 2}, {
     selectedData <- reactive({ #TODO - This reactive encompasses things from 1/2 AND 3. Can we split them?
-      req(input$Site)
+      req(input$site)
       req(input$parameter)
-      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       selectedData <- pkg.env$datNRSp %>%
-        dplyr::filter(.data$StationName %in% input$Site,
+        dplyr::filter(.data$StationName %in% input$site,
                       .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
-    }) %>% bindCache(input$parameter,input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$parameter,input$site, input$DatesSlide[1], input$DatesSlide[2])
     # })
     
     output$plotmap <- plotly::renderPlotly({
@@ -72,7 +72,7 @@ mod_PhytoTsNRS_server <- function(id){
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
         p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
         
-      }) %>% bindCache(input$parameter,input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$parameter,input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
       output$timeseries1 <- renderPlot({
         gg_out1()
@@ -109,7 +109,7 @@ mod_PhytoTsNRS_server <- function(id){
         p1 / 
           (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom"))
         
-      }) %>% bindCache(input$parameter, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
       output$timeseries2 <- renderPlot({
         gg_out2()
@@ -128,27 +128,27 @@ mod_PhytoTsNRS_server <- function(id){
     observeEvent({input$NRSpts == 3}, {
       
       selectedDataFG <- reactive({
-        req(input$Site)
-        shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
+        req(input$site)
+        shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
         
         selectedDataFG <- pkg.env$NRSfgp %>%
-          dplyr::filter(.data$StationName %in% input$Site,
+          dplyr::filter(.data$StationName %in% input$site,
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
           droplevels()
         
-      }) %>% bindCache(input$Site, input$DatesSlide[1], input$DatesSlide[2])
+      }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2])
       
       gg_out3 <- reactive({
         
         if (is.null(pkg.env$NRSfgp$StationCode)) {return(NULL)}
-        scale <- dplyr::if_else(input$scaler3, "Percent", "Actual")
+        scale <- dplyr::if_else(input$scaler3, "Proportion", "Actual")
         
         p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
         p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") +
           ggplot2::theme(axis.title.y = ggplot2::element_blank(), legend.position = "none")
         p1 + p2 + patchwork::plot_layout(widths = c(3,1))
         
-      }) %>% bindCache(input$Site, input$scaler3, input$DatesSlide[1], input$DatesSlide[2])
+      }) %>% bindCache(input$site, input$scaler3, input$DatesSlide[1], input$DatesSlide[2])
       
       output$timeseries3 <- renderPlot({
         gg_out3()

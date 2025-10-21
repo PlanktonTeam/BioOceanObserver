@@ -24,12 +24,12 @@ mod_PicoBGC_server <- function(id){
     #     select depths
     
     observe({
-      req(input$station)
+      req(input$site)
       req(input$parameter)
-      shiny::validate(need(!is.na(input$station), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       # updateSelectizeInput(session, "depth", "Select a depth", server = TRUE, 
-      #                      choices = NRSBGCPico[NRSBGCPico$Station %in% input$station & NRSBGCPico$name %in% input$parameter,]$SampleDepth_m)
+      #                      choices = NRSBGCPico[NRSBGCPico$Station %in% input$site & NRSBGCPico$name %in% input$parameter,]$SampleDepth_m)
     })
     
     selectedData <- reactive({
@@ -38,13 +38,13 @@ mod_PicoBGC_server <- function(id){
       shiny::validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       pkg.env$Pico %>%
-        dplyr::filter(.data$StationName %in% input$station,
+        dplyr::filter(.data$StationName %in% input$site,
                       .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                       .data$Parameters %in% input$parameter) %>%
         dplyr::mutate(name = as.factor(.data$Parameters)) %>%
         tidyr::drop_na() 
       
-    }) %>% bindCache(input$station, input$parameter, input$date)
+    }) %>% bindCache(input$site, input$parameter, input$date)
     
     shiny::exportTestValues(
       PicoBGC = {ncol(selectedData())},
@@ -70,7 +70,7 @@ mod_PicoBGC_server <- function(id){
         planktonr::pr_plot_NRSEnvContour(selectedData(), na.fill = FALSE)
       }
       
-    }) %>% bindCache(input$station, input$parameter, input$date, input$interp)
+    }) %>% bindCache(input$site, input$parameter, input$date, input$interp)
     
     output$timeseries1 <- renderPlot({
       gg_out1()

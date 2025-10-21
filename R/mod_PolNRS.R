@@ -15,7 +15,10 @@ mod_PolNRS_ui <- function(id){
         shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
         plotly::plotlyOutput(nsPolNRS("plotmap"), height = "auto"),
         shiny::HTML("<h3>Select a station:</h3>"),
-        shiny::radioButtons(inputId = nsPolNRS("Site"), label = NULL, choices = unique(sort(pkg.env$PolNRS$StationName)), selected = "Maria Island"),
+        shiny::radioButtons(inputId = nsPolNRS("site"), 
+                            label = NULL, 
+                            choices = unique(sort(pkg.env$PolNRS$StationName)), 
+                            selected = "Maria Island"),
         shiny::conditionalPanel(
           condition = paste0("input.EOV_NRS == 1"), # Only first tab
           shiny::HTML("<h3>Select a parameter:</h3>"),
@@ -91,13 +94,13 @@ mod_PolNRS_server <- function(id){
     
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
-      req(input$Site)
-      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
+      req(input$site)
+      shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       
       selectedData <- pkg.env$PolNRS %>% 
-        dplyr::filter(.data$StationName %in% input$Site)
+        dplyr::filter(.data$StationName %in% input$site)
       
-    }) %>% bindCache(input$Site, input$Parameters)
+    }) %>% bindCache(input$site, input$Parameters)
     
     shiny::exportTestValues(
       PolNRS = {ncol(selectedData())},
@@ -116,8 +119,8 @@ mod_PolNRS_server <- function(id){
     
     stationData <- reactive({
       stationData <- pkg.env$NRSinfo %>% 
-        dplyr::filter(.data$StationName == input$Site) 
-    }) %>% bindCache(input$Site)
+        dplyr::filter(.data$StationName == input$site) 
+    }) %>% bindCache(input$site)
     
     # Sidebar Map
     output$plotmap <- plotly::renderPlotly({ 
@@ -131,11 +134,11 @@ mod_PolNRS_server <- function(id){
     })  # No cache - allows responsive resizing
     
     output$StationSummary <- shiny::renderText({ 
-      paste('<h4 class="centered-heading">',input$Site,'</h4>The IMOS ', input$Site, ' National Reference Station is located at ', round(stationData()$Latitude,2), 
+      paste('<h4 class="centered-heading">',input$site,'</h4>The IMOS ', input$site, ' National Reference Station is located at ', round(stationData()$Latitude,2), 
             '\u00B0S and ', round(stationData()$Longitude,2), '\u00B0E', '. The water depth at the station is ', 
             round(stationData()$StationDepth_m,0), 'm and is currently sampled ', stationData()$SamplingEffort, 
             '. The station has been sampled since ', format(stationData()$StationStartDate, "%A %d %B %Y"), ' ', stationData()$now,
-            '. ', input$Site, ' is in the ', stationData()$ManagementRegion, 
+            '. ', input$site, ' is in the ', stationData()$ManagementRegion, 
             ' management bioregion. The station is characterised by ', stationData()$Features, '.', sep = "")
     })
     
@@ -161,7 +164,7 @@ mod_PolNRS_server <- function(id){
                          axis.text =  ggplot2::element_text(size = 10, face = "plain"),
                          plot.title = ggplot2::element_text(hjust = 0.5))
         
-      }) %>% bindCache(input$Site, input$Parameters)
+      }) %>% bindCache(input$site, input$Parameters)
       
       
       output$timeseries1 <- renderPlot({
@@ -190,7 +193,7 @@ mod_PolNRS_server <- function(id){
                          axis.text =  ggplot2::element_text(size = 10, face = "plain"),
                          plot.title = ggplot2::element_text(hjust = 0.5))
         
-      }) %>% bindCache(input$Site)
+      }) %>% bindCache(input$site)
       
       output$timeseries2 <- renderPlot({
         gg_out2()
@@ -209,7 +212,7 @@ mod_PolNRS_server <- function(id){
         p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Nitrate_umolL", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
         p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Silicate_umolL", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE)
         
-        if(input$Site %in% c('Maria Island', 'Rottnest Island')){
+        if(input$site %in% c('Maria Island', 'Rottnest Island')){
           p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = FALSE)
           p5 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Oxygen_umolL", trans = "identity", col = col1["Oxygen_umolL"])
         } else {
@@ -223,7 +226,7 @@ mod_PolNRS_server <- function(id){
                          axis.text =  ggplot2::element_text(size = 10, face = "plain"),
                          plot.title = ggplot2::element_text(hjust = 0.5))
         
-      }) %>% bindCache(input$Site)
+      }) %>% bindCache(input$site)
       
       output$timeseries3 <- renderPlot({
         gg_out3()
@@ -246,7 +249,7 @@ mod_PolNRS_server <- function(id){
                          axis.text =  ggplot2::element_text(size = 10, face = "plain"),
                          plot.title = ggplot2::element_text(hjust = 0.5))
         
-      }) %>% bindCache(input$Site)
+      }) %>% bindCache(input$site)
       
       output$timeseries4 <- renderPlot({
         gg_out4()

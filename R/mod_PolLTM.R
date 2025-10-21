@@ -15,7 +15,10 @@ mod_PolLTM_ui <- function(id){
         shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
         plotly::plotlyOutput(nsPolLTM("plotmap"), height = "auto"),
         shiny::HTML("<h3>Select a station:</h3>"),
-        radioButtons(inputId = nsPolLTM("SiteLTM"), label = NULL, choices = unique(sort(pkg.env$PolLTM$StationName)), selected = "Port Hacking")
+        radioButtons(inputId = nsPolLTM("siteLTM"), 
+                     label = NULL, 
+                     choices = unique(sort(pkg.env$PolLTM$StationName)), 
+                     selected = "Port Hacking")
       ),
       mainPanel(id = "EOV paramters from Long Term Monitoring", 
                 shiny::br(),
@@ -49,14 +52,14 @@ mod_PolLTM_server <- function(id){
     
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
-      req(input$SiteLTM)
-      shiny::validate(need(!is.na(input$SiteLTM), "Error: Please select a station."))
+      req(input$siteLTM)
+      shiny::validate(need(!is.na(input$siteLTM), "Error: Please select a station."))
       
       selectedData <- pkg.env$PolLTM %>% 
-        dplyr::filter(.data$StationName %in% input$SiteLTM,
+        dplyr::filter(.data$StationName %in% input$siteLTM,
                       !.data$Parameters %in% c("Ammonium_umolL","Nitrite_umolL", "Oxygen_umolL"))
       
-    }) %>% bindCache(input$SiteLTM)
+    }) %>% bindCache(input$siteLTM)
     
     shiny::exportTestValues(
       PolLTM = {ncol(selectedData())},
@@ -76,8 +79,9 @@ mod_PolLTM_server <- function(id){
     )
 
     stationData <- reactive({
-      stationData <- pkg.env$NRSinfo %>% dplyr::filter(.data$StationName == input$SiteLTM) 
-    }) %>% bindCache(input$SiteLTM)
+      stationData <- pkg.env$NRSinfo %>% 
+        dplyr::filter(.data$StationName == input$siteLTM) 
+    }) %>% bindCache(input$siteLTM)
     
     # Sidebar Map
     output$plotmap <- plotly::renderPlotly({ 
@@ -87,12 +91,12 @@ mod_PolLTM_server <- function(id){
     
     output$StationSummary <- shiny::renderText({ 
       
-      paste('<h4 class="centered-heading-bold">',input$SiteLTM,'</h4>The ', input$SiteLTM, 
+      paste('<h4 class="centered-heading-bold">',input$siteLTM,'</h4>The ', input$siteLTM, 
             ' Longterm Monitoring Station is located at ', round(stationData()$Latitude,2), 
             '\u00B0S and ', round(stationData()$Longitude,2), '\u00B0E', '. The water depth at the station is ', 
             round(stationData()$StationDepth_m,0), 'm and is currently sampled ', stationData()$SamplingEffort, 
             '. The station has been sampled since ', format(min(selectedData()$SampleTime_Local), "%A %d %B %Y"), ' ', stationData()$now,
-            '. ', input$SiteLTM, ' is part of ', stationData()$Node, ' and is in the ', stationData()$ManagementRegion, 
+            '. ', input$siteLTM, ' is part of ', stationData()$Node, ' and is in the ', stationData()$ManagementRegion, 
             ' management bioregion. The station is characterised by ', stationData()$Features, '.', sep = "")
       })
     
@@ -130,7 +134,7 @@ mod_PolLTM_server <- function(id){
                        axis.text = ggplot2::element_text(size = 10, face = "plain"),
                        plot.title = ggplot2::element_text(hjust = 0.5)) 
       
-    }) %>% bindCache(input$SiteLTM)
+    }) %>% bindCache(input$siteLTM)
     
     output$timeseries1 <- renderPlot({
       gg_out1()

@@ -23,7 +23,7 @@ Imports:
     lubridate,
     magrittr,
     patchwork,
-    planktonr (>= 0.6.3),
+    planktonr (>= 0.6.6),
     rlang (>= 1.1.0),
     shiny (>= 1.6.0),
     shinycssloaders,

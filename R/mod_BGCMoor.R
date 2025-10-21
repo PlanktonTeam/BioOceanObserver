@@ -23,20 +23,20 @@ mod_MoorBGC_server <- function(id){
   moduleServer( id, function(input, output, session){
     
     selectedClim <- reactive({
-      req(input$station)
-      shiny::validate(need(!is.na(input$station), "Error: Please select a station."))
+      req(input$site)
+      shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       
-      selectedClim <- pr_get_MoorClimPlotData(pkg.env$MooringClim, input$station, 5) %>% droplevels()
+      selectedClim <- pr_get_MoorClimPlotData(pkg.env$MooringClim, input$site, 5) %>% droplevels()
       
-    }) %>% bindCache(input$station)
+    }) %>% bindCache(input$site)
     
     selectedTS <- reactive({
-      req(input$station)
-      shiny::validate(need(!is.na(input$station), "Error: Please select a station."))
+      req(input$site)
+      shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       
-      selectedTS <- pr_get_MoorTSPlotData(pkg.env$MooringTS, input$station, 5) %>% droplevels()
+      selectedTS <- pr_get_MoorTSPlotData(pkg.env$MooringTS, input$site, 5) %>% droplevels()
       
-    }) %>% bindCache(input$station)
+    }) %>% bindCache(input$site)
     
     # add a map in sidebar
     output$plotmap <- plotly::renderPlotly({ 
@@ -52,7 +52,7 @@ mod_MoorBGC_server <- function(id){
       
       p1 + p2
       
-    }) %>% bindCache(input$station)
+    }) %>% bindCache(input$site)
     
     output$timeseries1 <- renderPlot({
       gg_out1()

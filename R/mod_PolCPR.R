@@ -15,7 +15,7 @@ mod_PolCPR_ui <- function(id){
         shiny::plotOutput(nsPolCPR("plotmap")),
         shiny::p("Note there is very little data in the North and North-west regions"),
         shiny::HTML("<h3>Select a bioregion:</h3>"),
-        shiny::radioButtons(inputId = nsPolCPR("Site"), label = NULL, 
+        shiny::radioButtons(inputId = nsPolCPR("site"), label = NULL, 
                      choices = unique(sort(pkg.env$PolCPR$BioRegion)), selected = "Temperate East"),
       ),
       mainPanel(id = "EOV Biomass by CPR", 
@@ -50,22 +50,22 @@ mod_PolCPR_server <- function(id){
     
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
-      req(input$Site)
-      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
+      req(input$site)
+      shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       
       selectedData <- pkg.env$PolCPR %>% 
-        dplyr::filter(.data$BioRegion %in% input$Site)
+        dplyr::filter(.data$BioRegion %in% input$site)
       
-      }) %>% bindCache(input$Site)
+      }) %>% bindCache(input$site)
     
     selectedPCI <- reactive({
-      req(input$Site)
-      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
+      req(input$site)
+      shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       
       selectedPCI <- pkg.env$PCI %>% 
-      dplyr::filter(.data$BioRegion %in% input$Site) 
+      dplyr::filter(.data$BioRegion %in% input$site) 
       
-    }) %>% bindCache(input$Site)
+    }) %>% bindCache(input$site)
     
     shiny::exportTestValues(
       Polcpr = {ncol(selectedData())},
@@ -84,8 +84,8 @@ mod_PolCPR_server <- function(id){
 
     stationData <- reactive({
       stationData <- pkg.env$CPRinfo %>% 
-        dplyr::filter(.data$BioRegion == input$Site) 
-    }) %>% bindCache(input$Site)
+        dplyr::filter(.data$BioRegion == input$site) 
+    }) %>% bindCache(input$site)
     
     # Sidebar Map
     output$plotmap <- renderPlot({ 
@@ -95,10 +95,10 @@ mod_PolCPR_server <- function(id){
     
     
     output$StationSummary <- shiny::renderText({ 
-      paste('<h3 class="centered-heading">',input$Site,'</h3>The CPR has been sampling 
-              in the ', input$Site,' bioregion since ', format(min(stationData()$SampleStartDate), "%A %d %B %Y"), 
+      paste('<h3 class="centered-heading">',input$site,'</h3>The CPR has been sampling 
+              in the ', input$site,' bioregion since ', format(min(stationData()$SampleStartDate), "%A %d %B %Y"), 
             ' and sampling is ongoing.', ' Approximately ', format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
-            ' nautical miles has been towed in this region. The ', input$Site, ' bioregion is characterised by ', 
+            ' nautical miles has been towed in this region. The ', input$site, ' bioregion is characterised by ', 
             unique(stationData()$Features), sep = "")
     })
     
@@ -147,7 +147,7 @@ mod_PolCPR_server <- function(id){
                        axis.text =  ggplot2::element_text(size = 10, face = "plain"),
                        plot.title = ggplot2::element_text(hjust = 0.5))
       
-    }) %>% bindCache(input$Site)
+    }) %>% bindCache(input$site)
     
     output$timeseries1 <- renderPlot({
       gg_out1()

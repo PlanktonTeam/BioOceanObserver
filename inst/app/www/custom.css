@@ -867,7 +867,7 @@ a:focus {
 /* Remove ALL padding/margins from plot outputs in sidebar to maximize map display */
 .well .shiny-plot-output {
   padding: 0 !important;
-  margin: 0 !important;
+  margin: 0 0 15px 0 !important; /* Add bottom margin to prevent overlap with content below */
   line-height: 0 !important;
   font-size: 0 !important;
 }

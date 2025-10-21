@@ -167,7 +167,7 @@ mod_PhytoTsCPR_server <- function(id){
           return(NULL)
         }
         
-        scale <- dplyr::if_else(input$scaler3, "Percent", "Actual")
+        scale <- dplyr::if_else(input$scaler3, "Proportion", "Actual")
         
         p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
         p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") +
