@@ -97,7 +97,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
   if (stringr::str_detect(id, "NRS") == TRUE){ # NRS
     choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
-    idSite <- "Site"
+    idSite <- "site"
     
     if (stringr::str_detect(id, "Micro") == TRUE){ # Microbes + NRS
       selectedVar <- "Bacterial_Temperature_Index_KD"
@@ -118,23 +118,21 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
   } else if (stringr::str_detect(id, "CS") == TRUE){ # Microbes Coastal
     choices <- unique(sort(dat$State))
     selectedSite <- c("GBR")
-    idSite <- "Site"
+    idSite <- "site"
     selectedVar = "Bacterial_Temperature_Index_KD"
   } 
   
   shiny::sidebarPanel(
-    
-    shiny::conditionalPanel(
-      condition = "input.phyto == 'ptscpr' | input.zoo == 'ztscpr'",
-      shiny::HTML("<p>Note there is very little data in the North and North-west regions<p>")
-    ),
     
     # Put Map, Station names and date slider on all panels
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " <= 5"), 
       # Use plotlyOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
       if(stringr::str_detect(id, "CPR")) {
-        shiny::plotOutput(ns("plotmap"))
+        shiny::tagList(
+          shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
+          shiny::plotOutput(ns("plotmap"), height = "400px")
+        )
       } else {
         shiny::tagList(
           shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
@@ -143,11 +141,11 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       },
       shiny::HTML("<h3>Select a station:</h3>"),
       shiny::fluidRow(class = "row_multicol", tags$div(align = "left", 
-                               class = "multicol",
-                               shiny::checkboxGroupInput(inputId = ns(idSite), 
-                                                         label = NULL,
-                                                         choices = choices, 
-                                                         selected = selectedSite))),
+                                                       class = "multicol",
+                                                       shiny::checkboxGroupInput(inputId = ns(idSite), 
+                                                                                 label = NULL,
+                                                                                 choices = choices, 
+                                                                                 selected = selectedSite))),
       shiny::HTML("<h3>Dates:</h3>"),
       shiny::sliderInput(ns("DatesSlide"), 
                          label = NULL, 
@@ -382,26 +380,6 @@ fSpatialPanel <- function(id, tabsetPanel_id){
   )
 }
 
-
-#' Generic BOO Environmental Panel
-#' 
-#' @noRd
-fEnviroPanel <- function(id){
-  ns <- NS(id)
-  shiny::mainPanel(
-    shiny::htmlOutput(ns("PlotExp")),
-    plotOutput(ns("timeseries1"), height = "auto") %>% 
-      shinycssloaders::withSpinner(color="#0dc5c1"),
-    shiny::div(class="download-button-container",
-               fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
-               if (id == "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData2", label = "Data TS", Type = "Download")},
-               if (id == "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData3", label = "Data Clim", Type = "Download")},
-               if (id != "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download")},
-               fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"),
-    )
-  )
-}
-
 #' Generic BOO Environmental Sidebar
 #'
 #' @noRd 
@@ -434,7 +412,7 @@ fEnviroSidebar <- function(id, dat = NULL){
     shiny::HTML("<h3>Select a station:</h3>"),
     shiny::fluidRow(tags$div(align = "left", 
                              class = "multicol",
-                             shiny::checkboxGroupInput(inputId = ns("station"),
+                             shiny::checkboxGroupInput(inputId = ns("site"),
                                                        label = NULL,
                                                        choices = pkg.env$NRSStation %>% 
                                                          dplyr::filter(!.data$StationCode %in% ignoreStat) %>%
@@ -494,6 +472,27 @@ fEnviroSidebar <- function(id, dat = NULL){
   
 }
 
+#' Generic BOO Environmental Panel
+#' 
+#' @noRd
+fEnviroPanel <- function(id){
+  ns <- NS(id)
+  shiny::mainPanel(
+    shiny::htmlOutput(ns("PlotExp")),
+    plotOutput(ns("timeseries1"), height = "auto") %>% 
+      shinycssloaders::withSpinner(color="#0dc5c1"),
+    shiny::div(class="download-button-container",
+               fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+               if (id == "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData2", label = "Data TS", Type = "Download")},
+               if (id == "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData3", label = "Data Clim", Type = "Download")},
+               if (id != "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download")},
+               fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"),
+    )
+  )
+}
+
+
+
 # Generic BOO relationships sidebar panel function
 #' 
 #' @noRd
@@ -536,10 +535,23 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
                               .shiny-split-layout > div {overflow: visible;}
                                     "))),
       condition = "input.navbar == 'Relationships'",
-      shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-      plotly::plotlyOutput(ns("plotmap"), height = "auto"),   
+      
+      # Use plotlyOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
+      if(stringr::str_detect(id, "CPR")) {
+        shiny::tagList(
+          shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
+          shiny::plotOutput(ns("plotmap"), height = "400px")
+        )
+      } else {
+        shiny::tagList(
+          shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+          plotly::plotlyOutput(ns("plotmap"), height = "auto")
+        )
+      },
+      # shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+      # plotly::plotlyOutput(ns("plotmap"), height = "auto"),   
       shiny::HTML("<h3>Select a station:</h3>"),
-      shiny::checkboxGroupInput(inputId = ns("Site"), label = NULL, choices = ChoiceSite, selected = SelectedVar),
+      shiny::checkboxGroupInput(inputId = ns("site"), label = NULL, choices = ChoiceSite, selected = SelectedVar),
       shiny::HTML("<h4>Select a group & variable for the y axis:</h4>"),
       shiny::splitLayout(
         shiny::selectizeInput(inputId = ns('groupy'), label = NULL, choices = ChoicesGroupy,
@@ -642,12 +654,12 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
     filename = function() {
       
       if (stringr::str_starts(gg_prefix, "Policy")){
-        paste0(gg_prefix, "_",  input$Site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".csv") %>% 
+        paste0(gg_prefix, "_",  input$site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".csv") %>% 
           stringr::str_replace_all( " ", "")
       } else{
         paste0(gg_prefix, "_", 
                input$parameter, "_",
-               data.frame(StationName = input$Site) %>% 
+               data.frame(StationName = input$site) %>% 
                  planktonr::pr_add_StationCode() %>% 
                  dplyr::arrange(.data$StationCode) %>% 
                  dplyr::pull(.data$StationCode) %>% 
@@ -667,44 +679,75 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
 
 #' Download Plot - Server Side
 #'
-#' @noRd 
+#' @noRd
 fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
   
   downloadPlot <- downloadHandler(
     filename = function() {
       if ((stringr::str_starts(gg_prefix, "Policy"))){
-        paste0(gg_prefix, "_", input$Site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".png") %>% 
+        paste0(gg_prefix, "_", input$site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".png") %>%
           stringr::str_replace_all( " ", "")
       } else{
-        paste0(gg_prefix, "_", 
+        paste0(gg_prefix, "_",
                input$parameter, "_",
-               data.frame(StationName = input$Site) %>% 
-                 planktonr::pr_add_StationCode() %>% 
-                 dplyr::arrange(.data$StationCode) %>% 
-                 dplyr::pull(.data$StationCode) %>% 
+               data.frame(StationName = input$site) %>%
+                 planktonr::pr_add_StationCode() %>%
+                 dplyr::arrange(.data$StationCode) %>%
+                 dplyr::pull(.data$StationCode) %>%
                  stringr::str_flatten(), "_",
                lubridate::year(input$DatesSlide[1]), "to", lubridate::year(input$DatesSlide[2]), "_D",
-               format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png") %>% 
+               format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png") %>%
           stringr::str_replace_all( " ", "")
       }
     },
     content = function(file) {
+      # Create copyright statement with current date
+      copyright_text <- paste0("\u00A9 IMOS Biological Ocean Observer. Downloaded: ",
+                               lubridate::now(tzone = "Australia/Hobart") %>%
+                                 lubridate::as_date() %>%
+                                 format("%d-%b-%Y"), "")
+      
+      # Create a minimal plot with just the copyright text
+      copyright_plot <- ggplot2::ggplot() +
+        ggplot2::annotate("text",
+                          x = 0.05,
+                          y = 0.0,
+                          label = copyright_text,
+                          angle = 90,
+                          hjust = 0,
+                          vjust = 0,
+                          size = 3,
+                          fontface = "italic") +
+        ggplot2::scale_x_continuous(limits = c(0,0.1), expand = c(0, 0)) +
+        ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0)) +
+        ggplot2::theme_void() +
+        ggplot2::theme(plot.margin = ggplot2::margin(0, 0, 0, 0))
+      
+      # Wrap the existing plot with copyright on the right, aligned to bottom
+      gg_copy <- patchwork::wrap_plots(
+        gg_id(),
+        copyright_plot, 
+        widths = c(1, 0.02)
+      )
+      
+      # Save with appropriate dimensions
       if (papersize == "A4r"){
-        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 297, height = 210, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297, units = "mm")
       } else if (papersize == "A4") {
-        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 210, height = 297, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 210, height = 297, units = "mm")
       } else if (papersize == "A3") {
-        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 297, height = 420, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297, height = 420, units = "mm")
       } else if (papersize == "A3r") {
-        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 420, height = 297, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 420, height = 297, units = "mm")
       } else if (papersize == "A2") {
-        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 420, height = 594, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 420, height = 594, units = "mm")
       }
+      
       ## TODO If we include pdf downloads we can use code like this.
       # cairo_pdf fixes an error with displaying unicode symbols.
       # library(Cairo)
       # file = stringr::str_replace(file, ".png", ".pdf")
-      # ggplot2::ggsave(file, plot = gg_id, width = 420, height = 594, units = "mm", 
+      # ggplot2::ggsave(file, plot = gg_id, width = 420, height = 594, units = "mm",
       #                 device = cairo_pdf, family="Arial Unicode MS")
     })
 }
@@ -777,6 +820,7 @@ LeafletObs <- function(sdf, name, Type = "PA"){
     
     leaf <- leaflet::leafletProxy(name, data = sdf) %>%
       leaflet::clearGroup(c("National Reference Stations", "Continuous Plankton Recorder")) %>%
+      leaflet::clearControls() %>%
       leaflet::addCircleMarkers(data = dfCPR,
                                 group = 'Continuous Plankton Recorder', 
                                 lng = ~ Longitude,
@@ -822,6 +866,7 @@ LeafletObs <- function(sdf, name, Type = "PA"){
   } else {
     leaflet::leafletProxy(name, data = sdf) %>%
       leaflet::clearGroup("Present") %>%
+      leaflet::clearControls() %>%
       leaflet::addCircleMarkers(data = sdf, 
                                 lng = ~ Longitude,
                                 lat = ~ Latitude,
