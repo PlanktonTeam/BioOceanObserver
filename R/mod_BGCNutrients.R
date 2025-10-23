@@ -24,9 +24,9 @@ mod_NutrientsBGC_server <- function(id){
     #     select depths
     
     observe({
-      req(input$station)
+      req(input$site)
       req(input$parameter)
-      shiny::validate(need(!is.na(input$station), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
     })
     
@@ -36,12 +36,12 @@ mod_NutrientsBGC_server <- function(id){
       shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       
       pkg.env$Nuts %>%
-        dplyr::filter(.data$StationName %in% input$station,
+        dplyr::filter(.data$StationName %in% input$site,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$Parameters %in% input$parameter) %>%
         dplyr::mutate(name = as.factor(.data$Parameters)) %>%
         tidyr::drop_na() 
-    }) %>% bindCache(input$station, input$parameter, input$date)
+    }) %>% bindCache(input$site, input$parameter, input$date)
     
     shiny::exportTestValues(
       NutrientsBGC = {ncol(selectedData())},
@@ -59,7 +59,7 @@ mod_NutrientsBGC_server <- function(id){
     # Create timeseries object the plotOutput function is expecting
     gg_out1 <- reactive({
       
-      if(input$parameter == 'Oxygen_umolL' & !("Maria Island" %in% input$station || "Rottnest Island" %in% input$station)){
+      if(input$parameter == 'Oxygen_umolL' & !("Maria Island" %in% input$site || "Rottnest Island" %in% input$site)){
         ggplot2::ggplot + ggplot2::geom_blank()
       } else {
         interp <- input$interp
@@ -71,7 +71,7 @@ mod_NutrientsBGC_server <- function(id){
       }
       }
       
-    }) %>% bindCache(input$station, input$parameter, input$date, input$interp)
+    }) %>% bindCache(input$site, input$parameter, input$date, input$interp)
     
     output$timeseries1 <- renderPlot({
       gg_out1()
@@ -85,9 +85,10 @@ mod_NutrientsBGC_server <- function(id){
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Nuts") # Download figure
     
     # add a map in sidebar
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-    }, bg = "transparent") %>% bindCache(input$station)
+    output$plotmap <- plotly::renderPlotly({ 
+      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
+      fPlotlyMap(p1, tooltip = "colour")
+    })  # No cache - allows responsive resizing
     
     # add text information 
     

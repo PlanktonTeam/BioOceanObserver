@@ -40,7 +40,7 @@ mod_MicroTsCS_server <- function(id){
     selectedData <- reactive({
 
       selectedData <- pkg.env$datCSm %>%
-        dplyr::filter(.data$State %in% input$Site,
+        dplyr::filter(.data$State %in% input$site,
                       .data$Parameters %in% input$parameterm,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels() %>%
@@ -48,7 +48,7 @@ mod_MicroTsCS_server <- function(id){
         dplyr::arrange(.data$State) %>% 
         tidyr::drop_na()
 
-    }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2])
 
     shiny::exportTestValues(
       MicroTsC = {ncol(selectedData())},
@@ -63,9 +63,10 @@ mod_MicroTsCS_server <- function(id){
     )
 
     # Sidebar Map
-    output$plotmap <- renderPlot({
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "Coastal")
-    }, bg = "transparent") %>% bindCache(input$Site)
+    output$plotmap <- plotly::renderPlotly({
+      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "Coastal")
+      fPlotlyMap(p1, tooltip = "colour")
+    })  # No cache - allows responsive resizing
 
     # Add text information
     output$PlotExp1 <- renderText({
@@ -114,7 +115,7 @@ mod_MicroTsCS_server <- function(id){
           ggplot2::ggplot + ggplot2::geom_blank()
         }
         
-      }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
 
       output$timeseries1 <- renderPlot({
         gg_out1()
@@ -170,7 +171,7 @@ mod_MicroTsCS_server <- function(id){
           ggplot2::ggplot + ggplot2::geom_blank()
         }
         
-      }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
 
       output$timeseries2 <- renderPlot({
         gg_out2()
@@ -196,7 +197,7 @@ mod_MicroTsCS_server <- function(id){
         ggplot2::ggplot + ggplot2::geom_blank()
       }
       
-      }) %>% bindCache(input$p1, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$smoother)
+      }) %>% bindCache(input$p1, input$site, input$DatesSlide[1], input$DatesSlide[2], input$smoother)
 
       output$timeseries3 <- renderPlot({
         gg_out3()

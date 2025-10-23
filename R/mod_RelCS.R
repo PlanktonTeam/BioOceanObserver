@@ -58,14 +58,14 @@ mod_RelCS_server <- function(id){
       
       selectedData <- daty() %>%  
         dplyr::bind_rows(datx()) %>% 
-        dplyr::filter(.data$State %in% input$Site,
+        dplyr::filter(.data$State %in% input$site,
                       .data$Parameters %in% c(x, y)) %>%
         planktonr::pr_remove_outliers(2) %>% 
         tidyr::pivot_wider(id_cols = dplyr::any_of(vars),
                            names_from = "Parameters", values_from = "Values", values_fn = mean) %>%
         tidyr::drop_na() 
       
-    }) %>% bindCache(input$Site, input$py, input$px)
+    }) %>% bindCache(input$site, input$py, input$px)
     
     # Parameter Definition
     output$ParamDefy <-   shiny::renderText({
@@ -83,9 +83,10 @@ mod_RelCS_server <- function(id){
     })
     
     # Sidebar Map
-    output$plotmap <- renderPlot({
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "Coastal")
-    }, bg = "transparent") %>% bindCache(input$Site)
+    output$plotmap <- plotly::renderPlotly({
+      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "Coastal")
+      fPlotlyMap(p1, tooltip = "colour")
+    })  # No cache - allows responsive resizing
     
     # Add text information 
     output$PlotExp1 <- shiny::renderText({
@@ -120,7 +121,7 @@ mod_RelCS_server <- function(id){
          } else {
            ggplot2::ggplot + ggplot2::geom_blank()
          }
-         }) %>% bindCache(input$py, input$px, input$Site, input$smoother)
+         }) %>% bindCache(input$py, input$px, input$site, input$smoother)
       
       output$scatter1 <- renderPlot({
            gg_out1()
@@ -146,7 +147,7 @@ mod_RelCS_server <- function(id){
           ggplot2::ggplot + ggplot2::geom_blank()
         }
         
-      }) %>% bindCache(input$py, input$Site)
+      }) %>% bindCache(input$py, input$site)
       
       output$box2 <- renderPlot({
         gg_out2()
