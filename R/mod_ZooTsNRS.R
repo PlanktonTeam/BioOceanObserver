@@ -158,9 +158,9 @@ mod_ZooTsNRS_server <- function(id){
         
         p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
         p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") + 
-          ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                         legend.position = "none")
-        p1 + p2 + patchwork::plot_layout(widths = c(3,1))
+          ggplot2::theme(axis.title.y = ggplot2::element_blank())
+        p1 + p2 + patchwork::plot_layout(widths = c(3,1), guides = "collect") &
+          ggplot2::theme(legend.position = "bottom")
       }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
       
       

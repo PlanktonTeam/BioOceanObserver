@@ -103,8 +103,6 @@ mod_RelNRS_server <- function(id){
     
     selectedData <- reactive({
       
-      # browser()
-      
       y <- rlang::string(input$py)
       x <- rlang::string(input$px)
       vars <- c("StationName", "StationCode", "SampleTime_Local", "SampleDepth_m") # only microbes has depth data

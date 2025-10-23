@@ -64,6 +64,7 @@ mod_PigmentsBGC_server <- function(id){
     gg_out1 <- reactive({
       trend <-  input$smoother
       planktonr::pr_plot_Enviro(selectedData(), Trend = trend)
+      
     }) %>% bindCache(input$site, input$parameter, input$date, input$smoother)
     
     output$timeseries1 <- renderPlot({
