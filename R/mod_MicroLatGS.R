@@ -13,8 +13,9 @@ mod_MicroLatGS_ui <- function(id){
     sidebarLayout(
       shiny::sidebarPanel(
           shiny::plotOutput(nsMicroLatGS("plotmap"),
-                            height = "auto", 
-                            width = "100%"),
+                            #height = "auto" 
+                            width = "100%"
+                            ),
           shiny::HTML("<h3>Latitude range to plot:</h3>"),
           shiny::sliderInput(nsMicroLatGS("LatSlide"), 
                              label = NULL, 
@@ -115,7 +116,7 @@ mod_MicroLatGS_server <- function(id){
       gg_out1 <- reactive({
 
         if(length(selectedData()$Parameters)>50){
-          planktonr::pr_plot_latitude(selectedData(), na.fill = TRUE)
+          planktonr::pr_plot_latitude(selectedData(), na.fill = mean)
         } else {
           ggplot2::ggplot + ggplot2::geom_blank()
         }
