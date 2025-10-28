@@ -109,7 +109,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
   } else if (stringr::str_detect(id, "CPR") == TRUE){ # CPR
     choices <- unique(sort(dat$BioRegion))
     selectedSite <- c("Temperate East", "South-east")
-    idSite <- "region"
+    idSite <- "site"
     if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + CPR
       selectedVar = "ZoopAbundance_m3"
     } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + CPR
@@ -688,6 +688,7 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
         paste0(gg_prefix, "_", input$site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".png") %>%
           stringr::str_replace_all( " ", "")
       } else{
+        
         paste0(gg_prefix, "_",
                input$parameter, "_",
                data.frame(StationName = input$site) %>%
@@ -730,17 +731,18 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
         widths = c(1, 0.02)
       )
       
+      # NOTE: I have scaled the size by 2 to force the font size to be smaller in the downloads.
       # Save with appropriate dimensions
       if (papersize == "A4r"){
-        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297*2, units = "mm")
       } else if (papersize == "A4") {
-        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 210, height = 297, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 210*2, height = 297*2, units = "mm")
       } else if (papersize == "A3") {
-        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297, height = 420, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297*2, height = 420*2, units = "mm")
       } else if (papersize == "A3r") {
-        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 420, height = 297, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 420*2, height = 297*2, units = "mm")
       } else if (papersize == "A2") {
-        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 420, height = 594, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 420*2, height = 594*2, units = "mm")
       }
       
       ## TODO If we include pdf downloads we can use code like this.
