@@ -66,18 +66,20 @@ fPlotlyMap <- function(gg_map, tooltip = "colour") {
   plotly::ggplotly(gg_map, tooltip = tooltip, dynamicTicks = TRUE) %>%
     plotly::layout(
       showlegend = FALSE,
-      margin = list(l = 10, r = 10, t = 10, b = 10, pad = 0),
+      margin = list(l = 0, r = 0, t = 0, b = 0, pad = 0),
       xaxis = list(
         showticklabels = FALSE,
         showgrid = FALSE,
         zeroline = FALSE,
-        automargin = FALSE
+        automargin = FALSE,
+        fixedrange = TRUE
       ),
       yaxis = list(
         showticklabels = FALSE,
         showgrid = FALSE,
         zeroline = FALSE,
-        automargin = FALSE
+        automargin = FALSE,
+        fixedrange = TRUE
       ),
       paper_bgcolor = 'rgba(0,0,0,0)',
       plot_bgcolor = 'rgba(0,0,0,0)'
