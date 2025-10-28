@@ -52,7 +52,8 @@ fEOVutilities <- function(vector = "col", Survey = "NRS"){
 #'
 #' @description Takes a ggplot object (typically a map) and converts it to an 
 #' interactive plotly plot with consistent styling - no margins, no axes, 
-#' transparent background, and responsive resizing enabled.
+#' transparent background, and responsive resizing enabled. Uses improved 
+#' hover label styling for better cross-platform compatibility.
 #'
 #' @param gg_map A ggplot object to convert to plotly
 #' @param tooltip Character vector specifying which aesthetic to show in tooltip.
@@ -66,6 +67,7 @@ fPlotlyMap <- function(gg_map, tooltip = "colour") {
   plotly::ggplotly(gg_map, tooltip = tooltip, dynamicTicks = TRUE) %>%
     plotly::layout(
       showlegend = FALSE,
+      hovermode = 'closest',
       margin = list(l = 0, r = 0, t = 0, b = 0, pad = 0),
       xaxis = list(
         showticklabels = FALSE,
@@ -82,7 +84,13 @@ fPlotlyMap <- function(gg_map, tooltip = "colour") {
         fixedrange = TRUE
       ),
       paper_bgcolor = 'rgba(0,0,0,0)',
-      plot_bgcolor = 'rgba(0,0,0,0)'
+      plot_bgcolor = 'rgba(0,0,0,0)',
+      hoverlabel = list(
+        bgcolor = "white",
+        font = list(size = 12, color = "black"),
+        align = "left",
+        namelength = -1
+      )
     ) %>%
     plotly::config(displayModeBar = FALSE)
   
