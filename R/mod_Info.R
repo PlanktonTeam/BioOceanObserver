@@ -229,7 +229,7 @@ mod_info_ui <- function(id){
 mod_info_server <- function(id){
   moduleServer( id, function(input, output, session){
     
-    observeEvent({input$Info == 5}, {
+    observeEvent({input$info == 5}, {
       output$NRSDataTable <- DT::renderDT(
         pkg.env$NRSStation %>% 
           dplyr::mutate(EndDate = dplyr::case_when(.data$StationCode %in% c('NIN', 'ESP') ~ "2012-03-01",
@@ -258,14 +258,14 @@ mod_info_server <- function(id){
       )
     })
     
-    observeEvent({input$Info == 6}, {
+    observeEvent({input$info == 6}, {
       output$PDataTable <- DT::renderDT(
         pkg.env$SpInfoP, 
         options = list(
           pageLength = 250))
     })
     
-    observeEvent({input$Info == 7}, {
+    observeEvent({input$info == 7}, {
       output$ZDataTable <- DT::renderDT(
         pkg.env$SpInfoZ, 
         options = list(

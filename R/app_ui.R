@@ -8,8 +8,8 @@ app_ui <- function(request) {
   # Your application UI logic 
   shiny::navbarPage(id = "navbar",  
                     title = shiny::div(
-                                shiny::img(src = "www/IMOS_logo-wide-_Colour.png", height = 30),
-                                shiny::div("Biological Ocean Observer", class = "brand-text")),
+                      shiny::img(src = "www/IMOS_logo-wide-_Colour.png", height = 30),
+                      shiny::div("Biological Ocean Observer", class = "brand-text")),
                     windowTitle = "Biological Ocean Observer",
                     header = golem_add_external_resources(), # Add external resources in header
                     theme = bslib::bs_theme(version = 5, 
@@ -66,14 +66,15 @@ app_ui <- function(request) {
                                                        shiny::tabPanel(value = "cprRel", "CPR relationship", mod_RelCPR_ui("RelCPR_ui_1"))
                                     )),
                     shiny::tabPanel("Information",
-                                    value = "info",
-                                    shiny::fluidPage(
-                                      mod_info_ui("info_1"))
+                                    # value = "info",
+                                    # shiny::fluidPage(
+                                      mod_info_ui("info_1")
+                                    # )
                     ),
                     shiny::navbarMenu("", icon = shiny::icon("github"),
-                               shiny::tabPanel(shiny::tags$a(href = "https://github.com/PlanktonTeam/BioOceanObserver", target = "_blank", "BioOceanObserver Repository")),
-                               shiny::tabPanel(shiny::tags$a(href = "https://github.com/PlanktonTeam/planktonr", target = "_blank", shiny::tags$em("planktonr"), " Repository" )))
-                    )
+                                      shiny::tabPanel(shiny::tags$a(href = "https://github.com/PlanktonTeam/BioOceanObserver", target = "_blank", "BioOceanObserver Repository")),
+                                      shiny::tabPanel(shiny::tags$a(href = "https://github.com/PlanktonTeam/planktonr", target = "_blank", shiny::tags$em("planktonr"), " Repository" )))
+  )
 }
 
 #' Add external Resources to the Application
@@ -106,7 +107,7 @@ golem_add_external_resources <- function(){
     shiny::tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
     # Google fonts - Poppins and Open Sans ----
     shiny::tags$link(href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap",
-              rel="stylesheet")
+                     rel="stylesheet")
   )
 }
 
