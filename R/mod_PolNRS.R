@@ -258,7 +258,7 @@ mod_PolNRS_server <- function(id){
       
       # Download -------------------------------------------------------
       output$downloadData4 <- fDownloadButtonServer(input, selectedData, "Policy_Phys") # Download csv of data
-      output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4, "Policy_Phys", papersize = "A4") # Download figure  
+      output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4, "Policy_Phys", papersize = "A4r") # Download figure  
     })
     
     

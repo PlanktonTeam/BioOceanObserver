@@ -109,7 +109,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
   } else if (stringr::str_detect(id, "CPR") == TRUE){ # CPR
     choices <- unique(sort(dat$BioRegion))
     selectedSite <- c("Temperate East", "South-east")
-    idSite <- "region"
+    idSite <- "site"
     if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + CPR
       selectedVar = "ZoopAbundance_m3"
     } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + CPR
@@ -688,8 +688,14 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
         paste0(gg_prefix, "_", input$site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".png") %>%
           stringr::str_replace_all( " ", "")
       } else{
+        if (gg_prefix == "Scatter"){
+          param <- paste0(input$px,"_v_",input$py)
+        } else {
+          param <- input$parameter
+        }
+        
         paste0(gg_prefix, "_",
-               input$parameter, "_",
+               param, "_",
                data.frame(StationName = input$site) %>%
                  planktonr::pr_add_StationCode() %>%
                  dplyr::arrange(.data$StationCode) %>%
@@ -716,10 +722,10 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
                           angle = 90,
                           hjust = 0,
                           vjust = 0,
-                          size = 3,
+                          size = 4,
                           fontface = "italic") +
         ggplot2::scale_x_continuous(limits = c(0,0.1), expand = c(0, 0)) +
-        ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0)) +
+        ggplot2::scale_y_continuous(limits = c(0,2), expand = c(0, 0)) +
         ggplot2::theme_void() +
         ggplot2::theme(plot.margin = ggplot2::margin(0, 0, 0, 0))
       
@@ -730,17 +736,28 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
         widths = c(1, 0.02)
       )
       
+      patchwork::wrap_plots(
+        gg_id(),
+        free(copyright_plot, "space", "b"),
+        widths = c(1, 0.02)
+      )
+      
+      # NOTE: I have scaled the plot size to force the font size to be smaller in the downloads.
+      sc <- 1.5
       # Save with appropriate dimensions
-      if (papersize == "A4r"){
-        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297, units = "mm")
+      
+      if (gg_prefix == "Climate"){
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297*sc, height = 200*sc, units = "mm")
+      } else if (papersize == "A4r"){
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297*sc, units = "mm")
       } else if (papersize == "A4") {
-        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 210, height = 297, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 210*sc, height = 297*sc, units = "mm")
       } else if (papersize == "A3") {
-        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297, height = 420, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297*sc, height = 420*sc, units = "mm")
       } else if (papersize == "A3r") {
-        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 420, height = 297, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 420*sc, height = 297*sc, units = "mm")
       } else if (papersize == "A2") {
-        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 420, height = 594, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 420*sc, height = 594*sc, units = "mm")
       }
       
       ## TODO If we include pdf downloads we can use code like this.
