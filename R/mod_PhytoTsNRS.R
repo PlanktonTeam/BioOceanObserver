@@ -43,10 +43,16 @@ mod_PhytoTsNRS_server <- function(id){
     }) %>% bindCache(input$parameter,input$site, input$DatesSlide[1], input$DatesSlide[2])
     # })
     
-    output$plotmap <- plotly::renderPlotly({
-      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-      fPlotlyMap(p1, tooltip = "colour")
-    })  # No cache - allows responsive resizing
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "NRS", Type = "Phytoplankton")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+                     Survey = "NRS", Type = "Phytoplankton")
+    })
     
     # add text information
     output$PlotExp1 <- renderText({

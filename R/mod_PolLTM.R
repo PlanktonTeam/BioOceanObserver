@@ -13,7 +13,7 @@ mod_PolLTM_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-        plotly::plotlyOutput(nsPolLTM("plotmap"), height = "auto"),
+        leaflet::leafletOutput(nsPolLTM("plotmap"), height = "400px"),
         shiny::HTML("<h3>Select a station:</h3>"),
         radioButtons(inputId = nsPolLTM("siteLTM"), 
                      label = NULL, 
@@ -83,11 +83,16 @@ mod_PolLTM_server <- function(id){
         dplyr::filter(.data$StationName == input$siteLTM) 
     }) %>% bindCache(input$siteLTM)
     
-    # Sidebar Map
-    output$plotmap <- plotly::renderPlotly({ 
-      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "LTM")
-      fPlotlyMap(p1, tooltip = "colour")
-    })  # No cache - allows responsive resizing
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({ 
+      fLeafletMap(character(0), Survey = "LTM", Type = "Zooplankton")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+                     Survey = "LTM", Type = "Zooplankton")
+    })
     
     output$StationSummary <- shiny::renderText({ 
       

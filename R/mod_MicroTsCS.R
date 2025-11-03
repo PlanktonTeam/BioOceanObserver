@@ -62,11 +62,16 @@ mod_MicroTsCS_server <- function(id){
       MicroTsCValuesisNumeric = {class(selectedData()$Values)}
     )
 
-    # Sidebar Map
-    output$plotmap <- plotly::renderPlotly({
-      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "Coastal")
-      fPlotlyMap(p1, tooltip = "colour")
-    })  # No cache - allows responsive resizing
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "Coastal", Type = "Zooplankton")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+                     Survey = "Coastal", Type = "Zooplankton")
+    })
 
     # Add text information
     output$PlotExp1 <- renderText({

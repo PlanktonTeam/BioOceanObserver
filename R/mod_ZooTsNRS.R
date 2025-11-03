@@ -50,11 +50,16 @@ mod_ZooTsNRS_server <- function(id){
       ZtsNRSValuesisNumeric = {class(selectedData()$Values)}
     )
     
-    # Sidebar Map
-    output$plotmap <- plotly::renderPlotly({ 
-      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-      fPlotlyMap(p1, tooltip = "colour")
-    })  # No cache - allows responsive resizing
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({ 
+      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+                     Survey = "NRS", Type = "Zooplankton")
+    })
     
     # Add text information 
     output$PlotExp1 <- renderText({

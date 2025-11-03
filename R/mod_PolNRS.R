@@ -13,7 +13,7 @@ mod_PolNRS_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-        plotly::plotlyOutput(nsPolNRS("plotmap"), height = "auto"),
+        leaflet::leafletOutput(nsPolNRS("plotmap"), height = "400px"),
         shiny::HTML("<h3>Select a station:</h3>"),
         shiny::radioButtons(inputId = nsPolNRS("site"), 
                             label = NULL, 
@@ -122,16 +122,16 @@ mod_PolNRS_server <- function(id){
         dplyr::filter(.data$StationName == input$site) 
     }) %>% bindCache(input$site)
     
-    # Sidebar Map
-    output$plotmap <- plotly::renderPlotly({ 
-      
-      # Get the ggplot object from planktonr
-      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-      
-      # Convert to interactive plotly using utility function
-      fPlotlyMap(p1, tooltip = "colour")
-      
-    })  # No cache - allows responsive resizing
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({ 
+      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+                     Survey = "NRS", Type = "Zooplankton")
+    })
     
     output$StationSummary <- shiny::renderText({ 
       paste('<h4 class="centered-heading">',input$site,'</h4>The IMOS ', input$site, ' National Reference Station is located at ', round(stationData()$Latitude,2), 

@@ -38,11 +38,16 @@ mod_MoorBGC_server <- function(id){
       
     }) %>% bindCache(input$site)
     
-    # add a map in sidebar
-    output$plotmap <- plotly::renderPlotly({ 
-      p1 <- planktonr::pr_plot_NRSmap(unique(selectedClim()$StationCode))
-      fPlotlyMap(p1, tooltip = "colour")
-    })  # No cache - allows responsive resizing
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({ 
+      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedClim()$StationCode), 
+                     Survey = "NRS", Type = "Zooplankton")
+    })
     
     # add climate plot
     gg_out1 <- reactive({ 

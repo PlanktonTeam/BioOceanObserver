@@ -88,6 +88,182 @@ fPlotlyMap <- function(gg_map, tooltip = "colour") {
   
 }
 
+#' Create interactive leaflet map of station locations
+#'
+#' @description Creates a leaflet map of station locations with colored points
+#' and hover labels. Map is constrained to Australian region with options to
+#' disable zooming/panning for a fixed view. More reliable than plotly for
+#' cross-platform tooltip display.
+#'
+#' @param sites A character vector of station codes to highlight (e.g., c("MAI", "PHB"))
+#' @param Survey Which Survey to plot ("NRS", "Coastal", "LTM")
+#' @param Type Must be "Phytoplankton" for SOTS to plot, otherwise has no impact
+#' @param allow_zoom Logical, should user be able to zoom? Default FALSE
+#' @param allow_pan Logical, should user be able to pan? Default FALSE
+#'
+#' @return A leaflet map object ready for renderLeaflet()
+#'
+#' @noRd
+fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton', 
+                        allow_zoom = FALSE, allow_pan = FALSE){
+  
+  # Get station metadata based on survey type
+  if(Survey == "NRS"){
+    meta_data <- pkg.env$NRSStation
+  } else if (Survey == "LTM") {
+    meta_data <- pkg.env$NRSStation %>%
+      dplyr::filter(.data$StationCode %in% c("MAI", "PHB", "ROT"))
+  } else if (Survey == "Coastal") {
+    # Use coastal stations data
+    meta_data <- data.frame(
+      StationName = c("GBR", "Ningaloo", "Kimberley"),
+      StationCode = c("GBR", "NIN", "KIM"),
+      Latitude = c(-18.5, -22.0, -16.5),
+      Longitude = c(147.0, 113.9, 123.5)
+    )
+  }
+  
+  # Add SOTS for phytoplankton
+  if (Type == 'Phytoplankton'){
+    sots <- data.frame(
+      StationName = "SOTS",
+      StationCode = "SOTS",
+      Latitude = -47.0,
+      Longitude = 142.0
+    )
+    meta_data <- dplyr::bind_rows(meta_data, sots)
+    lat_min <- -50
+    lat_max <- -10
+  } else {
+    lat_min <- -45
+    lat_max <- -10
+  }
+  
+  # Add color column based on selection
+  meta_data <- meta_data %>%
+    dplyr::mutate(
+      Selected = .data$StationCode %in% sites,
+      Color = dplyr::if_else(.data$Selected, "red", "blue"),
+      Radius = dplyr::if_else(.data$Selected, 8, 6)
+    )
+  
+  # Create leaflet map with options
+  map <- leaflet::leaflet(
+    meta_data,
+    options = leaflet::leafletOptions(
+      zoomControl = allow_zoom,
+      doubleClickZoom = allow_zoom,
+      scrollWheelZoom = allow_zoom,
+      dragging = allow_pan,
+      minZoom = 3,       # Prevent zooming out too far
+      maxZoom = 18,      # Allow zooming in for detail
+      zoomSnap = 0.25,   # Allow fractional zoom levels (0.25 increments)
+      zoomDelta = 0.25   # Zoom by 0.25 levels at a time
+    )
+  ) %>%
+    leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>%
+    
+    # Set initial view centered on Australia
+    leaflet::setView(lng = 133.7751, lat = -27, zoom = 3.5) %>%
+    
+    # Set bounds to keep map focused on Australia
+    leaflet::setMaxBounds(
+      lng1 = 110,    # Western boundary
+      lat1 = -48, # Southern boundary  
+      lng2 = 158,    # Eastern boundary
+      lat2 = -5  # Northern boundary
+    ) %>%
+    
+    # Add station points
+    leaflet::addCircleMarkers(
+      lng = ~Longitude,
+      lat = ~Latitude,
+      color = ~Color,
+      fillColor = ~Color,
+      radius = ~Radius,
+      fillOpacity = 0.8,
+      opacity = 1,
+      weight = 2,
+      label = ~StationName,
+      labelOptions = leaflet::labelOptions(
+        style = list("font-weight" = "normal", "padding" = "3px 8px"),
+        textsize = "12px",
+        direction = "auto"
+      )
+    )
+  
+  return(map)
+}
+
+#' Update leaflet map markers using leafletProxy
+#'
+#' @description Updates only the station markers on an existing leaflet map without
+#' redrawing the entire map. Much more efficient than re-rendering the whole map.
+#' Use this in an observe() block that watches for changes in station selection.
+#'
+#' @param map_id Character string of the map output ID (e.g., "plotmap")
+#' @param session The Shiny session object
+#' @param sites A character vector of station codes to highlight (e.g., c("MAI", "PHB"))
+#' @param Survey Which Survey to plot ("NRS", "Coastal", "LTM")
+#' @param Type Must be "Phytoplankton" for SOTS to plot, otherwise has no impact
+#'
+#' @return NULL (called for side effect of updating the map)
+#'
+#' @noRd
+fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = 'Zooplankton'){
+  
+  # Get station metadata based on survey type
+  if(Survey == "NRS"){
+    meta_data <- pkg.env$NRSStation
+  } else if (Survey == "LTM") {
+    meta_data <- pkg.env$NRSStation %>%
+      dplyr::filter(.data$StationCode %in% c("MAI", "PHB", "ROT"))
+  } else if (Survey == "Coastal") {
+    # Use coastal stations data
+    meta_data <- planktonr::csDAT
+  }
+  
+  # Add SOTS for phytoplankton
+  if (Type == 'Phytoplankton'){
+    sots <- data.frame(
+      StationName = "SOTS",
+      StationCode = "SOTS",
+      Latitude = -47.0,
+      Longitude = 142.0
+    )
+    meta_data <- dplyr::bind_rows(meta_data, sots)
+  }
+  
+  # Add color column based on selection
+  meta_data <- meta_data %>%
+    dplyr::mutate(
+      Selected = .data$StationCode %in% sites,
+      Color = dplyr::if_else(.data$Selected, "red", "blue"),
+      Radius = dplyr::if_else(.data$Selected, 8, 6)
+    )
+  
+  # Update the map using leafletProxy
+  leaflet::leafletProxy(map_id, session) %>%
+    leaflet::clearMarkers() %>%
+    leaflet::addCircleMarkers(
+      data = meta_data,
+      lng = ~Longitude,
+      lat = ~Latitude,
+      color = ~Color,
+      fillColor = ~Color,
+      radius = ~Radius,
+      fillOpacity = 0.8,
+      opacity = 1,
+      weight = 2,
+      label = ~StationName,
+      labelOptions = leaflet::labelOptions(
+        style = list("font-weight" = "normal", "padding" = "3px 8px"),
+        textsize = "12px",
+        direction = "auto"
+      )
+    )
+}
+
 #' BOO Plankton Sidebar
 #'
 #' @noRd 
@@ -127,7 +303,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
     # Put Map, Station names and date slider on all panels
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " <= 5"), 
-      # Use plotlyOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
+      # Use leafletOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
       if(stringr::str_detect(id, "CPR")) {
         shiny::tagList(
           shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
@@ -136,7 +312,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       } else {
         shiny::tagList(
           shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-          plotly::plotlyOutput(ns("plotmap"), height = "auto")
+          leaflet::leafletOutput(ns("plotmap"), height = "400px")
         )
       },
       shiny::HTML("<h3>Select a station:</h3>"),
@@ -408,7 +584,7 @@ fEnviroSidebar <- function(id, dat = NULL){
   
   shiny::sidebarPanel(
     shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-    plotly::plotlyOutput(ns("plotmap"), height = "auto"),
+    leaflet::leafletOutput(ns("plotmap"), height = "400px"),
     shiny::HTML("<h3>Select a station:</h3>"),
     shiny::fluidRow(tags$div(align = "left", 
                              class = "multicol",
@@ -545,7 +721,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
       } else {
         shiny::tagList(
           shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-          plotly::plotlyOutput(ns("plotmap"), height = "auto")
+          leaflet::leafletOutput(ns("plotmap"), height = "400px")
         )
       },
       # shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
