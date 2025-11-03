@@ -24,12 +24,12 @@ mod_PigmentsBGC_server <- function(id){
     #     select depths
     
     observe({
-      req(input$station)
+      req(input$site)
       req(input$parameter)
-      shiny::validate(need(!is.na(input$station), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       # updateSelectizeInput(session, "depth", "Select a depth", server = TRUE, 
-      #                      choices = NRSBGCPigments[NRSBGCPigments$Station %in% input$station & NRSBGCPigments$name %in% input$parameter,]$SampleDepth_m)
+      #                      choices = NRSBGCPigments[NRSBGCPigments$Station %in% input$site & NRSBGCPigments$name %in% input$parameter,]$SampleDepth_m)
     })
     
     selectedData <- reactive({
@@ -38,13 +38,13 @@ mod_PigmentsBGC_server <- function(id){
       shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       
       pkg.env$Pigs %>%
-        dplyr::filter(.data$StationName %in% input$station,
+        dplyr::filter(.data$StationName %in% input$site,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$Parameters %in% input$parameter) %>%
         dplyr::mutate(name = as.factor(.data$Parameters),
                       SampleDepth_m = round(.data$SampleDepth_m, -1)) %>%
         tidyr::drop_na() 
-    }) %>% bindCache(input$station, input$parameter, input$date)
+    }) %>% bindCache(input$site, input$parameter, input$date)
     
     shiny::exportTestValues(
       PigsBGC = {ncol(selectedData())},
@@ -64,7 +64,8 @@ mod_PigmentsBGC_server <- function(id){
     gg_out1 <- reactive({
       trend <-  input$smoother
       planktonr::pr_plot_Enviro(selectedData(), Trend = trend)
-    }) %>% bindCache(input$station, input$parameter, input$date, input$smoother)
+      
+    }) %>% bindCache(input$site, input$parameter, input$date, input$smoother)
     
     output$timeseries1 <- renderPlot({
       gg_out1()
@@ -74,10 +75,16 @@ mod_PigmentsBGC_server <- function(id){
     output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Pigs") # Download csv of data
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Pigs") # Download figure
     
-    # add a map in sidebar
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-    }, bg = "transparent") %>% bindCache(input$station)
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({ 
+      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+                     Survey = "NRS", Type = "Zooplankton")
+    })
     
     # add text information 
     output$PlotExp <- renderText({
