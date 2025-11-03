@@ -83,11 +83,16 @@ mod_PicoBGC_server <- function(id){
     output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Pico") # Download csv of data
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Pico") # Download figure
     
-    # add a map in sidebar
-    output$plotmap <- plotly::renderPlotly({ 
-      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-      fPlotlyMap(p1, tooltip = "colour")
-    })  # No cache - allows responsive resizing
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({ 
+      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+                     Survey = "NRS", Type = "Zooplankton")
+    })
     
     # add text information 
     output$PlotExp <- renderText({

@@ -60,13 +60,18 @@ mod_MicroTsNRS_server <- function(id){
       MicroTsValuesisNumeric = {class(selectedData()$Values)}
     )
     
-    # Sidebar Map
-    output$plotmap <- plotly::renderPlotly({ 
-      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-      fPlotlyMap(p1, tooltip = "colour")
-    })  # No cache - allows responsive resizing
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
+    })
     
-    # Add text information 
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+                     Survey = "NRS", Type = "Zooplankton")
+    })
+    
+    # Add text information
     output$PlotExp1 <- renderText({
       "A plot of selected microbial indices from the NRS around Australia, as a time series and a monthly climatology by station averaged across all depths."
     }) 

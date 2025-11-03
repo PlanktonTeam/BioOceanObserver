@@ -133,12 +133,18 @@ mod_RelNRS_server <- function(id){
             dplyr::pull("Definition"), ".</p>", sep = "")
     })  
 
-    # Sidebar Map
-    output$plotmap <- plotly::renderPlotly({
-      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-      fPlotlyMap(p1, tooltip = "colour")
-    })  # No cache - allows responsive resizing
-
+        
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({ 
+      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedDatay()$StationCode), 
+                     Survey = "NRS", Type = "Zooplankton")
+    })
+    
     # Add text information 
     output$PlotExp1 <- shiny::renderText({
       if(rlang::string(input$py) %in% colnames(selectedData()) & rlang::string(input$px) %in% colnames(selectedData()) & length(unique(selectedData()$SampleDepth_m)) > 0){

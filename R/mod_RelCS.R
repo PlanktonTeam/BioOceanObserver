@@ -82,13 +82,18 @@ mod_RelCS_server <- function(id){
               dplyr::pull("Definition"), ".</p>", sep = "")
     })
     
-    # Sidebar Map
-    output$plotmap <- plotly::renderPlotly({
-      p1 <- planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "Coastal")
-      fPlotlyMap(p1, tooltip = "colour")
-    })  # No cache - allows responsive resizing
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({ 
+      fLeafletMap(character(0), Survey = "Coastal", Type = "Zooplankton")
+    })
     
-    # Add text information 
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedDatay()$StationCode), 
+                     Survey = "Coastal", Type = "Zooplankton")
+    })
+    
+    # Add text information
     output$PlotExp1 <- shiny::renderText({
       if(rlang::string(input$py) %in% colnames(selectedData())){
         "A scatter plot of selected indices against oceanographic parameters measured from the NRS around Australia"
