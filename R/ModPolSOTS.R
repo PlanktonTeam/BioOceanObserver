@@ -107,7 +107,7 @@ mod_PolSOTS_server <- function(id){
       req(input$Site)
       shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
       
-      selectedData0 <- pkg.env$PolSOTS %>% 
+      selectedData30 <- pkg.env$PolSOTS %>% 
         dplyr::filter(.data$SampleDepth_m == 30 | is.na(.data$SampleDepth_m)) # phyto needs depths, then change this
       
     }) %>% bindCache(input$Site, input$Parameters)
@@ -116,7 +116,7 @@ mod_PolSOTS_server <- function(id){
       req(input$Site)
       shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
       
-      selectedData0 <- pkg.env$PolSOTS %>% 
+      selectedData200 <- pkg.env$PolSOTS %>% 
         dplyr::filter(.data$SampleDepth_m == 200)
       
     }) %>% bindCache(input$Site, input$Parameters)
@@ -125,25 +125,10 @@ mod_PolSOTS_server <- function(id){
       req(input$Site)
       shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
       
-      selectedData0 <- pkg.env$PolSOTS %>% 
+      selectedData500 <- pkg.env$PolSOTS %>% 
         dplyr::filter(.data$SampleDepth_m == 500)
       
     }) %>% bindCache(input$Site, input$Parameters)    
-    
-    # shiny::exportTestValues(
-    #   PolSOTS = {ncol(selectedData())},
-    #   PolSOTSRows = {nrow(selectedData()) > 0},
-    #   PolSOTSYearisNumeric = {class(selectedData()$Year_Local)},
-    #   PolSOTSMonthisNumeric = {class(selectedData()$Month_Local)},
-    #   PolSOTSMMeansisNumeric = {class(selectedData()$means)},
-    #   PolSOTSsdisNumeric = {class(selectedData()$sd)},
-    #   PolSOTSAnomalyisNumeric = {class(selectedData()$anomaly)},
-    #   PolSOTSDateisDate = {class(selectedData()$SampleTime_Local)},
-    #   PolSOTSStationisChr = {class(selectedData()$StationName)},
-    #   PolSOTSCodeisChr = {class(selectedData()$StationCode)},
-    #   PolSOTSParametersisChr = {class(selectedData()$Parameters)},
-    #   PolSOTSValuesisNumeric = {class(selectedData()$Values)}
-    # )
     
     stationData <- reactive({
       stationData <- pkg.env$SOTSinfo %>% 
