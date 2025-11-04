@@ -17,11 +17,13 @@ Imports:
     ggplot2,
     golem (>= 0.3.1),
     htmltools,
+    httr,
+    jsonlite,
     leaflet,
     lubridate,
     magrittr,
     patchwork,
-    planktonr (>= 0.6.3),
+    planktonr (>= 0.6.6),
     rlang (>= 1.1.0),
     shiny (>= 1.6.0),
     shinycssloaders,
@@ -36,7 +38,6 @@ URL: https://github.com/PlanktonTeam/BioOceanObserver
 BugReports: https://github.com/PlanktonTeam/BioOceanObserver/issues
 Suggests: 
     rmarkdown,
-    knitr,
     spelling,
     testthat (>= 3.0.0),
     shinytest2
@@ -46,4 +47,3 @@ Depends:
     R (>= 3.5)
 Remotes: 
     github::PlanktonTeam/planktonr
-VignetteBuilder: knitr

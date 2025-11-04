@@ -21,7 +21,7 @@ mod_LFishData_ui <- function(id){
         DT::DTOutput(nsLFishData("SpeciesTable")),
       ),
       
-      div(style="display:inline-block; float:right; width:60%",
+      div(class="download-button-container",
           fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
           fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action"))
       

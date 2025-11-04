@@ -2,17 +2,16 @@
 #' 
 #' @param request Internal parameter for `{shiny}`. 
 #'     DO NOT REMOVE.
-#' @import shiny
 #' @noRd
 
 app_ui <- function(request) {
   # Your application UI logic 
-  shiny::navbarPage(golem_add_external_resources(), # Leave this function for adding external resources
-                    id = "navbar",  
-                    title = div(
-                                img(src = "www/IMOS_logo-wide-_Colour.png", height = 30),
-                                div("Biological Ocean Observer", class = "brand-text")),
+  shiny::navbarPage(id = "navbar",  
+                    title = shiny::div(
+                      shiny::img(src = "www/IMOS_logo-wide-_Colour.png", height = 30),
+                      shiny::div("Biological Ocean Observer", class = "brand-text")),
                     windowTitle = "Biological Ocean Observer",
+                    header = golem_add_external_resources(), # Add external resources in header
                     theme = bslib::bs_theme(version = 5, 
                                             bootswatch = "flatly",
                                             "border-width" = "0px",
@@ -34,8 +33,8 @@ app_ui <- function(request) {
                                                        shiny::tabPanel(value = "GSlat", "Voyage data", mod_MicroLatGS_ui("MicroLatGS_ui_1"))
                                                        # shiny::tabPanel("Composition")
                                     )),
-                    shiny::tabPanel("Phytoplankton",
-                                    shiny::tabsetPanel(id = 'phyto', type = "pills",
+                    shiny::tabPanel("Phytoplankton", value = 'phyto1',
+                                    shiny::tabsetPanel(id = 'phyto', type = "pills", 
                                                        shiny::tabPanel(value = "pts", "Time Series NRS", mod_PhytoTsNRS_ui("PhytoTsNRS_ui_1")),
                                                        shiny::tabPanel(value = "ptscpr", "Time Series CPR", mod_PhytoTsCPR_ui("PhytoTsCPR_ui_1")),
                                                        shiny::tabPanel(value = "distp", "Species information", mod_PhytoSpatial_ui("PhytoSpatial_ui_1"))
@@ -68,13 +67,15 @@ app_ui <- function(request) {
                                                        shiny::tabPanel(value = "cprRel", "CPR relationship", mod_RelCPR_ui("RelCPR_ui_1"))
                                     )),
                     shiny::tabPanel("Information",
-                                    fluidPage(
-                                      value = "info", mod_info_ui("info_1"))
+                                    # value = "info",
+                                    # shiny::fluidPage(
+                                      mod_info_ui("info_1")
+                                    # )
                     ),
-                    shiny::navbarMenu("", icon = icon("github"),
-                               shiny::tabPanel(tags$a(href = "https://github.com/PlanktonTeam/BioOceanObserver", target = "_blank", "BioOceanObserver Repository")),
-                               shiny::tabPanel(tags$a(href = "https://github.com/PlanktonTeam/planktonr", target = "_blank", tags$em("planktonr"), " Repository" )))
-                    )
+                    shiny::navbarMenu("", icon = shiny::icon("github"),
+                                      shiny::tabPanel(shiny::tags$a(href = "https://github.com/PlanktonTeam/BioOceanObserver", target = "_blank", "BioOceanObserver Repository")),
+                                      shiny::tabPanel(shiny::tags$a(href = "https://github.com/PlanktonTeam/planktonr", target = "_blank", shiny::tags$em("planktonr"), " Repository" )))
+  )
 }
 
 #' Add external Resources to the Application
@@ -82,7 +83,6 @@ app_ui <- function(request) {
 #' This function is internally used to add external 
 #' resources inside the Shiny application. 
 #' 
-#' @import shiny
 #' @importFrom golem add_resource_path activate_js favicon bundle_resources
 #' @noRd
 golem_add_external_resources <- function(){
@@ -91,7 +91,7 @@ golem_add_external_resources <- function(){
     'www', app_sys('app/www')
   )
   
-  tags$head(
+  shiny::tags$head(
     favicon(),
     bundle_resources(
       path = app_sys('app/www'),
@@ -100,15 +100,17 @@ golem_add_external_resources <- function(){
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()
     
+    # Script for navigating between modules ----
+    tags$script(type="text/javascript", src="navigate.js"),
     # Script for CSIRO branding tab ----
-    tags$script(type="text/javascript", src="csirotab.min.js"),
+    shiny::tags$script(type="text/javascript", src="csirotab.min.js"),
     # Custom CSIRO styling CSS for modal ----
-    tags$link(rel = "stylesheet", type = "text/css", href = "csiromodal.css"),
+    shiny::tags$link(rel = "stylesheet", type = "text/css", href = "csiromodal.css"),
     # IMOS Custom CSS with typography and colors ----
-    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
+    shiny::tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
     # Google fonts - Poppins and Open Sans ----
-    tags$link(href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap",
-              rel="stylesheet")
+    shiny::tags$link(href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap",
+                     rel="stylesheet")
   )
 }
 

@@ -19,6 +19,7 @@ datCPRTrip <- planktonr::pr_get_CPRTrips() %>%
   dplyr::select(c("Latitude", "Year_Local", "Month_Local", "Region", "TripCode"))
 
 NRSStation <- planktonr::pr_get_Stations(Survey = 'NRS') %>% 
+  dplyr::filter(ProjectName == "NRS") %>% 
   dplyr::select(-c("IMCRA", "IMCRA_PB", "ProjectName")) %>% 
   dplyr::arrange(desc(Latitude))
 
@@ -255,7 +256,8 @@ pr_get_mooringTS <- function(Stations, Depth, Names){
                   Names = Names)
 }
 
-Stations <- planktonr::pr_get_Stations() %>%
+
+Stations <- planktonr::pr_get_Stations(Survey = "NRS") %>%
   dplyr::select('StationCode') %>%
   dplyr::filter(!.data$StationCode %in% c("NIN", "ESP", "PH4", "VBM"))
 Stations <- rep(Stations$StationCode, 3)

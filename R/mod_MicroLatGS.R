@@ -13,8 +13,9 @@ mod_MicroLatGS_ui <- function(id){
     sidebarLayout(
       shiny::sidebarPanel(
           shiny::plotOutput(nsMicroLatGS("plotmap"),
-                            height = "300px", 
-                            width = "100%"),
+                            #height = "auto" 
+                            width = "100%"
+                            ),
           shiny::HTML("<h3>Latitude range to plot:</h3>"),
           shiny::sliderInput(nsMicroLatGS("LatSlide"), 
                              label = NULL, 
@@ -44,7 +45,7 @@ mod_MicroLatGS_ui <- function(id){
                        shiny::htmlOutput(nsMicroLatGS("PlotExp1")),
                        plotOutput(nsMicroLatGS("timeseries1")) %>% 
                          shinycssloaders::withSpinner(color="#0dc5c1"),
-                       div(style="display:inline-block; float:right; width:60%",
+                       div(class="download-button-container",
                            fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                            fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"))
                            )
@@ -115,7 +116,7 @@ mod_MicroLatGS_server <- function(id){
       gg_out1 <- reactive({
 
         if(length(selectedData()$Parameters)>50){
-          planktonr::pr_plot_latitude(selectedData(), na.fill = TRUE)
+          planktonr::pr_plot_latitude(selectedData(), na.fill = mean)
         } else {
           ggplot2::ggplot + ggplot2::geom_blank()
         }

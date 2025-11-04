@@ -24,9 +24,9 @@ mod_WaterBGC_server <- function(id){
     #     select depths
     
     observe({
-      req(input$station)
+      req(input$site)
       req(input$parameter)
-      shiny::validate(need(!is.na(input$station), "Error: Please select a station."))
+      shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
     })
     
@@ -35,13 +35,13 @@ mod_WaterBGC_server <- function(id){
       shiny::validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       pkg.env$datNRSw %>%
-        dplyr::filter(.data$StationName %in% input$station,
+        dplyr::filter(.data$StationName %in% input$site,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$Parameters %in% input$parameter) %>%
         dplyr::mutate(name = as.factor(.data$Parameters)) %>%
         tidyr::drop_na() 
       
-    }) %>% bindCache(input$station, input$parameter, input$date)
+    }) %>% bindCache(input$site, input$parameter, input$date)
     
     shiny::exportTestValues(
       WaterBGC = {ncol(selectedData())},
@@ -62,7 +62,7 @@ mod_WaterBGC_server <- function(id){
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
       
-    }) %>% bindCache(input$station, input$parameter, input$date, input$smoother)
+    }) %>% bindCache(input$site, input$parameter, input$date, input$smoother)
     
     output$timeseries1 <- renderPlot({
       gg_out1()
@@ -72,10 +72,16 @@ mod_WaterBGC_server <- function(id){
     output$downloadData1 <- fDownloadButtonServer(input, selectedData, "water") # Download csv of data
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "water") # Download figure
     
-    # add a map in sidebar
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-    }, bg = "transparent") %>% bindCache(input$station)
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({ 
+      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+                     Survey = "NRS", Type = "Zooplankton")
+    })
     
     # add text information 
     output$PlotExp <- renderText({
