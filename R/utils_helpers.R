@@ -1013,7 +1013,7 @@ LeafletBase <- function(df, Type = 'PA'){
     
     leaflet::leaflet(df %>% 
                        dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
-      leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
+      leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>% 
       leaflet::addCircleMarkers(lng = ~ Longitude,
                                 lat = ~ Latitude,
                                 color = "#CCCCCC",
@@ -1025,7 +1025,7 @@ LeafletBase <- function(df, Type = 'PA'){
   } else {
     leaflet::leaflet(df %>% 
                        dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
-      leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
+      leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>% 
       leaflet::addCircleMarkers(lng = ~ Longitude,
                                 lat = ~ Latitude,
                                 color = "#CCCCCC",
