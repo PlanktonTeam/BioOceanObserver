@@ -240,9 +240,14 @@ mod_info_ui <- function(id) {
               h4("Key Data Streams"),
               tags$ul(
                 class = "image-row",
-                actionButton(nsInfo("left"), "<"),
-                uiOutput(nsInfo("imageGallery")),
-                actionButton(nsInfo("right"), ">")
+                img(src = "www/csm_Zooplankton.png", class = "image-box"),
+                img(src = "www/csm_Phytoplankton.png", class = "image-box"),
+                img(src = "www/csm_Larval_Fish.png", class = "image-box"),
+                img(src = "www/csm_eDNA.png", class = "image-box"),
+                img(src = "www/csm_Temperature.png", class = "image-box"),
+                img(src = "www/csm_Macronutrients.png", class = "image-box"),
+                img(src = "www/csm_Pigments.png", class = "image-box"),
+                img(src = "www/csm_Salinity.png", class = "image-box")
               )
             )
           ),
@@ -342,52 +347,52 @@ mod_info_server <- function(id) {
         input$Info == 5
       },
       {
-        # banner of variables for NRS
-
-        img_paths_nrs <- c(
-          "www/csm_Chlorophyll.png",
-          "www/csm_Phytoplankton.png",
-          "www/csm_Zooplankton.png",
-          "www/csm_Larval_Fish.png",
-          "www/csm_Pigments.png",
-          "www/csm_Macronutrients.png",
-          "www/csm_eDNA.png",
-          "www/csm_Salinity.png",
-          "www/csm_Temperature.png",
-          "www/csm_Turbidity.png"
-        )
-
-        # Reactive index
-        startIndex <- reactiveVal(1)
-
-        # Update index on button click
-        observeEvent(input$left, {
-          newIndex <- max(1, startIndex() - 3)
-          startIndex(newIndex)
-        })
-
-        observeEvent(input$right, {
-          newIndex <- min(length(img_paths_nrs) - 2, startIndex() + 3)
-          startIndex(newIndex)
-        })
-
-        # Render image boxes
-        output$imageGallery <- renderUI({
-          idx <- startIndex()
-          selected <- img_paths_nrs[idx:min(idx + 2, length(img_paths_nrs))]
-
-          fluidRow(
-            lapply(selected, function(path) {
-              column(
-                width = 4,
-                div(
-                  class = "image-box",
-                  img(src = path)
-                )
-              )
-            })
-          )
-        })
+        # # banner of variables for NRS 
+        # 
+        # img_paths_nrs <- c(
+        #   "www/csm_Chlorophyll.png",
+        #   "www/csm_Phytoplankton.png",
+        #   "www/csm_Zooplankton.png",
+        #   "www/csm_Larval_Fish.png",
+        #   "www/csm_Pigments.png",
+        #   "www/csm_Macronutrients.png",
+        #   "www/csm_eDNA.png",
+        #   "www/csm_Salinity.png",
+        #   "www/csm_Temperature.png",
+        #   "www/csm_Turbidity.png"
+        # )
+        # 
+        # # Reactive index
+        # startIndex <- reactiveVal(1)
+        # 
+        # # Update index on button click
+        # observeEvent(input$left, {
+        #   newIndex <- max(1, startIndex() - 3)
+        #   startIndex(newIndex)
+        # })
+        # 
+        # observeEvent(input$right, {
+        #   newIndex <- min(length(img_paths_nrs) - 2, startIndex() + 3)
+        #   startIndex(newIndex)
+        # })
+        # 
+        # # Render image boxes
+        # output$imageGallery <- renderUI({
+        #   idx <- startIndex()
+        #   selected <- img_paths_nrs[idx:min(idx + 2, length(img_paths_nrs))]
+        # 
+        #   fluidRow(
+        #     lapply(selected, function(path) {
+        #       column(
+        #         width = 4,
+        #         div(
+        #           class = "image-box",
+        #           img(src = path)
+        #         )
+        #       )
+        #     })
+        #   )
+        # })
 
         output$NRSDataTable <- DT::renderDT(
           pkg.env$NRSStation %>%
