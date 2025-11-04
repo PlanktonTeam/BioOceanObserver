@@ -106,9 +106,11 @@ fPlotlyMap <- function(gg_map, tooltip = "colour") {
 #' @noRd
 fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton', 
                         allow_zoom = FALSE, allow_pan = FALSE){
-  # Determine map base and data depending on survey
+  
+  # Determine map base and data depending on survey. This is the default
   lat_min <- -45
-  lat_max <- -10
+  lat_max <- -5
+  zoom = 3.5
   
   if (Survey == "NRS"){
     meta_data <- pkg.env$NRSStation
@@ -122,6 +124,10 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
       Latitude = c(-18.5, -22.0, -16.5),
       Longitude = c(147.0, 113.9, 123.5)
     )
+  } else if (Survey == "CPR") {
+    lat_min <- -80
+    lat_max <- -5
+    zoom = 1.5
   } 
   
   # Add SOTS for phytoplankton (only relevant for point datasets)
@@ -133,8 +139,8 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
       Longitude = 142.0
     )
     meta_data <- dplyr::bind_rows(meta_data, sots)
-    lat_min <- -50
-    lat_max <- -10
+    lat_min <- -55
+    lat_max <- -5
   }
   
   # Create leaflet map base with options
@@ -151,7 +157,7 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
     )
   ) %>%
     leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>%
-    leaflet::setView(lng = 133.7751, lat = -27, zoom = 3.5) %>%
+    leaflet::setView(lng = 133.7751, lat = -27, zoom = zoom) %>%
     leaflet::setMaxBounds(lng1 = 110, lat1 = lat_min, lng2 = 158, lat2 = lat_max)
   
   # If CPR, draw bioregion polygons; otherwise add station points
@@ -257,8 +263,6 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
     
   } else {
     
-    # browser()
-    
     # Get station metadata based on survey type
     if(Survey == "NRS"){
       meta_data <- pkg.env$NRSStation
@@ -270,9 +274,12 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
       meta_data <- planktonr::csDAT %>% 
         sf::st_as_sf()
     }
+
+    
     
     # Add SOTS for phytoplankton
     if (Type == "Phytoplankton" && Survey != "CPR"){
+    
       sots <- data.frame(
         StationName = "SOTS",
         StationCode = "SOTS",
@@ -316,9 +323,11 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
 #'
 #' @noRd 
 fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
+  
   ns <- NS(id)
   
   if (stringr::str_detect(id, "NRS") == TRUE){ # NRS
+    
     choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
     idSite <- "site"
