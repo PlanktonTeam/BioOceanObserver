@@ -51,10 +51,15 @@ mod_ZooTsCPR_server <- function(id){
       ZtsCPRValuesisNumeric = {class(selectedData()$Values)}
     )
     
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_CPRmap(unique(selectedData()$BioRegion))
-    }, bg = "transparent") %>% 
-      bindCache(unique(selectedData()$BioRegion))
+    # Initial render of CPR leaflet map
+    output$plotmap <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "CPR", Type = "Zooplankton")
+    })
+
+    # Update polygons when selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$BioRegion), Survey = "CPR", Type = "Zooplankton")
+    })
     
     # add text information 
     output$PlotExp1 <- renderText({

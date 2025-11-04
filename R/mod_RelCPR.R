@@ -100,11 +100,14 @@ mod_RelCPR_server <- function(id){
             pkg.env$ParamDef %>% dplyr::filter(.data$Parameter == input$px) %>% dplyr::pull("Definition"), ".</p>", sep = "")
     })  
     
-    # Sidebar Map
-    output$plotmap <- renderPlot({
-      planktonr::pr_plot_CPRmap(unique(selectedData()$BioRegion))
-    }, bg = "transparent") %>% 
-      bindCache(unique(selectedData()$BioRegion))
+    # Sidebar Map: render leaflet CPR polygon map and update via proxy
+    output$plotmap <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "CPR", Type = "Relation")
+    })
+
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$BioRegion), Survey = "CPR", Type = "Relation")
+    })
     
     # Add text information 
     output$PlotExp1 <- shiny::renderText({

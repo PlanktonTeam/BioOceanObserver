@@ -49,10 +49,15 @@ mod_PhytoTsCPR_server <- function(id){
       PhytoTsCPRValuesisNumeric = {class(selectedData()$Values)}
     )
     
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_CPRmap(unique(selectedData()$BioRegion))
-    }, bg = "transparent") %>% 
-      bindCache(unique(selectedData()$BioRegion))
+    # Initial leaflet render (no selection)
+    output$plotmap <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "CPR", Type = "Phytoplankton")
+    })
+
+    # Update polygons when selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$BioRegion), Survey = "CPR", Type = "Phytoplankton")
+    })
     
     # add text information 
     output$PlotExp1 <- renderText({
