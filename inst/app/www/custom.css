@@ -1399,6 +1399,112 @@ nav[class*="navbar"],
 }
 
 /* ========================================
+   BANNER LAYOUT
+   ======================================== */
+
+/* Banner layout for information pages */
+
+.image-box {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background-color: white;
+  margin: 2px;
+  text-align: center;
+}
+
+.key-data-streams {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.key-data-streams li {
+  display: flex;
+  align-items: center;
+  margin: 5px 10px 5px 0;
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.key-data-streams li .fa {
+  margin-right: 8px;
+  color: #00bfff;
+  font-size: 18px;
+}
+
+.image-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+
+/* ========================================
+   padding for references
+   ======================================== */
+
+/* inden for references and pages of text */
+
+.references h4 {
+  padding-left: 2em;
+}
+
+.references ul {
+  padding-left: 3em;
+}
+
+/* ========================================
+   accordian settings for information buttons
+   ======================================== */
+
+/* accordion banner settings */
+.accordion-item {
+  background-color: var(--neutral-2) !important;  
+  margin-bottom: 1rem;       /* Space between panels */
+  font-size: var(--font-size-base);    /* Text size */
+}
+/* Style the accordion header */
+.accordion-button {
+  background-color: var(--primary-5) !important; 
+  color: var(--primary-5);  !important;  /* Header text color */
+  font-weight: bold; !important;
+  font-size: var(--font-size-xl)    !important;     
+  border-radius: 10px !important; /* Rounded header */
+  border-color: var(--secondary-1) !important;
+  padding: 0.4rem 0.75rem; /* control size of button */
+  
+}
+/* Optional: Change hover effect on header */
+.accordion-button:hover {
+  background-color: var(--background) !important; 
+  border-color: var(--secondary-1) !important;
+  color:  var(--primary-5); !important; 
+}
+
+/* Not active (collapsed) — pale background */
+.accordion-button.collapsed {
+  background-color: var(--background) !important; /* pale colour */
+  color: var(--primary-2) !important;
+}
+
+/* Optional: Change hover effect on header */
+.accordion-button:not(.collapsed) {
+  background-color: var(--primary-5)) !important; 
+  border-color: var(--secondary-1) !important;
+  color:  var(--primary-5) !important; 
+}
+/* Style the accordion body */
+.accordion-body {
+  background-color: var(--neutral-2) !important;   
+  padding: 1rem; !important;   
+  border-top: 1px solid var(--primary-1) !important;   
+  border-radius: 0 0 10px 10px !important;   
+=======
    UTILITY CLASSES FOR COMMON STYLES
    ======================================== */
 
