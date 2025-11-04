@@ -87,11 +87,14 @@ mod_PolCPR_server <- function(id){
         dplyr::filter(.data$BioRegion == input$site) 
     }) %>% bindCache(input$site)
     
-    # Sidebar Map
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_CPRmap(unique(selectedData()$BioRegion))
-    }, bg = "transparent") %>% 
-      bindCache(unique(selectedData()$BioRegion))
+    # Sidebar Map: use leaflet for CPR polygons
+    output$plotmap <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "CPR", Type = "Policy")
+    })
+
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$BioRegion), Survey = "CPR", Type = "Policy")
+    })
     
     
     output$StationSummary <- shiny::renderText({ 
