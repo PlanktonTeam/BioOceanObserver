@@ -23,6 +23,7 @@ mod_ZooTsNRS_ui <- function(id){
 mod_ZooTsNRS_server <- function(id){
   moduleServer(id, function(input, output, session, NRSzts){
     
+    
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
       req(input$site)
