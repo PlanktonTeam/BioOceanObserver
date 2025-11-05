@@ -56,7 +56,7 @@ mod_PhytoTsNRS_server <- function(id){
 
     # add text information
     output$PlotExp1 <- renderText({
-      if('Southern Ocean Time Series' %in% input$Site) {
+      if('Southern Ocean Time Series' %in% input$site) {
         paste0("A plot of selected phytoplankton Parameters from the NRS around Australia, as a time series and a monthly climatology by station.<br>
         <b>Note:</b> At SOTS, phytoplankton samples were initially collected around 30m, from 2020 onwards this was changed to 10m")
     } else {
@@ -67,7 +67,7 @@ mod_PhytoTsNRS_server <- function(id){
       "A plot of selected indicies from the NRS around Australia, as a time series, a monthly climatology and an annual mean"
     })
     output$PlotExp3 <- renderText({
-      if('Southern Ocean Time Series' %in% input$Site) {
+      if('Southern Ocean Time Series' %in% input$site) {
         paste0("A plot of functional groups from the light microscope phytoplankton counts from the NRS around Australia, as a time series and a monthly climatology.<br>
         <b>Note:</b> At SOTS, phytoplankton samples were initially collected around 30m, from 2020 onwards this was changed to 10m")
       } else {
@@ -83,7 +83,7 @@ mod_PhytoTsNRS_server <- function(id){
         
         p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", method = "lm", trans = trans)
         
-        if('Southern Ocean Time Series' %in% input$Site & lubridate::year(input$DatesSlide[1]) < 2015){
+        if('Southern Ocean Time Series' %in% input$site & lubridate::year(input$DatesSlide[1]) < 2015){
           sots30 <- pkg.env$SOTSp %>% 
             dplyr::filter(.data$SampleDepth_m > 20,
                           .data$Parameters %in% "PhytoAbundance_CellsL",
@@ -177,18 +177,18 @@ mod_PhytoTsNRS_server <- function(id){
         if (is.null(pkg.env$NRSfgp$StationCode)) {return(NULL)}
         scale <- dplyr::if_else(input$scaler3, "Proportion", "Actual")
         
-        if('Southern Ocean Time Series' %in% input$Site & lubridate::year(input$DatesSlide[1]) < 2015){
-          sotsfg30 <- SOTSfgp %>% 
+        if('Southern Ocean Time Series' %in% input$site & lubridate::year(input$DatesSlide[1]) < 2015){
+          sotsfg30 <- pkg.env$SOTSfgp %>% 
             dplyr::filter(dplyr::between(.data$SampleDepth_m, 20, 34.5),
                           dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-            dplyr::mutate(group = 'group1',
+            dplyr::mutate(group = 0,
                           StationName = factor(.data$StationName,
                                                levels = c("Darwin", "Yongala", "Ningaloo", "North Stradbroke Island",
                                                           "Rottnest Island", "Esperance", "Port Hacking", "Kangaroo Island",
                                                           "Bonney Coast", "Maria Island", "Southern Ocean Time Series",
                                                           "Southern Ocean Time Series - Remote Access Sampler")))
           selectedDataFG <- selectedDataFG() %>% 
-            dplyr::mutate(group = 'group2') %>% 
+            dplyr::mutate(group = 1) %>% 
             dplyr::bind_rows(sotsfg30)
 
           if(scale == "Percent") {
@@ -203,17 +203,20 @@ mod_PhytoTsNRS_server <- function(id){
           
           lims <- as.POSIXct(strptime(c(min(selectedDataFG$SampleTime_Local),max(selectedDataFG$SampleTime_Local)), format = "%Y-%m-%d %H:%M"))
           
-          p1 <- ggplot2::ggplot(selectedDataFG, ggplot2::aes(x = SampleTime_Local, y = Values, fill = Parameters, group = interaction(Parameters, group))) +
-              ggplot2::geom_area(alpha = 0.9 , linewidth = 0.2, colour = "white") +
+          p1 <- ggplot2::ggplot(selectedDataFG, ggplot2::aes(x = SampleTime_Local, y = Values, 
+                                                             fill = Parameters, 
+                                                             alpha = group, 
+                                                             group = interaction(Parameters, group))) +
+              ggplot2::geom_area(linewidth = 0.2, colour = "white") +
+              ggplot2::scale_alpha(range = c(0.4, 0.9), guide = 'none') +
               ggplot2::facet_wrap(~StationName, scales = "free", ncol = 1) +
               ggplot2::labs(y = planktonr::pr_relabel("PhytoAbundance_CellsL", style = "ggplot")) +
-              ggplot2::scale_fill_brewer(palette = "Set1", drop = FALSE) +
+              ggplot2::scale_fill_brewer(palette = "Set1", drop = FALSE, name = "Functional Group") +
               planktonr::theme_pr() +
               ggplot2::scale_y_continuous(expand = c(0,0)) +
-              ggplot2::theme(legend.title = ggplot2::element_blank(),
-                             strip.text = ggplot2::element_text(hjust = 0)) +
+              ggplot2::theme(strip.text = ggplot2::element_text(hjust = 0)) +
               ggplot2::scale_x_datetime(date_breaks = "2 years", limits = lims, date_labels = "%Y", expand = ggplot2::expansion(add = c(0.15, 0.15))) +
-              ggplot2::xlab("Sample Date")
+              ggplot2::xlab("Sample Date") 
             
         } else {
           

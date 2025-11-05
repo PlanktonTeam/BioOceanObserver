@@ -112,12 +112,12 @@ fPlotlyMap <- function(gg_map, tooltip = "colour") {
 #'
 #' @noRd
 fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton', 
-                        allow_zoom = FALSE, allow_pan = FALSE){
+                        allow_zoom = TRUE, allow_pan = FALSE){
   
   # Determine map base and data depending on survey. This is the default
   lat_min <- -45
   lat_max <- -5
-  zoom = 3.5
+  zoom = 3.25
   
   if (Survey == "NRS"){
     meta_data <- pkg.env$NRSStation
@@ -132,7 +132,7 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
       Longitude = c(147.0, 113.9, 123.5)
     )
   } else if (Survey == "CPR") {
-    lat_min <- -80
+    lat_min <- -70
     lat_max <- -5
     zoom = 1.5
   } 
@@ -157,7 +157,7 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
       doubleClickZoom = allow_zoom,
       scrollWheelZoom = allow_zoom,
       dragging = allow_pan,
-      minZoom = 3,
+      minZoom = 1,
       maxZoom = 18,
       zoomSnap = 0.25,
       zoomDelta = 0.25
@@ -331,7 +331,11 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
 #' @noRd 
 
 fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added for SOTS phytoplankton
+
   ns <- NS(id)
+  
+  if (stringr::str_detect(id, "NRS") == TRUE){ # NRS
+    
     choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
 

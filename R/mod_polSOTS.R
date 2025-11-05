@@ -12,7 +12,7 @@ mod_PolSOTS_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        plotOutput(nsPolSOTS("plotmap")),
+        leaflet::leafletOutput(nsPolSOTS("plotmap"), height = "400px"),
         shiny::HTML("<h5><strong>Select a station:</strong></h5>"),
         shiny::radioButtons(inputId = nsPolSOTS("Site"), label = NULL, choices = unique(sort(pkg.env$PolSOTS$StationName)), 
                             selected = "Southern Ocean Time Series"),
@@ -135,11 +135,17 @@ mod_PolSOTS_server <- function(id){
         dplyr::filter(.data$StationName == input$Site) 
     }) %>% bindCache(input$Site)
     
-    # Sidebar Map
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(unique(selectedData0()$StationCode), Type = 'Phytoplankton')
-    }, bg = "transparent") %>% 
-      bindCache(input$Site)
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({ 
+      fLeafletMap(character(0), Survey = "NRS", Type = "Phytoplankton")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData0()$StationCode), 
+                     Survey = "NRS", Type = "Phytoplankton")
+    })
+    
     
     output$StationSummary <- shiny::renderText({ 
       paste("<h4 style='text-align:center; font-weight: bold;'>",input$Site,"</h5>The IMOS ", input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), 
@@ -193,7 +199,7 @@ mod_PolSOTS_server <- function(id){
       
       gg_out2 <- reactive({
         
-        p10 <- planktonr::pr_plot_EOVs(PolSOTS, EOV = "ChlF_mgm3", trans = "identity", col = col1["ChlF_mgm3"], labels = FALSE) 
+        p10 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "ChlF_mgm3", trans = "identity", col = col1["ChlF_mgm3"], labels = FALSE) 
         p130 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "ChlF_mgm3", trans = "identity", col = col1["ChlF_mgm3"], labels = FALSE)
         p20 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col1["PhytoBiomassCarbon_pgL"], labels = FALSE) 
         p230 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col1["PhytoBiomassCarbon_pgL"], labels = FALSE) 
