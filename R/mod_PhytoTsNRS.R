@@ -21,14 +21,13 @@ mod_PhytoTsNRS_ui <- function(id){
 #'
 #' @noRd 
 mod_PhytoTsNRS_server <- function(id){
-  moduleServer(id, function(input, output, session, NRSpts){
-    
-    # fPLanktonPanelServer(id, panel_id, input)
-    
+  
+  moduleServer(id, function(input, output, session){
     
     # Sidebar ----------------------------------------------------------
     # observeEvent({input$NRSpt == 1 | input$NRSpt == 2}, {
     selectedData <- reactive({ #TODO - This reactive encompasses things from 1/2 AND 3. Can we split them?
+      
       req(input$site)
       req(input$parameter)
       shiny::validate(need(!is.na(input$site), "Error: Please select a station."))

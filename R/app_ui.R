@@ -33,7 +33,7 @@ app_ui <- function(request) {
                                                        shiny::tabPanel(value = "GSlat", "Voyage data", mod_MicroLatGS_ui("MicroLatGS_ui_1"))
                                                        # shiny::tabPanel("Composition")
                                     )),
-                    shiny::tabPanel("Phytoplankton", value = 'phyto1',
+                    shiny::tabPanel("Phytoplankton",
                                     shiny::tabsetPanel(id = 'phyto', type = "pills", 
                                                        shiny::tabPanel(value = "pts", "Time Series NRS", mod_PhytoTsNRS_ui("PhytoTsNRS_ui_1")),
                                                        shiny::tabPanel(value = "ptscpr", "Time Series CPR", mod_PhytoTsCPR_ui("PhytoTsCPR_ui_1")),

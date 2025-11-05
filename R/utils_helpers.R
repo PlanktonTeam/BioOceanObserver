@@ -114,24 +114,31 @@ fPlotlyMap <- function(gg_map, tooltip = "colour") {
 fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton', 
                         allow_zoom = FALSE, allow_pan = FALSE){
   
-  # Get station metadata based on survey type
-  if(Survey == "NRS"){
+  # Determine map base and data depending on survey. This is the default
+  lat_min <- -45
+  lat_max <- -5
+  zoom = 3.5
+  
+  if (Survey == "NRS"){
     meta_data <- pkg.env$NRSStation
   } else if (Survey == "LTM") {
     meta_data <- pkg.env$NRSStation %>%
       dplyr::filter(.data$StationCode %in% c("MAI", "PHB", "ROT"))
   } else if (Survey == "Coastal") {
-    # Use coastal stations data
     meta_data <- data.frame(
       StationName = c("GBR", "Ningaloo", "Kimberley"),
       StationCode = c("GBR", "NIN", "KIM"),
       Latitude = c(-18.5, -22.0, -16.5),
       Longitude = c(147.0, 113.9, 123.5)
     )
-  }
+  } else if (Survey == "CPR") {
+    lat_min <- -80
+    lat_max <- -5
+    zoom = 1.5
+  } 
   
-  # Add SOTS for phytoplankton
-  if (Type == 'Phytoplankton'){
+  # Add SOTS for phytoplankton (only relevant for point datasets)
+  if (Type == 'Phytoplankton' && Survey != "CPR"){
     sots <- data.frame(
       StationName = "SOTS",
       StationCode = "SOTS",
@@ -139,65 +146,79 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
       Longitude = 142.0
     )
     meta_data <- dplyr::bind_rows(meta_data, sots)
-    lat_min <- -50
-    lat_max <- -10
-  } else {
-    lat_min <- -45
-    lat_max <- -10
+    lat_min <- -55
+    lat_max <- -5
   }
   
-  # Add color column based on selection
-  meta_data <- meta_data %>%
-    dplyr::mutate(
-      Selected = .data$StationCode %in% sites,
-      Color = dplyr::if_else(.data$Selected, "red", "blue"),
-      Radius = dplyr::if_else(.data$Selected, 8, 6)
-    )
-  
-  # Create leaflet map with options
+  # Create leaflet map base with options
   map <- leaflet::leaflet(
-    meta_data,
     options = leaflet::leafletOptions(
       zoomControl = allow_zoom,
       doubleClickZoom = allow_zoom,
       scrollWheelZoom = allow_zoom,
       dragging = allow_pan,
-      minZoom = 3,       # Prevent zooming out too far
-      maxZoom = 18,      # Allow zooming in for detail
-      zoomSnap = 0.25,   # Allow fractional zoom levels (0.25 increments)
-      zoomDelta = 0.25   # Zoom by 0.25 levels at a time
+      minZoom = 3,
+      maxZoom = 18,
+      zoomSnap = 0.25,
+      zoomDelta = 0.25
     )
   ) %>%
     leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>%
+    leaflet::setView(lng = 133.7751, lat = -27, zoom = zoom) %>%
+    leaflet::setMaxBounds(lng1 = 110, lat1 = lat_min, lng2 = 158, lat2 = lat_max)
+  
+  # If CPR, draw bioregion polygons; otherwise add station points
+  if (Survey == "CPR"){
     
-    # Set initial view centered on Australia
-    leaflet::setView(lng = 133.7751, lat = -27, zoom = 3.5) %>%
+    # If sites provided, make non-selected transparent/grey
+    mbr_df <- planktonr::mbr
+    # Ensure it's an sf object and has character REGION/Colour columns
+    if (!inherits(mbr_df, "sf")) mbr_df <- sf::st_as_sf(mbr_df)
+    mbr_df$REGION <- as.character(mbr_df$REGION)
+    if (!"Colour" %in% colnames(mbr_df)) mbr_df$Colour <- "#AAAAAA"
+    mbr_df$Colour <- as.character(mbr_df$Colour)
+
+    if (length(sites) > 0) {
+      # use base ifelse to avoid strict type coercion from dplyr::if_else
+      mbr_df$FillCol <- ifelse(mbr_df$REGION %in% sites, mbr_df$Colour, "#EEEEEE")
+    } else {
+      mbr_df$FillCol <- "#EEEEEE"
+    }
     
-    # Set bounds to keep map focused on Australia
-    leaflet::setMaxBounds(
-      lng1 = 110,    # Western boundary
-      lat1 = -48, # Southern boundary  
-      lng2 = 158,    # Eastern boundary
-      lat2 = -5  # Northern boundary
-    ) %>%
-    
-    # Add station points
-    leaflet::addCircleMarkers(
-      lng = ~Longitude,
-      lat = ~Latitude,
-      color = ~Color,
-      fillColor = ~Color,
-      radius = ~Radius,
-      fillOpacity = 0.8,
-      opacity = 1,
-      weight = 2,
-      label = ~StationName,
-      labelOptions = leaflet::labelOptions(
-        style = list("font-weight" = "normal", "padding" = "3px 8px"),
-        textsize = "12px",
-        direction = "auto"
+    map <- map %>%
+      leaflet::addPolygons(data = mbr_df,
+                           fillColor = ~FillCol,
+                           color = "black",
+                           weight = 0.5,
+                           fillOpacity = 0.7,
+                           label = ~REGION,
+                           highlight = leaflet::highlightOptions(weight = 2, bringToFront = TRUE))
+  } else { # Not CPR
+    # Add color column based on selection for point datasets
+    meta_data <- meta_data %>%
+      dplyr::mutate(
+        Selected = .data$StationCode %in% sites,
+        Color = dplyr::if_else(.data$Selected, "red", "blue"),
+        Radius = dplyr::if_else(.data$Selected, 8, 6)
       )
-    )
+    
+    map <- map %>%
+      leaflet::addCircleMarkers(data = meta_data,
+                                lng = ~Longitude,
+                                lat = ~Latitude,
+                                color = ~Color,
+                                fillColor = ~Color,
+                                radius = ~Radius,
+                                fillOpacity = 0.8,
+                                opacity = 1,
+                                weight = 2,
+                                label = ~StationName,
+                                labelOptions = leaflet::labelOptions(
+                                  style = list("font-weight" = "normal", "padding" = "3px 8px"),
+                                  textsize = "12px",
+                                  direction = "auto"
+                                ))
+  }
   
   return(map)
 }
@@ -217,67 +238,101 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
 #' @return NULL (called for side effect of updating the map)
 #'
 #' @noRd
-fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = 'Zooplankton'){
-  
-  # Get station metadata based on survey type
-  if(Survey == "NRS"){
-    meta_data <- pkg.env$NRSStation
-  } else if (Survey == "LTM") {
-    meta_data <- pkg.env$NRSStation %>%
-      dplyr::filter(.data$StationCode %in% c("MAI", "PHB", "ROT"))
-  } else if (Survey == "Coastal") {
-    # Use coastal stations data
-    meta_data <- planktonr::csDAT
-  }
-  
-  # Add SOTS for phytoplankton
-  if (Type == 'Phytoplankton'){
-    sots <- data.frame(
-      StationName = "SOTS",
-      StationCode = "SOTS",
-      Latitude = -47.0,
-      Longitude = 142.0
-    )
-    meta_data <- dplyr::bind_rows(meta_data, sots)
-  }
-  
-  # Add color column based on selection
-  meta_data <- meta_data %>%
-    dplyr::mutate(
-      Selected = .data$StationCode %in% sites,
-      Color = dplyr::if_else(.data$Selected, "red", "blue"),
-      Radius = dplyr::if_else(.data$Selected, 8, 6)
-    )
+fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zooplankton"){
   
   # Update the map using leafletProxy
-  leaflet::leafletProxy(map_id, session) %>%
-    leaflet::clearMarkers() %>%
-    leaflet::addCircleMarkers(
-      data = meta_data,
-      lng = ~Longitude,
-      lat = ~Latitude,
-      color = ~Color,
-      fillColor = ~Color,
-      radius = ~Radius,
-      fillOpacity = 0.8,
-      opacity = 1,
-      weight = 2,
-      label = ~StationName,
-      labelOptions = leaflet::labelOptions(
-        style = list("font-weight" = "normal", "padding" = "3px 8px"),
-        textsize = "12px",
-        direction = "auto"
+  proxy <- leaflet::leafletProxy(map_id, session)
+  
+  if (Survey == "CPR"){
+    
+    # Update polygons: clear existing shapes and add polygons with selected fill
+    mbr_df <- planktonr::mbr
+    if (!inherits(mbr_df, "sf")) mbr_df <- sf::st_as_sf(mbr_df)
+    mbr_df$REGION <- as.character(mbr_df$REGION)
+    if (!"Colour" %in% colnames(mbr_df)) mbr_df$Colour <- "#AAAAAA"
+    mbr_df$Colour <- as.character(mbr_df$Colour)
+
+    if (length(sites) > 0){
+      mbr_df$FillCol <- ifelse(mbr_df$REGION %in% sites, mbr_df$Colour, "#EEEEEE")
+    } else {
+      mbr_df$FillCol <- "#EEEEEE"
+    }
+
+    proxy %>%
+      leaflet::clearShapes() %>%
+      leaflet::addPolygons(data = mbr_df,
+                           fillColor = ~FillCol,
+                           color = "black",
+                           weight = 0.5,
+                           fillOpacity = 0.7,
+                           label = ~REGION,
+                           highlight = leaflet::highlightOptions(weight = 2, bringToFront = TRUE))
+    
+  } else {
+    
+    # Get station metadata based on survey type
+    if(Survey == "NRS"){
+      meta_data <- pkg.env$NRSStation
+    } else if (Survey == "LTM") {
+      meta_data <- pkg.env$NRSStation %>%
+        dplyr::filter(.data$StationCode %in% c("MAI", "PHB", "ROT"))
+    } else if (Survey == "Coastal") {
+      # Use coastal stations data
+      meta_data <- planktonr::csDAT %>% 
+        sf::st_as_sf()
+    }
+
+    
+    
+    # Add SOTS for phytoplankton
+    if (Type == "Phytoplankton" && Survey != "CPR"){
+    
+      sots <- data.frame(
+        StationName = "SOTS",
+        StationCode = "SOTS",
+        Latitude = -47.0,
+        Longitude = 142.0
       )
-    )
+      meta_data <- dplyr::bind_rows(meta_data, sots)
+    }
+    
+    # Add color column based on selection
+    meta_data <- meta_data %>%
+      dplyr::mutate(
+        Selected = .data$StationCode %in% sites,
+        Color = dplyr::if_else(.data$Selected, "red", "blue"),
+        Radius = dplyr::if_else(.data$Selected, 8, 6)
+      )
+    
+    proxy %>%
+      leaflet::clearMarkers() %>%
+      leaflet::addCircleMarkers(
+        data = meta_data,
+        lng = ~Longitude,
+        lat = ~Latitude,
+        color = ~Color,
+        fillColor = ~Color,
+        radius = ~Radius,
+        fillOpacity = 0.8,
+        opacity = 1,
+        weight = 2,
+        label = ~StationName,
+        labelOptions = leaflet::labelOptions(
+          style = list("font-weight" = "normal", "padding" = "3px 8px"),
+          textsize = "12px",
+          direction = "auto"
+        )
+      )
+  }
 }
 
 #' BOO Plankton Sidebar
 #'
 #' @noRd 
+
 fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added for SOTS phytoplankton
   ns <- NS(id)
-  
-  if(stringr::str_detect(id, "NRS") == TRUE){ # NRS
+    choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
 
     idSite <- "site"
@@ -323,7 +378,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       if(stringr::str_detect(id, "CPR")) {
         shiny::tagList(
           shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
-          shiny::plotOutput(ns("plotmap"), height = "400px")
+          leaflet::leafletOutput(ns("plotmap"), height = "400px")
         )
       } else {
         shiny::tagList(
@@ -732,7 +787,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
       if(stringr::str_detect(id, "CPR")) {
         shiny::tagList(
           shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
-          shiny::plotOutput(ns("plotmap"), height = "400px")
+          leaflet::leafletOutput(ns("plotmap"), height = "400px")
         )
       } else {
         shiny::tagList(
@@ -972,7 +1027,7 @@ LeafletBase <- function(df, Type = 'PA'){
     
     leaflet::leaflet(df %>% 
                        dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
-      leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
+      leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>% 
       leaflet::addCircleMarkers(lng = ~ Longitude,
                                 lat = ~ Latitude,
                                 color = "#CCCCCC",
@@ -984,7 +1039,7 @@ LeafletBase <- function(df, Type = 'PA'){
   } else {
     leaflet::leaflet(df %>% 
                        dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
-      leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
+      leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>% 
       leaflet::addCircleMarkers(lng = ~ Longitude,
                                 lat = ~ Latitude,
                                 color = "#CCCCCC",
