@@ -13,9 +13,8 @@ mod_PolSOTS_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         leaflet::leafletOutput(nsPolSOTS("plotmap"), height = "400px"),
-        shiny::HTML("<h5><strong>Select a station:</strong></h5>"),
-        shiny::radioButtons(inputId = nsPolSOTS("Site"), label = NULL, choices = unique(sort(pkg.env$PolSOTS$StationName)), 
-                            selected = "Southern Ocean Time Series"),
+        shiny::HTML("<h5><strong>Site:</strong></h5>"),
+        shiny::HTML("<h6><strong>Southern Ocean Time Series</strong></h6>"),
         shiny::conditionalPanel(
           condition = paste0("input.EOV_SOTS == 1"), # Only first tab
           shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
@@ -95,45 +94,32 @@ mod_PolSOTS_server <- function(id){
     
     # Sidebar ----------------------------------------------------------
     selectedData0 <- reactive({
-      req(input$Site)
-      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
-      
       selectedData0 <- pkg.env$PolSOTS %>% 
         dplyr::filter(.data$SampleDepth_m == 0)
       
-    }) %>% bindCache(input$Site, input$Parameters)
+    }) %>% bindCache(input$site, input$Parameters)
     
     selectedData30 <- reactive({
-      req(input$Site)
-      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
-      
       selectedData30 <- pkg.env$PolSOTS %>% 
         dplyr::filter(.data$SampleDepth_m == 30 | is.na(.data$SampleDepth_m)) # phyto needs depths, then change this
       
-    }) %>% bindCache(input$Site, input$Parameters)
+    }) %>% bindCache(input$site, input$Parameters)
     
     selectedData200 <- reactive({
-      req(input$Site)
-      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
-      
       selectedData200 <- pkg.env$PolSOTS %>% 
         dplyr::filter(.data$SampleDepth_m == 200)
       
-    }) %>% bindCache(input$Site, input$Parameters)
+    }) %>% bindCache(input$site, input$Parameters)
     
     selectedData500 <- reactive({
-      req(input$Site)
-      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
-      
       selectedData500 <- pkg.env$PolSOTS %>% 
         dplyr::filter(.data$SampleDepth_m == 500)
       
-    }) %>% bindCache(input$Site, input$Parameters)    
+    }) %>% bindCache(input$site, input$Parameters)    
     
     stationData <- reactive({
-      stationData <- pkg.env$SOTSinfo %>% 
-        dplyr::filter(.data$StationName == input$Site) 
-    }) %>% bindCache(input$Site)
+      stationData <- pkg.env$SOTSinfo  
+    }) 
     
     # Sidebar Map - Initial render
     output$plotmap <- leaflet::renderLeaflet({ 
@@ -148,11 +134,11 @@ mod_PolSOTS_server <- function(id){
     
     
     output$StationSummary <- shiny::renderText({ 
-      paste("<h4 style='text-align:center; font-weight: bold;'>",input$Site,"</h5>The IMOS ", input$Site, " National Reference Station is located at ", round(stationData()$Latitude,2), 
+      paste("<h4 style='text-align:center; font-weight: bold;'>",input$site,"</h5>The IMOS ", input$site, " National Reference Station is located at ", round(stationData()$Latitude,2), 
             "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ". The water depth at the station is ", 
             round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, 
             ". The station has been sampled since ", format(stationData()$StationStartDate, "%A %d %B %Y"), " ", stationData()$now,
-            ". ", input$Site, " is in the ", stationData()$ManagementRegion, 
+            ". ", input$site, " is in the ", stationData()$ManagementRegion, 
             " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = "")
     })
     
@@ -183,7 +169,7 @@ mod_PolSOTS_server <- function(id){
                          axis.text =  ggplot2::element_text(size = 10, face = "plain"),
                          plot.title = ggplot2::element_text(hjust = 0.5))
         
-      }) %>% bindCache(input$Site, input$Parameters, input$Depths)
+      }) %>% bindCache(input$Parameters, input$Depths)
       
       output$timeseries1 <- renderPlot({
         gg_out1()
@@ -213,7 +199,7 @@ mod_PolSOTS_server <- function(id){
                          axis.text =  ggplot2::element_text(size = 10, face = "plain"),
                          plot.title = ggplot2::element_text(hjust = 0.5)) 
         
-      }) %>% bindCache(input$Site)
+      }) 
       
       output$timeseries2 <- renderPlot({
         gg_out2()
@@ -243,7 +229,7 @@ mod_PolSOTS_server <- function(id){
                          axis.text =  ggplot2::element_text(size = 10, face = "plain"),
                          plot.title = ggplot2::element_text(hjust = 0.5))
         
-      }) %>% bindCache(input$Site)
+      }) 
       
       output$timeseries3 <- renderPlot({
         gg_out3()
@@ -272,7 +258,7 @@ mod_PolSOTS_server <- function(id){
                          axis.text =  ggplot2::element_text(size = 10, face = "plain"),
                          plot.title = ggplot2::element_text(hjust = 0.5))
         
-      }) %>% bindCache(input$Site)
+      }) 
       
       output$timeseries4 <- renderPlot({
         gg_out4()

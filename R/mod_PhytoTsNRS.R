@@ -34,7 +34,7 @@ mod_PhytoTsNRS_server <- function(id){
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       selectedData <- pkg.env$datNRSp %>%
-        dplyr::bind_rows(pkg.env$SOTSp %>% dplyr::filter(.data$SampleDepth_m < 20)) %>% 
+        dplyr::bind_rows(pkg.env$SOTSp) %>% #dplyr::filter(.data$SampleDepth_m < 20)) %>% #TODO should be able to remove filter once in planktonr
         dplyr::filter(.data$StationName %in% input$site,
                       .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>% 
@@ -83,25 +83,9 @@ mod_PhytoTsNRS_server <- function(id){
         
         p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", method = "lm", trans = trans)
         
-        if('Southern Ocean Time Series' %in% input$site & lubridate::year(input$DatesSlide[1]) < 2015){
-          sots30 <- pkg.env$SOTSp %>% 
-            dplyr::filter(.data$SampleDepth_m > 20,
-                          .data$Parameters %in% "PhytoAbundance_CellsL",
-                          dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-            dplyr::mutate(StationName = factor(.data$StationName,
-                                               levels = c("Darwin", "Yongala", "Ningaloo", "North Stradbroke Island",
-                                                          "Rottnest Island", "Esperance", "Port Hacking", "Kangaroo Island",
-                                                          "Bonney Coast", "Maria Island", "Southern Ocean Time Series",
-                                                          "Southern Ocean Time Series - Remote Access Sampler")))
-          
-          p1 <- p1 +
-            ggplot2::geom_point(data = sots30, ggplot2::aes(x = SampleTime_Local, y = Values), colour = 'black', alpha = 0.2) +
-            ggplot2::geom_smooth(data = sots30, ggplot2::aes(x = SampleTime_Local, y = Values), method = "lm", alpha = 0.2,
-                                 formula = 'y ~ x') 
-        }
-        
         p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", method = "loess", trans = trans) +
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
+        
         p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
         
       }) %>% bindCache(input$parameter,input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
@@ -164,7 +148,7 @@ mod_PhytoTsNRS_server <- function(id){
         shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
         
         selectedDataFG <- pkg.env$NRSfgp %>%
-          dplyr::bind_rows(pkg.env$SOTSfgp %>% dplyr::filter(.data$SampleDepth_m < 20)) %>% 
+          dplyr::bind_rows(pkg.env$SOTSfgp) %>% #dplyr::filter(.data$SampleDepth_m < 20)) %>% 
           dplyr::filter(.data$StationName %in% input$site,
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
           planktonr::pr_reorder() %>% 
@@ -175,55 +159,11 @@ mod_PhytoTsNRS_server <- function(id){
       gg_out3 <- reactive({
         
         if (is.null(pkg.env$NRSfgp$StationCode)) {return(NULL)}
+        
         scale <- dplyr::if_else(input$scaler3, "Proportion", "Actual")
         
-        if('Southern Ocean Time Series' %in% input$site & lubridate::year(input$DatesSlide[1]) < 2015){
-          sotsfg30 <- pkg.env$SOTSfgp %>% 
-            dplyr::filter(dplyr::between(.data$SampleDepth_m, 20, 34.5),
-                          dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-            dplyr::mutate(group = 0,
-                          StationName = factor(.data$StationName,
-                                               levels = c("Darwin", "Yongala", "Ningaloo", "North Stradbroke Island",
-                                                          "Rottnest Island", "Esperance", "Port Hacking", "Kangaroo Island",
-                                                          "Bonney Coast", "Maria Island", "Southern Ocean Time Series",
-                                                          "Southern Ocean Time Series - Remote Access Sampler")))
-          selectedDataFG <- selectedDataFG() %>% 
-            dplyr::mutate(group = 1) %>% 
-            dplyr::bind_rows(sotsfg30)
+        p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
 
-          if(scale == "Percent") {
-            selectedDataFG <- selectedDataFGf %>%
-              dplyr::summarise(n = sum(.data$Values, na.rm = TRUE),
-                               .by = c('StationName', "Parameters")) %>%
-              dplyr::mutate(Values = .data$n / sum(.data$n, na.rm = TRUE))
-          } else {
-            selectedDataFG <- selectedDataFG %>%
-              dplyr::mutate(Values = log10(.data$Values))
-          }
-          
-          lims <- as.POSIXct(strptime(c(min(selectedDataFG$SampleTime_Local),max(selectedDataFG$SampleTime_Local)), format = "%Y-%m-%d %H:%M"))
-          
-          p1 <- ggplot2::ggplot(selectedDataFG, ggplot2::aes(x = SampleTime_Local, y = Values, 
-                                                             fill = Parameters, 
-                                                             alpha = group, 
-                                                             group = interaction(Parameters, group))) +
-              ggplot2::geom_area(linewidth = 0.2, colour = "white") +
-              ggplot2::scale_alpha(range = c(0.4, 0.9), guide = 'none') +
-              ggplot2::facet_wrap(~StationName, scales = "free", ncol = 1) +
-              ggplot2::labs(y = planktonr::pr_relabel("PhytoAbundance_CellsL", style = "ggplot")) +
-              ggplot2::scale_fill_brewer(palette = "Set1", drop = FALSE, name = "Functional Group") +
-              planktonr::theme_pr() +
-              ggplot2::scale_y_continuous(expand = c(0,0)) +
-              ggplot2::theme(strip.text = ggplot2::element_text(hjust = 0)) +
-              ggplot2::scale_x_datetime(date_breaks = "2 years", limits = lims, date_labels = "%Y", expand = ggplot2::expansion(add = c(0.15, 0.15))) +
-              ggplot2::xlab("Sample Date") 
-            
-        } else {
-          
-          p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
-        
-          }
-          
         p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") +
           ggplot2::theme(axis.title.y = ggplot2::element_blank(), legend.position = "none")
         

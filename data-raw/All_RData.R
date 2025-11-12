@@ -124,15 +124,6 @@ CSChem <- planktonr::pr_get_CSChem() %>%
   dplyr::filter(Values != -9999)
 
 
-# get SOTS physical and chemical data ----------------------------------
-
-# SOTSwater <- planktonr::pr_get_SOTSMoorData(Type = 'Physical') %>% 
-#   dplyr::filter(Parameters %in% c('Salinity', 'Temperature_degC')) %>% 
-#   planktonr::pr_remove_outliers(2) 
-# NutsSots <- planktonr::pr_get_SOTSMoorData(Type = 'Nutrients') %>%  
-#   dplyr::filter(!Parameters %in% c('Salinity', 'Temperature_degC')) %>% # duplicate data from above, check if need both
-#   planktonr::pr_remove_outliers(2) 
-
 # STI data ----------------------------------------------------------------
 
 stizAll <- planktonr::pr_get_STIdata(Type = "Zooplankton") %>% 
@@ -319,9 +310,9 @@ rm(temp)
 
 # Get Taxa Accumulation Info ----------------------------------------------
 
-PSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "P")
+PSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "Phytoplankton")
 PSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Phytoplankton")
-ZSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "Z")
+ZSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "Zooplankton")
 ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Zooplankton")
 
 # Parameter Definitions
