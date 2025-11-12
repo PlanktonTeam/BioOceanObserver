@@ -23,7 +23,8 @@ app_ui <- function(request) {
                                     shiny::tabsetPanel(id = 'pol', type = "pills",
                                                        shiny::tabPanel(value = "nrs", "National Reference Stations", mod_PolNRS_ui("PolNRS_ui_1")),
                                                        shiny::tabPanel(value = "cpr", "CPR - bioregions", mod_PolCPR_ui("PolCPR_ui_1")),
-                                                       shiny::tabPanel(value = 'LTM', "Long term monitoring", mod_PolLTM_ui("PolLTM_ui_1"))
+                                                       shiny::tabPanel(value = 'LTM', "Long term monitoring", mod_PolLTM_ui("PolLTM_ui_1")),
+                                                       shiny::tabPanel(value = 'SOTS', "Southern Ocean Time Series", mod_PolSOTS_ui("PolSOTS_ui_1"))
                                     )),
                     shiny::tabPanel("Microbes",
                                     shiny::tabsetPanel(id = 'mic', type = "pills",

@@ -90,6 +90,9 @@ app_server <- function( input, output, session ) {
       mod_PolLTM_server("PolLTM_ui_1")
     }
     
+    if(input$pol == "SOTS"){
+      mod_PolSOTS_server("PolSOTS_ui_1")
+    }
   })
   
   

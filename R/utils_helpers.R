@@ -26,8 +26,15 @@ fEOVutilities <- function(vector = "col", Survey = "NRS"){
                                  "Salinity", "Ammonium_umolL", "Temperature_degC", "Silicate_umolL",
                                  "Phosphate_umolL"))
     
+  } else if (Survey == "SOTS"){
+    # Change some of the names, but keep the same order so the colours are consistent
+    
+    disp <- data.frame(param = c("ChlF_mgm3", "DissolvedOxygen_umolkg", "PhytoBiomassCarbon_pgL",
+                                 "ShannonPhytoDiversity", "BiomassIndex_mgm3", "ShannonCopepodDiversity", "Nitrate_umolL", 
+                                 "Salinity", "Ammonium_umolL", "Temperature_degC", "Silicate_umolL",
+                                 "Phosphate_umolL"))
+    
   }
-  
   
   disp <- disp %>% 
     dplyr::mutate(col = pkg.env$col12,
@@ -105,12 +112,12 @@ fPlotlyMap <- function(gg_map, tooltip = "colour") {
 #'
 #' @noRd
 fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton', 
-                        allow_zoom = FALSE, allow_pan = FALSE){
+                        allow_zoom = TRUE, allow_pan = FALSE){
   
   # Determine map base and data depending on survey. This is the default
   lat_min <- -45
   lat_max <- -5
-  zoom = 3.5
+  zoom = 3.25
   
   if (Survey == "NRS"){
     meta_data <- pkg.env$NRSStation
@@ -125,7 +132,7 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
       Longitude = c(147.0, 113.9, 123.5)
     )
   } else if (Survey == "CPR") {
-    lat_min <- -80
+    lat_min <- -70
     lat_max <- -5
     zoom = 1.5
   } 
@@ -150,7 +157,7 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
       doubleClickZoom = allow_zoom,
       scrollWheelZoom = allow_zoom,
       dragging = allow_pan,
-      minZoom = 3,
+      minZoom = 1,
       maxZoom = 18,
       zoomSnap = 0.25,
       zoomDelta = 0.25
@@ -322,16 +329,27 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
 #' BOO Plankton Sidebar
 #'
 #' @noRd 
-fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
-  
+
+fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added for SOTS phytoplankton
+
   ns <- NS(id)
   
   if (stringr::str_detect(id, "NRS") == TRUE){ # NRS
     
     choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
+
     idSite <- "site"
-    
+
+    if(exists('dat1') == TRUE){
+      df <- dat %>% 
+        dplyr::bind_rows(dat1) %>% 
+        planktonr::pr_reorder()
+      choices <- unique(sort(df$StationName))
+    } else {
+      choices <- unique(sort(dat$StationName))
+    }
+
     if (stringr::str_detect(id, "Micro") == TRUE){ # Microbes + NRS
       selectedVar <- "Bacterial_Temperature_Index_KD"
     } else if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + NRS
@@ -478,7 +496,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                        ),
                        if(!tabsetPanel_id %in% c("NRSmts", "CSmts")){
                          shiny::tabPanel("Functional groups", value = 3,
-                                         textOutput(ns("PlotExp3"), container = span),  
+                                         shiny::htmlOutput(ns("PlotExp3"), container = span),  
                                          plotOutput(ns("timeseries3"), height = "auto") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1"),
                                          div(class="download-button-container",
