@@ -51,7 +51,7 @@ pkg.env <- new.env(parent = emptyenv())
       pkg.env$new.data <- FALSE
     })
   })
-  
+
   # Add data vars to package environment variable
   for (currVar in data.vars) {
     pkg.env[[currVar]] <- get(currVar)

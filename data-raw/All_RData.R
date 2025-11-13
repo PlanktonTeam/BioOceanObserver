@@ -76,6 +76,14 @@ datCPRz <- planktonr::pr_get_Indices(Survey = "CPR", Type = "Zooplankton", near_
   planktonr::pr_remove_outliers(2) %>% 
   droplevels()
 
+
+
+
+
+
+
+
+
 datCPRp <- planktonr::pr_get_Indices(Survey = "CPR", Type = "Phytoplankton", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 

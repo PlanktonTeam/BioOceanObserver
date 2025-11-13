@@ -8,16 +8,17 @@
 #'
 #' @importFrom shiny NS tagList
 mod_MicroLatGS_ui <- function(id){
-  nsMicroLatGS <- NS(id)
+  ns <- NS(id)
   tagList(
     sidebarLayout(
       shiny::sidebarPanel(
-          shiny::plotOutput(nsMicroLatGS("plotmap"),
-                            #height = "auto" 
-                            width = "100%"
-                            ),
+        leaflet::leafletOutput(ns("plotmap"), height = "400px"),
+          # shiny::plotOutput(ns("plotmap"),
+          #                   #height = "auto" 
+          #                   width = "100%"
+          #                   ),
           shiny::HTML("<h3>Latitude range to plot:</h3>"),
-          shiny::sliderInput(nsMicroLatGS("LatSlide"), 
+          shiny::sliderInput(ns("LatSlide"), 
                              label = NULL, 
                              min = floor(min(pkg.env$datGSm$Latitude)),
                              max = ceiling(max(pkg.env$datGSm$Latitude)), 
@@ -25,25 +26,25 @@ mod_MicroLatGS_ui <- function(id){
                                        max(pkg.env$datGSm$Latitude)) 
                              ),
           shiny::HTML("<h3>Depth range to plot:</h3>"),
-          shiny::sliderInput(nsMicroLatGS("DepthSlide"), 
+          shiny::sliderInput(ns("DepthSlide"), 
                              label = NULL, 
                              min = floor(min(pkg.env$datGSm$SampleDepth_m)), 
                              max = floor(max(pkg.env$datGSm$SampleDepth_m)), 
                              value = c(min(pkg.env$datGSm$SampleDepth_m), 100)
           ),
           shiny::HTML("<h3>Select a parameter:</h3>"),
-          shiny::selectInput(inputId = nsMicroLatGS("parameterm"), 
+          shiny::selectInput(inputId = ns("parameterm"), 
                              label = NULL, 
                              choices = 'Bacterial_Temperature_Index_KD', 
                              selected = 'Bacterial_Temperature_Index_KD'),
-          shiny::htmlOutput(nsMicroLatGS("ParamDefm")),
-          shiny::checkboxInput(inputId = nsMicroLatGS("all"), 
+          shiny::htmlOutput(ns("ParamDefm")),
+          shiny::checkboxInput(inputId = ns("all"), 
                                label = "Tick for more microbial parameters", 
                                value = FALSE),
       ),
-      shiny::mainPanel(h4(textOutput(nsMicroLatGS("voyageTitle"), container = span)),
-                       shiny::htmlOutput(nsMicroLatGS("PlotExp1")),
-                       plotOutput(nsMicroLatGS("timeseries1")) %>% 
+      shiny::mainPanel(h4(textOutput(ns("voyageTitle"), container = span)),
+                       shiny::htmlOutput(ns("PlotExp1")),
+                       plotOutput(ns("timeseries1")) %>% 
                          shinycssloaders::withSpinner(color="#0dc5c1"),
                        div(class="download-button-container",
                            fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
@@ -91,10 +92,22 @@ mod_MicroLatGS_server <- function(id){
     )
 
     # Sidebar Map
-    output$plotmap <- renderPlot({
-      planktonr::pr_plot_Voyagemap(pkg.env$datGSm, selectedData(), Country = c("Australia", "New Zealand")) 
-    }, bg = "transparent") %>% bindCache(input$LatSlide[1], input$LatSlide[2])
+    # output$plotmap <- renderPlot({
+    #   planktonr::pr_plot_Voyagemap(pkg.env$datGSm, selectedData(), Country = c("Australia", "New Zealand")) 
+    # }, bg = "transparent") %>% bindCache(input$LatSlide[1], input$LatSlide[2])
 
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "GO-SHIP", Type = "Microbes")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+                     Survey = "GO-SHIP", Type = "Microbes")
+    })
+    
+    
     # Add text information
     output$voyageTitle <- renderText({
       "GO-SHIP P15S 2016."
@@ -111,28 +124,25 @@ mod_MicroLatGS_server <- function(id){
 
     # Plot Trends -------------------------------------------------------------
 
-    observeEvent({input$GSmts == 1}, {
+    gg_out1 <- reactive({
 
-      gg_out1 <- reactive({
+      if(length(selectedData()$Parameters)>50){
+        planktonr::pr_plot_latitude(selectedData(), na.fill = mean)
+      } else {
+        ggplot2::ggplot + ggplot2::geom_blank()
+      }
+    }) %>% bindCache(input$parameterm, input$LatSlide[1], input$LatSlide[2], input$DepthSlide[1], input$DepthSlide[2])
 
-        if(length(selectedData()$Parameters)>50){
-          planktonr::pr_plot_latitude(selectedData(), na.fill = mean)
-        } else {
-          ggplot2::ggplot + ggplot2::geom_blank()
-        }
-      }) %>% bindCache(input$parameterm, input$LatSlide[1], input$LatSlide[2], input$DepthSlide[1], input$DepthSlide[2])
+    output$timeseries1 <- renderPlot({
+      gg_out1()
+    }, height = function() {800}) 
 
-      output$timeseries1 <- renderPlot({
-        gg_out1()
-      }, height = function() {800}) 
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Trend") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Trend") # Download figure
 
-      # Download -------------------------------------------------------
-      output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Trend") # Download csv of data
-      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Trend") # Download figure
+    # Parameter Definition
+    output$ParamDefm <- fParamDefServer(selectedData) # Download csv of data
 
-      # Parameter Definition
-      output$ParamDefm <- fParamDefServer(selectedData) # Download csv of data
-
-    })
   })
 }
