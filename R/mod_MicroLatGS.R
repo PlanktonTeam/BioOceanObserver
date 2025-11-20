@@ -13,10 +13,6 @@ mod_MicroLatGS_ui <- function(id){
     sidebarLayout(
       shiny::sidebarPanel(
         leaflet::leafletOutput(ns("plotmap"), height = "400px"),
-          # shiny::plotOutput(ns("plotmap"),
-          #                   #height = "auto" 
-          #                   width = "100%"
-          #                   ),
           shiny::HTML("<h3>Latitude range to plot:</h3>"),
           shiny::sliderInput(ns("LatSlide"), 
                              label = NULL, 
@@ -91,19 +87,14 @@ mod_MicroLatGS_server <- function(id){
       MicroLatGSValuesisNumeric = {class(selectedData()$Values)}
     )
 
-    # Sidebar Map
-    # output$plotmap <- renderPlot({
-    #   planktonr::pr_plot_Voyagemap(pkg.env$datGSm, selectedData(), Country = c("Australia", "New Zealand")) 
-    # }, bg = "transparent") %>% bindCache(input$LatSlide[1], input$LatSlide[2])
-
     # Sidebar Map - Initial render
     output$plotmap <- leaflet::renderLeaflet({
-      fLeafletMap(character(0), Survey = "GO-SHIP", Type = "Microbes")
+      fLeafletMap(sites = character(0), Survey = "GO-SHIP", Type = "Microbes")
     })
     
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+      fLeafletUpdate("plotmap", session, sites = input$LatSlide, 
                      Survey = "GO-SHIP", Type = "Microbes")
     })
     

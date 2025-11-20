@@ -68,7 +68,7 @@ mod_MicroTsNRS_server <- function(id){
     # Update map when station selection changes
     observe({
       fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
-                     Survey = "NRS", Type = "Zooplankton")
+                     Survey = "NRS", Type = "Microbes")
     })
     
     # Add text information
