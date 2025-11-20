@@ -117,7 +117,11 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
   # Determine map base and data depending on survey. This is the default
   lat_min <- -45
   lat_max <- -5
-  zoom = 3.25
+  lon_min <- 110
+  lon_max <- 158
+  clon <- 133.7751 # Centre Long
+  clat <- -27 # Centre Lat
+  zoom <- 3.25
   
   if (Survey == "NRS"){
     meta_data <- pkg.env$NRSStation
@@ -125,17 +129,24 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
     meta_data <- pkg.env$NRSStation %>%
       dplyr::filter(.data$StationCode %in% c("MAI", "PHB", "ROT"))
   } else if (Survey == "Coastal") {
-    meta_data <- data.frame(
-      StationName = c("GBR", "Ningaloo", "Kimberley"),
-      StationCode = c("GBR", "NIN", "KIM"),
-      Latitude = c(-18.5, -22.0, -16.5),
-      Longitude = c(147.0, 113.9, 123.5)
-    )
+    meta_data <- planktonr::csDAT %>% 
+      sf::st_as_sf()
   } else if (Survey == "CPR") {
     lat_min <- -70
     lat_max <- -5
-    zoom = 1.5
-  } 
+    zoom <- 1.5
+  } else if (Survey == "GO-SHIP"){
+    meta_data <- pkg.env$datGSm %>% 
+      dplyr::distinct(Latitude, Longitude, .keep_all = TRUE) %>% 
+      dplyr::mutate(StationCode = StationName)
+    lon_max <- -150
+    lon_min <- -180
+    lat_min <- -60
+    lat_max <- -20
+    clon <- -179
+    clat <- -40
+    zoom <- 2
+  }
   
   # Add SOTS for phytoplankton (only relevant for point datasets)
   if (Type == 'Phytoplankton' && Survey != "CPR"){
@@ -164,8 +175,8 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
     )
   ) %>%
     leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>%
-    leaflet::setView(lng = 133.7751, lat = -27, zoom = zoom) %>%
-    leaflet::setMaxBounds(lng1 = 110, lat1 = lat_min, lng2 = 158, lat2 = lat_max)
+    leaflet::setView(lng = clon, lat = clat, zoom = zoom) %>%
+    leaflet::setMaxBounds(lng1 = lon_min, lat1 = lat_min, lng2 = lon_max, lat2 = lat_max)
   
   # If CPR, draw bioregion polygons; otherwise add station points
   if (Survey == "CPR"){
@@ -177,7 +188,7 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
     mbr_df$REGION <- as.character(mbr_df$REGION)
     if (!"Colour" %in% colnames(mbr_df)) mbr_df$Colour <- "#AAAAAA"
     mbr_df$Colour <- as.character(mbr_df$Colour)
-
+    
     if (length(sites) > 0) {
       # use base ifelse to avoid strict type coercion from dplyr::if_else
       mbr_df$FillCol <- ifelse(mbr_df$REGION %in% sites, mbr_df$Colour, "#EEEEEE")
@@ -194,6 +205,7 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
                            label = ~REGION,
                            highlight = leaflet::highlightOptions(weight = 2, bringToFront = TRUE))
   } else { # Not CPR
+    
     # Add color column based on selection for point datasets
     meta_data <- meta_data %>%
       dplyr::mutate(
@@ -251,13 +263,13 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
     mbr_df$REGION <- as.character(mbr_df$REGION)
     if (!"Colour" %in% colnames(mbr_df)) mbr_df$Colour <- "#AAAAAA"
     mbr_df$Colour <- as.character(mbr_df$Colour)
-
+    
     if (length(sites) > 0){
       mbr_df$FillCol <- ifelse(mbr_df$REGION %in% sites, mbr_df$Colour, "#EEEEEE")
     } else {
       mbr_df$FillCol <- "#EEEEEE"
     }
-
+    
     proxy %>%
       leaflet::clearShapes() %>%
       leaflet::addPolygons(data = mbr_df,
@@ -280,13 +292,14 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
       # Use coastal stations data
       meta_data <- planktonr::csDAT %>% 
         sf::st_as_sf()
+    } else if (Survey == "GO-SHIP"){
+      meta_data <- pkg.env$datGSm %>% 
+        dplyr::mutate(StationCode = StationName) 
     }
-
-    
     
     # Add SOTS for phytoplankton
     if (Type == "Phytoplankton" && Survey != "CPR"){
-    
+      
       sots <- data.frame(
         StationName = "SOTS",
         StationCode = "SOTS",
@@ -296,14 +309,23 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
       meta_data <- dplyr::bind_rows(meta_data, sots)
     }
     
-    # Add color column based on selection
-    meta_data <- meta_data %>%
-      dplyr::mutate(
-        Selected = .data$StationCode %in% sites,
-        Color = dplyr::if_else(.data$Selected, "red", "blue"),
-        Radius = dplyr::if_else(.data$Selected, 8, 6)
-      )
     
+    if (Survey == "GO-SHIP"){
+      meta_data <- meta_data %>%
+        dplyr::mutate(
+          Selected = .data$Latitude >= sites[1] & .data$Latitude <= sites[2],
+          Color = dplyr::if_else(.data$Selected, "red", "blue"),
+          Radius = dplyr::if_else(.data$Selected, 8, 6)
+        )
+    } else {
+      # Add color column based on selection
+      meta_data <- meta_data %>%
+        dplyr::mutate(
+          Selected = .data$StationCode %in% sites,
+          Color = dplyr::if_else(.data$Selected, "red", "blue"),
+          Radius = dplyr::if_else(.data$Selected, 8, 6)
+        )
+    }
     proxy %>%
       leaflet::clearMarkers() %>%
       leaflet::addCircleMarkers(
@@ -331,16 +353,16 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
 #' @noRd 
 
 fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added for SOTS phytoplankton
-
+  
   ns <- NS(id)
   
   if (stringr::str_detect(id, "NRS") == TRUE){ # NRS
     
     choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
-
+    
     idSite <- "site"
-
+    
     if(exists('dat1') == TRUE){
       df <- dat %>% 
         dplyr::bind_rows(dat1) %>% 
@@ -349,7 +371,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     } else {
       choices <- unique(sort(dat$StationName))
     }
-
+    
     if (stringr::str_detect(id, "Micro") == TRUE){ # Microbes + NRS
       selectedVar <- "Bacterial_Temperature_Index_KD"
     } else if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + NRS
@@ -391,12 +413,13 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
         )
       },
       shiny::HTML("<h3>Select a station:</h3>"),
-      shiny::fluidRow(class = "row_multicol", tags$div(align = "left", 
-                                                       class = "multicol",
-                                                       shiny::checkboxGroupInput(inputId = ns(idSite), 
-                                                                                 label = NULL,
-                                                                                 choices = choices, 
-                                                                                 selected = selectedSite))),
+      shiny::fluidRow(class = "row_multicol", 
+                      tags$div(align = "left", 
+                               class = "multicol",
+                               shiny::checkboxGroupInput(inputId = ns(idSite), 
+                                                         label = NULL,
+                                                         choices = choices, 
+                                                         selected = selectedSite))),
       shiny::HTML("<h3>Dates:</h3>"),
       shiny::sliderInput(ns("DatesSlide"), 
                          label = NULL, 
