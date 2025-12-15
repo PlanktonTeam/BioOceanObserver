@@ -89,7 +89,7 @@ mod_RelCS_server <- function(id){
     
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedDatay()$StationCode), 
+      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
                      Survey = "Coastal", Type = "Zooplankton")
     })
     
