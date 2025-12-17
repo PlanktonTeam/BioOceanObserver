@@ -59,7 +59,7 @@ mod_RelNRS_server <- function(id){
       sv <- daty() %>% 
         dplyr::filter(.data$Parameters %in% vars) 
       sv <- unique(sv$Parameters)
-      choicesy <- planktonr::pr_relabel(unique(daty()$Parameters), style = "simple", named = TRUE)
+      choicesy <- planktonr:::pr_relabel(unique(daty()$Parameters), style = "simple", named = TRUE)
       shiny::updateSelectizeInput(session, 'py', choices = choicesy, selected = sv)
     })
       
@@ -97,11 +97,12 @@ mod_RelNRS_server <- function(id){
       sv <- datx() %>% 
         dplyr::filter(.data$Parameters %in% vars) 
       sv <- unique(sv$Parameters)
-      choicesx <- planktonr::pr_relabel(unique(datx()$Parameters), style = "simple", named = TRUE)
+      choicesx <- planktonr:::pr_relabel(unique(datx()$Parameters), style = "simple", named = TRUE)
       shiny::updateSelectizeInput(session, 'px', choices = choicesx, selected = sv)
     })
     
     selectedData <- reactive({
+      req(input$site)
       
       y <- rlang::string(input$py)
       x <- rlang::string(input$px)
@@ -115,19 +116,19 @@ mod_RelNRS_server <- function(id){
         tidyr::pivot_wider(id_cols = dplyr::any_of(vars),
                            names_from = "Parameters", values_from = "Values", values_fn = mean) %>%
         tidyr::drop_na() %>% 
-        planktonr::pr_reorder()
+        planktonr:::pr_reorder()
       
     }) %>% bindCache(input$site, input$py, input$px)
     
   # Parameter Definition
   output$ParamDefy <-   shiny::renderText({
-    paste("<p><strong>", planktonr::pr_relabel(input$py, style = "plotly"), ":</strong> ",
+    paste("<p><strong>", planktonr:::pr_relabel(input$py, style = "plotly"), ":</strong> ",
           pkg.env$ParamDef %>% 
             dplyr::filter(.data$Parameter == input$py) %>% 
             dplyr::pull("Definition"), ".</p>", sep = "")
     })
   output$ParamDefx <-   shiny::renderText({
-    paste("<p><strong>", planktonr::pr_relabel(input$px, style = "plotly"), ":</strong> ",
+    paste("<p><strong>", planktonr:::pr_relabel(input$px, style = "plotly"), ":</strong> ",
           pkg.env$ParamDef %>% 
             dplyr::filter(.data$Parameter == input$px) %>% 
             dplyr::pull("Definition"), ".</p>", sep = "")
@@ -141,7 +142,15 @@ mod_RelNRS_server <- function(id){
     
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+      # Convert StationName to StationCode, handle empty selection
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fLeafletUpdate("plotmap", session, stationCodes, 
                      Survey = "NRS", Type = "Zooplankton")
     })
     

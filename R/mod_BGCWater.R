@@ -31,6 +31,7 @@ mod_WaterBGC_server <- function(id){
     })
     
     selectedData <- reactive({
+      req(input$site)
       req(input$date)
       shiny::validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
       shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
@@ -79,7 +80,15 @@ mod_WaterBGC_server <- function(id){
     
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+      # Convert StationName to StationCode, handle empty selection
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fLeafletUpdate("plotmap", session, stationCodes, 
                      Survey = "NRS", Type = "Zooplankton")
     })
     

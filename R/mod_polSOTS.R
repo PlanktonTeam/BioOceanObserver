@@ -13,13 +13,17 @@ mod_PolSOTS_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         leaflet::leafletOutput(nsPolSOTS("plotmap"), height = "400px"),
-        shiny::HTML("<h5><strong>Site:</strong></h5>"),
-        shiny::HTML("<h6><strong>Southern Ocean Time Series</strong></h6>"),
+        shiny::HTML("<h3><strong>Station:</strong></h3>"),
+        # shiny::HTML("<p>Southern Ocean Time Series</p>"),
+        shiny::radioButtons(inputId = nsPolSOTS("site"), 
+                            label = NULL, 
+                            choices = "Southern Ocean Time Series", 
+                            selected = "Southern Ocean Time Series"),
         shiny::conditionalPanel(
           condition = paste0("input.EOV_SOTS == 1"), # Only first tab
           shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
           shiny::checkboxGroupInput(inputId = nsPolSOTS("Parameters"), label = NULL, 
-                                    choices = planktonr::pr_relabel(
+                                    choices = planktonr:::pr_relabel(
                                       c("ChlF_mgm3", "DissolvedOxygen_umolkg", "PhytoBiomassCarbon_pgL",
                                         "ShannonPhytoDiversity", "Nitrate_umolL", 
                                         "Salinity", "Temperature_degC", "Silicate_umolL",
@@ -27,8 +31,8 @@ mod_PolSOTS_ui <- function(id){
                                     selected = c("ChlF_mgm3", "Temperature_degC", "Nitrate_umolL", "Phosphate_umolL")),
           shiny::HTML("<h5><strong>Select a depth:</strong></h5>"),
           shiny::radioButtons(inputId = nsPolSOTS("Depths"), label = NULL, 
-                                    choices = c("0 m", "30 m"),
-                                    selected = c("0 m"))
+                              choices = c("0 m", "30 m"),
+                              selected = c("0 m"))
         ),
         
       ),
@@ -180,7 +184,7 @@ mod_PolSOTS_server <- function(id){
       output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Policy_Select", papersize = "A4") # Download figure  
       
     })
-
+    
     observeEvent({input$EOV_SOTS == 2}, {
       
       gg_out2 <- reactive({
@@ -193,7 +197,7 @@ mod_PolSOTS_server <- function(id){
         p330 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE) 
         
         patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m')) / p10 / p20 / p30 /
-                                 patchwork::wrap_elements(grid::textGrob('At 30 m')) / p130 / p230 / p330) &
+                                   patchwork::wrap_elements(grid::textGrob('At 30 m')) / p130 / p230 / p330) &
           ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
                          axis.title = ggplot2::element_text(size = 12, face = "plain"),
                          axis.text =  ggplot2::element_text(size = 10, face = "plain"),
@@ -221,7 +225,7 @@ mod_PolSOTS_server <- function(id){
         p330 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "Silicate_umolL", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE)
         p40 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = FALSE)
         p430 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = FALSE)
-
+        
         patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m', gp = grid::gpar(fontsize = 20))) / p20 / p30/ p40 /
                                    patchwork::wrap_elements(grid::textGrob('At 30 m', gp = grid::gpar(fontsize = 20))) /p230 / p330/ p430 ) & #/ p5) &
           ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),

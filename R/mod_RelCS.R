@@ -37,7 +37,7 @@ mod_RelCS_server <- function(id){
     }) %>% bindCache(input$all)
     
     observeEvent(daty(), {
-      choicesy <- planktonr::pr_relabel(unique(daty()$Parameters), style = "simple", named = TRUE)
+      choicesy <- planktonr:::pr_relabel(unique(daty()$Parameters), style = "simple", named = TRUE)
       shiny::updateSelectizeInput(session, 'py', choices = choicesy, selected = 'Bacterial_Temperature_Index_KD')
     })
     
@@ -46,11 +46,12 @@ mod_RelCS_server <- function(id){
     }) %>% bindCache(input$groupx)
     
     observeEvent(datx(), {
-      choicesx <- planktonr::pr_relabel(unique(datx()$Parameters), style = "simple", named = TRUE)
+      choicesx <- planktonr:::pr_relabel(unique(datx()$Parameters), style = "simple", named = TRUE)
       shiny::updateSelectizeInput(session, 'px', choices = choicesx, selected = 'Temperature_degC')
     })
     
     selectedData <- reactive({
+      req(input$site)
       
       y <- rlang::string(input$py)
       x <- rlang::string(input$px)
@@ -69,14 +70,14 @@ mod_RelCS_server <- function(id){
     
     # Parameter Definition
     output$ParamDefy <-   shiny::renderText({
-      paste("<p><strong>", planktonr::pr_relabel(input$py, style = "plotly"), ":</strong> ",
+      paste("<p><strong>", planktonr:::pr_relabel(input$py, style = "plotly"), ":</strong> ",
             pkg.env$ParamDef %>% 
               dplyr::filter(.data$Parameter == input$py) %>% 
               dplyr::pull("Definition"), ".</p>", sep = "")
     })
     # Parameter Definition
     output$ParamDefx <- shiny::renderText({
-      paste("<p><strong>", planktonr::pr_relabel(input$px, style = "plotly"), ":</strong> ",
+      paste("<p><strong>", planktonr:::pr_relabel(input$px, style = "plotly"), ":</strong> ",
             pkg.env$ParamDef %>% 
               dplyr::filter(.data$Parameter == input$px) %>%
               dplyr::pull("Definition"), ".</p>", sep = "")
@@ -89,7 +90,9 @@ mod_RelCS_server <- function(id){
     
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+      # Use input$site directly (State), handle empty selection
+      sites <- if (length(input$site) > 0) input$site else character(0)
+      fLeafletUpdate("plotmap", session, sites, 
                      Survey = "Coastal", Type = "Zooplankton")
     })
     

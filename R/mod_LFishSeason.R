@@ -22,12 +22,12 @@ mod_LFishSeason_ui <- function(id){
         shiny::column(width = 6,
                       class = "col-no-spacing",
                       shiny::h4("December - February"),
-                      leaflet::leafletOutput(nsLFishSeason("LFMapSum"), width = "99%", height = "250px") %>% 
+                      leaflet::leafletOutput(nsLFishSeason("LFMapSum"), width = "99%", height = "300px") %>% 
                         shinycssloaders::withSpinner(color="#0dc5c1")), 
         shiny::column(width = 6,
                       class = "col-no-spacing",
                       shiny::h4("March - May"),
-                      leaflet::leafletOutput(nsLFishSeason("LFMapAut"), width = "99%", height = "250px") %>%
+                      leaflet::leafletOutput(nsLFishSeason("LFMapAut"), width = "99%", height = "300px") %>%
                         shinycssloaders::withSpinner(color="#0dc5c1")
                       )
       ),
@@ -35,12 +35,12 @@ mod_LFishSeason_ui <- function(id){
         shiny::column(width = 6,
                       class = "col-no-spacing",
                       shiny::h4("June - August"),
-                      leaflet::leafletOutput(nsLFishSeason("LFMapWin"), width = "99%", height = "250px") %>% 
+                      leaflet::leafletOutput(nsLFishSeason("LFMapWin"), width = "99%", height = "300px") %>% 
                         shinycssloaders::withSpinner(color="#0dc5c1")), 
         shiny::column(width = 6,
                       class = "col-no-spacing",
                       shiny::h4("September - November"),
-                      leaflet::leafletOutput(nsLFishSeason("LFMapSpr"), width = "99%", height = "250px") %>% 
+                      leaflet::leafletOutput(nsLFishSeason("LFMapSpr"), width = "99%", height = "300px") %>% 
                         shinycssloaders::withSpinner(color="#0dc5c1"))
       )
       

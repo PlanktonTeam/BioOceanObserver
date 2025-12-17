@@ -12,7 +12,7 @@ mod_PolCPR_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        shiny::plotOutput(nsPolCPR("plotmap")),
+        leaflet::leafletOutput(nsPolCPR("plotmap"), height = "400px"),
         shiny::p("Note there is very little data in the North and North-west regions"),
         shiny::HTML("<h3>Select a bioregion:</h3>"),
         shiny::radioButtons(inputId = nsPolCPR("site"), label = NULL, 

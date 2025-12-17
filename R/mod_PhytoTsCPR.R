@@ -56,7 +56,9 @@ mod_PhytoTsCPR_server <- function(id){
 
     # Update polygons when selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData()$BioRegion), Survey = "CPR", Type = "Phytoplankton")
+      # Use input$site directly (BioRegion), handle empty selection
+      sites <- if (length(input$site) > 0) input$site else character(0)
+      fLeafletUpdate("plotmap", session, sites, Survey = "CPR", Type = "Phytoplankton")
     })
     
     # add text information 

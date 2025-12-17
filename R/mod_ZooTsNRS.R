@@ -58,7 +58,15 @@ mod_ZooTsNRS_server <- function(id){
     
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+      # Convert StationName to StationCode, handle empty selection
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fLeafletUpdate("plotmap", session, stationCodes, 
                      Survey = "NRS", Type = "Zooplankton")
     })
     
