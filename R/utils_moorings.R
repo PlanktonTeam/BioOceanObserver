@@ -13,7 +13,7 @@ pr_get_MoorClimPlotData <- function(df, Station, noYear){ #TODO Move to plankton
 }
 
 pr_plot_MoorClim <- function(df){ #TODO Move to planktonr
-  legtit <- planktonr::pr_relabel("Temperature_degC", style = 'ggplot')
+  legtit <- planktonr:::pr_relabel("Temperature_degC", style = 'ggplot')
   
   climtsplot <- ggplot2::ggplot(df) +
     ggplot2::geom_raster(ggplot2::aes(x = .data$SampleDate, y = .data$DEPTH, fill = .data$CLIM), interpolate = TRUE) +
@@ -51,7 +51,7 @@ pr_plot_MoorTS <- function(df){
     ggplot2::facet_wrap(~ .data$StationName, scales = "free", ncol = 1) +
     ggplot2::scale_colour_manual(name = 'Depth', values = c('dark blue', 'blue', 'light blue')) +
     ggplot2::scale_x_date(breaks = '1 year', date_labels = "%Y") +
-    ggplot2::labs(y = planktonr::pr_relabel("Temperature_degC", style = 'ggplot'), x = 'Years') +
+    ggplot2::labs(y = planktonr:::pr_relabel("Temperature_degC", style = 'ggplot'), x = 'Years') +
     ggplot2::theme_minimal(base_size = 16) +
     ggplot2::theme(legend.position = 'bottom')
   return(plot)

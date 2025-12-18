@@ -23,7 +23,7 @@ mod_PolNRS_ui <- function(id){
           condition = paste0("input.EOV_NRS == 1"), # Only first tab
           shiny::HTML("<h3>Select a parameter:</h3>"),
           shiny::checkboxGroupInput(inputId = nsPolNRS("Parameters"), label = NULL, 
-                                    choices = planktonr::pr_relabel(
+                                    choices = planktonr:::pr_relabel(
                                       c("Biomass_mgm3", "PhytoBiomassCarbon_pgL", "ShannonPhytoDiversity", "ShannonCopepodDiversity", 
                                         "CTDTemperature_degC", "Salinity", "PigmentChla_mgm3", "Ammonium_umolL", "Nitrate_umolL", 
                                         "Silicate_umolL", "Phosphate_umolL", "Oxygen_umolL"), style = "simple", named = TRUE),
@@ -142,7 +142,7 @@ mod_PolNRS_server <- function(id){
             ' management bioregion. The station is characterised by ', stationData()$Features, '.', sep = "")
     })
     
-    titley <- planktonr::pr_relabel(c("PigmentChla_mgm3"), style = "ggplot")
+    titley <- planktonr:::pr_relabel(c("PigmentChla_mgm3"), style = "ggplot")
     
     col1 <- fEOVutilities(vector = "col")
     trans1 <- fEOVutilities(vector = "trans")

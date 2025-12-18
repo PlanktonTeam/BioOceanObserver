@@ -400,7 +400,7 @@ mod_info_server <- function(id) {
               .data$StationCode %in% c("NIN", "ESP") ~ "2012-03-01",
               .data$StationCode == "PH4" ~ "2009-02-24"
             )) %>%
-            dplyr::select("StationCode":"StationStartDate", "EndDate", dplyr::everything()) %>%
+            dplyr::select("StationCode":"StationStartDate", "EndDate", dplyr::everything(), -dplyr::any_of("Region")) %>%
             dplyr::rename(
               Code = "StationCode", Station = "StationName", State = "StateCode",
               `Start Date` = "StationStartDate", `End Date` = "EndDate", `Water Depth (m)` = "StationDepth_m",

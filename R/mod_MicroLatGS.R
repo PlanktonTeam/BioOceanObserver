@@ -60,9 +60,9 @@ mod_MicroLatGS_server <- function(id){
     # Sidebar ----------------------------------------------------------
     observeEvent(input$all, {
       if(input$all == TRUE){
-        params <- planktonr::pr_relabel(unique(pkg.env$datGSm$Parameters), style = "simple", named = TRUE) 
+        params <- planktonr:::pr_relabel(unique(pkg.env$datGSm$Parameters), style = "simple", named = TRUE) 
       } else {
-        params <- planktonr::pr_relabel(unique((pkg.env$datGSm %>% 
+        params <- planktonr:::pr_relabel(unique((pkg.env$datGSm %>% 
                                                   dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters)))$Parameters), style = "simple", named = TRUE)
       }
       shiny::updateSelectInput(session, 'parameterm', choices = params, selected = "Bacterial_Temperature_Index_KD")

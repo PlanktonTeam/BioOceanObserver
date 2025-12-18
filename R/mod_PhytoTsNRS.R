@@ -38,7 +38,7 @@ mod_PhytoTsNRS_server <- function(id){
         dplyr::filter(.data$StationName %in% input$site,
                       .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>% 
-        planktonr::pr_reorder()
+        planktonr:::pr_reorder()
       
     }) %>% bindCache(input$parameter,input$site, input$DatesSlide[1], input$DatesSlide[2])
     # })
@@ -50,7 +50,15 @@ mod_PhytoTsNRS_server <- function(id){
     
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+      # Convert StationName to StationCode, handle empty selection
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fLeafletUpdate("plotmap", session, stationCodes, 
                      Survey = "NRS", Type = "Phytoplankton")
     })
 
@@ -151,7 +159,7 @@ mod_PhytoTsNRS_server <- function(id){
           dplyr::bind_rows(pkg.env$SOTSfgp) %>% #dplyr::filter(.data$SampleDepth_m < 20)) %>% 
           dplyr::filter(.data$StationName %in% input$site,
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-          planktonr::pr_reorder() %>% 
+          planktonr:::pr_reorder() %>% 
           droplevels()
         
       }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2])

@@ -28,15 +28,16 @@ mod_MicroTsNRS_server <- function(id){
     # Sidebar ----------------------------------------------------------
     observeEvent(input$all, {
       if(input$all == TRUE){
-        params <- planktonr::pr_relabel(unique(pkg.env$datNRSm$Parameters), style = "simple", named = TRUE)
+        params <- planktonr:::pr_relabel(unique(pkg.env$datNRSm$Parameters), style = "simple", named = TRUE)
       } else {
-        params <- planktonr::pr_relabel(unique((pkg.env$datNRSm %>% 
+        params <- planktonr:::pr_relabel(unique((pkg.env$datNRSm %>% 
                                         dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters)))$Parameters), style = "simple", named = TRUE)
       }
       shiny::updateSelectInput(session, 'parameterm', choices = params, selected = "Bacterial_Temperature_Index_KD")
     })
     
     selectedData <- reactive({
+      req(input$site)
       
       selectedData <- pkg.env$datNRSm %>% 
         dplyr::filter(.data$StationName %in% input$site,
@@ -67,7 +68,15 @@ mod_MicroTsNRS_server <- function(id){
     
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+      # Convert StationName to StationCode, handle empty selection
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fLeafletUpdate("plotmap", session, stationCodes, 
                      Survey = "NRS", Type = "Microbes")
     })
     
@@ -151,7 +160,7 @@ mod_MicroTsNRS_server <- function(id){
         p3 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Year", trans = trans) + 
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
         
-        #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple", named = TRUE))
+        #titley <- names(planktonr:::pr_relabel(unique(selectedData()$Parameters), style = "simple", named = TRUE))
         
         # p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
         p1 / 
@@ -184,7 +193,7 @@ mod_MicroTsNRS_server <- function(id){
           dplyr::mutate(SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'month')) %>%
           planktonr::pr_remove_outliers(2) %>%
           droplevels() %>%
-          planktonr::pr_reorder()
+          planktonr:::pr_reorder()
         
       }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2])
       

@@ -28,9 +28,9 @@ mod_MicroTsCS_server <- function(id){
     # Sidebar ----------------------------------------------------------
     observeEvent(input$all, {
       if(input$all == TRUE){
-        params <- planktonr::pr_relabel(unique(pkg.env$datCSm$Parameters), style = "simple", named = TRUE)
+        params <- planktonr:::pr_relabel(unique(pkg.env$datCSm$Parameters), style = "simple", named = TRUE)
       } else {
-        params <- planktonr::pr_relabel(unique((pkg.env$datCSm %>% 
+        params <- planktonr:::pr_relabel(unique((pkg.env$datCSm %>% 
                                                   dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters)))$Parameters), style = "simple", named = TRUE)
       }
       shiny::updateSelectInput(session, 'parameterm', choices = params, selected = "Bacterial_Temperature_Index_KD")
@@ -38,7 +38,8 @@ mod_MicroTsCS_server <- function(id){
     
     
     selectedData <- reactive({
-
+      req(input$site)
+      
       selectedData <- pkg.env$datCSm %>%
         dplyr::filter(.data$State %in% input$site,
                       .data$Parameters %in% input$parameterm,
@@ -69,7 +70,9 @@ mod_MicroTsCS_server <- function(id){
     
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+      # Use input$site directly (State), handle empty selection
+      sites <- if (length(input$site) > 0) input$site else character(0)
+      fLeafletUpdate("plotmap", session, sites, 
                      Survey = "Coastal", Type = "Zooplankton")
     })
 
@@ -135,7 +138,7 @@ mod_MicroTsCS_server <- function(id){
 
       # Parameter Definition
       output$ParamDefm <- shiny::renderText({
-        paste("<p><strong>", planktonr::pr_relabel(input$parameterm, style = "plotly"), ":</strong> ",
+        paste("<p><strong>", planktonr:::pr_relabel(input$parameterm, style = "plotly"), ":</strong> ",
               pkg.env$ParamDef %>% 
                 dplyr::filter(.data$Parameter == input$parameterm) %>% 
                 dplyr::pull("Definition"), ".</p>", sep = "")
@@ -166,7 +169,7 @@ mod_MicroTsCS_server <- function(id){
         p3 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Year", trans = trans) +
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
-        #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple", named = TRUE))
+        #titley <- names(planktonr:::pr_relabel(unique(selectedData()$Parameters), style = "simple", named = TRUE))
 
         # p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
         p1 /

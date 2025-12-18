@@ -317,6 +317,14 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
           Color = dplyr::if_else(.data$Selected, "red", "blue"),
           Radius = dplyr::if_else(.data$Selected, 8, 6)
         )
+    } else if (Survey == "Coastal") {
+      # Coastal stations use State for selection
+      meta_data <- meta_data %>%
+        dplyr::mutate(
+          Selected = .data$State %in% sites,
+          Color = dplyr::if_else(.data$Selected, "red", "blue"),
+          Radius = dplyr::if_else(.data$Selected, 8, 6)
+        )
     } else {
       # Add color column based on selection
       meta_data <- meta_data %>%
@@ -366,7 +374,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     if(exists('dat1') == TRUE){
       df <- dat %>% 
         dplyr::bind_rows(dat1) %>% 
-        planktonr::pr_reorder()
+        planktonr:::pr_reorder()
       choices <- unique(sort(df$StationName))
     } else {
       choices <- unique(sort(dat$StationName))
@@ -455,7 +463,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       shiny::HTML("<h3>Select a parameter:</h3>"),
       shiny::selectInput(inputId = ns("parameter"), 
                          label = NULL, 
-                         choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
+                         choices = planktonr:::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
                          selected = selectedVar),
       shiny::htmlOutput(ns("ParamDef")),
     ),
@@ -709,7 +717,7 @@ fEnviroSidebar <- function(id, dat = NULL){
         shiny::HTML("<h3>Select a parameter:</h3>"),
         shiny::selectInput(inputId = ns("parameter"), 
                            label = NULL, 
-                           choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
+                           choices = planktonr:::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
                            selected = selectedVar),
         shiny::htmlOutput(ns("ParamDefb")),
       )
@@ -808,7 +816,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
       tags$head(tags$style(HTML("
                               .shiny-split-layout > div {overflow: visible;}
                                     "))),
-      condition = "input.navbar == 'Relationships'",
+      condition = paste0("input.", tabsetPanel_id, " <= 2"),
       
       # Use plotlyOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
       if(stringr::str_detect(id, "CPR")) {
@@ -839,7 +847,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
                            value = FALSE),
     ),    
     shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Relationships' && input.", tabsetPanel_id," == 1"),
+      condition = paste0("input.", tabsetPanel_id," == 1"),
       shiny::HTML("<h4>Select a group & variable for the x axis:</h4>"),
       shiny::splitLayout(
         shiny::selectizeInput(inputId = ns('groupx'), label = NULL, choices = ChoicesGroupx,
@@ -1179,7 +1187,7 @@ LeafletObs <- function(sdf, name, Type = "PA"){
 
 fParamDefServer <- function(selectedData){
   shiny::renderText({
-    paste("<p><strong>", planktonr::pr_relabel(unique(selectedData()$Parameters), style = "plotly"), ":</strong> ",
+    paste("<p><strong>", planktonr:::pr_relabel(unique(selectedData()$Parameters), style = "plotly"), ":</strong> ",
           pkg.env$ParamDef %>% 
             dplyr::filter(.data$Parameter == unique(selectedData()$Parameters)) %>% 
             dplyr::pull("Definition"), ".</p>", sep = "")
