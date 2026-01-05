@@ -170,7 +170,7 @@ mod_info_ui <- function(id) {
             </ul>
             <h4>Australian Microbiome Initiative</h4>
             <ul>
-            <li>Australian Microbiome Scientific Manual. <a href = https://confluence.csiro.au/display/ASM/Ausmicrobiome+Scientific+Manual target = _blank> Website</a>.</li>
+            <li>Australian Microbiome Scientific Manual. <a href = https://confluence.csiro.au/spaces/ASM2/pages/1661616508/Ausmicrobiome+Scientific+Manual target = _blank> Website</a>.</li>
             <li>IMOS Marine Microbiome Initiative website. <a href = https://imos.org.au/facility/marine-microbiome-initiative target = _blank> Website</a>.</li>
             <li>Australian Microbiome Initiative website. <a href = https://www.australianmicrobiome.com/ target = _blank> Website</a>.</li>
             </ul>
@@ -275,7 +275,9 @@ mod_info_ui <- function(id) {
           bslib::accordion_panel(
             title = shiny::HTML("<h3>Southern Ocean Timeseries Mooring</h3>"),
             value = "sots",
-            shiny::HTML("Put some info in here"),
+            shiny::HTML("Further information on the sampling and configurations of each mooring deployment 
+            can be found at the IMOS Southern Ocean Time Series 
+                        <a href = https://imos.org.au/facility/deep-water-moorings/southern-ocean-time-series-observatory target = _blank> website</a>."),
             shiny::HTML("<br><br>"),
             div(
               h4("Key Data Streams"),
@@ -291,7 +293,8 @@ mod_info_ui <- function(id) {
         bslib::accordion_panel(
           title = shiny::HTML("<h3>Australian Microbiome Initiative</h3>"),
           value = "am",
-          shiny::HTML("Put some info in here"),
+          shiny::HTML("Further information on the sampling can be found in the Australian Microbiome Scientific Manual
+                      <a href = https://confluence.csiro.au/spaces/ASM2/pages/1661616508/Ausmicrobiome+Scientific+Manual target = _blank> Website</a>."),
           shiny::HTML("<br><br>"),
           div(
             h4("Key Data Streams"),

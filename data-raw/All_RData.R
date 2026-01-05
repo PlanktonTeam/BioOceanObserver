@@ -39,7 +39,7 @@ datNRSm <- planktonr::pr_get_data(Survey = "NRS", Type = "Micro") %>%
 
 Tricho <- planktonr::pr_get_data(Survey = "NRS", Type = "Phytoplankton", Variable = "abundance", Subset = "genus") %>% 
   dplyr::select(dplyr::any_of(colnames(datNRSm)), Values = "Trichodesmium")  %>% 
-  dplyr::filter(!.data$StationCode %in% c("NWS", "SOTS_RAS", "NA"))%>% 
+  dplyr::filter(!.data$StationCode %in% c("NWS", "SOTS_RAS", "SOTS", "NA", "NIN", "ESP"))%>% 
   dplyr::mutate(Parameters = "Trichodesmium") %>% 
   planktonr:::pr_reorder()
 

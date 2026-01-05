@@ -45,8 +45,6 @@ mod_PolSOTS_ui <- function(id){
                         feasiblity to take consistent measurements. They are commonly measured by observing systems and 
                         frequently used in policy making and input into reporting such as State of Environment."),
         shiny::hr(style = "border-top: 2px solid #000000;"),
-        shiny::htmlOutput(nsPolSOTS("PlotExp1")),
-        shiny::br(),
         shiny::htmlOutput(nsPolSOTS("StationSummary")),
         shiny::br(),
         shiny::tabsetPanel(id = "EOV_SOTS", type = "pills",
@@ -139,11 +137,10 @@ mod_PolSOTS_server <- function(id){
     
     output$StationSummary <- shiny::renderText({ 
       paste("<h4 style='text-align:center; font-weight: bold;'>",input$site,"</h5>The IMOS ", input$site, " National Reference Station is located at ", round(stationData()$Latitude,2), 
-            "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ". The water depth at the station is ", 
+            "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ". The water depth at the station is approximately ", 
             round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, 
-            ". The station has been sampled since ", format(stationData()$StationStartDate, "%A %d %B %Y"), " ", stationData()$now,
-            ". ", input$site, " is in the ", stationData()$ManagementRegion, 
-            " management bioregion. The station is characterised by ", stationData()$Features, ".", sep = "")
+            ". The station has been sampled since ", format(stationData()$StationStartDate, "%A %d %B %Y"), " ", tolower(stationData()$now),
+            ". The station is characterised by ", stationData()$Features, ".", sep = "")
     })
     
     col1 <- fEOVutilities(vector = "col", Survey = "SOTS")
@@ -196,8 +193,8 @@ mod_PolSOTS_server <- function(id){
         p30 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE) 
         p330 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE) 
         
-        patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m')) / p10 / p20 / p30 /
-                                   patchwork::wrap_elements(grid::textGrob('At 30 m')) / p130 / p230 / p330) &
+        patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m', gp = grid::gpar(fontsize = 20))) / p10 / p20 / p30 /
+                                   patchwork::wrap_elements(grid::textGrob('At 30 m', gp = grid::gpar(fontsize = 20))) / p130 / p230 / p330) &
           ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
                          axis.title = ggplot2::element_text(size = 12, face = "plain"),
                          axis.text =  ggplot2::element_text(size = 10, face = "plain"),

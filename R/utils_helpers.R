@@ -104,14 +104,14 @@ fPlotlyMap <- function(gg_map, tooltip = "colour") {
 #'
 #' @param sites A character vector of station codes to highlight (e.g., c("MAI", "PHB"))
 #' @param Survey Which Survey to plot ("NRS", "Coastal", "LTM")
-#' @param Type Must be "Phytoplankton" for SOTS to plot, otherwise has no impact
+#' @param Type Must be "Phytoplankton" for SOTS to plot, or Microbes to drop NIN & ESP, otherwise has no impact
 #' @param allow_zoom Logical, should user be able to zoom? Default FALSE
 #' @param allow_pan Logical, should user be able to pan? Default FALSE
 #'
 #' @return A leaflet map object ready for renderLeaflet()
 #'
 #' @noRd
-fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton', 
+fLeafletMap <- function(sites, Survey = "NRS", Type = "Zooplankton", 
                         allow_zoom = TRUE, allow_pan = FALSE){
   
   # Determine map base and data depending on survey. This is the default
@@ -149,7 +149,7 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
   }
   
   # Add SOTS for phytoplankton (only relevant for point datasets)
-  if (Type == 'Phytoplankton' && Survey != "CPR"){
+  if (Type == "Phytoplankton" && Survey != "CPR"){
     sots <- data.frame(
       StationName = "SOTS",
       StationCode = "SOTS",
@@ -159,6 +159,9 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = 'Zooplankton',
     meta_data <- dplyr::bind_rows(meta_data, sots)
     lat_min <- -55
     lat_max <- -5
+  } else if (Type == "Microbes"){
+    meta_data <- meta_data %>%
+      dplyr::filter(!.data$StationCode %in% c("NIN", "ESP"))
   }
   
   # Create leaflet map base with options
