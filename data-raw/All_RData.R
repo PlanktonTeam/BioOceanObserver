@@ -1,11 +1,6 @@
 ## script for all RData 
 library(tidyverse)
 library(planktonr)
-## These packages are needed for accessing the SOTS data. 
-library(vegan)
-library(RCurl)
-library(thredds)
-library(ncdf4)
 
 modified_time <- lubridate::now()
 
