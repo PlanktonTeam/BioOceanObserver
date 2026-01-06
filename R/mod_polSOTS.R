@@ -44,7 +44,7 @@ mod_PolSOTS_ui <- function(id){
                         have identified to monitor our oceans. They are chosen based on impact of the measurement and the 
                         feasiblity to take consistent measurements. They are commonly measured by observing systems and 
                         frequently used in policy making and input into reporting such as State of Environment."),
-        shiny::hr(style = "border-top: 2px solid #000000;"),
+        shiny::hr(class = "hr-separator"),
         shiny::htmlOutput(nsPolSOTS("StationSummary")),
         shiny::br(),
         shiny::tabsetPanel(id = "EOV_SOTS", type = "pills",
@@ -136,13 +136,13 @@ mod_PolSOTS_server <- function(id){
     
     
     output$StationSummary <- shiny::renderText({ 
-      paste("<h4 style='text-align:center; font-weight: bold;'>",input$site,"</h5>The IMOS ", input$site, " National Reference Station is located at ", round(stationData()$Latitude,2), 
-            "\u00B0S and ", round(stationData()$Longitude,2), "\u00B0E", ". The water depth at the station is approximately ", 
-            round(stationData()$StationDepth_m,0), "m and is currently sampled ", stationData()$SamplingEffort, 
-            ". The station has been sampled since ", format(stationData()$StationStartDate, "%A %d %B %Y"), " ", tolower(stationData()$now),
-            ". The station is characterised by ", stationData()$Features, ".", sep = "")
+      paste('<h4 class="centered-heading">',input$site,'</h4>The IMOS ', input$site, ' National Reference Station is located at ', round(stationData()$Latitude,2), 
+            '\u00B0S and ', round(stationData()$Longitude,2), '\u00B0E', '. The water depth at the station is approximately ', 
+            round(stationData()$StationDepth_m,0), 'm and is currently sampled ', stationData()$SamplingEffort, 
+            '. The station has been sampled since ', format(stationData()$StationStartDate, '%A %d %B %Y'), ' ', tolower(stationData()$now),
+            '. The station is characterised by ', stationData()$Features, '.', sep = "")
     })
-    
+
     col1 <- fEOVutilities(vector = "col", Survey = "SOTS")
     trans1 <- fEOVutilities(vector = "trans", Survey = "SOTS")
     

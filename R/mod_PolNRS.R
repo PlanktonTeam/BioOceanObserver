@@ -41,8 +41,6 @@ mod_PolNRS_ui <- function(id){
                         feasiblity to take consistent measurements. They are commonly measured by observing systems and 
                         frequently used in policy making and input into reporting such as State of Environment."),
         shiny::hr(class = "hr-separator"),
-        shiny::htmlOutput(nsPolNRS("PlotExp1")),
-        shiny::br(),
         shiny::htmlOutput(nsPolNRS("StationSummary")),
         shiny::br(),
         shiny::tabsetPanel(id = "EOV_NRS", type = "pills",

@@ -29,7 +29,6 @@ mod_PolLTM_ui <- function(id){
                         feasiblity to take consistent measurements. They are commonly measured by observing systems and 
                         frequently used in policy making and input into reporting such as State of Environment."),
                 shiny::hr(class = "hr-separator"),
-                shiny::br(),
                 shiny::htmlOutput(nsPolLTM("StationSummary")),
                 shiny::br(),
                 plotOutput(nsPolLTM("timeseries1"), height = 1000) %>% 

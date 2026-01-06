@@ -27,7 +27,6 @@ mod_PolCPR_ui <- function(id){
                         feasiblity to take consistent measurements. They are commonly measured by observing systems and 
                         frequently used in policy making and input into reporting such as State of Environment."),
                 shiny::hr(class = "hr-separator"),
-                shiny::br(),
                 shiny::htmlOutput(nsPolCPR("StationSummary")),
                 shiny::br(),
                 plotOutput(nsPolCPR("timeseries1"), height = 1500) %>% 
@@ -98,7 +97,7 @@ mod_PolCPR_server <- function(id){
     
     
     output$StationSummary <- shiny::renderText({ 
-      paste('<h3 class="centered-heading">',input$site,'</h3>The CPR has been sampling 
+      paste('<h4 class="centered-heading">',input$site,'</h4>The CPR has been sampling 
               in the ', input$site,' bioregion since ', format(min(stationData()$SampleStartDate), "%A %d %B %Y"), 
             ' and sampling is ongoing.', ' Approximately ', format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
             ' nautical miles has been towed in this region. The ', input$site, ' bioregion is characterised by ', 
