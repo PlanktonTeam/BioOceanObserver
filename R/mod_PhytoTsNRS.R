@@ -66,18 +66,23 @@ mod_PhytoTsNRS_server <- function(id){
     output$PlotExp1 <- renderText({
       if('Southern Ocean Time Series' %in% input$site) {
         paste0("A plot of selected phytoplankton Parameters from the NRS around Australia, as a time series and a monthly climatology by station.<br>
-        <b>Note:</b> At SOTS, phytoplankton samples were initially collected around 30m, from 2020 onwards this was changed to 10m")
+        <b>Note:</b> At SOTS, phytoplankton samples were initially collected around 30m, from 2020 onwards this was changed to 5-10m")
     } else {
       "A plot of selected phytoplankton Parameters from the NRS around Australia, as a time series and a monthly climatology by station."
     }
       })
     output$PlotExp2 <- renderText({
-      "A plot of selected indicies from the NRS around Australia, as a time series, a monthly climatology and an annual mean"
+      if('Southern Ocean Time Series' %in% input$site) {
+        paste0("A plot of selected indicies from the NRS around Australia, as a time series, a monthly climatology and an annual mean.<br>
+        <b>Note:</b> At SOTS, phytoplankton samples were initially collected around 30m, from 2020 onwards this was changed to 5-10m")
+      } else {
+        "A plot of selected indicies from the NRS around Australia, as a time series, a monthly climatology and an annual mean"
+        }
     })
     output$PlotExp3 <- renderText({
       if('Southern Ocean Time Series' %in% input$site) {
         paste0("A plot of functional groups from the light microscope phytoplankton counts from the NRS around Australia, as a time series and a monthly climatology.<br>
-        <b>Note:</b> At SOTS, phytoplankton samples were initially collected around 30m, from 2020 onwards this was changed to 10m")
+        <b>Note:</b> At SOTS, phytoplankton samples were initially collected around 30m, from 2020 onwards this was changed to 5-10m")
       } else {
         "A plot of functional groups from the light microscope phytoplankton counts from the NRS around Australia, as a time series and a monthly climatology."}
     })
