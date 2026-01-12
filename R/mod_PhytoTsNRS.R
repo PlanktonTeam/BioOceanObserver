@@ -34,7 +34,7 @@ mod_PhytoTsNRS_server <- function(id){
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       selectedData <- pkg.env$datNRSp %>%
-        dplyr::bind_rows(pkg.env$SOTSp) %>% #dplyr::filter(.data$SampleDepth_m < 20)) %>% #TODO should be able to remove filter once in planktonr
+        dplyr::bind_rows(pkg.env$SOTSp) %>% 
         dplyr::filter(.data$StationName %in% input$site,
                       .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>% 
@@ -161,7 +161,7 @@ mod_PhytoTsNRS_server <- function(id){
         shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
         
         selectedDataFG <- pkg.env$NRSfgp %>%
-          dplyr::bind_rows(pkg.env$SOTSfgp) %>% #dplyr::filter(.data$SampleDepth_m < 20)) %>% 
+          #dplyr::bind_rows(pkg.env$SOTSfgp) %>% 
           dplyr::filter(.data$StationName %in% input$site,
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
           planktonr:::pr_reorder() %>% 
