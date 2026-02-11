@@ -26,19 +26,19 @@ mod_ZooTsCPR_server <- function(id){
     # Sidebar ----------------------------------------------------------
     
     selectedData <- reactive({
-      req(input$region)
+      req(input$site)
       req(input$parameter)
-      shiny::validate(need(!is.na(input$region), "Error: Please select a region"))
+      shiny::validate(need(!is.na(input$site), "Error: Please select a region"))
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       ## Need to make these factors load automatically...... if possible
       selectedData <- pkg.env$datCPRz %>% 
-        dplyr::filter(.data$BioRegion %in% input$region,
+        dplyr::filter(.data$BioRegion %in% input$site,
                       .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels()
       
-    }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$parameter,input$site, input$DatesSlide[1], input$DatesSlide[2])
     
     shiny::exportTestValues(
       ZtsCPR = {ncol(selectedData())},
@@ -51,9 +51,17 @@ mod_ZooTsCPR_server <- function(id){
       ZtsCPRValuesisNumeric = {class(selectedData()$Values)}
     )
     
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_CPRmap(unique(selectedData()$BioRegion))
-    }, bg = "transparent") %>% bindCache(input$region)
+    # Initial render of CPR leaflet map
+    output$plotmap <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "CPR", Type = "Zooplankton")
+    })
+
+    # Update polygons when selection changes
+    observe({
+      # Use input$site directly (BioRegion), handle empty selection
+      sites <- if (length(input$site) > 0) input$site else character(0)
+      fLeafletUpdate("plotmap", session, sites, Survey = "CPR", Type = "Zooplankton")
+    })
     
     # add text information 
     output$PlotExp1 <- renderText({
@@ -79,7 +87,7 @@ mod_ZooTsCPR_server <- function(id){
         
         p1 + p2 + patchwork::plot_layout(widths = c(3,1))
         
-      }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$parameter,input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       output$timeseries1 <- renderPlot({
         gg_out1()
       }, height = function() {length(unique(selectedData()$BioRegion)) * 200})
@@ -101,7 +109,7 @@ mod_ZooTsCPR_server <- function(id){
         
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
         
-        if (identical(input$region, "")) return(NULL)
+        if (identical(input$site, "")) return(NULL)
         if (identical(input$parameter, "")) return(NULL)
         
         p1 <- planktonr::pr_plot_TimeSeries(selectedData(), trans = trans) + 
@@ -117,7 +125,7 @@ mod_ZooTsCPR_server <- function(id){
         p1 / 
           (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom"))
         
-      }) %>% bindCache(input$parameter,input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$parameter,input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
       
       output$timeseries2 <- renderPlot({
@@ -137,19 +145,19 @@ mod_ZooTsCPR_server <- function(id){
     observeEvent({input$NRSpts == 3}, {
       
       selectedDataFG <- reactive({
-        req(input$region)
-        shiny::validate(need(!is.na(input$region), "Error: Please select a bioregion"))
+        req(input$site)
+        shiny::validate(need(!is.na(input$site), "Error: Please select a bioregion"))
         
         selectedDataFG <- pkg.env$CPRfgz %>% 
-          dplyr::filter(.data$BioRegion %in% input$region,
+          dplyr::filter(.data$BioRegion %in% input$site,
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
           droplevels()
-      }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2])
+      }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2])
       
       gg_out3 <- reactive({
         
         if (is.null(pkg.env$CPRfgz$BioRegion)) {return(NULL)}
-        scale <- dplyr::if_else(input$scaler3, "Percent", "Actual")
+        scale <- dplyr::if_else(input$scaler3, "Proportion", "Actual")
         
         p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
         p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") + 
@@ -157,7 +165,7 @@ mod_ZooTsCPR_server <- function(id){
                          legend.position = "none")
         p1 + p2 + patchwork::plot_layout(widths = c(3,1))
         
-      }) %>% bindCache(input$region, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
+      }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
       
       output$timeseries3 <- renderPlot({
         gg_out3()

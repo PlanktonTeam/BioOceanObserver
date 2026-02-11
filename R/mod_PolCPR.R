@@ -12,10 +12,10 @@ mod_PolCPR_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        shiny::plotOutput(nsPolCPR("plotmap")),
+        leaflet::leafletOutput(nsPolCPR("plotmap"), height = "400px"),
         shiny::p("Note there is very little data in the North and North-west regions"),
         shiny::HTML("<h3>Select a bioregion:</h3>"),
-        shiny::radioButtons(inputId = nsPolCPR("Site"), label = NULL, 
+        shiny::radioButtons(inputId = nsPolCPR("site"), label = NULL, 
                      choices = unique(sort(pkg.env$PolCPR$BioRegion)), selected = "Temperate East"),
       ),
       mainPanel(id = "EOV Biomass by CPR", 
@@ -26,13 +26,12 @@ mod_PolCPR_ui <- function(id){
                         have identified to monitor our oceans. They are chosen based on impact of the measurement and the 
                         feasiblity to take consistent measurements. They are commonly measured by observing systems and 
                         frequently used in policy making and input into reporting such as State of Environment."),
-                shiny::hr(style = "border-top: 2px solid #000000;"),
-                shiny::br(),
+                shiny::hr(class = "hr-separator"),
                 shiny::htmlOutput(nsPolCPR("StationSummary")),
                 shiny::br(),
                 plotOutput(nsPolCPR("timeseries1"), height = 1500) %>% 
                   shinycssloaders::withSpinner(color="#0dc5c1"),
-                    div(style="display:inline-block; float:right; width:60%",
+                    div(class="download-button-container",
                        fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                        fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                        fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action")))
@@ -50,22 +49,22 @@ mod_PolCPR_server <- function(id){
     
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
-      req(input$Site)
-      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
+      req(input$site)
+      shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       
       selectedData <- pkg.env$PolCPR %>% 
-        dplyr::filter(.data$BioRegion %in% input$Site)
+        dplyr::filter(.data$BioRegion %in% input$site)
       
-      }) %>% bindCache(input$Site)
+      }) %>% bindCache(input$site)
     
     selectedPCI <- reactive({
-      req(input$Site)
-      shiny::validate(need(!is.na(input$Site), "Error: Please select a station."))
+      req(input$site)
+      shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       
       selectedPCI <- pkg.env$PCI %>% 
-      dplyr::filter(.data$BioRegion %in% input$Site) 
+      dplyr::filter(.data$BioRegion %in% input$site) 
       
-    }) %>% bindCache(input$Site)
+    }) %>% bindCache(input$site)
     
     shiny::exportTestValues(
       Polcpr = {ncol(selectedData())},
@@ -84,20 +83,24 @@ mod_PolCPR_server <- function(id){
 
     stationData <- reactive({
       stationData <- pkg.env$CPRinfo %>% 
-        dplyr::filter(.data$BioRegion == input$Site) 
-    }) %>% bindCache(input$Site)
+        dplyr::filter(.data$BioRegion == input$site) 
+    }) %>% bindCache(input$site)
     
-    # Sidebar Map
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_CPRmap(unique(selectedData()$BioRegion))
-    }, bg = "transparent") %>% bindCache(input$Site)
+    # Sidebar Map: use leaflet for CPR polygons
+    output$plotmap <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "CPR", Type = "Policy")
+    })
+
+    observe({
+      fLeafletUpdate("plotmap", session, unique(selectedData()$BioRegion), Survey = "CPR", Type = "Policy")
+    })
     
     
     output$StationSummary <- shiny::renderText({ 
-      paste("<h3 style='text-align:center;'>",input$Site,"</h3>The CPR has been sampling 
-              in the ", input$Site," bioregion since ", format(min(stationData()$SampleStartDate), "%A %d %B %Y"), 
-            " and sampling is ongoing.", " Approximately ", format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
-            " nautical miles has been towed in this region. The ", input$Site, " bioregion is characterised by ", 
+      paste('<h4 class="centered-heading">',input$site,'</h4>The CPR has been sampling 
+              in the ', input$site,' bioregion since ', format(min(stationData()$SampleStartDate), "%A %d %B %Y"), 
+            ' and sampling is ongoing.', ' Approximately ', format(sum(stationData()$Miles), big.mark=",", scientific=FALSE), 
+            ' nautical miles has been towed in this region. The ', input$site, ' bioregion is characterised by ', 
             unique(stationData()$Features), sep = "")
     })
     
@@ -146,7 +149,7 @@ mod_PolCPR_server <- function(id){
                        axis.text =  ggplot2::element_text(size = 10, face = "plain"),
                        plot.title = ggplot2::element_text(hjust = 0.5))
       
-    }) %>% bindCache(input$Site)
+    }) %>% bindCache(input$site)
     
     output$timeseries1 <- renderPlot({
       gg_out1()

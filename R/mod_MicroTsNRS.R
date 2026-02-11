@@ -28,24 +28,25 @@ mod_MicroTsNRS_server <- function(id){
     # Sidebar ----------------------------------------------------------
     observeEvent(input$all, {
       if(input$all == TRUE){
-        params <- planktonr::pr_relabel(unique(pkg.env$datNRSm$Parameters), style = "simple", named = TRUE)
+        params <- planktonr:::pr_relabel(unique(pkg.env$datNRSm$Parameters), style = "simple", named = TRUE)
       } else {
-        params <- planktonr::pr_relabel(unique((pkg.env$datNRSm %>% 
+        params <- planktonr:::pr_relabel(unique((pkg.env$datNRSm %>% 
                                         dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters)))$Parameters), style = "simple", named = TRUE)
       }
       shiny::updateSelectInput(session, 'parameterm', choices = params, selected = "Bacterial_Temperature_Index_KD")
     })
     
     selectedData <- reactive({
+      req(input$site)
       
       selectedData <- pkg.env$datNRSm %>% 
-        dplyr::filter(.data$StationName %in% input$Site,
+        dplyr::filter(.data$StationName %in% input$site,
                       .data$Parameters %in% input$parameterm,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels() %>% 
         dplyr::mutate(name = as.factor(.data$Parameters))
       
-    }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2])
     
     shiny::exportTestValues(
       MicroTs = {ncol(selectedData())},
@@ -60,12 +61,26 @@ mod_MicroTsNRS_server <- function(id){
       MicroTsValuesisNumeric = {class(selectedData()$Values)}
     )
     
-    # Sidebar Map
-    output$plotmap <- renderPlot({ 
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-    }, bg = "transparent") %>% bindCache(input$Site)
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
+    })
     
-    # Add text information 
+    # Update map when station selection changes
+    observe({
+      # Convert StationName to StationCode, handle empty selection
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fLeafletUpdate("plotmap", session, stationCodes, 
+                     Survey = "NRS", Type = "Microbes")
+    })
+    
+    # Add text information
     output$PlotExp1 <- renderText({
       "A plot of selected microbial indices from the NRS around Australia, as a time series and a monthly climatology by station averaged across all depths."
     }) 
@@ -105,7 +120,7 @@ mod_MicroTsNRS_server <- function(id){
           ggplot2::ggplot + ggplot2::geom_blank()
         }
         
-      }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
       output$timeseries1 <- renderPlot({
         gg_out1()
@@ -145,14 +160,14 @@ mod_MicroTsNRS_server <- function(id){
         p3 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Year", trans = trans) + 
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
         
-        #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple", named = TRUE))
+        #titley <- names(planktonr:::pr_relabel(unique(selectedData()$Parameters), style = "simple", named = TRUE))
         
         # p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
         p1 / 
           (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom")) #+
         # patchwork::plot_annotation(title = titleplot)
         
-      }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
       
       output$timeseries2 <- renderPlot({
         gg_out2()
@@ -178,9 +193,9 @@ mod_MicroTsNRS_server <- function(id){
           dplyr::mutate(SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'month')) %>%
           planktonr::pr_remove_outliers(2) %>%
           droplevels() %>%
-          planktonr::pr_reorder()
+          planktonr:::pr_reorder()
         
-      }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+      }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2])
       
       gg_out3 <-  reactive({  
         
@@ -192,7 +207,7 @@ mod_MicroTsNRS_server <- function(id){
           planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), na.fill = FALSE)
         }
         
-      }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$interp)
+      }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$interp)
       
       output$timeseries3 <- renderPlot({
         gg_out3()

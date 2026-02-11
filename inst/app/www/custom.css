@@ -99,6 +99,13 @@ body {
   background-color: var(--neutral-2) !important;
 }
 
+
+/* Small text - extra small font size */
+.small-text {
+  font-size: var(--font-size-base) !important;
+  color: var(--text-2) !important;
+}
+
 /* Headings - Poppins */
 .h1, .h2, .h3, .h4, .h5, .h6, 
 h1, h2, h3, h4, h5, h6 {
@@ -236,6 +243,7 @@ html .navbar {
 .navbar-brand .brand-text {
   margin: 0 !important;
   padding: 0 !important;
+  padding-right: 2rem !important; /* Add spacing to the right of brand text */
   line-height: 1.2 !important;
 }
 
@@ -856,6 +864,46 @@ a:focus {
    SHINY UI ELEMENTS ON SIDEBAR STYLING
    ======================================== */
 
+/* Remove ALL padding/margins from plot outputs in sidebar to maximize map display */
+.well .shiny-plot-output {
+  padding: 0 !important;
+  margin: 0 0 15px 0 !important; /* Add bottom margin to prevent overlap with content below */
+  line-height: 0 !important;
+  font-size: 0 !important;
+}
+
+/* Override Bootstrap card padding for plot outputs */
+.card .shiny-plot-output,
+.well .shiny-plot-output {
+  --bs-card-spacer-y: 0 !important;
+  --bs-card-spacer-x: 0 !important;
+  padding: 0 !important;
+}
+
+/* Remove any wrapper/container padding around plot outputs */
+.well .shiny-plot-output > * {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Ensure images inside plot outputs fill the container while maintaining aspect ratio */
+.well .shiny-plot-output img {
+  width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* Override shiny-scalable class behavior for sidebar maps */
+.well .shiny-plot-output img.shiny-scalable {
+  width: 100% !important;
+  height: auto !important;
+}
+
 /* Make Shiny UI elements transparent on sidebar to inherit background color */
 .well .form-control,
 .well .form-select,
@@ -1349,3 +1397,165 @@ nav[class*="navbar"],
   border-color: transparent !important;
   box-shadow: 0 2px 4px rgba(226, 236, 243, 0.3) !important;
 }
+
+/* ========================================
+   BANNER LAYOUT
+   ======================================== */
+
+/* Banner layout for information pages */
+
+.image-box {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background-color: white;
+  margin: 2px;
+  text-align: center;
+}
+
+.key-data-streams {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.key-data-streams li {
+  display: flex;
+  align-items: center;
+  margin: 5px 10px 5px 0;
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.key-data-streams li .fa {
+  margin-right: 8px;
+  color: #00bfff;
+  font-size: 18px;
+}
+
+.image-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+
+/* ========================================
+   padding for references
+   ======================================== */
+
+/* inden for references and pages of text */
+
+.references h4 {
+  padding-left: 2em;
+}
+
+.references ul {
+  padding-left: 3em;
+}
+
+/* ========================================
+   accordian settings for information buttons
+   ======================================== */
+
+/* accordion banner settings */
+.accordion-item {
+  background-color: var(--neutral-2) !important;  
+  margin-bottom: 1rem;       /* Space between panels */
+  font-size: var(--font-size-base);    /* Text size */
+}
+/* Style the accordion header */
+.accordion-button {
+  background-color: var(--primary-5) !important; 
+  color: var(--primary-5);  !important;  /* Header text color */
+  font-weight: bold; !important;
+  font-size: var(--font-size-xl)    !important;     
+  border-radius: 10px !important; /* Rounded header */
+  border-color: var(--secondary-1) !important;
+  padding: 0.4rem 0.75rem; /* control size of button */
+  
+}
+/* Optional: Change hover effect on header */
+.accordion-button:hover {
+  background-color: var(--background) !important; 
+  border-color: var(--secondary-1) !important;
+  color:  var(--primary-5); !important; 
+}
+
+/* Not active (collapsed) — pale background */
+.accordion-button.collapsed {
+  background-color: var(--background) !important; /* pale colour */
+  color: var(--primary-2) !important;
+}
+
+/* Optional: Change hover effect on header */
+.accordion-button:not(.collapsed) {
+  background-color: var(--primary-5)) !important; 
+  border-color: var(--secondary-1) !important;
+  color:  var(--primary-5) !important; 
+}
+/* Style the accordion body */
+.accordion-body {
+  background-color: var(--neutral-2) !important;   
+  padding: 1rem; !important;   
+  border-top: 1px solid var(--primary-1) !important;   
+  border-radius: 0 0 10px 10px !important;   
+=======
+   UTILITY CLASSES FOR COMMON STYLES
+   ======================================== */
+
+/* Modal logo header - CSIRO style */
+.modal-logo-header {
+  padding-right: 3px;
+  padding-top: 3px;
+  float: right;
+}
+
+.modal-logo-img {
+  width: 50px;
+  height: 50px;
+}
+
+.modal-title-text {
+  font-size: 1.1em;
+  margin-bottom: 0;
+  padding-top: 12px;
+}
+
+.modal-emphasis-text {
+  font-size: 1.15em;
+}
+
+/* Right-aligned download button container */
+.download-button-container {
+  display: inline-block;
+  float: right;
+  width: 60%;
+}
+
+/* Centered heading text */
+.centered-heading {
+  text-align: center;
+}
+
+/* Centered heading with bold */
+.centered-heading-bold {
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Horizontal rule separator - bold black line */
+.hr-separator {
+  border-top: 2px solid #000000;
+}
+
+/* Column with no padding or margin */
+.col-no-spacing {
+  padding: 0px;
+  margin: 0px;
+}
+

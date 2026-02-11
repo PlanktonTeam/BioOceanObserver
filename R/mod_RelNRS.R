@@ -59,7 +59,7 @@ mod_RelNRS_server <- function(id){
       sv <- daty() %>% 
         dplyr::filter(.data$Parameters %in% vars) 
       sv <- unique(sv$Parameters)
-      choicesy <- planktonr::pr_relabel(unique(daty()$Parameters), style = "simple", named = TRUE)
+      choicesy <- planktonr:::pr_relabel(unique(daty()$Parameters), style = "simple", named = TRUE)
       shiny::updateSelectizeInput(session, 'py', choices = choicesy, selected = sv)
     })
       
@@ -91,50 +91,69 @@ mod_RelNRS_server <- function(id){
       }) %>% bindCache(input$groupx)
 
     observeEvent(datx(), {
-      vars <- c("Biomass_mgm3", "PhytoAbundance_CellsL", "Bacterial_Temperature_Index_KD", "CTD_Temperature_degC", "Silicate_umolL")
+      vars <- c("Biomass_mgm3", "PhytoAbundance_CellsL", 
+                "Bacterial_Temperature_Index_KD", 
+                "CTD_Temperature_degC", "Silicate_umolL")
       sv <- datx() %>% 
         dplyr::filter(.data$Parameters %in% vars) 
       sv <- unique(sv$Parameters)
-      choicesx <- planktonr::pr_relabel(unique(datx()$Parameters), style = "simple", named = TRUE)
+      choicesx <- planktonr:::pr_relabel(unique(datx()$Parameters), style = "simple", named = TRUE)
       shiny::updateSelectizeInput(session, 'px', choices = choicesx, selected = sv)
     })
     
     selectedData <- reactive({
+      req(input$site)
+      
       y <- rlang::string(input$py)
       x <- rlang::string(input$px)
       vars <- c("StationName", "StationCode", "SampleTime_Local", "SampleDepth_m") # only microbes has depth data
       
       selectedData <- daty() %>%   
         dplyr::bind_rows(datx()) %>%
-        dplyr::filter(.data$StationName %in% input$Site,
+        dplyr::filter(.data$StationName %in% input$site,
                       .data$Parameters %in% c(x, y)) %>%
         planktonr::pr_remove_outliers(2) %>% 
         tidyr::pivot_wider(id_cols = dplyr::any_of(vars),
                            names_from = "Parameters", values_from = "Values", values_fn = mean) %>%
         tidyr::drop_na() %>% 
-        planktonr::pr_reorder()
+        planktonr:::pr_reorder()
       
-    }) %>% bindCache(input$Site, input$py, input$px)
+    }) %>% bindCache(input$site, input$py, input$px)
     
   # Parameter Definition
   output$ParamDefy <-   shiny::renderText({
-    paste("<p><strong>", planktonr::pr_relabel(input$py, style = "plotly"), ":</strong> ",
+    paste("<p><strong>", planktonr:::pr_relabel(input$py, style = "plotly"), ":</strong> ",
           pkg.env$ParamDef %>% 
             dplyr::filter(.data$Parameter == input$py) %>% 
             dplyr::pull("Definition"), ".</p>", sep = "")
     })
   output$ParamDefx <-   shiny::renderText({
-    paste("<p><strong>", planktonr::pr_relabel(input$px, style = "plotly"), ":</strong> ",
+    paste("<p><strong>", planktonr:::pr_relabel(input$px, style = "plotly"), ":</strong> ",
           pkg.env$ParamDef %>% 
             dplyr::filter(.data$Parameter == input$px) %>% 
             dplyr::pull("Definition"), ".</p>", sep = "")
     })  
 
-    # Sidebar Map
-    output$plotmap <- renderPlot({
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode))
-    }, bg = "transparent") %>% bindCache(input$Site)
-
+        
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({ 
+      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      # Convert StationName to StationCode, handle empty selection
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fLeafletUpdate("plotmap", session, stationCodes, 
+                     Survey = "NRS", Type = "Zooplankton")
+    })
+    
     # Add text information 
     output$PlotExp1 <- shiny::renderText({
       if(rlang::string(input$py) %in% colnames(selectedData()) & rlang::string(input$px) %in% colnames(selectedData()) & length(unique(selectedData()$SampleDepth_m)) > 0){
@@ -143,7 +162,7 @@ mod_RelNRS_server <- function(id){
         paste("A scatter plot of selected indices against oceanographic parameters measured from the NRS around Australia 
         <br> <br> <b>NOTE: Not enough data for plot</b>")
       }
-    }) %>% bindCache(input$py, input$px, input$Site)
+    }) %>% bindCache(input$py, input$px, input$site)
     # Add text information 
     output$PlotExp2 <- shiny::renderText({
       if(rlang::string(input$py) %in% colnames(selectedData())){
@@ -152,7 +171,7 @@ mod_RelNRS_server <- function(id){
         paste("A box plot of selected indices showing range of each parameter at the NRS around Australia 
               <br> <br> <b>NOTE: Not enough data for plot</b>")
       }
-    }) %>% bindCache(input$py, input$Site)
+    }) %>% bindCache(input$py, input$site)
     
     ## scatter plot
     # Plot Trends -------------------------------------------------------------
@@ -164,13 +183,15 @@ mod_RelNRS_server <- function(id){
           y <- rlang::string(input$py)
           x <- rlang::string(input$px)
 
-     if(y %in% colnames(selectedData()) & x %in% colnames(selectedData()) & length(unique(selectedData()$SampleDepth_m)) > 0){
+     if(y %in% colnames(selectedData()) & 
+        x %in% colnames(selectedData()) & 
+        length(unique(selectedData()$SampleDepth_m)) > 0){
           planktonr::pr_plot_scatter(selectedData(), x, y, trend)
         } else{
           ggplot2::ggplot + ggplot2::geom_blank()
           }
 
-    }) %>% bindCache(input$Site, input$py, input$px, input$smoother)
+    }) %>% bindCache(input$site, input$py, input$px, input$smoother)
 
     output$scatter1 <- renderPlot({
       gg_out1()
@@ -200,7 +221,7 @@ mod_RelNRS_server <- function(id){
         } else{
           ggplot2::ggplot + ggplot2::geom_blank()
         }
-      }) %>% bindCache(input$py, input$Site)
+      }) %>% bindCache(input$py, input$site)
       
       output$box2 <- renderPlot({
         gg_out2()

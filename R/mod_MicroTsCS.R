@@ -28,9 +28,9 @@ mod_MicroTsCS_server <- function(id){
     # Sidebar ----------------------------------------------------------
     observeEvent(input$all, {
       if(input$all == TRUE){
-        params <- planktonr::pr_relabel(unique(pkg.env$datCSm$Parameters), style = "simple", named = TRUE)
+        params <- planktonr:::pr_relabel(unique(pkg.env$datCSm$Parameters), style = "simple", named = TRUE)
       } else {
-        params <- planktonr::pr_relabel(unique((pkg.env$datCSm %>% 
+        params <- planktonr:::pr_relabel(unique((pkg.env$datCSm %>% 
                                                   dplyr::filter(grepl("Temperature_Index_KD|Abund|gene|ASV", .data$Parameters)))$Parameters), style = "simple", named = TRUE)
       }
       shiny::updateSelectInput(session, 'parameterm', choices = params, selected = "Bacterial_Temperature_Index_KD")
@@ -38,9 +38,10 @@ mod_MicroTsCS_server <- function(id){
     
     
     selectedData <- reactive({
-
+      req(input$site)
+      
       selectedData <- pkg.env$datCSm %>%
-        dplyr::filter(.data$State %in% input$Site,
+        dplyr::filter(.data$State %in% input$site,
                       .data$Parameters %in% input$parameterm,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
         droplevels() %>%
@@ -48,7 +49,7 @@ mod_MicroTsCS_server <- function(id){
         dplyr::arrange(.data$State) %>% 
         tidyr::drop_na()
 
-    }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2])
 
     shiny::exportTestValues(
       MicroTsC = {ncol(selectedData())},
@@ -62,10 +63,18 @@ mod_MicroTsCS_server <- function(id){
       MicroTsCValuesisNumeric = {class(selectedData()$Values)}
     )
 
-    # Sidebar Map
-    output$plotmap <- renderPlot({
-      planktonr::pr_plot_NRSmap(unique(selectedData()$StationCode), Survey = "Coastal")
-    }, bg = "transparent") %>% bindCache(input$Site)
+    # Sidebar Map - Initial render
+    output$plotmap <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "Coastal", Type = "Zooplankton")
+    })
+    
+    # Update map when station selection changes
+    observe({
+      # Use input$site directly (State), handle empty selection
+      sites <- if (length(input$site) > 0) input$site else character(0)
+      fLeafletUpdate("plotmap", session, sites, 
+                     Survey = "Coastal", Type = "Zooplankton")
+    })
 
     # Add text information
     output$PlotExp1 <- renderText({
@@ -114,7 +123,7 @@ mod_MicroTsCS_server <- function(id){
           ggplot2::ggplot + ggplot2::geom_blank()
         }
         
-      }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
 
       output$timeseries1 <- renderPlot({
         gg_out1()
@@ -129,7 +138,7 @@ mod_MicroTsCS_server <- function(id){
 
       # Parameter Definition
       output$ParamDefm <- shiny::renderText({
-        paste("<p><strong>", planktonr::pr_relabel(input$parameterm, style = "plotly"), ":</strong> ",
+        paste("<p><strong>", planktonr:::pr_relabel(input$parameterm, style = "plotly"), ":</strong> ",
               pkg.env$ParamDef %>% 
                 dplyr::filter(.data$Parameter == input$parameterm) %>% 
                 dplyr::pull("Definition"), ".</p>", sep = "")
@@ -160,7 +169,7 @@ mod_MicroTsCS_server <- function(id){
         p3 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Year", trans = trans) +
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
-        #titley <- names(planktonr::pr_relabel(unique(selectedData()$Parameters), style = "simple", named = TRUE))
+        #titley <- names(planktonr:::pr_relabel(unique(selectedData()$Parameters), style = "simple", named = TRUE))
 
         # p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
         p1 /
@@ -170,7 +179,7 @@ mod_MicroTsCS_server <- function(id){
           ggplot2::ggplot + ggplot2::geom_blank()
         }
         
-      }) %>% bindCache(input$parameterm, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
 
       output$timeseries2 <- renderPlot({
         gg_out2()
@@ -196,7 +205,7 @@ mod_MicroTsCS_server <- function(id){
         ggplot2::ggplot + ggplot2::geom_blank()
       }
       
-      }) %>% bindCache(input$p1, input$Site, input$DatesSlide[1], input$DatesSlide[2], input$smoother)
+      }) %>% bindCache(input$p1, input$site, input$DatesSlide[1], input$DatesSlide[2], input$smoother)
 
       output$timeseries3 <- renderPlot({
         gg_out3()

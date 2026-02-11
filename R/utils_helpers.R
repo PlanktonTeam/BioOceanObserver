@@ -26,8 +26,15 @@ fEOVutilities <- function(vector = "col", Survey = "NRS"){
                                  "Salinity", "Ammonium_umolL", "Temperature_degC", "Silicate_umolL",
                                  "Phosphate_umolL"))
     
+  } else if (Survey == "SOTS"){
+    # Change some of the names, but keep the same order so the colours are consistent
+    
+    disp <- data.frame(param = c("ChlF_mgm3", "DissolvedOxygen_umolkg", "PhytoBiomassCarbon_pgL",
+                                 "ShannonPhytoDiversity", "BiomassIndex_mgm3", "ShannonCopepodDiversity", "Nitrate_umolL", 
+                                 "Salinity", "Ammonium_umolL", "Temperature_degC", "Silicate_umolL",
+                                 "Phosphate_umolL"))
+    
   }
-  
   
   disp <- disp %>% 
     dplyr::mutate(col = pkg.env$col12,
@@ -48,16 +55,333 @@ fEOVutilities <- function(vector = "col", Survey = "NRS"){
   
 }
 
+#' Convert ggplot map to interactive plotly with tight margins
+#'
+#' @description Takes a ggplot object (typically a map) and converts it to an 
+#' interactive plotly plot with consistent styling - no margins, no axes, 
+#' transparent background, and responsive resizing enabled.
+#'
+#' @param gg_map A ggplot object to convert to plotly
+#' @param tooltip Character vector specifying which aesthetic to show in tooltip.
+#'   Default is "colour" which works well for colored station points.
+#'
+#' @return A plotly object ready for renderPlotly()
+#'
+#' @noRd
+fPlotlyMap <- function(gg_map, tooltip = "colour") {
+  
+  plotly::ggplotly(gg_map, tooltip = tooltip, dynamicTicks = TRUE) %>%
+    plotly::layout(
+      showlegend = FALSE,
+      margin = list(l = 0, r = 0, t = 0, b = 0, pad = 0),
+      xaxis = list(
+        showticklabels = FALSE,
+        showgrid = FALSE,
+        zeroline = FALSE,
+        automargin = FALSE,
+        fixedrange = TRUE
+      ),
+      yaxis = list(
+        showticklabels = FALSE,
+        showgrid = FALSE,
+        zeroline = FALSE,
+        automargin = FALSE,
+        fixedrange = TRUE
+      ),
+      paper_bgcolor = 'rgba(0,0,0,0)',
+      plot_bgcolor = 'rgba(0,0,0,0)'
+    ) %>%
+    plotly::config(displayModeBar = FALSE)
+  
+}
+
+#' Create interactive leaflet map of station locations
+#'
+#' @description Creates a leaflet map of station locations with colored points
+#' and hover labels. Map is constrained to Australian region with options to
+#' disable zooming/panning for a fixed view. More reliable than plotly for
+#' cross-platform tooltip display.
+#'
+#' @param sites A character vector of station codes to highlight (e.g., c("MAI", "PHB"))
+#' @param Survey Which Survey to plot ("NRS", "Coastal", "LTM")
+#' @param Type Must be "Phytoplankton" for SOTS to plot, or Microbes to drop NIN & ESP, otherwise has no impact
+#' @param allow_zoom Logical, should user be able to zoom? Default FALSE
+#' @param allow_pan Logical, should user be able to pan? Default FALSE
+#'
+#' @return A leaflet map object ready for renderLeaflet()
+#'
+#' @noRd
+fLeafletMap <- function(sites, Survey = "NRS", Type = "Zooplankton", 
+                        allow_zoom = TRUE, allow_pan = FALSE){
+  
+  # Determine map base and data depending on survey. This is the default
+  lat_min <- -45
+  lat_max <- -5
+  lon_min <- 110
+  lon_max <- 158
+  clon <- 133.7751 # Centre Long
+  clat <- -27 # Centre Lat
+  zoom <- 3.25
+  
+  if (Survey == "NRS"){
+    meta_data <- pkg.env$NRSStation
+  } else if (Survey == "LTM") {
+    meta_data <- pkg.env$NRSStation %>%
+      dplyr::filter(.data$StationCode %in% c("MAI", "PHB", "ROT"))
+  } else if (Survey == "Coastal") {
+    meta_data <- planktonr::csDAT %>% 
+      sf::st_as_sf()
+  } else if (Survey == "CPR") {
+    lat_min <- -70
+    lat_max <- -5
+    zoom <- 1.5
+  } else if (Survey == "GO-SHIP"){
+    meta_data <- pkg.env$datGSm %>% 
+      dplyr::distinct(Latitude, Longitude, .keep_all = TRUE) %>% 
+      dplyr::mutate(StationCode = StationName)
+    lon_max <- -150
+    lon_min <- -180
+    lat_min <- -60
+    lat_max <- -20
+    clon <- -179
+    clat <- -40
+    zoom <- 2
+  }
+  
+  # Add SOTS for phytoplankton (only relevant for point datasets)
+  if (Type == "Phytoplankton" && Survey != "CPR"){
+    sots <- data.frame(
+      StationName = "SOTS",
+      StationCode = "SOTS",
+      Latitude = -47.0,
+      Longitude = 142.0
+    )
+    meta_data <- dplyr::bind_rows(meta_data, sots)
+    lat_min <- -55
+    lat_max <- -5
+  } else if (Type == "Microbes"){
+    meta_data <- meta_data %>%
+      dplyr::filter(!.data$StationCode %in% c("NIN", "ESP"))
+  }
+  
+  # Create leaflet map base with options
+  map <- leaflet::leaflet(
+    options = leaflet::leafletOptions(
+      zoomControl = allow_zoom,
+      doubleClickZoom = allow_zoom,
+      scrollWheelZoom = allow_zoom,
+      dragging = allow_pan,
+      minZoom = 1,
+      maxZoom = 18,
+      zoomSnap = 0.25,
+      zoomDelta = 0.25
+    )
+  ) %>%
+    leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>%
+    leaflet::setView(lng = clon, lat = clat, zoom = zoom) %>%
+    leaflet::setMaxBounds(lng1 = lon_min, lat1 = lat_min, lng2 = lon_max, lat2 = lat_max)
+  
+  # If CPR, draw bioregion polygons; otherwise add station points
+  if (Survey == "CPR"){
+    
+    # If sites provided, make non-selected transparent/grey
+    mbr_df <- planktonr::mbr
+    # Ensure it's an sf object and has character REGION/Colour columns
+    if (!inherits(mbr_df, "sf")) mbr_df <- sf::st_as_sf(mbr_df)
+    mbr_df$REGION <- as.character(mbr_df$REGION)
+    if (!"Colour" %in% colnames(mbr_df)) mbr_df$Colour <- "#AAAAAA"
+    mbr_df$Colour <- as.character(mbr_df$Colour)
+    
+    if (length(sites) > 0) {
+      # use base ifelse to avoid strict type coercion from dplyr::if_else
+      mbr_df$FillCol <- ifelse(mbr_df$REGION %in% sites, mbr_df$Colour, "#EEEEEE")
+    } else {
+      mbr_df$FillCol <- "#EEEEEE"
+    }
+    
+    map <- map %>%
+      leaflet::addPolygons(data = mbr_df,
+                           fillColor = ~FillCol,
+                           color = "black",
+                           weight = 0.5,
+                           fillOpacity = 0.7,
+                           label = ~REGION,
+                           highlight = leaflet::highlightOptions(weight = 2, bringToFront = TRUE))
+  } else { # Not CPR
+    
+    # Add color column based on selection for point datasets
+    meta_data <- meta_data %>%
+      dplyr::mutate(
+        Selected = .data$StationCode %in% sites,
+        Color = dplyr::if_else(.data$Selected, "red", "blue"),
+        Radius = dplyr::if_else(.data$Selected, 8, 6)
+      )
+    
+    map <- map %>%
+      leaflet::addCircleMarkers(data = meta_data,
+                                lng = ~Longitude,
+                                lat = ~Latitude,
+                                color = ~Color,
+                                fillColor = ~Color,
+                                radius = ~Radius,
+                                fillOpacity = 0.8,
+                                opacity = 1,
+                                weight = 2,
+                                label = ~StationName,
+                                labelOptions = leaflet::labelOptions(
+                                  style = list("font-weight" = "normal", "padding" = "3px 8px"),
+                                  textsize = "12px",
+                                  direction = "auto"
+                                ))
+  }
+  
+  return(map)
+}
+
+#' Update leaflet map markers using leafletProxy
+#'
+#' @description Updates only the station markers on an existing leaflet map without
+#' redrawing the entire map. Much more efficient than re-rendering the whole map.
+#' Use this in an observe() block that watches for changes in station selection.
+#'
+#' @param map_id Character string of the map output ID (e.g., "plotmap")
+#' @param session The Shiny session object
+#' @param sites A character vector of station codes to highlight (e.g., c("MAI", "PHB"))
+#' @param Survey Which Survey to plot ("NRS", "Coastal", "LTM")
+#' @param Type Must be "Phytoplankton" for SOTS to plot, otherwise has no impact
+#'
+#' @return NULL (called for side effect of updating the map)
+#'
+#' @noRd
+fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zooplankton"){
+  
+  # Update the map using leafletProxy
+  proxy <- leaflet::leafletProxy(map_id, session)
+  
+  if (Survey == "CPR"){
+    
+    # Update polygons: clear existing shapes and add polygons with selected fill
+    mbr_df <- planktonr::mbr
+    if (!inherits(mbr_df, "sf")) mbr_df <- sf::st_as_sf(mbr_df)
+    mbr_df$REGION <- as.character(mbr_df$REGION)
+    if (!"Colour" %in% colnames(mbr_df)) mbr_df$Colour <- "#AAAAAA"
+    mbr_df$Colour <- as.character(mbr_df$Colour)
+    
+    if (length(sites) > 0){
+      mbr_df$FillCol <- ifelse(mbr_df$REGION %in% sites, mbr_df$Colour, "#EEEEEE")
+    } else {
+      mbr_df$FillCol <- "#EEEEEE"
+    }
+    
+    proxy %>%
+      leaflet::clearShapes() %>%
+      leaflet::addPolygons(data = mbr_df,
+                           fillColor = ~FillCol,
+                           color = "black",
+                           weight = 0.5,
+                           fillOpacity = 0.7,
+                           label = ~REGION,
+                           highlight = leaflet::highlightOptions(weight = 2, bringToFront = TRUE))
+    
+  } else {
+    
+    # Get station metadata based on survey type
+    if(Survey == "NRS"){
+      meta_data <- pkg.env$NRSStation
+    } else if (Survey == "LTM") {
+      meta_data <- pkg.env$NRSStation %>%
+        dplyr::filter(.data$StationCode %in% c("MAI", "PHB", "ROT"))
+    } else if (Survey == "Coastal") {
+      # Use coastal stations data
+      meta_data <- planktonr::csDAT %>% 
+        sf::st_as_sf()
+    } else if (Survey == "GO-SHIP"){
+      meta_data <- pkg.env$datGSm %>% 
+        dplyr::mutate(StationCode = StationName) 
+    }
+    
+    # Add SOTS for phytoplankton
+    if (Type == "Phytoplankton" && Survey != "CPR"){
+      
+      sots <- data.frame(
+        StationName = "SOTS",
+        StationCode = "SOTS",
+        Latitude = -47.0,
+        Longitude = 142.0
+      )
+      meta_data <- dplyr::bind_rows(meta_data, sots)
+    }
+    
+    
+    if (Survey == "GO-SHIP"){
+      meta_data <- meta_data %>%
+        dplyr::mutate(
+          Selected = .data$Latitude >= sites[1] & .data$Latitude <= sites[2],
+          Color = dplyr::if_else(.data$Selected, "red", "blue"),
+          Radius = dplyr::if_else(.data$Selected, 8, 6)
+        )
+    } else if (Survey == "Coastal") {
+      # Coastal stations use State for selection
+      meta_data <- meta_data %>%
+        dplyr::mutate(
+          Selected = .data$State %in% sites,
+          Color = dplyr::if_else(.data$Selected, "red", "blue"),
+          Radius = dplyr::if_else(.data$Selected, 8, 6)
+        )
+    } else {
+      # Add color column based on selection
+      meta_data <- meta_data %>%
+        dplyr::mutate(
+          Selected = .data$StationCode %in% sites,
+          Color = dplyr::if_else(.data$Selected, "red", "blue"),
+          Radius = dplyr::if_else(.data$Selected, 8, 6)
+        )
+    }
+    proxy %>%
+      leaflet::clearMarkers() %>%
+      leaflet::addCircleMarkers(
+        data = meta_data,
+        lng = ~Longitude,
+        lat = ~Latitude,
+        color = ~Color,
+        fillColor = ~Color,
+        radius = ~Radius,
+        fillOpacity = 0.8,
+        opacity = 1,
+        weight = 2,
+        label = ~StationName,
+        labelOptions = leaflet::labelOptions(
+          style = list("font-weight" = "normal", "padding" = "3px 8px"),
+          textsize = "12px",
+          direction = "auto"
+        )
+      )
+  }
+}
+
 #' BOO Plankton Sidebar
 #'
 #' @noRd 
-fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
+
+fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added for SOTS phytoplankton
+  
   ns <- NS(id)
   
   if (stringr::str_detect(id, "NRS") == TRUE){ # NRS
+    
     choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
-    idSite <- "Site"
+    
+    idSite <- "site"
+    
+    if(exists('dat1') == TRUE){
+      df <- dat %>% 
+        dplyr::bind_rows(dat1) %>% 
+        planktonr:::pr_reorder()
+      choices <- unique(sort(df$StationName))
+    } else {
+      choices <- unique(sort(dat$StationName))
+    }
     
     if (stringr::str_detect(id, "Micro") == TRUE){ # Microbes + NRS
       selectedVar <- "Bacterial_Temperature_Index_KD"
@@ -69,7 +393,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
   } else if (stringr::str_detect(id, "CPR") == TRUE){ # CPR
     choices <- unique(sort(dat$BioRegion))
     selectedSite <- c("Temperate East", "South-east")
-    idSite <- "region"
+    idSite <- "site"
     if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + CPR
       selectedVar = "ZoopAbundance_m3"
     } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + CPR
@@ -78,25 +402,30 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
   } else if (stringr::str_detect(id, "CS") == TRUE){ # Microbes Coastal
     choices <- unique(sort(dat$State))
     selectedSite <- c("GBR")
-    idSite <- "Site"
+    idSite <- "site"
     selectedVar = "Bacterial_Temperature_Index_KD"
   } 
   
   shiny::sidebarPanel(
     
-    shiny::conditionalPanel(
-      condition = "input.phyto == 'ptscpr' | input.zoo == 'ztscpr'",
-      shiny::HTML("<p>Note there is very little data in the North and North-west regions<p>")
-    ),
-    
     # Put Map, Station names and date slider on all panels
     shiny::conditionalPanel(
       condition = paste0("input.", tabsetPanel_id, " <= 5"), 
-      shiny::plotOutput(ns("plotmap"),
-                        #height = "300px", 
-                        width = "100%"),
+      # Use leafletOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
+      if(stringr::str_detect(id, "CPR")) {
+        shiny::tagList(
+          shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
+          leaflet::leafletOutput(ns("plotmap"), height = "400px")
+        )
+      } else {
+        shiny::tagList(
+          shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+          leaflet::leafletOutput(ns("plotmap"), height = "400px")
+        )
+      },
       shiny::HTML("<h3>Select a station:</h3>"),
-      shiny::fluidRow(class = "row_multicol", tags$div(align = "left", 
+      shiny::fluidRow(class = "row_multicol", 
+                      tags$div(align = "left", 
                                class = "multicol",
                                shiny::checkboxGroupInput(inputId = ns(idSite), 
                                                          label = NULL,
@@ -137,7 +466,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat){
       shiny::HTML("<h3>Select a parameter:</h3>"),
       shiny::selectInput(inputId = ns("parameter"), 
                          label = NULL, 
-                         choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
+                         choices = planktonr:::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
                          selected = selectedVar),
       shiny::htmlOutput(ns("ParamDef")),
     ),
@@ -185,7 +514,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                        shiny::htmlOutput(ns("PlotExp1")),
                                        plotOutput(ns("timeseries1"), height = "auto") %>% 
                                          shinycssloaders::withSpinner(color="#0dc5c1"),
-                                       div(style="display:inline-block; float:right; width:60%",
+                                       div(class="download-button-container",
                                            fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                                            fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                                            fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
@@ -194,17 +523,17 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                        shiny::htmlOutput(ns("PlotExp2")),  
                                        plotOutput(ns("timeseries2"), height = 800) %>% 
                                          shinycssloaders::withSpinner(color="#0dc5c1"),
-                                       div(style="display:inline-block; float:right; width:60%",
+                                       div(class="download-button-container",
                                            fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
                                            fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
                                            fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
                        ),
                        if(!tabsetPanel_id %in% c("NRSmts", "CSmts")){
                          shiny::tabPanel("Functional groups", value = 3,
-                                         textOutput(ns("PlotExp3"), container = span),  
+                                         shiny::htmlOutput(ns("PlotExp3"), container = span),  
                                          plotOutput(ns("timeseries3"), height = "auto") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1"),
-                                         div(style="display:inline-block; float:right; width:60%",
+                                         div(class="download-button-container",
                                              fButtons(id, button_id = "downloadPlot3", label = "Plot", Type = "Download"),
                                              fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
                                              fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
@@ -215,7 +544,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                          shiny::htmlOutput(ns("PlotExp3")),
                                          plotOutput(ns("timeseries3"), height = "auto") %>%
                                            shinycssloaders::withSpinner(color="#0dc5c1"),
-                                         div(style="display:inline-block; float:right; width:60%",
+                                         div(class="download-button-container",
                                              fButtons(id, button_id = "downloadPlot3", label = "Plot", Type = "Download"),
                                              fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
                                              fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
@@ -300,23 +629,23 @@ fSpatialPanel <- function(id, tabsetPanel_id){
                          p(textOutput(ns("DistMapExp"), container = span)),
                          fluidRow(
                            shiny::column(width = 6,
-                                         style = "padding:0px; margin:0px;",
+                                         class = "col-no-spacing",
                                          shiny::h4("December - February"),
                                          leaflet::leafletOutput(ns("MapSum"), width = "99%", height = "300px") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1")), 
                            shiny::column(width = 6,
-                                         style = "padding:0px; margin:0px;",
+                                         class = "col-no-spacing",
                                          shiny::h4("March - May"),
                                          leaflet::leafletOutput(ns("MapAut"), width = "99%", height = "300px") %>%
                                            shinycssloaders::withSpinner(color="#0dc5c1")
                            ),
                            shiny::column(width = 6,
-                                         style = "padding:0px; margin:0px;",
+                                         class = "col-no-spacing",
                                          shiny::h4("June - August"),
                                          leaflet::leafletOutput(ns("MapWin"), width = "99%", height = "300px") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1")), 
                            shiny::column(width = 6,
-                                         style = "padding:0px; margin:0px;",
+                                         class = "col-no-spacing",
                                          shiny::h4("September - November"),
                                          leaflet::leafletOutput(ns("MapSpr"), width = "99%", height = "300px") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1"))
@@ -332,26 +661,6 @@ fSpatialPanel <- function(id, tabsetPanel_id){
                          plotOutput(ns("DNs"), height = 700) %>% 
                            shinycssloaders::withSpinner(color="#0dc5c1")
                 )
-    )
-  )
-}
-
-
-#' Generic BOO Environmental Panel
-#' 
-#' @noRd
-fEnviroPanel <- function(id){
-  ns <- NS(id)
-  shiny::mainPanel(
-    shiny::htmlOutput(ns("PlotExp")),
-    plotOutput(ns("timeseries1"), height = "auto") %>% 
-      shinycssloaders::withSpinner(color="#0dc5c1"),
-    shiny::div(style="display:inline-block; float:right; width:60%",
-               fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
-               if (id == "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData2", label = "Data TS", Type = "Download")},
-               if (id == "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData3", label = "Data Clim", Type = "Download")},
-               if (id != "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download")},
-               fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"),
     )
   )
 }
@@ -383,11 +692,12 @@ fEnviroSidebar <- function(id, dat = NULL){
   }
   
   shiny::sidebarPanel(
-    shiny::plotOutput(ns("plotmap"), width = "100%"),
+    shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+    leaflet::leafletOutput(ns("plotmap"), height = "400px"),
     shiny::HTML("<h3>Select a station:</h3>"),
     shiny::fluidRow(tags$div(align = "left", 
                              class = "multicol",
-                             shiny::checkboxGroupInput(inputId = ns("station"),
+                             shiny::checkboxGroupInput(inputId = ns("site"),
                                                        label = NULL,
                                                        choices = pkg.env$NRSStation %>% 
                                                          dplyr::filter(!.data$StationCode %in% ignoreStat) %>%
@@ -410,7 +720,7 @@ fEnviroSidebar <- function(id, dat = NULL){
         shiny::HTML("<h3>Select a parameter:</h3>"),
         shiny::selectInput(inputId = ns("parameter"), 
                            label = NULL, 
-                           choices = planktonr::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
+                           choices = planktonr:::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
                            selected = selectedVar),
         shiny::htmlOutput(ns("ParamDefb")),
       )
@@ -446,6 +756,27 @@ fEnviroSidebar <- function(id, dat = NULL){
   )
   
 }
+
+#' Generic BOO Environmental Panel
+#' 
+#' @noRd
+fEnviroPanel <- function(id){
+  ns <- NS(id)
+  shiny::mainPanel(
+    shiny::htmlOutput(ns("PlotExp")),
+    plotOutput(ns("timeseries1"), height = "auto") %>% 
+      shinycssloaders::withSpinner(color="#0dc5c1"),
+    shiny::div(class="download-button-container",
+               fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+               if (id == "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData2", label = "Data TS", Type = "Download")},
+               if (id == "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData3", label = "Data Clim", Type = "Download")},
+               if (id != "MoorBGC_ui_1"){fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download")},
+               fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"),
+    )
+  )
+}
+
+
 
 # Generic BOO relationships sidebar panel function
 #' 
@@ -488,10 +819,24 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
       tags$head(tags$style(HTML("
                               .shiny-split-layout > div {overflow: visible;}
                                     "))),
-      condition = "input.navbar == 'Relationships'",
-      plotOutput(ns("plotmap")),   
+      condition = paste0("input.", tabsetPanel_id, " <= 2"),
+      
+      # Use plotlyOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
+      if(stringr::str_detect(id, "CPR")) {
+        shiny::tagList(
+          shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
+          leaflet::leafletOutput(ns("plotmap"), height = "400px")
+        )
+      } else {
+        shiny::tagList(
+          shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+          leaflet::leafletOutput(ns("plotmap"), height = "400px")
+        )
+      },
+      # shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+      # plotly::plotlyOutput(ns("plotmap"), height = "auto"),   
       shiny::HTML("<h3>Select a station:</h3>"),
-      shiny::checkboxGroupInput(inputId = ns("Site"), label = NULL, choices = ChoiceSite, selected = SelectedVar),
+      shiny::checkboxGroupInput(inputId = ns("site"), label = NULL, choices = ChoiceSite, selected = SelectedVar),
       shiny::HTML("<h4>Select a group & variable for the y axis:</h4>"),
       shiny::splitLayout(
         shiny::selectizeInput(inputId = ns('groupy'), label = NULL, choices = ChoicesGroupy,
@@ -505,7 +850,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
                            value = FALSE),
     ),    
     shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Relationships' && input.", tabsetPanel_id," == 1"),
+      condition = paste0("input.", tabsetPanel_id," == 1"),
       shiny::HTML("<h4>Select a group & variable for the x axis:</h4>"),
       shiny::splitLayout(
         shiny::selectizeInput(inputId = ns('groupx'), label = NULL, choices = ChoicesGroupx,
@@ -531,7 +876,7 @@ fRelationPanel <- function(id, tabsetPanel_id){
                                        shiny::htmlOutput(ns("PlotExp1")),
                                        plotOutput(ns("scatter1")) %>% 
                                          shinycssloaders::withSpinner(color="#0dc5c1"),
-                                       div(style="display:inline-block; float:right; width:60%",
+                                       div(class="download-button-container",
                                            fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                                            fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"))
                        ),
@@ -539,7 +884,7 @@ fRelationPanel <- function(id, tabsetPanel_id){
                                        shiny::htmlOutput(ns("PlotExp2")),  
                                        plotOutput(ns("box2"), height = 800) %>%
                                          shinycssloaders::withSpinner(color="#0dc5c1"),
-                                       div(style="display:inline-block; float:right; width:60%",
+                                       div(class="download-button-container",
                                            fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
                                            fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"))
                        )
@@ -594,12 +939,12 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
     filename = function() {
       
       if (stringr::str_starts(gg_prefix, "Policy")){
-        paste0(gg_prefix, "_",  input$Site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".csv") %>% 
+        paste0(gg_prefix, "_",  input$site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".csv") %>% 
           stringr::str_replace_all( " ", "")
       } else{
         paste0(gg_prefix, "_", 
                input$parameter, "_",
-               data.frame(StationName = input$Site) %>% 
+               data.frame(StationName = input$site) %>% 
                  planktonr::pr_add_StationCode() %>% 
                  dplyr::arrange(.data$StationCode) %>% 
                  dplyr::pull(.data$StationCode) %>% 
@@ -619,44 +964,92 @@ fDownloadButtonServer <- function(input, input_dat, gg_prefix) {
 
 #' Download Plot - Server Side
 #'
-#' @noRd 
+#' @noRd
 fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
   
   downloadPlot <- downloadHandler(
     filename = function() {
       if ((stringr::str_starts(gg_prefix, "Policy"))){
-        paste0(gg_prefix, "_", input$Site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".png") %>% 
+        paste0(gg_prefix, "_", input$site, "_D", format(Sys.time(), "%Y%m%d%H%M%S"), ".png") %>%
           stringr::str_replace_all( " ", "")
       } else{
-        paste0(gg_prefix, "_", 
-               input$parameter, "_",
-               data.frame(StationName = input$Site) %>% 
-                 planktonr::pr_add_StationCode() %>% 
-                 dplyr::arrange(.data$StationCode) %>% 
-                 dplyr::pull(.data$StationCode) %>% 
+        if (gg_prefix == "Scatter"){
+          param <- paste0(input$px,"_v_",input$py)
+        } else {
+          param <- input$parameter
+        }
+        
+        paste0(gg_prefix, "_",
+               param, "_",
+               data.frame(StationName = input$site) %>%
+                 planktonr::pr_add_StationCode() %>%
+                 dplyr::arrange(.data$StationCode) %>%
+                 dplyr::pull(.data$StationCode) %>%
                  stringr::str_flatten(), "_",
                lubridate::year(input$DatesSlide[1]), "to", lubridate::year(input$DatesSlide[2]), "_D",
-               format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png") %>% 
+               format(Sys.time(), "%Y%m%d", tz = "Australia/Hobart"), ".png") %>%
           stringr::str_replace_all( " ", "")
       }
     },
     content = function(file) {
-      if (papersize == "A4r"){
-        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 297, height = 210, units = "mm")
+      # Create copyright statement with current date
+      copyright_text <- paste0("\u00A9 IMOS Biological Ocean Observer. Downloaded: ",
+                               lubridate::now(tzone = "Australia/Hobart") %>%
+                                 lubridate::as_date() %>%
+                                 format("%d-%b-%Y"), "")
+      
+      # Create a minimal plot with just the copyright text
+      copyright_plot <- ggplot2::ggplot() +
+        ggplot2::annotate("text",
+                          x = 0.05,
+                          y = 0.0,
+                          label = copyright_text,
+                          angle = 90,
+                          hjust = 0,
+                          vjust = 0,
+                          size = 4,
+                          fontface = "italic") +
+        ggplot2::scale_x_continuous(limits = c(0,0.1), expand = c(0, 0)) +
+        ggplot2::scale_y_continuous(limits = c(0,2), expand = c(0, 0)) +
+        ggplot2::theme_void() +
+        ggplot2::theme(plot.margin = ggplot2::margin(0, 0, 0, 0))
+      
+      # Wrap the existing plot with copyright on the right, aligned to bottom
+      gg_copy <- patchwork::wrap_plots(
+        gg_id(),
+        copyright_plot, 
+        widths = c(1, 0.02)
+      )
+      
+      patchwork::wrap_plots(
+        gg_id(),
+        free(copyright_plot, "space", "b"),
+        widths = c(1, 0.02)
+      )
+      
+      # NOTE: I have scaled the plot size to force the font size to be smaller in the downloads.
+      sc <- 1.5
+      # Save with appropriate dimensions
+      
+      if (gg_prefix == "Climate"){
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297*sc, height = 200*sc, units = "mm")
+      } else if (papersize == "A4r"){
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297*sc, units = "mm")
       } else if (papersize == "A4") {
-        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 210, height = 297, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 210*sc, height = 297*sc, units = "mm")
       } else if (papersize == "A3") {
-        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 297, height = 420, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 297*sc, height = 420*sc, units = "mm")
       } else if (papersize == "A3r") {
-        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 420, height = 297, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 420*sc, height = 297*sc, units = "mm")
       } else if (papersize == "A2") {
-        ggplot2::ggsave(file, plot = gg_id(), device = "png", dpi = 500, width = 420, height = 594, units = "mm")
+        ggplot2::ggsave(file, plot = gg_copy, device = "png", dpi = 600, width = 420*sc, height = 594*sc, units = "mm")
       }
+      
       ## TODO If we include pdf downloads we can use code like this.
       # cairo_pdf fixes an error with displaying unicode symbols.
       # library(Cairo)
       # file = stringr::str_replace(file, ".png", ".pdf")
-      # ggplot2::ggsave(file, plot = gg_id, width = 420, height = 594, units = "mm", 
+      # ggplot2::ggsave(file, plot = gg_id, width = 420, height = 594, units = "mm",
       #                 device = cairo_pdf, family="Arial Unicode MS")
     })
 }
@@ -672,7 +1065,7 @@ LeafletBase <- function(df, Type = 'PA'){
     
     leaflet::leaflet(df %>% 
                        dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
-      leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
+      leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>% 
       leaflet::addCircleMarkers(lng = ~ Longitude,
                                 lat = ~ Latitude,
                                 color = "#CCCCCC",
@@ -684,7 +1077,7 @@ LeafletBase <- function(df, Type = 'PA'){
   } else {
     leaflet::leaflet(df %>% 
                        dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
-      leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
+      leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>% 
       leaflet::addCircleMarkers(lng = ~ Longitude,
                                 lat = ~ Latitude,
                                 color = "#CCCCCC",
@@ -729,6 +1122,7 @@ LeafletObs <- function(sdf, name, Type = "PA"){
     
     leaf <- leaflet::leafletProxy(name, data = sdf) %>%
       leaflet::clearGroup(c("National Reference Stations", "Continuous Plankton Recorder")) %>%
+      leaflet::clearControls() %>%
       leaflet::addCircleMarkers(data = dfCPR,
                                 group = 'Continuous Plankton Recorder', 
                                 lng = ~ Longitude,
@@ -774,6 +1168,7 @@ LeafletObs <- function(sdf, name, Type = "PA"){
   } else {
     leaflet::leafletProxy(name, data = sdf) %>%
       leaflet::clearGroup("Present") %>%
+      leaflet::clearControls() %>%
       leaflet::addCircleMarkers(data = sdf, 
                                 lng = ~ Longitude,
                                 lat = ~ Latitude,
@@ -795,7 +1190,7 @@ LeafletObs <- function(sdf, name, Type = "PA"){
 
 fParamDefServer <- function(selectedData){
   shiny::renderText({
-    paste("<p><strong>", planktonr::pr_relabel(unique(selectedData()$Parameters), style = "plotly"), ":</strong> ",
+    paste("<p><strong>", planktonr:::pr_relabel(unique(selectedData()$Parameters), style = "plotly"), ":</strong> ",
           pkg.env$ParamDef %>% 
             dplyr::filter(.data$Parameter == unique(selectedData()$Parameters)) %>% 
             dplyr::pull("Definition"), ".</p>", sep = "")

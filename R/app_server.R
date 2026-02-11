@@ -19,18 +19,18 @@ app_server <- function( input, output, session ) {
   if (!pkg.env$new.data) {
     
     showModal(modalDialog(
-      title = HTML(paste0('<span style="padding-right: 3px; padding-top: 3px; float: right">',
-                          '<img class="logo" src="https://www.csiro.au/~/media/Web-team/Images/CSIRO_Logo/logo.png" alt="CSIRO logo" style="width:50px;height:50px;"></img></span>',
-                          "<p style='font-size: 1.1em; margin-bottom: 0; padding-top: 12px;'>CSIRO Data Access Portal</p>")),
+      title = HTML(paste0('<span class="modal-logo-header">',
+                          '<img class="logo modal-logo-img" src="https://www.csiro.au/~/media/Web-team/Images/CSIRO_Logo/logo.png" alt="CSIRO logo"></img></span>',
+                          '<p class="modal-title-text">CSIRO Data Access Portal</p>')),
       HTML(paste0("<p>The IMOS data that populates the Biological Ocean Observer is sourced from a ",
                   "<a href = https://data.csiro.au/collection/csiro:54520>CSIRO Data Access Portal collection</a>",
                   " that cannot be reached at this time.</p>",
-                  "<span style='font-size: 1.15em'>Historical IMOS data is currently visualised on this site.</span>")),
+                  '<span class="modal-emphasis-text">Historical IMOS data is currently visualised on this site.</span>')),
       size = "m"
     ))
     
   }
-
+  
   
   ## only run if selected by tab - this should be home page for each Tab level
   ### Snapshot page
@@ -90,6 +90,9 @@ app_server <- function( input, output, session ) {
       mod_PolLTM_server("PolLTM_ui_1")
     }
     
+    if(input$pol == "SOTS"){
+      mod_PolSOTS_server("PolSOTS_ui_1")
+    }
   })
   
   
@@ -165,30 +168,24 @@ app_server <- function( input, output, session ) {
     if(input$env == "pigs"){
       mod_PigmentsBGC_server("PigmentsBGC_ui_1")
     }
-  })
-  
-  # Picoplankton
-  observeEvent(input$env, {
+    
+    # Picoplankton
     if(input$env == "pico"){
       mod_PicoBGC_server("PicoBGC_ui_1")
     }
-  })
-  
-  # Nutrient data
-  observeEvent(input$env, {
+    
+    # Nutrient data
     if(input$env == "water"){
       mod_WaterBGC_server("WaterBGC_ui_1")
     }
-  })
-  
-  # Moorings
-  observeEvent(input$env, {
+    
+    # Moorings
     if(input$env == "moor"){
       mod_MoorBGC_server("MoorBGC_ui_1")
     }
   })
 
-# Environmental -----------------------------------------------------------
+# Relationships -----------------------------------------------------------
 
   # Coastal Microbes
   observeEvent(input$rel, {

@@ -2,7 +2,6 @@
 library(tidyverse)
 library(planktonr)
 
-
 modified_time <- lubridate::now()
 
 # Set up colours for the app ----------------------------------------------
@@ -13,17 +12,19 @@ col12 <- RColorBrewer::brewer.pal(12, "Paired") %>%
 
 # Trip Data Information ---------------------------------------------------
 
-datNRSTrip <- planktonr::pr_get_NRSTrips() %>% 
+datNRSTrip <- planktonr::pr_get_trips(Survey = "NRS") %>% 
   dplyr::select(c("Year_Local", "Month_Local", "StationName"))
 
-datCPRTrip <- planktonr::pr_get_CPRTrips() %>% 
+datCPRTrip <- planktonr::pr_get_trips(Survey = "CPR") %>% 
   dplyr::select(c("Latitude", "Year_Local", "Month_Local", "Region", "TripCode"))
 
-NRSStation <- planktonr::pr_get_NRSStation() %>% 
-  dplyr::filter(ProjectName == "NRS") %>% 
+NRSStation <- planktonr::pr_get_info(Source = "NRS") %>% 
   dplyr::select(-c("IMCRA", "IMCRA_PB", "ProjectName")) %>% 
   dplyr::arrange(desc(Latitude))
 
+SotsStation <- planktonr::pr_get_info(Source = "SOTS") %>% 
+  dplyr::select(-c("IMCRA", "IMCRA_PB", "ProjectName")) %>% 
+  dplyr::arrange(desc(Latitude))
 
 # NRS indices data --------------------------------------------------------
 
@@ -31,26 +32,29 @@ datNRSz <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Zooplankton")
 
 datNRSp <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Phytoplankton") 
 
-datNRSm <- planktonr::pr_get_NRSMicro(Survey = "NRS") %>% 
+SOTSp <- planktonr::pr_get_Indices(Survey = "SOTS", Type = "Phytoplankton") 
+
+datNRSm <- planktonr::pr_get_data(Survey = "NRS", Type = "Micro") %>% 
   tidyr::drop_na() ## NRS microbial data
 
-Tricho <- planktonr::pr_get_NRSData(Type = 'Phytoplankton', Variable = "abundance", Subset = "genus") %>% 
+Tricho <- planktonr::pr_get_data(Survey = "NRS", Type = "Phytoplankton", Variable = "abundance", Subset = "genus") %>% 
   dplyr::select(dplyr::any_of(colnames(datNRSm)), Values = "Trichodesmium")  %>% 
-  dplyr::filter(!.data$StationCode %in% c("NWS", "SOTS_RAS", "NA"))%>% 
+  dplyr::filter(!.data$StationCode %in% c("NWS", "SOTS_RAS", "SOTS", "NA", "NIN", "ESP"))%>% 
   dplyr::mutate(Parameters = "Trichodesmium") %>% 
-  planktonr::pr_reorder()
-datNRSm <- datNRSm %>% dplyr::bind_rows(Tricho)
+  planktonr:::pr_reorder()
+
+datNRSm <- datNRSm %>% 
+  dplyr::bind_rows(Tricho)
 rm(Tricho)
 
-
-datCSm  <- planktonr::pr_get_NRSMicro(Survey = "Coastal") %>% ## coastal microbial data
+datCSm  <- planktonr::pr_get_data(Survey = "Coastal", Type = "Micro") %>% ## coastal microbial data
   droplevels() %>% 
   dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
   dplyr::filter(Values != -9999) %>% 
   tidyr::drop_na(Values)
 
-datGSm <- planktonr::pr_get_NRSMicro(Survey = "GO-SHIP")
+datGSm <- planktonr::pr_get_data(Survey = "GO-SHIP", Type = "Micro")
 
 datNRSw <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Water") %>% #TODO move the MLD calcs to planktonr
   tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
@@ -69,14 +73,15 @@ datNRSw <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Water") %>% #TODO m
 datCPRz <- planktonr::pr_get_Indices(Survey = "CPR", Type = "Zooplankton", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
-  select(-c("Sample_ID", "tz")) %>% 
+  dplyr::select(-c("Sample_ID", "tz")) %>% 
   planktonr::pr_remove_outliers(2) %>% 
   droplevels()
+
 
 datCPRp <- planktonr::pr_get_Indices(Survey = "CPR", Type = "Phytoplankton", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
-  select(-c("Sample_ID", "tz")) %>% 
+  dplyr::select(-c("Sample_ID", "tz")) %>% 
   planktonr::pr_remove_outliers(2) %>% 
   droplevels()
 
@@ -86,6 +91,7 @@ PCI <- planktonr::pr_get_PCIData()
 
 NRSfgz <- planktonr::pr_get_FuncGroups(Survey = "NRS", Type = "Zooplankton")
 NRSfgp <- planktonr::pr_get_FuncGroups(Survey = "NRS", Type = "Phytoplankton")
+SOTSfgp <- planktonr::pr_get_FuncGroups(Survey = "SOTS", Type = "Phytoplankton") 
 
 CPRfgz <- planktonr::pr_get_FuncGroups(Survey = "CPR", Type = "Zooplankton", near_dist_km = 250) %>% 
   tidyr::drop_na(BioRegion) %>% 
@@ -97,44 +103,27 @@ CPRfgp <- planktonr::pr_get_FuncGroups(Survey = "CPR", Type = "Phytoplankton", n
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None")) %>% 
   droplevels()
 
-
 # BGC Environmental variables data ----------------------------------------
 
-Nuts <- planktonr::pr_get_NRSEnvContour('Chemistry') %>% 
+Nuts <- planktonr::pr_get_data(Survey = "NRS", Type = "Chemistry") %>% 
   dplyr::filter(.data$Parameters != "SecchiDepth_m") 
-Pigs <- planktonr::pr_get_NRSPigments(Format = "binned") %>% 
+Pigs <- planktonr::pr_get_data(Survey = "NRS", Type = "Pigments", Format = "binned") %>% 
   planktonr::pr_remove_outliers(2)
-Pico <- planktonr::pr_get_NRSEnvContour('Pico')
+Pico <- planktonr::pr_get_data(Survey = "NRS", Type = "Pico")
 
-ctd <- planktonr::pr_get_NRSCTD() %>% 
+ctd <- planktonr::pr_get_data(Survey = "NRS", Type = "CTD") %>% 
   dplyr::select(-c("Project", "file_id", "tz", "SampleTime_UTC", "Latitude", "Longitude"), 
                 CTD_Salinity = "Salinity_psu", CTD_Temperature_degC = "Temperature_degC") %>% 
   dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m,0)) %>% 
   dplyr::filter(SampleDepth_m %in% datNRSm$SampleDepth_m) %>% 
   tidyr::pivot_longer(-c(dplyr::any_of(colnames(datNRSm))), values_to = "Values", names_to = "Parameters") 
 
-CSChem <- planktonr::pr_get_CSChem() %>% 
+CSChem <- planktonr::pr_get_data(Survey = "Coastal", Type = "Chemistry") %>% 
   dplyr::filter(.data$Parameters %in% c("Chla_mgm3", "Temperature_degC", "Salinity_psu")) %>% 
   dplyr::mutate(Parameters = ifelse(Parameters == "Salinity_psu", "Salinity", Parameters),
                 SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'day')) %>% 
   dplyr::filter(Values != -9999)
-
-# Get Sat data ------------------------------------------------------------
-
-# These can take a long time to run depending on the number of locations
-# These do not need to be available to the APP but should be in the DAP collection and planktonr
-# #TODO add function to remove the data that already has products matched.
-# 
-# SSTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_GHRSST(pr = "sea_surface_temperature", res_spat = 10)
-# ALTsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_Altimetry(pr = "GSLA", res_spat = 10) 
-# CHLsat <- planktonr::pr_get_DataLocs("NRS") %>% planktonr::pr_match_MODIS(pr = "chl_oc3", res_spat = 10)
-
-# SatData <- SSTsat %>%
-#   dplyr::left_join(ALTsat, by = c("Latitude", "Longitude", "Year", "Month", "Day")) %>%
-#   dplyr::left_join(CHLsat, by = c("Latitude", "Longitude", "Year", "Month", "Day"))
-
-# readr::write_csv(SatData, file.path("data-raw","SatDataNRS.csv"))
 
 
 # STI data ----------------------------------------------------------------
@@ -158,7 +147,6 @@ stip <- planktonr::pr_get_STIdata(Type = "Phytoplankton") %>%
   dplyr::filter(Species %in% stipAll$Species)
 
 rm(stizAll, stipAll)
-
 
 # Day-Night data (from CPR only) ------------------------------------------
 
@@ -187,18 +175,21 @@ rm(daynightzAll, daynightpAll)
 # Policy data -------------------------------------------------------------
 
 PolNRS <- planktonr::pr_get_EOVs(Survey = "NRS") %>% 
-  dplyr::filter(!StationCode %in% c("NIN", "ESP")) %>% 
-  planktonr::pr_remove_outliers(2)
+  dplyr::filter(!StationCode %in% c("NIN", "ESP")) #%>% #TODO add removing outliers as an option to BOO
+  #planktonr::pr_remove_outliers(4)
 
 PolCPR <- planktonr::pr_get_EOVs(Survey = "CPR", near_dist_km = 250) %>% 
-  planktonr::pr_remove_outliers(2) %>% 
+  #planktonr::pr_remove_outliers(4) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None"))
 
-PolLTM <- planktonr::pr_get_EOVs(Survey = "LTM") %>% 
-  planktonr::pr_remove_outliers(2)
+PolLTM <- planktonr::pr_get_EOVs(Survey = "LTM") #%>% 
+  #planktonr::pr_remove_outliers(4)
 
-NRSinfo <- planktonr::pr_get_PolicyInfo(Survey = "NRS")
-CPRinfo <- planktonr::pr_get_PolicyInfo(Survey = "CPR")
+PolSOTS <- planktonr::pr_get_EOVs(Survey = "SOTS") 
+
+NRSinfo <- planktonr::pr_get_info(Source = "NRS")
+CPRinfo <- planktonr::pr_get_info(Source = "CPR")
+SOTSinfo <- planktonr::pr_get_info(Source = "SOTS")
 
 # Species distribution data
 fMapDataz <- planktonr::pr_get_FreqMap(Type = "Zooplankton") %>% 
@@ -256,10 +247,10 @@ pr_get_mooringTS <- function(Stations, Depth, Names){
                   DOY = ncdf4::ncvar_get(file, varid = "TIME", count = 365, start = 1),
                   StationCode = Stations,
                   Names = Names)
-                                          
 }
 
-Stations <- planktonr::pr_get_NRSStation() %>%
+
+Stations <- planktonr::pr_get_info(Source = "NRS") %>%
   dplyr::select('StationCode') %>%
   dplyr::filter(!.data$StationCode %in% c("NIN", "ESP", "PH4", "VBM"))
 Stations <- rep(Stations$StationCode, 3)
@@ -275,7 +266,7 @@ Names <- c(rep("Surface", 7),
 MooringTS <- purrr::pmap_dfr(list(Stations, Depths, Names), pr_get_mooringTS) %>%
   planktonr::pr_add_StationName() %>%
   planktonr::planktonr_dat(Survey = 'NRS') %>% 
-  planktonr::pr_reorder()
+  planktonr:::pr_reorder()
 
 pr_get_mooringClim <- function(Stations){
   if(Stations == "PHB"){
@@ -294,15 +285,12 @@ pr_get_mooringClim <- function(Stations){
 MooringClim <- purrr::map_dfr(Stations, pr_get_mooringClim) %>%
   planktonr::pr_add_StationName() %>%
   planktonr::planktonr_dat(Survey = 'NRS') %>% 
-  planktonr::pr_reorder()
-
-
+  planktonr:::pr_reorder()
 
 # Get Species Info for each Taxa ------------------------------------------
 
-SpInfoP <- planktonr::pr_get_SpeciesInfo(Type = "Phytoplankton")
-SpInfoZ <- planktonr::pr_get_SpeciesInfo(Type = "Zooplankton")
-
+SpInfoP <- planktonr::pr_get_info(Source = "Phytoplankton")
+SpInfoZ <- planktonr::pr_get_info(Source = "Zooplankton")
 
 # Get Larval Fish Data ----------------------------------------------------
 
@@ -332,21 +320,17 @@ ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Zooplankton")
 # Parameter Definitions
 ParamDef <- readr::read_csv(file.path("data-raw", "ParameterDefn.csv"), na = character())
 
-# # To test sysdata access from DAP
-# PolNRS <- PolNRS[PolNRS$Year_Local < 2017,]
-# PolCPR <- PolCPR[PolCPR$Year_Local < 2017,] 
-# PolLTM <- PolLTM[PolLTM$Year_Local < 2017,]
-
 # Add data to sysdata.rda -------------------------------------------------
 usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   fMapDataz, fMapDatap, 
                   MooringTS, MooringClim,
-                  PolNRS, PolCPR, PolLTM, 
-                  NRSinfo, CPRinfo, NRSStation,
+                  PolNRS, PolCPR, PolLTM, PolSOTS,
+                  NRSinfo, CPRinfo, SOTSinfo, NRSStation, SotsStation,
                   datCPRz, datCPRp, PCI,
-                  datNRSz, datNRSp,  datNRSw,
+                  datNRSz, datNRSp, datNRSw, 
                   datNRSm, datCSm, datGSm,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
+                  SOTSp, SOTSfgp, 
                   stiz, stip, daynightz, daynightp,
                   SpInfoP, SpInfoZ, LFData, LFDataAbs,
                   datNRSTrip, datCPRTrip,
