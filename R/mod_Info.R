@@ -70,7 +70,7 @@ mod_info_ui <- function(id) {
             <p>No, to keep the App efficient the data is harvested from the AODN monthly and pre-wrangled.</p>
             <h4>Where is the data behind the APP available from?</h4>
             <p>All the non-genomic data is accesible through direct download from the AODN portal, AODN Thredds server or
-            by using the pr_get_xxx functions in planktonr. The raw genomic data is available through AMB data portal,
+            by using the pr_get_xxx functions in planktonr. The raw and occurrence abundance tables for genomic data are available through Australian Microbiome data portal,
             the calculated indices are available through the Australian Microbiome Initiative, Microbial Ocean Atlas GitHub page.</p>
             <ul>
             <li>AODN Portal <a href = https://portal.aodn.org.au/ target = _blank> Website</a></li>
@@ -82,6 +82,7 @@ mod_info_ui <- function(id) {
             Vignettes are available in planktonr to help you navigate the data and package</p>
             <h4>How can I access planktonr?</h4>
             <p>Via R studio use remotes::install_github('PlanktonTeam/planktonr', force = TRUE)</p>
+            <p>To include vignettes use remotes::install_github('PlanktonTeam/planktonr', build_vignettes = TRUE, force = TRUE)</p>
             <h4>How can I get more details on how these figures were put together?</h4>
             <p>Click on the 'R Code Example' button to follow a link to vignettes detailing the process</p>
             <h4>How can I get more information on the projects used in this App?</h4>
@@ -170,7 +171,7 @@ mod_info_ui <- function(id) {
             </ul>
             <h4>Australian Microbiome Initiative</h4>
             <ul>
-            <li>Australian Microbiome Scientific Manual. <a href = https://confluence.csiro.au/spaces/ASM2/pages/1661616508/Ausmicrobiome+Scientific+Manual target = _blank> Website</a>.</li>
+            <li>Australian Microbiome Scientific Manual. <a href = https://research.csiro.au/ambsm/ target = _blank> Website</a>.</li>
             <li>IMOS Marine Microbiome Initiative website. <a href = https://imos.org.au/facility/marine-microbiome-initiative target = _blank> Website</a>.</li>
             <li>Australian Microbiome Initiative website. <a href = https://www.australianmicrobiome.com/ target = _blank> Website</a>.</li>
             </ul>
@@ -183,7 +184,8 @@ mod_info_ui <- function(id) {
             <ul>
             <li>Richardson A.J, Eriksen R,S, Moltmann T, Hodgson-Johnston I, Wallis J.R. (2020). <em>State and Trends of Australia's Ocean Report</em>. Integrated Marine Observing System (IMOS). <a href = https://www.imosoceanreport.org.au/about/ target = _blank> Website</a>.</li>
             <li>Richardson A.J, Eriksen R.S, Rochester, W. (2015) <em>Plankton 2015: State of Australia's Oceans</em>. CSIRO report. ISBN 978-1-4863-0566-7 (EPDF). <a href = https://imos.org.au/fileadmin/user_upload/shared/Data_Tools/15-00245_OA_Plankton2015_20ppBrochure_WEB_151116.pdf target = _blank> Website</a>.</li>
-            <li>Brown, M., van de Kamp, J., Ostrowski, M. <em>et al</em>. (2018). Systematic, <em>continental scale temporal monitoring of marine pelagic microbiota by the Australian Marine Microbial Biodiversity Initiative</em>. Sci Data 5, 180130. doi.org/10.1038/sdata.2018.130 <a href = https://doi.org/10.1038/sdata.2018.130 target = _blank> Website</a>.</li>
+            <li>Brown, M.V., van de Kamp, J., Ostrowski, M. <em>et al</em>. (2018).  <em>Systematic continental scale temporal monitoring of marine pelagic microbiota by the Australian Marine Microbial Biodiversity Initiative</em>. Sci Data 5, 180130. doi.org/10.1038/sdata.2018.130 <a href = https://doi.org/10.1038/sdata.2018.130 target = _blank> Website</a>.</li>
+            <li>Brown, M.V., Ostrowski, M., Messer, L.F. <em>et al</em>. (2024). <em>A marine heatwave drives significant shifts in pelagic microbiology</em>. Commun Biol 7, 125. doi.org/10.1038/s42003-023-05702-4 <a href = https://www.nature.com/articles/s42003-023-05702-4 target = _blank> Website</a>.</li>
             </ul>")
             # )
           ),
@@ -254,11 +256,11 @@ mod_info_ui <- function(id) {
           bslib::accordion_panel(
             title = shiny::HTML("<h3>Continuous Plankton Recorder</h3>"),
             value = "cpr",
-            shiny::HTML("<p>The majority of the data in this App comes from the Australian Plankton Recorder Survey (AusCPR). The regular survey tows for AusCPR are through GBR 
+            shiny::HTML("<p>The majority of the data in this App comes from the IMOS Australian Plankton Recorder Survey (AusCPR) and are analysed by the CSIRO. The regular survey tows for AusCPR are through GBR 
             and down the East Australian Current across to Adelaide. These tows are collected using Ships of Opportumity (SOOP) and we acknowledge the effort made by these
-            companies to help us collect our data: - ANL. Sealord group Ltd., Swores, Laeisz, Wallenius Wilhelmsen, Rio Tinto Marine.</p> 
-            <p>Tows are also collected by RSV Nuyina in the austral summer through a collaboration with the AAD and UTAS. The phytoplankton data contains samples counted
-            through this UTAS / AAD collaboration and the Southern Ocean zooplankton records are counted through the SO_CPR program at the AAD.</p> 
+            companies to help us collect our data: - ANL. Sealord group Ltd., Swires, Laeisz, Wallenius Wilhelmsen, Rio Tinto Marine.</p> 
+            <p>Tows are also collected by RSV Nuyina (previously Aurora Australis) in the austral summer through by the Australian Antarctic division (AAD). The phytoplankton data is counted
+            with support from IMOS through a UTAS / AAD collaboration and the the Southern Ocean zooplankton records, south of -47<sup>o</sup>S, are counted through the SO_CPR program at the AAD.</p> 
             <p> Adhoc samples are also collected from RV Investigator and other research vessels.</p><br>"),
             shiny::HTML("<h4>CPR Sampling details</h4>"),
             DT::DTOutput(nsInfo("CPRDataTable")),
@@ -293,8 +295,17 @@ mod_info_ui <- function(id) {
         bslib::accordion_panel(
           title = shiny::HTML("<h3>Australian Microbiome Initiative</h3>"),
           value = "am",
-          shiny::HTML("Further information on the sampling can be found in the Australian Microbiome Scientific Manual
-                      <a href = https://confluence.csiro.au/spaces/ASM2/pages/1661616508/Ausmicrobiome+Scientific+Manual target = _blank> Website</a>."),
+          shiny::HTML("Microbiome samples are collected as part of the routine biogeochemical sampling at IMOS National Reference Stations. 
+          Microbiome sampling began in 2012 at Maria Island (MAI), Port Hacking (PHB) and North Stradbroke (NSI), in 2015 at Kangaroo Island (KAI), 
+          Yongala (YON), Darwin (DAR) and Rottnest (ROT), and in 2024 at Bonney Coast (VBM). Site details are as per the National Reference Stations."),
+          shiny::HTML("<br><br>"),
+          shiny::HTML("Microbiome timeseries samples are also collected from several coastal sites on the Australian east coast since 2020 and in 
+                      collaboration with other organisations: Port Phillip Bay in Victoria (Deakin University, Victorian EPA), Botany Bay in New South 
+                      Wales (University of Technology Sydney, University of New South Wales), and the Great Barrier Reef, Queensland as part of the 
+                      Great Barrier Reef Marine Monitoring Program (Australian Institute of Marine Science Cairns transect)."),
+          shiny::HTML("<br><br>"),
+          shiny::HTML("Microbiome sampling and analysis procedures are detailed in the Australian Microbiome Scientific Manual 
+                      <a href = https://research.csiro.au/ambsm/ target = _blank> Website</a>."),
           shiny::HTML("<br><br>"),
           div(
             h4("Key Data Streams"),
@@ -426,8 +437,8 @@ mod_info_server <- function(id) {
               `Samples Counted` = "SamplesCounted"
             ) %>%
             dplyr::mutate(
-              Project = ifelse(.data$Region == "Southern Ocean Region", "SO-CPR / AusCPR", "AusCPR"),
-              Institution = ifelse(.data$Region == "Southern Ocean Region", "AAD / CSIRO", "CSIRO")
+              Project = ifelse(.data$Region == "Southern Ocean", "SO-CPR / AusCPR", "AusCPR"),
+              Institution = ifelse(.data$Region == "Southern Ocean", "AAD / UTAS / CSIRO", "CSIRO")
             )
         )
       }
