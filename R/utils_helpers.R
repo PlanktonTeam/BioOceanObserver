@@ -146,10 +146,25 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = "Zooplankton",
     clon <- -179
     clat <- -40
     zoom <- 2
+  } else if (Survey == "HAB"){
+    meta_data <- pkg.env$datHABTrip %>% 
+      dplyr::distinct(Latitude, Longitude, State) %>% 
+      dplyr::summarise(Latitude = mean(Latitude),
+                       Longitude = mean(Longitude),
+                       .by = State) %>%
+      dplyr::mutate(StationName = State,
+                    StationCode = State)  
+    lon_max <- 140
+    lon_min <- 160
+    lat_min <- -40
+    lat_max <- -25
+    clon <- 150
+    clat <- -32.5
+    zoom <- 2
   }
   
   # Add SOTS for phytoplankton (only relevant for point datasets)
-  if (Type == "Phytoplankton" && Survey != "CPR"){
+  if (Type == "Phytoplankton" && !Survey %in% c("CPR", "HAB")){
     sots <- data.frame(
       StationName = "SOTS",
       StationCode = "SOTS",
@@ -298,10 +313,21 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
     } else if (Survey == "GO-SHIP"){
       meta_data <- pkg.env$datGSm %>% 
         dplyr::mutate(StationCode = StationName) 
+    } else if (Survey == "HAB"){
+      meta_data <- pkg.env$datHABTrip %>% 
+        dplyr::distinct(.data$Latitude, .data$Longitude, .data$State) %>% 
+        dplyr::summarise(Latitude = mean(.data$Latitude),
+                         Longitude = mean(.data$Longitude),
+                         .by = .data$State) %>%
+        dplyr::mutate(StationCode = .data$State)
+
+      meta_data_station <- pkg.env$datHABTrip %>%
+        dplyr::mutate(StationCode = .data$StationName)  
+      
     }
     
     # Add SOTS for phytoplankton
-    if (Type == "Phytoplankton" && Survey != "CPR"){
+    if (Type == "Phytoplankton" && !Survey %in% c("CPR", "HAB")){
       
       sots <- data.frame(
         StationName = "SOTS",
@@ -328,6 +354,20 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
           Color = dplyr::if_else(.data$Selected, "red", "blue"),
           Radius = dplyr::if_else(.data$Selected, 8, 6)
         )
+    } else if (Survey == "HAB") {
+      # Only plot the stations selected as there are too many otherwise
+      meta_data_station <- meta_data_station %>% 
+        dplyr::filter(.data$StationName %in% sites) %>% 
+        dplyr::mutate(Color = "Black",
+                      Radius = 3)
+      
+      meta_data <- meta_data %>%
+        dplyr::mutate(
+          Selected = .data$State %in% unique(meta_data_station$State),
+          Color = dplyr::if_else(.data$Selected, "red", "blue"),
+          Radius = dplyr::if_else(.data$Selected, 8, 6)
+        )
+        
     } else {
       # Add color column based on selection
       meta_data <- meta_data %>%
@@ -337,34 +377,69 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
           Radius = dplyr::if_else(.data$Selected, 8, 6)
         )
     }
-    proxy %>%
-      leaflet::clearMarkers() %>%
-      leaflet::addCircleMarkers(
-        data = meta_data,
-        lng = ~Longitude,
-        lat = ~Latitude,
-        color = ~Color,
-        fillColor = ~Color,
-        radius = ~Radius,
-        fillOpacity = 0.8,
-        opacity = 1,
-        weight = 2,
-        label = ~StationName,
-        labelOptions = leaflet::labelOptions(
-          style = list("font-weight" = "normal", "padding" = "3px 8px"),
-          textsize = "12px",
-          direction = "auto"
-        )
-      )
+    
+    if(Survey == "HAB"){
+      proxy %>%
+        leaflet::clearMarkers() %>%
+        leaflet::addCircleMarkers(
+          data = meta_data,
+          lng = ~Longitude,
+          lat = ~Latitude,
+          color = ~Color,
+          fillColor = ~Color,
+          radius = ~Radius,
+          fillOpacity = 0.8,
+          opacity = 1,
+          weight = 2,
+          label = ~State,
+          labelOptions = leaflet::labelOptions(
+            style = list("font-weight" = "normal", "padding" = "3px 8px"),
+            textsize = "12px",
+            direction = "auto")) %>%
+            leaflet::addCircleMarkers(
+              data = meta_data_station,
+              lng = ~Longitude,
+              lat = ~Latitude,
+              color = ~Color,
+              fillColor = ~Color,
+              radius = ~Radius,
+              fillOpacity = 0.8,
+              opacity = 1,
+              weight = 2,
+              label = ~StationName,
+              labelOptions = leaflet::labelOptions(
+                style = list("font-weight" = "normal", "padding" = "3px 8px"),
+                textsize = "12px",
+                direction = "auto"))    
+    } else { # for all other surveys
+      proxy %>%
+        leaflet::clearMarkers() %>%
+        leaflet::addCircleMarkers(
+          data = meta_data,
+          lng = ~Longitude,
+          lat = ~Latitude,
+          color = ~Color,
+          fillColor = ~Color,
+          radius = ~Radius,
+          fillOpacity = 0.8,
+          opacity = 1,
+          weight = 2,
+          label = ~StationName,
+          labelOptions = leaflet::labelOptions(
+            style = list("font-weight" = "normal", "padding" = "3px 8px"),
+            textsize = "12px",
+            direction = "auto"))  
+    }
   }
-}
+  }
+
 
 #' BOO Plankton Sidebar
 #'
 #' @noRd 
 
 fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added for SOTS phytoplankton
-  
+
   ns <- NS(id)
   
   if (stringr::str_detect(id, "NRS") == TRUE){ # NRS
@@ -404,6 +479,11 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     selectedSite <- c("GBR")
     idSite <- "site"
     selectedVar = "Bacterial_Temperature_Index_KD"
+  } else if (stringr::str_detect(id, "HAB") == TRUE){ # Coastal Phytoplankton
+    choices <- unique(sort(dat1$State))
+    selectedSite <- c("NSW")
+    idSite <- "site"
+    selectedVar = "PhytoAbundance_CellsL"
   } 
   
   shiny::sidebarPanel(
@@ -422,7 +502,42 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
           shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
           leaflet::leafletOutput(ns("plotmap"), height = "400px")
         )
-      },
+      } 
+      ),
+    #Add state then station, genus or species options for HABs
+    shiny::conditionalPanel(
+      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab'"),
+      shiny::HTML("<h3>Select a state:</h3>"),
+      shiny::fluidRow(class = "row_multicol",
+                      tags$div(align = "left",
+                               class = "multicol",
+                               shiny::checkboxGroupInput(inputId = ns("state"),
+                                                         label = NULL,
+                                                         choices = unique(sort(dat1$State)),
+                                                         selected = c("NSW")))),
+      shiny::HTML("<h3>Select one or more stations:</h3>"),
+      shiny::selectInput(inputId = ns("station"), 
+                         label = NULL,
+                         choices = unique(sort(dat1$StationName)), 
+                         selected = "Bar Island",
+                         multiple = TRUE),
+      shiny::HTML("<h3>Select taxonomic level:</h3>"),
+      shiny::fluidRow(class = "row_multicol",
+                      tags$div(align = "left",
+                               class = "multicol",
+                               shiny::radioButtons(inputId = ns("tax"),
+                                                         label = NULL,
+                                                         choices = c("genus", "species"),
+                                                         selected = "genus"))),
+      shiny::HTML("<h3>Select a genera or species:</h3>"),
+      shiny::selectInput(inputId = ns("taxgs"),
+                         label = NULL,
+                         choices = unique(sort(dat$genus)),
+                         selected = "Amphora")
+    ),
+    # Add station option for all other pages
+    shiny::conditionalPanel(
+      condition = paste0("!(input.navbar == 'Phytoplankton' && input.phyto == 'phab')"), 
       shiny::HTML("<h3>Select a station:</h3>"),
       shiny::fluidRow(class = "row_multicol", 
                       tags$div(align = "left", 
@@ -430,17 +545,20 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                                shiny::checkboxGroupInput(inputId = ns(idSite), 
                                                          label = NULL,
                                                          choices = choices, 
-                                                         selected = selectedSite))),
-      shiny::HTML("<h3>Dates:</h3>"),
-      shiny::sliderInput(ns("DatesSlide"), 
-                         label = NULL, 
-                         min = as.POSIXct('2009-01-01 00:00',
-                                          format = "%Y-%m-%d %H:%M",
-                                          tz = "Australia/Hobart"), 
-                         max = Sys.time(), 
-                         value = c(as.POSIXct('2009-01-01 00:00',
-                                              format = "%Y-%m-%d %H:%M",
-                                              tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%m-%Y")
+                                                         selected = selectedSite)))
+    ),
+    shiny::conditionalPanel(
+        condition = paste0("input.", tabsetPanel_id, " <= 5"), 
+        shiny::HTML("<h3>Dates:</h3>"),
+        shiny::sliderInput(ns("DatesSlide"), 
+                           label = NULL, 
+                           min = as.POSIXct('2009-01-01 00:00',
+                                            format = "%Y-%m-%d %H:%M",
+                                            tz = "Australia/Hobart"), 
+                           max = Sys.time(), 
+                           value = c(as.POSIXct('2009-01-01 00:00',
+                                                format = "%Y-%m-%d %H:%M",
+                                                tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%m-%Y")
     ),
     
     # Parameter selection for Microbes

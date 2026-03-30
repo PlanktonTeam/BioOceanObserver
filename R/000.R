@@ -11,6 +11,7 @@ pkg.env <- new.env(parent = emptyenv())
                  "NRSinfo", "CPRinfo", "SOTSinfo", "NRSStation",
                  "datCPRz", "datCPRp", "PCI",
                  "datNRSz", "datNRSp", "datNRSm", "datCSm", "datNRSw", "datGSm",
+                 "datHABg", "datHABs", "datHABTrip",
                  "NRSfgz", "NRSfgp", "CPRfgz", "CPRfgp", "PMapData",
                  "SOTSp", "SOTSfgp",
                  "stiz", "stip", "daynightz", "daynightp",
@@ -24,7 +25,7 @@ pkg.env <- new.env(parent = emptyenv())
     # The variable data.url is a string that is the url to the served data and is defined in a local config.rda file.
     # If config.rda doesn't exist, this step results in an error that is then handled.
     cat(file=stderr(), "Attempting to access data from Bowen\n")
-    thredds_url <- "https://data-cbr.it.csiro.au/thredds/fileServer/catch_all/imosboo/BOODataUpload/sysdata.rda"
+    thredds_url <- "https://data-cbr.it.csiro.au/thredds/fileServer/catch_all/imosboo/BOODataUpload/sysdata_ignore.rda"
     tmp <- tempfile(fileext='.rda')
     httr::GET(thredds_url, httr::write_disk(tmp))
     load(tmp)
@@ -35,7 +36,7 @@ pkg.env <- new.env(parent = emptyenv())
     tryCatch({
       # Access data from DAP (fallback)
       cat(file=stderr(), "Attempting to access data from CSIRO DAP.\n")
-      dap.url <- "https://data.csiro.au/dap/ws/v2/collections/csiro:54520/data"
+      dap.url <- "https://data.csiro.au/dap/ws/v2/collections/csiro:54520/data_ignore"
       dap.data <- jsonlite::fromJSON(rawToChar(httr::GET(dap.url)$content))
       file.req <- dap.data$file$filename
       tmp <- tempfile(fileext='.rda')

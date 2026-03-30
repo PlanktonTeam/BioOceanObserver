@@ -37,7 +37,8 @@ app_ui <- function(request) {
                                     shiny::tabsetPanel(id = 'phyto', type = "pills", 
                                                        shiny::tabPanel(value = "pts", "Time Series NRS", mod_PhytoTsNRS_ui("PhytoTsNRS_ui_1")),
                                                        shiny::tabPanel(value = "ptscpr", "Time Series CPR", mod_PhytoTsCPR_ui("PhytoTsCPR_ui_1")),
-                                                       shiny::tabPanel(value = "distp", "Species information", mod_PhytoSpatial_ui("PhytoSpatial_ui_1"))
+                                                       shiny::tabPanel(value = "distp", "Species information", mod_PhytoSpatial_ui("PhytoSpatial_ui_1")),
+                                                       shiny::tabPanel(value = "phab", "Time Series HAB", mod_PhytoTsHAB_ui("PhytoTsHAB_ui_1"))
                                     )),
                     shiny::tabPanel("Zooplankton",
                                     shiny::tabsetPanel(id = 'zoo', type = "pills",

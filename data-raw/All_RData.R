@@ -18,6 +18,12 @@ datNRSTrip <- planktonr::pr_get_trips(Survey = "NRS") %>%
 datCPRTrip <- planktonr::pr_get_trips(Survey = "CPR") %>% 
   dplyr::select(c("Latitude", "Year_Local", "Month_Local", "Region", "TripCode"))
 
+datHABTrip <- planktonr::pr_get_trips(Survey = "HAB") %>% 
+  dplyr::mutate(StationName = stringr::str_remove(StationName, "\\[.*?\\]")) %>% 
+  dplyr::summarise(Latitude = mean(Latitude),
+                   Longitude = mean(Longitude),
+                   .by = c(StationName, State))
+
 NRSStation <- planktonr::pr_get_info(Source = "NRS") %>% 
   dplyr::select(-c("IMCRA", "IMCRA_PB", "ProjectName")) %>% 
   dplyr::arrange(desc(Latitude))
@@ -125,6 +131,9 @@ CSChem <- planktonr::pr_get_data(Survey = "Coastal", Type = "Chemistry") %>%
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'day')) %>% 
   dplyr::filter(Values != -9999)
 
+# HAB data from Coastal Phytoplankton
+datHABg <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'genus')
+datHABs <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'species')
 
 # STI data ----------------------------------------------------------------
 
@@ -329,6 +338,7 @@ usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   datCPRz, datCPRp, PCI,
                   datNRSz, datNRSp, datNRSw, 
                   datNRSm, datCSm, datGSm,
+                  datHABg, datHABs, datHABTrip,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
                   SOTSp, SOTSfgp, 
                   stiz, stip, daynightz, daynightp,

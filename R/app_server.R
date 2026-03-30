@@ -114,6 +114,10 @@ app_server <- function( input, output, session ) {
       mod_PhytoSpatial_server("PhytoSpatial_ui_1")
     }
     
+    ### Phytoplankton Coastal HAB data  
+    if(input$phyto == "phab"){
+      mod_PhytoTsHAB_server("PhytoTsHAB_ui_1")
+    }
   })
   
   
