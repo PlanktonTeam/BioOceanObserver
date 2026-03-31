@@ -446,7 +446,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     
     choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
-    
+    min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
     idSite <- "site"
     
     if(exists('dat1') == TRUE){
@@ -469,6 +469,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     choices <- unique(sort(dat$BioRegion))
     selectedSite <- c("Temperate East", "South-east")
     idSite <- "site"
+    min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
     if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + CPR
       selectedVar = "ZoopAbundance_m3"
     } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + CPR
@@ -479,11 +480,13 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     selectedSite <- c("GBR")
     idSite <- "site"
     selectedVar = "Bacterial_Temperature_Index_KD"
+    min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
   } else if (stringr::str_detect(id, "HAB") == TRUE){ # Coastal Phytoplankton
     choices <- unique(sort(dat1$State))
     selectedSite <- c("NSW")
     idSite <- "site"
     selectedVar = "PhytoAbundance_CellsL"
+    min_date <- as.POSIXct(paste0(min(dat$Year_Local), "-01-01 00:00"), format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
   } 
   
   shiny::sidebarPanel(
@@ -506,7 +509,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       ),
     #Add state then station, genus or species options for HABs
     shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab'"),
+      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && tabsetPanel_id == 1"),
       shiny::HTML("<h3>Select a state:</h3>"),
       shiny::fluidRow(class = "row_multicol",
                       tags$div(align = "left",
@@ -530,10 +533,44 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                                                          choices = c("genus", "species"),
                                                          selected = "genus"))),
       shiny::HTML("<h3>Select a genera or species:</h3>"),
+      shiny::HTML("Only taxa present in the selected stations will be available in this list."),
       shiny::selectInput(inputId = ns("taxgs"),
                          label = NULL,
                          choices = unique(sort(dat$genus)),
-                         selected = "Amphora")
+                         selected = "Amphora",
+                         multiple = FALSE)
+    ),
+    shiny::conditionalPanel(
+      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && tabsetPanel_id == 2"),
+      shiny::HTML("<h3>Select a state:</h3>"),
+      shiny::fluidRow(class = "row_multicol",
+                      tags$div(align = "left",
+                               class = "multicol",
+                               shiny::checkboxGroupInput(inputId = ns("state"),
+                                                         label = NULL,
+                                                         choices = unique(sort(dat1$State)),
+                                                         selected = c("NSW")))),
+      shiny::HTML("<h3>Select one or more stations:</h3>"),
+      shiny::selectInput(inputId = ns("station2"), 
+                         label = NULL,
+                         choices = unique(sort(dat1$StationName)), 
+                         selected = "Bar Island",
+                         multiple = FALSE),
+      shiny::HTML("<h3>Select taxonomic level:</h3>"),
+      shiny::fluidRow(class = "row_multicol",
+                      tags$div(align = "left",
+                               class = "multicol",
+                               shiny::radioButtons(inputId = ns("tax"),
+                                                   label = NULL,
+                                                   choices = c("genus", "species"),
+                                                   selected = "genus"))),
+      shiny::HTML("<h3>Select a genera or species:</h3>"),
+      shiny::HTML("Only taxa present in the selected stations will be available in this list."),
+      shiny::selectInput(inputId = ns("taxgs2"),
+                         label = NULL,
+                         choices = unique(sort(dat$genus)),
+                         selected = "Amphora",
+                         multiple = TRUE)
     ),
     # Add station option for all other pages
     shiny::conditionalPanel(
@@ -552,13 +589,9 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
         shiny::HTML("<h3>Dates:</h3>"),
         shiny::sliderInput(ns("DatesSlide"), 
                            label = NULL, 
-                           min = as.POSIXct('2009-01-01 00:00',
-                                            format = "%Y-%m-%d %H:%M",
-                                            tz = "Australia/Hobart"), 
+                           min = min_date, 
                            max = Sys.time(), 
-                           value = c(as.POSIXct('2009-01-01 00:00',
-                                                format = "%Y-%m-%d %H:%M",
-                                                tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%m-%Y")
+                           value = c(min_date, Sys.time()-1), timeFormat="%m-%Y")
     ),
     
     # Parameter selection for Microbes
@@ -628,7 +661,8 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
   ns <- NS(id)
   shiny::mainPanel(
     shiny::tabsetPanel(id = tabsetPanel_id, type = "pills",
-                       shiny::tabPanel("Trend Analysis", value = 1,
+                       if(!tabsetPanel_id %in% c("phabts")){
+                         shiny::tabPanel("Trend analysis", value = 1,
                                        shiny::htmlOutput(ns("PlotExp1")),
                                        plotOutput(ns("timeseries1"), height = "auto") %>% 
                                          shinycssloaders::withSpinner(color="#0dc5c1"),
@@ -636,7 +670,8 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                            fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                                            fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                                            fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
-                       ),
+                       )},
+                       if(!tabsetPanel_id %in% c("phabts")){
                        shiny::tabPanel("Climatologies", value = 2,
                                        shiny::htmlOutput(ns("PlotExp2")),  
                                        plotOutput(ns("timeseries2"), height = 800) %>% 
@@ -645,7 +680,27 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                            fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
                                            fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
                                            fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
-                       ),
+                       )},
+                       if(tabsetPanel_id %in% c("phabts")){
+                         shiny::tabPanel("Trend analysis by location", value = 1,
+                                         shiny::htmlOutput(ns("PlotExp1")),
+                                         plotOutput(ns("timeseries1"), height = "auto") %>% 
+                                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                                         div(class="download-button-container",
+                                             fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+                                             fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+                                             fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
+                         )},
+                       if(tabsetPanel_id %in% c("phabts")){
+                         shiny::tabPanel("Trend analysis by taxa", value = 2,
+                                         shiny::htmlOutput(ns("PlotExp2")),  
+                                         plotOutput(ns("timeseries2"), height = "auto") %>% 
+                                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                                         div(class="download-button-container",
+                                             fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
+                                             fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
+                                             fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
+                         )},
                        if(!tabsetPanel_id %in% c("NRSmts", "CSmts")){
                          shiny::tabPanel("Functional groups", value = 3,
                                          shiny::htmlOutput(ns("PlotExp3"), container = span),  
@@ -667,29 +722,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                              fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
                                              fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
                          )
-                       }#,
-                       # if (tabsetPanel_id %in% c("NRSmts")){
-                       #   shiny::tabPanel("Scatter plots", value = 4,
-                       #                   h6(textOutput(ns("PlotExp4"), container = span)),
-                       #                   plotOutput(ns("timeseries4")) %>%
-                       #                     shinycssloaders::withSpinner(color="#0dc5c1"),
-                       #                   div(style="display:inline-block; float:right; width:60%",
-                       #                       fButtons(id, button_id = "downloadPlot4", label = "Plot", Type = "Download"),
-                       #                       fButtons(id, button_id = "downloadData4", label = "Data", Type = "Download"),
-                       #                       fButtons(id, button_id = "downloadCode4", label = "R Code Example", Type = "Action"))
-                       #   )
-                       # },
-                       # if (tabsetPanel_id %in% c("CSmts")){
-                       #   shiny::tabPanel("Traits", value = 5,
-                       #                   h6(textOutput(ns("PlotExp5"), container = span)),
-                       #                   plotOutput(ns("timeseries5")) %>%
-                       #                     shinycssloaders::withSpinner(color="#0dc5c1"),
-                       #                   div(style="display:inline-block; float:right; width:60%",
-                       #                       fButtons(id, button_id = "downloadPlot5", label = "Plot", Type = "Download"),
-                       #                       fButtons(id, button_id = "downloadData5", label = "Data", Type = "Download"),
-                       #                       fButtons(id, button_id = "downloadCode5", label = "R Code Example", Type = "Action"))
-                       #   )
-                       #}
+                       }
     )
   )
 }

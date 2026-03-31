@@ -25,6 +25,21 @@ mod_ZooTsCPR_server <- function(id){
     
     # Sidebar ----------------------------------------------------------
     
+    ## update date slider input when SO is selected
+    observe({
+      if("Southern Ocean Region" %in% input$site){
+        min_date <- as.POSIXct(paste0(min(pkg.env$datCPRz$Year_Local), "-01-01 00:00"), format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
+      } else {
+        min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
+      }
+      max_date = Sys.time()-1
+
+      updateSliderInput(session, "DatesSlide",
+                        min = min_date,
+                        max = max_date,
+                        value = c(min_date, max_date), timeFormat="%m-%Y") 
+    }) %>%  shiny::bindEvent(input$site)
+    
     selectedData <- reactive({
       req(input$site)
       req(input$parameter)
