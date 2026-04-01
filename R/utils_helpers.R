@@ -482,7 +482,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     selectedVar = "Bacterial_Temperature_Index_KD"
     min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
   } else if (stringr::str_detect(id, "HAB") == TRUE){ # Coastal Phytoplankton
-    choices <- unique(sort(dat1$State))
+    choices <- unique(sort(dat$genus))
     selectedSite <- c("NSW")
     idSite <- "site"
     selectedVar = "PhytoAbundance_CellsL"
@@ -507,9 +507,10 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
         )
       } 
       ),
-    #Add state then station, genus or species options for HABs
+    #Add state then multiple stations, and one genus or species options for HABs
+    # have to do this in two stages as multiple cannot be changed dynamically with updateselectinput option
     shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && tabsetPanel_id == 1"),
+      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && input.", tabsetPanel_id, " == 1"),
       shiny::HTML("<h3>Select a state:</h3>"),
       shiny::fluidRow(class = "row_multicol",
                       tags$div(align = "left",
@@ -540,8 +541,9 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                          selected = "Amphora",
                          multiple = FALSE)
     ),
+    #Add state then one stations, and multiple genus or species options for HABs
     shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && tabsetPanel_id == 2"),
+      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && input.", tabsetPanel_id, " == 2"),
       shiny::HTML("<h3>Select a state:</h3>"),
       shiny::fluidRow(class = "row_multicol",
                       tags$div(align = "left",
@@ -550,10 +552,10 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                                                          label = NULL,
                                                          choices = unique(sort(dat1$State)),
                                                          selected = c("NSW")))),
-      shiny::HTML("<h3>Select one or more stations:</h3>"),
-      shiny::selectInput(inputId = ns("station2"), 
+      shiny::HTML("<h3>Select a station:</h3>"),
+      shiny::selectInput(inputId = ns("station"), 
                          label = NULL,
-                         choices = unique(sort(dat1$StationName)), 
+                         choices = unique(sort(dat1$StationName)),  
                          selected = "Bar Island",
                          multiple = FALSE),
       shiny::HTML("<h3>Select taxonomic level:</h3>"),
@@ -564,9 +566,9 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                                                    label = NULL,
                                                    choices = c("genus", "species"),
                                                    selected = "genus"))),
-      shiny::HTML("<h3>Select a genera or species:</h3>"),
-      shiny::HTML("Only taxa present in the selected stations will be available in this list."),
-      shiny::selectInput(inputId = ns("taxgs2"),
+      shiny::HTML("<h3>Select one or more genera or species:</h3>"),
+      shiny::HTML("Only taxa present in the selected station will be available in this list."),
+      shiny::selectInput(inputId = ns("taxgs"),
                          label = NULL,
                          choices = unique(sort(dat$genus)),
                          selected = "Amphora",
