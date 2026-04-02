@@ -19,7 +19,7 @@ datCPRTrip <- planktonr::pr_get_trips(Survey = "CPR") %>%
   dplyr::select(c("Latitude", "Year_Local", "Month_Local", "Region", "TripCode"))
 
 datHABTrip <- planktonr::pr_get_trips(Survey = "HAB") %>% 
-  dplyr::mutate(StationName = stringr::str_remove(StationName, "\\[.*?\\]")) %>% 
+  dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]"))) %>% 
   dplyr::summarise(Latitude = mean(Latitude),
                    Longitude = mean(Longitude),
                    .by = c(StationName, State))
@@ -132,8 +132,16 @@ CSChem <- planktonr::pr_get_data(Survey = "Coastal", Type = "Chemistry") %>%
   dplyr::filter(Values != -9999)
 
 # HAB data from Coastal Phytoplankton
-datHABg <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'genus')
-datHABs <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'species')
+datHABg <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'genus') %>% 
+  dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
+                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
+  dplyr::select(-"TripCode") %>% 
+  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything())
+datHABs <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'species') %>% 
+  dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
+                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
+  dplyr::select(-"TripCode") %>% 
+  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything())
 
 # STI data ----------------------------------------------------------------
 
