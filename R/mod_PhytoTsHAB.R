@@ -81,7 +81,13 @@ mod_PhytoTsHAB_server <- function(id){
     observeEvent({input$phabts == "1"}, {
 
       #Update map with selections from station1
-      observe({
+      observeEvent({
+        # 1. Trigger if station2 changes
+        input$station2
+        input$station1
+        # 2. Trigger if the comparison changes (e.g., they become equal or unequal)
+        input$station1 != input$station2
+      }, {
         
         StationNames <- if (length(input$station1) > 0) {
           unique(pkg.env$datHABTrip %>%
@@ -92,8 +98,8 @@ mod_PhytoTsHAB_server <- function(id){
         }
         fLeafletUpdate("plotmap", session, StationNames, Survey = "HAB", Type = "Phytoplankton")
         
-      }) #%>%  shiny::bindEvent(input$station1)
-
+      }) #%>%  shiny::bindEvent(input$station2, input$tabsetPanel_id, input$phabts)
+      
       observe({
         dat <- taxa() %>% 
           dplyr::filter(.data$StationName %in% input$station1,
@@ -191,8 +197,14 @@ mod_PhytoTsHAB_server <- function(id){
     observeEvent({input$phabts == "2"}, {
       
       #Update map with selections from station1
-      observe({
-        
+      observeEvent({
+        # 1. Trigger if station2 changes
+        input$station2
+        input$station1
+        # 2. Trigger if the comparison changes (e.g., they become equal or unequal)
+        input$station1 != input$station2
+      }, {
+
         StationNames <- if (length(input$station2) > 0) {
           unique(pkg.env$datHABTrip %>%
                    dplyr::filter(.data$StationName %in% input$station2) %>%
@@ -201,8 +213,8 @@ mod_PhytoTsHAB_server <- function(id){
           character(0)
         }
         fLeafletUpdate("plotmap", session, StationNames, Survey = "HAB", Type = "Phytoplankton")
-        
-      }) %>%  shiny::bindEvent(input$station2, input$tabsetPanel_id, input$phabts)
+
+      }) #%>%  shiny::bindEvent(input$station2, input$tabsetPanel_id, input$phabts)
       
       observe({
         dat <- taxa() %>% 
