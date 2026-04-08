@@ -61,7 +61,6 @@ mod_PhytoTsHAB_server <- function(id){
       fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
     })
     
-    # add text information
     output$PlotExp1 <- renderText({
       "A plot of selected phytoplankton Parameters from the Coastal Phytoplankton collection, as a time series and a monthly climatology by station.
       This data comes from a count of selected taxa, it is not a full community count so indices are limited to those appropriate."
@@ -78,20 +77,19 @@ mod_PhytoTsHAB_server <- function(id){
 
 
     # Plot Trends by location -------------------------------------------------------------
-    observeEvent({input$phabts == "1"}, {
+    observeEvent({input$phabts == 1}, {
 
       #Update map with selections from station1
       observeEvent({
-        # 1. Trigger if station2 changes
-        input$station2
         input$station1
-        # 2. Trigger if the comparison changes (e.g., they become equal or unequal)
-        input$station1 != input$station2
       }, {
+        
+        req(input$station1)
+        shiny::validate(need(!is.na(input$station1), "Error: Please select a station."))
         
         StationNames <- if (length(input$station1) > 0) {
           unique(pkg.env$datHABTrip %>%
-                   dplyr::filter(.data$StationName %in% input$station1) %>%
+                   dplyr::filter(stringr::str_trim(.data$StationName) %in% stringr::str_trim(input$station1)) %>% 
                    dplyr::pull(.data$StationName))
         } else {
           character(0)
@@ -194,7 +192,7 @@ mod_PhytoTsHAB_server <- function(id){
     
     # Plot trends by taxa  -----------------------------------------------------------
     
-    observeEvent({input$phabts == "2"}, {
+    observeEvent({input$phabts == 2}, {
       
       #Update map with selections from station1
       observeEvent({
