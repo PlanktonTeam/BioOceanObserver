@@ -11,7 +11,7 @@ pkg.env <- new.env(parent = emptyenv())
                  "NRSinfo", "CPRinfo", "SOTSinfo", "NRSStation",
                  "datCPRz", "datCPRp", "PCI",
                  "datNRSz", "datNRSp", "datNRSm", "datCSm", "datNRSw", "datGSm",
-                 "datHABg", "datHABs", "datHABTrip",
+                 "datHABg", "datHABs", "datHABTrip", "datHABdataTable",
                  "NRSfgz", "NRSfgp", "CPRfgz", "CPRfgp", "PMapData",
                  "SOTSp", "SOTSfgp",
                  "stiz", "stip", "daynightz", "daynightp",

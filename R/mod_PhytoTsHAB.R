@@ -78,17 +78,16 @@ mod_PhytoTsHAB_server <- function(id){
 
 
     # Plot Trends by location -------------------------------------------------------------
-    observeEvent({input$phabts == "1"}, {
+    observeEvent({input$phabts == 1}, {
 
       #Update map with selections from station1
       observeEvent({
-        # 1. Trigger if station2 changes
-        input$station2
         input$station1
-        # 2. Trigger if the comparison changes (e.g., they become equal or unequal)
-        input$station1 != input$station2
+        input$phabts
       }, {
         
+        req(input$station1)
+
         StationNames <- if (length(input$station1) > 0) {
           unique(pkg.env$datHABTrip %>%
                    dplyr::filter(.data$StationName %in% input$station1) %>%
@@ -96,6 +95,7 @@ mod_PhytoTsHAB_server <- function(id){
         } else {
           character(0)
         }
+        
         fLeafletUpdate("plotmap", session, StationNames, Survey = "HAB", Type = "Phytoplankton")
         
       }) #%>%  shiny::bindEvent(input$station2, input$tabsetPanel_id, input$phabts)
@@ -200,9 +200,6 @@ mod_PhytoTsHAB_server <- function(id){
       observeEvent({
         # 1. Trigger if station2 changes
         input$station2
-        input$station1
-        # 2. Trigger if the comparison changes (e.g., they become equal or unequal)
-        input$station1 != input$station2
       }, {
 
         StationNames <- if (length(input$station2) > 0) {
@@ -224,13 +221,13 @@ mod_PhytoTsHAB_server <- function(id){
         taxa <- unique(sort(dat$TaxonName))
         params <- planktonr:::pr_relabel(unique(sort(dat$Parameters)), style = "simple", named = TRUE)
         
-        selectedtaxa2 <- if(input$taxgs2 %in% taxa){
+        selectedtaxa2 <- if(any(input$taxgs2 %in% taxa)){
           input$taxgs2
         } else {
           taxa[1]
         }
         
-        shiny::updateSelectInput(session, 'taxgs1', choices = taxa, selected = selectedtaxa2)
+        shiny::updateSelectInput(session, 'taxgs2', choices = taxa, selected = selectedtaxa2)
         shiny::updateSelectInput(session, 'parameter', choices = params, selected = params[1])
         
       })
@@ -267,7 +264,7 @@ mod_PhytoTsHAB_server <- function(id){
         dplyr::left_join(df, by = c("SampleTime_Local", "StationName", "TaxonName")) %>% 
         dplyr::mutate(Parameters = input$parameter,
                       Values = ifelse(is.na(Values), 0, Values)) %>% 
-        dplyr::mutate(Taxon = .data$StationName,
+        dplyr::mutate(Taxon = .data$StationName,  # change these around so planktonr::pr_plot_trends works without chaging the function
                       StationName = .data$TaxonName,
                       StationCode = .data$TaxonName, 
                       TaxonName = .data$Taxon) %>% 

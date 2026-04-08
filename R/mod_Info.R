@@ -314,9 +314,31 @@ mod_info_ui <- function(id) {
               img(src = "www/csm_eDNA.png")
             )
           )
-        )
       ),
-      tabPanel("Species Details",
+      bslib::accordion_panel(
+        title = shiny::HTML("<h3>Australian Coastal Phytoplankton</h3>"),
+        value = "am",
+        shiny::HTML("These data are collected by state councils and seafood industry bodies mostly as part of water quality and shellfish health programs. 
+                    The data are analysed by consultants for the abundance and presence of certain taxa, generally those that are described as Harmful Algal Bloom (HAB) species.
+                    These data do not consitute a full community analysis and therefore are displayed at genera or species level conly."),
+        shiny::HTML("<br><br>"),
+        shiny::HTML("NSW data is from Hornsby Council and the NSW Shellfish Program (DPIRD). These data are analysed by Microalgal Solutions."),
+        shiny::HTML("<br>"),
+        shiny::HTML("TAS data is from the EPA. These data are analysed by Analytical Services Tasmania."),
+        shiny::HTML("<br><br>"),
+        shiny::HTML("<h4>Sampling details</h4>"),
+        DT::DTOutput(nsInfo("HABDataTable")),
+        shiny::HTML("<br><br>"),
+        div(
+          h4("Key Data Streams"),
+          tags$ul(
+            class = "image-row",
+            img(src = "www/csm_Phytoplankton.png")
+          )
+        )
+      )
+    ),
+    tabPanel("Species Details",
         value = 6,
         bslib::accordion(
           id = nsInfo("samplingAccordion_species"),
@@ -441,6 +463,11 @@ mod_info_server <- function(id) {
               Institution = ifelse(.data$Region == "Southern Ocean", "AAD / UTAS / CSIRO", "CSIRO")
             )
         )
+        
+        output$HABDataTable <- DT::renderDT(
+          pkg.env$datHABdataTable 
+        )
+        
       }
     )
 

@@ -66,6 +66,7 @@ mod_ZooTsNRS_server <- function(id){
       } else {
         character(0)
       }
+
       fLeafletUpdate("plotmap", session, stationCodes, 
                      Survey = "NRS", Type = "Zooplankton")
     })
