@@ -77,24 +77,28 @@ mod_PhytoTsHAB_server <- function(id){
 
 
     # Plot Trends by location -------------------------------------------------------------
-    observeEvent(list(input$station1, input$phabts), {
-      if (input$phabts != 1) return()
+    observeEvent({input$phabts == 1}, {
 
       #Update map with selections from station1
+      observeEvent({
+        input$station1
+      }, {
         
-        req(length(input$station1) > 0)
-        shiny::validate(need(length(input$station1) > 0, "Error: Please select a station."))
+        req(input$station1)
+        shiny::validate(need(!is.na(input$station1), "Error: Please select a station."))
         
         StationNames <- if (length(input$station1) > 0) {
-          unique(sort((pkg.env$datHABTrip %>% dplyr::filter(.data$StationName %in% input$station1))$StationName))
+          unique(pkg.env$datHABTrip %>%
+                   dplyr::filter(stringr::str_trim(.data$StationName) %in% stringr::str_trim(input$station1)) %>% 
+                   dplyr::pull(.data$StationName))
         } else {
           character(0)
         }
         fLeafletUpdate("plotmap", session, StationNames, Survey = "HAB", Type = "Phytoplankton")
         
-    }, ignoreInit = FALSE)
-    
-    observe({
+      }) #%>%  shiny::bindEvent(input$station2, input$tabsetPanel_id, input$phabts)
+      
+      observe({
         dat <- taxa() %>% 
           dplyr::filter(.data$StationName %in% input$station1,
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2]))
@@ -115,12 +119,12 @@ mod_PhytoTsHAB_server <- function(id){
       
       selectedData <- reactive({ 
         
-        req(length(input$station1) > 0)
+        req(input$station1)
         req(input$state)
         req(input$tax)
         req(input$taxgs1)
         req(input$parameter)
-        shiny::validate(need(length(input$station1) > 0, "Error: Please select a station."))
+        shiny::validate(need(!is.na(input$station1), "Error: Please select a station."))
         shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
         shiny::validate(need(!is.na(input$tax), "Error: Please select the taxonomic resolution."))
         shiny::validate(need(!is.na(input$taxgs1), "Error: Please select the taxonomic resolution."))
