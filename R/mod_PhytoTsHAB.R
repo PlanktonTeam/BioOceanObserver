@@ -25,8 +25,16 @@ mod_PhytoTsHAB_server <- function(id){
   moduleServer(id, function(input, output, session, phabts){
     
     # # Sidebar ----------------------------------------------------------
+    #Sidebar Maps - Initial render
+    output$plotmap1 <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
+    })
+    output$plotmap2 <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
+    })
+
     observe({
-      
+
       # Filter sites based on the selected state
       filtered_sites <- unique(sort((pkg.env$datHABTrip %>% dplyr::filter(.data$State %in% input$state))$StationName))
       # Update the site_input choices
@@ -38,11 +46,11 @@ mod_PhytoTsHAB_server <- function(id){
       selectedsites2 <- if(input$station2 %in% filtered_sites){
         input$station2
       } else (
-        filtered_sites[1]
+        filtered_sites[3]
       )
-      
+
       shiny::updateSelectInput(session, "station1",  choices = filtered_sites, selected = selectedsites1)
-      shiny::updateSelectInput(session, "station2",  choices = filtered_sites, selected = selectedsites2[1])
+      shiny::updateSelectInput(session, "station2",  choices = filtered_sites, selected = selectedsites2)
 
           }) %>%  shiny::bindEvent(input$state)
 
@@ -55,13 +63,7 @@ mod_PhytoTsHAB_server <- function(id){
       }
     }) %>% bindCache(input$tax)
     
-
-    #Sidebar Map - Initial render
-    output$plotmap <- leaflet::renderLeaflet({
-      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
-    })
-    
-    # add text information
+        # add text information
     output$PlotExp1 <- renderText({
       "A plot of selected phytoplankton Parameters from the Coastal Phytoplankton collection, as a time series and a monthly climatology by station.
       This data comes from a count of selected taxa, it is not a full community count so indices are limited to those appropriate."
@@ -78,28 +80,8 @@ mod_PhytoTsHAB_server <- function(id){
 
 
     # Plot Trends by location -------------------------------------------------------------
-    observeEvent({input$phabts == "1"}, {
+    observeEvent({input$phabts == 1}, {
 
-      #Update map with selections from station1
-      observeEvent({
-        # 1. Trigger if station2 changes
-        input$station2
-        input$station1
-        # 2. Trigger if the comparison changes (e.g., they become equal or unequal)
-        input$station1 != input$station2
-      }, {
-        
-        StationNames <- if (length(input$station1) > 0) {
-          unique(pkg.env$datHABTrip %>%
-                   dplyr::filter(.data$StationName %in% input$station1) %>%
-                   dplyr::pull(.data$StationName))
-        } else {
-          character(0)
-        }
-        fLeafletUpdate("plotmap", session, StationNames, Survey = "HAB", Type = "Phytoplankton")
-        
-      }) #%>%  shiny::bindEvent(input$station2, input$tabsetPanel_id, input$phabts)
-      
       observe({
         dat <- taxa() %>% 
           dplyr::filter(.data$StationName %in% input$station1,
@@ -133,7 +115,7 @@ mod_PhytoTsHAB_server <- function(id){
         shiny::validate(need(!is.na(input$state), "Error: Please select a state."))
         
         df <- taxa() %>%
-          dplyr::filter(.data$TaxonName %in% input$taxgs1, # need to specify [1] as two species are allowed in tab 2 for switching between tabs
+          dplyr::filter(.data$TaxonName %in% input$taxgs1, 
                         .data$StationName %in% input$station1,
                         .data$Parameters %in% input$parameter,
                         dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>% 
@@ -154,6 +136,13 @@ mod_PhytoTsHAB_server <- function(id){
         
       }) %>% bindCache(input$state, input$parameter, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$tax, input$taxgs1)
 
+      #Update map1 with selections from station1 
+      observe({
+        
+        fLeafletUpdate("plotmap1", session, unique(selectedData()$StationName), Survey = "HAB", Type = "Phytoplankton")
+        
+      }) 
+      
       gg_out1 <- reactive({
         if (is.null(datHABg$StationCode)) {return(NULL)}
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
@@ -196,26 +185,6 @@ mod_PhytoTsHAB_server <- function(id){
     
     observeEvent({input$phabts == "2"}, {
       
-      #Update map with selections from station1
-      observeEvent({
-        # 1. Trigger if station2 changes
-        input$station2
-        input$station1
-        # 2. Trigger if the comparison changes (e.g., they become equal or unequal)
-        input$station1 != input$station2
-      }, {
-
-        StationNames <- if (length(input$station2) > 0) {
-          unique(pkg.env$datHABTrip %>%
-                   dplyr::filter(.data$StationName %in% input$station2) %>%
-                   dplyr::pull(.data$StationName))
-        } else {
-          character(0)
-        }
-        fLeafletUpdate("plotmap", session, StationNames, Survey = "HAB", Type = "Phytoplankton")
-
-      }) #%>%  shiny::bindEvent(input$station2, input$tabsetPanel_id, input$phabts)
-      
       observe({
         dat <- taxa() %>% 
           dplyr::filter(.data$StationName %in% input$station2,
@@ -224,13 +193,13 @@ mod_PhytoTsHAB_server <- function(id){
         taxa <- unique(sort(dat$TaxonName))
         params <- planktonr:::pr_relabel(unique(sort(dat$Parameters)), style = "simple", named = TRUE)
         
-        selectedtaxa2 <- if(input$taxgs2 %in% taxa){
+        selectedtaxa2 <- if(any(input$taxgs2 %in% taxa)){
           input$taxgs2
         } else {
           taxa[1]
         }
         
-        shiny::updateSelectInput(session, 'taxgs1', choices = taxa, selected = selectedtaxa2)
+        shiny::updateSelectInput(session, 'taxgs2', choices = taxa, selected = selectedtaxa2)
         shiny::updateSelectInput(session, 'parameter', choices = params, selected = params[1])
         
       })
@@ -250,14 +219,14 @@ mod_PhytoTsHAB_server <- function(id){
       
       df <- taxa() %>%
         dplyr::filter(.data$TaxonName %in% input$taxgs2, 
-                      .data$StationName %in% input$station2[1], # need to specify [1] as two species are allowed in tab 2 for swithcing between tabs
+                      .data$StationName %in% input$station2, 
                       .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>% 
         dplyr::select(.data$SampleTime_Local, .data$StationName, .data$TaxonName, .data$Parameters, .data$Values) 
       
       ## Need to add in zeros
       events <- taxa() %>% 
-        dplyr::filter(.data$StationName %in% input$station2[1],
+        dplyr::filter(.data$StationName %in% input$station2,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>% 
         dplyr::select(-c(.data$Parameters, .data$Values, .data$TaxonName)) %>% 
         dplyr::distinct() %>%
@@ -267,15 +236,22 @@ mod_PhytoTsHAB_server <- function(id){
         dplyr::left_join(df, by = c("SampleTime_Local", "StationName", "TaxonName")) %>% 
         dplyr::mutate(Parameters = input$parameter,
                       Values = ifelse(is.na(Values), 0, Values)) %>% 
-        dplyr::mutate(Taxon = .data$StationName,
+        dplyr::mutate(Taxon = .data$StationName,  # change these around so planktonr::pr_plot_trends works without chaging the function
                       StationName = .data$TaxonName,
                       StationCode = .data$TaxonName, 
                       TaxonName = .data$Taxon) %>% 
         planktonr::planktonr_dat(Type = 'Phytoplankton', Survey = 'HAB')
       
-    }) %>% bindCache(input$parameter, input$station2, input$DatesSlide[1], input$DatesSlide[2], input$tax, input$taxgs2)
+    }) %>% bindCache(input$state, input$parameter, input$station2, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$tax, input$taxgs2)
 
-    gg_out2 <- reactive({
+      #Update map1 & map2 with selections from station1 & station2
+      observe({
+        
+        fLeafletUpdate("plotmap2", session, unique(selectedData2()$TaxonName), Survey = "HAB", Type = "Phytoplankton")
+        
+      }) 
+      
+      gg_out2 <- reactive({
         if (is.null(datHABg$StationCode)) {return(NULL)}
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
 
