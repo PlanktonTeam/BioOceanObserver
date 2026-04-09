@@ -25,18 +25,19 @@ datHABTrip <- planktonr::pr_get_trips(Survey = "HAB") %>%
                    .by = c(StationName, State))
 
 datHABdataTable <- planktonr:::HABSamples %>% 
-  dplyr::left_join(planktonr:::HABSites %>% dplyr::select(SiteCode, Name, DataOwner)) %>% 
-  dplyr::group_by(Name, DataOwner) %>% 
+  dplyr::left_join(planktonr:::HABSites %>% dplyr::select(SiteCode, State, Name, DataOwner, AnalysedBy), by = "SiteCode") %>% 
+  dplyr::group_by(State, Name, DataOwner, AnalysedBy) %>% 
   dplyr::summarise(StartDate = min(.data$SampleDate, na.rm = TRUE),
                    EndDate = max(.data$SampleDate, na.rm = TRUE),
                    Samples = dplyr::n(),
                    .groups = 'drop')  %>% 
-  dplyr::group_by(DataOwner) %>% 
+  dplyr::group_by(State, DataOwner, AnalysedBy) %>% 
   dplyr::summarise(Samples = sum(Samples, na.rm = TRUE),
                    StartDate = min(.data$StartDate, na.rm = TRUE),
                    EndDate = max(.data$EndDate, na.rm = TRUE),
                    Sites = dplyr::n(),
-                   .groups = 'drop')
+                   .groups = 'drop') %>% 
+  dplyr::select(State, DataOwner, AnalysedBy, StartDate, EndDate, Sites, Samples)
   
 NRSStation <- planktonr::pr_get_info(Source = "NRS") %>% 
   dplyr::select(-c("IMCRA", "IMCRA_PB", "ProjectName")) %>% 

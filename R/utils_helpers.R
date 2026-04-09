@@ -491,9 +491,9 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
   
   shiny::sidebarPanel(
     
-    # Put Map, Station names and date slider on all panels
+    # Put Map, Station names on all panels except HABS
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " <= 5"), 
+      condition = paste0("!(input.navbar == 'Phytoplankton' && input.phyto == 'phab')"), 
       # Use leafletOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
       if(stringr::str_detect(id, "CPR")) {
         shiny::tagList(
@@ -505,12 +505,24 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
           shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
           leaflet::leafletOutput(ns("plotmap"), height = "400px")
         )
-      } 
-      ),
+      }, 
+      shiny::HTML("<h3>Select a station:</h3>"),
+      shiny::fluidRow(class = "row_multicol", 
+                      tags$div(align = "left", 
+                               class = "multicol",
+                               shiny::checkboxGroupInput(inputId = ns(idSite), 
+                                                         label = NULL,
+                                                         choices = choices, 
+                                                         selected = selectedSite)))
+    ),
     #Add state then multiple stations, and one genus or species options for HABs
     # have to do this in two stages as multiple cannot be changed dynamically with updateselectinput option
     shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab'"),
+      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && input.", tabsetPanel_id, " == 1"),
+      shiny::tagList(
+        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+        leaflet::leafletOutput(ns("plotmap1"), height = "400px")
+      ),
       shiny::HTML("<h3>Select a state:</h3>"),
       shiny::fluidRow(class = "row_multicol",
                       tags$div(align = "left",
@@ -518,23 +530,32 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                                shiny::checkboxGroupInput(inputId = ns("state"),
                                                          label = NULL,
                                                          choices = unique(sort(dat1$State)),
-                                                         selected = c("NSW"))))
-      ),
-    shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && input.", tabsetPanel_id, " == 1"),
+                                                         selected = c("NSW")))),
       shiny::HTML("<h3>Select one or more stations:</h3>"),
       shiny::selectInput(inputId = ns("station1"), 
                          label = NULL,
                          choices = unique(sort(dat1$StationName)), 
-                         selected = "Bar Island",
-                         multiple = TRUE)),
+                         selected = NULL,
+                         multiple = TRUE)), 
     shiny::conditionalPanel(
       condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && input.", tabsetPanel_id, " == 2"),
+      shiny::tagList(
+        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+        leaflet::leafletOutput(ns("plotmap2"), height = "400px")
+      ),
+      shiny::HTML("<h3>Select a state:</h3>"),
+      shiny::fluidRow(class = "row_multicol",
+                      tags$div(align = "left",
+                               class = "multicol",
+                               shiny::checkboxGroupInput(inputId = ns("state"),
+                                                         label = NULL,
+                                                         choices = unique(sort(dat1$State)),
+                                                         selected = c("NSW")))),
       shiny::HTML("<h3>Select a station:</h3>"),
-      shiny::selectInput(inputId = ns("station2"), 
+      shiny::selectInput(inputId = ns("station2"),
                          label = NULL,
-                         choices = unique(sort(dat1$StationName)),  
-                         selected = "Bar Island",
+                         choices = unique(sort(dat1$StationName)),
+                         selected = NULL,
                          multiple = FALSE)),
     shiny::conditionalPanel(
       condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab'"),
@@ -565,18 +586,6 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                          choices = unique(sort(dat$genus)),
                          selected = "Amphora",
                          multiple = TRUE)
-    ),
-    # Add station option for all other pages
-    shiny::conditionalPanel(
-      condition = paste0("!(input.navbar == 'Phytoplankton' && input.phyto == 'phab')"), 
-      shiny::HTML("<h3>Select a station:</h3>"),
-      shiny::fluidRow(class = "row_multicol", 
-                      tags$div(align = "left", 
-                               class = "multicol",
-                               shiny::checkboxGroupInput(inputId = ns(idSite), 
-                                                         label = NULL,
-                                                         choices = choices, 
-                                                         selected = selectedSite)))
     ),
     shiny::conditionalPanel(
         condition = paste0("input.", tabsetPanel_id, " <= 5"), 
@@ -676,7 +685,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                            fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
                        )},
                        if(tabsetPanel_id %in% c("phabts")){
-                         shiny::tabPanel("Trend analysis by location", value = "1",
+                         shiny::tabPanel(id = "phabts1", "Trend analysis by location", value = "1",
                                          shiny::htmlOutput(ns("PlotExp1")),
                                          plotOutput(ns("timeseries1"), height = "auto") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1"),
@@ -686,7 +695,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                              fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
                          )},
                        if(tabsetPanel_id %in% c("phabts")){
-                         shiny::tabPanel("Trend analysis by taxa", value = "2",
+                         shiny::tabPanel(id = "phabts2", "Trend analysis by taxa", value = "2",
                                          shiny::htmlOutput(ns("PlotExp2")),  
                                          plotOutput(ns("timeseries2"), height = "auto") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1"),

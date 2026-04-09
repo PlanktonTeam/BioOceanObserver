@@ -55,7 +55,7 @@ mod_ZooTsNRS_server <- function(id){
     output$plotmap <- leaflet::renderLeaflet({ 
       fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
     })
-    
+
     # Update map when station selection changes
     observe({
       # Convert StationName to StationCode, handle empty selection
