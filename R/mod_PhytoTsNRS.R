@@ -53,6 +53,8 @@ mod_PhytoTsNRS_server <- function(id){
       # Convert StationName to StationCode, handle empty selection
       stationCodes <- if (length(input$site) > 0) {
         pkg.env$NRSStation %>%
+          dplyr::bind_rows(pkg.env$SOTSinfo %>% 
+                             dplyr::select(-c(.data$ProjectName, .data$IMCRA, .data$IMCRA_PB))) %>%
           dplyr::filter(.data$StationName %in% input$site) %>%
           dplyr::pull(.data$StationCode)
       } else {
