@@ -371,7 +371,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     
     choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
-    
+    min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
     idSite <- "site"
     
     if(exists('dat1') == TRUE){
@@ -394,6 +394,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     choices <- unique(sort(dat$BioRegion))
     selectedSite <- c("Temperate East", "South-east")
     idSite <- "site"
+    min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
     if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + CPR
       selectedVar = "ZoopAbundance_m3"
     } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + CPR
@@ -404,7 +405,8 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     selectedSite <- c("GBR")
     idSite <- "site"
     selectedVar = "Bacterial_Temperature_Index_KD"
-  } 
+    min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
+    } 
   
   shiny::sidebarPanel(
     
@@ -434,13 +436,9 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       shiny::HTML("<h3>Dates:</h3>"),
       shiny::sliderInput(ns("DatesSlide"), 
                          label = NULL, 
-                         min = as.POSIXct('2009-01-01 00:00',
-                                          format = "%Y-%m-%d %H:%M",
-                                          tz = "Australia/Hobart"), 
+                         min = min_date, 
                          max = Sys.time(), 
-                         value = c(as.POSIXct('2009-01-01 00:00',
-                                              format = "%Y-%m-%d %H:%M",
-                                              tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%m-%Y")
+                         value = c(min_date, Sys.time()-1), timeFormat="%m-%Y")
     ),
     
     # Parameter selection for Microbes
