@@ -244,7 +244,7 @@ mod_PhytoTsHAB_server <- function(id){
       
     }) %>% bindCache(input$state, input$parameter, input$station2, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$tax, input$taxgs2)
 
-      #Update map1 & map2 with selections from station1 & station2
+      #Update map2 with selections from station2
       observe({
         
         fLeafletUpdate("plotmap2", session, unique(selectedData2()$TaxonName), Survey = "HAB", Type = "Phytoplankton")
