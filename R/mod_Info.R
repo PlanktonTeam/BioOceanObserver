@@ -262,8 +262,11 @@ mod_info_ui <- function(id) {
             <p>Tows are also collected by RSV Nuyina (previously Aurora Australis) in the austral summer through by the Australian Antarctic division (AAD). The phytoplankton data is counted
             with support from IMOS through a UTAS / AAD collaboration and the the Southern Ocean zooplankton records, south of -47<sup>o</sup>S, are counted through the SO_CPR program at the AAD.</p> 
             <p> Adhoc samples are also collected from RV Investigator and other research vessels.</p><br>"),
-            shiny::HTML("<h4>CPR Sampling details</h4>"),
+            shiny::HTML("<h4>IMOS CPR Sampling details</h4>"),
             DT::DTOutput(nsInfo("CPRDataTable")),
+            shiny::HTML("<br><br>"),
+            shiny::HTML("<h4>AAD CPR Sampling details</h4>"),
+            DT::DTOutput(nsInfo("CPRDataTableSO")),
             div(
               h4("Key Data Streams"),
               tags$ul(
@@ -441,6 +444,22 @@ mod_info_server <- function(id) {
               Institution = ifelse(.data$Region == "Southern Ocean", "AAD / UTAS / CSIRO", "CSIRO")
             )
         )
+        output$CPRDataTableSO <- DT::renderDT(
+          pkg.env$datCPRTripSO %>%
+            dplyr::select(-c("TripCode", "Latitude", "Longitude")) %>% 
+            dplyr::mutate(Region = 'Southern Ocean Region') %>% 
+            dplyr::group_by(.data$Region) %>% 
+            dplyr::summarise(SamplesCounted = sum(.data$Samples, na.rm = TRUE),
+                             MilesTowed = SamplesCounted * 5,
+                             StartDate = min(Year_Local, na.rm = TRUE),
+                             EndDate = max(Year_Local, na.rm = TRUE),
+                             Project = "SO-CPR",
+                             Institution = "AAD",
+                             .groups = "drop") %>%
+            dplyr::select(
+              "Region", `Start Date` = "StartDate", `End Date` = "EndDate", `Miles Towed` = "MilesTowed",
+              `Samples Counted` = "SamplesCounted", "Project", "Institution") 
+            )
       }
     )
 
