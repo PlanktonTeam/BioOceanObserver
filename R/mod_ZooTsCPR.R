@@ -37,9 +37,9 @@ mod_ZooTsCPR_server <- function(id){
       updateSliderInput(session, "DatesSlide",
                         min = min_date,
                         max = max_date,
-                        value = c(min_date, max_date), timeFormat="%m-%Y") 
-    }) %>%  shiny::bindEvent(input$site)
-    
+                        value = c(min_date, max_date), timeFormat="%m-%Y")
+      }) %>%  shiny::bindEvent(input$site)
+
     selectedData <- reactive({
       req(input$site)
       req(input$parameter)

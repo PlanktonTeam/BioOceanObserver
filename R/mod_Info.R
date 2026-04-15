@@ -262,8 +262,11 @@ mod_info_ui <- function(id) {
             <p>Tows are also collected by RSV Nuyina (previously Aurora Australis) in the austral summer through by the Australian Antarctic division (AAD). The phytoplankton data is counted
             with support from IMOS through a UTAS / AAD collaboration and the the Southern Ocean zooplankton records, south of -47<sup>o</sup>S, are counted through the SO_CPR program at the AAD.</p> 
             <p> Adhoc samples are also collected from RV Investigator and other research vessels.</p><br>"),
-            shiny::HTML("<h4>CPR Sampling details</h4>"),
+            shiny::HTML("<h4>IMOS CPR Sampling details</h4>"),
             DT::DTOutput(nsInfo("CPRDataTable")),
+            shiny::HTML("<br><br>"),
+            shiny::HTML("<h4>AAD CPR Sampling details</h4>"),
+            DT::DTOutput(nsInfo("CPRDataTableSO")),
             div(
               h4("Key Data Streams"),
               tags$ul(
@@ -383,52 +386,6 @@ mod_info_server <- function(id) {
         input$Info == 5
       },
       {
-        # # banner of variables for NRS 
-        # 
-        # img_paths_nrs <- c(
-        #   "www/csm_Chlorophyll.png",
-        #   "www/csm_Phytoplankton.png",
-        #   "www/csm_Zooplankton.png",
-        #   "www/csm_Larval_Fish.png",
-        #   "www/csm_Pigments.png",
-        #   "www/csm_Macronutrients.png",
-        #   "www/csm_eDNA.png",
-        #   "www/csm_Salinity.png",
-        #   "www/csm_Temperature.png",
-        #   "www/csm_Turbidity.png"
-        # )
-        # 
-        # # Reactive index
-        # startIndex <- reactiveVal(1)
-        # 
-        # # Update index on button click
-        # observeEvent(input$left, {
-        #   newIndex <- max(1, startIndex() - 3)
-        #   startIndex(newIndex)
-        # })
-        # 
-        # observeEvent(input$right, {
-        #   newIndex <- min(length(img_paths_nrs) - 2, startIndex() + 3)
-        #   startIndex(newIndex)
-        # })
-        # 
-        # # Render image boxes
-        # output$imageGallery <- renderUI({
-        #   idx <- startIndex()
-        #   selected <- img_paths_nrs[idx:min(idx + 2, length(img_paths_nrs))]
-        # 
-        #   fluidRow(
-        #     lapply(selected, function(path) {
-        #       column(
-        #         width = 4,
-        #         div(
-        #           class = "image-box",
-        #           img(src = path)
-        #         )
-        #       )
-        #     })
-        #   )
-        # })
 
         output$NRSDataTable <- DT::renderDT(
           pkg.env$NRSStation %>%
@@ -463,11 +420,28 @@ mod_info_server <- function(id) {
               Institution = ifelse(.data$Region == "Southern Ocean", "AAD / UTAS / CSIRO", "CSIRO")
             )
         )
-        
-        output$HABDataTable <- DT::renderDT(
-          pkg.env$datHABdataTable 
-        )
-        
+
+       output$CPRDataTableSO <- DT::renderDT(
+          pkg.env$datCPRTripSO %>%
+            dplyr::select(-c("TripCode", "Latitude", "Longitude")) %>% 
+            dplyr::mutate(Region = 'Southern Ocean Region') %>% 
+            dplyr::group_by(.data$Region) %>% 
+            dplyr::summarise(SamplesCounted = sum(.data$Samples, na.rm = TRUE),
+                             MilesTowed = SamplesCounted * 5,
+                             StartDate = min(Year_Local, na.rm = TRUE),
+                             EndDate = max(Year_Local, na.rm = TRUE),
+                             Project = "SO-CPR",
+                             Institution = "AAD",
+                             .groups = "drop") %>%
+            dplyr::select(
+              "Region", `Start Date` = "StartDate", `End Date` = "EndDate", `Miles Towed` = "MilesTowed",
+              `Samples Counted` = "SamplesCounted", "Project", "Institution") 
+            )
+                
+       output$HABDataTable <- DT::renderDT(
+         pkg.env$datHABdataTable 
+         )
+                
       }
     )
 

@@ -488,7 +488,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     selectedVar = "PhytoAbundance_CellsL"
     min_date <- as.POSIXct(paste0(min(dat$Year_Local), "-01-01 00:00"), format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
   } 
-  
+
   shiny::sidebarPanel(
     
     # Put Map, Station names on all panels except HABS
@@ -594,9 +594,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                            label = NULL, 
                            min = min_date, 
                            max = Sys.time(), 
-                           value = c(min_date, Sys.time()-1), timeFormat="%m-%Y")
-    ),
-    
+                           value = c(min_date, Sys.time()-1), timeFormat="%m-%Y")),
     # Parameter selection for Microbes
     # All subtabs (ie 1-3) using this input need to be created together
     shiny::conditionalPanel(

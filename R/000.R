@@ -16,7 +16,7 @@ pkg.env <- new.env(parent = emptyenv())
                  "SOTSp", "SOTSfgp",
                  "stiz", "stip", "daynightz", "daynightp",
                  "SpInfoP", "SpInfoZ", "LFData", "LFDataAbs",
-                 "datNRSTrip", "datCPRTrip",
+                 "datNRSTrip", "datCPRTrip", "datCPRTripSO",
                  "PSpNRSAccum", "PSpCPRAccum", "ZSpNRSAccum", "ZSpCPRAccum",
                  "col12", "ParamDef")
 

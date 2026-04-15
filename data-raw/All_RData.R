@@ -39,6 +39,16 @@ datHABdataTable <- planktonr:::HABSamples %>%
                    .groups = 'drop') %>% 
   dplyr::select(State, DataOwner, AnalysedBy, StartDate, EndDate, Sites, Samples)
   
+datCPRTripSO <- planktonr:::cpr_AAD %>%
+  dplyr::group_by(.data$TripCode, .data$BioRegion) %>%
+  dplyr::summarise(Latitude = mean(.data$Latitude, na.rm = TRUE),
+                   Longitude = mean(.data$Longitude, na.rm = TRUE),
+                   Samples = dplyr::n(),
+                   Year_Local = min(.data$Year_Local, na.rm = TRUE),
+                   Month_Local = min(.data$Month_Local, na.rm = TRUE),
+                   .groups = 'drop') %>%
+  dplyr::distinct()
+
 NRSStation <- planktonr::pr_get_info(Source = "NRS") %>% 
   dplyr::select(-c("IMCRA", "IMCRA_PB", "ProjectName")) %>% 
   dplyr::arrange(desc(Latitude))
@@ -366,7 +376,7 @@ usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   SOTSp, SOTSfgp, 
                   stiz, stip, daynightz, daynightp,
                   SpInfoP, SpInfoZ, LFData, LFDataAbs,
-                  datNRSTrip, datCPRTrip,
+                  datNRSTrip, datCPRTrip, datCPRTripSO,
                   PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
                   ParamDef, col12, modified_time,
                   overwrite = TRUE, internal = TRUE)
