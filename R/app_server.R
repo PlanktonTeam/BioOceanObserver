@@ -60,6 +60,10 @@ app_server <- function( input, output, session ) {
       mod_LFishSpatial_server("LFishSpatial_1")
     }
     
+    if(input$navbar == "Animal Tracking") {
+      mod_ATSpatial_server("ATSpatial_1")
+    }
+    
     if(input$navbar == "Environmental Data") {
       mod_NutrientsBGC_server("NutrientsBGC_ui_1")
     }
@@ -158,6 +162,17 @@ app_server <- function( input, output, session ) {
     }
   })
   
+  # Animal Tracking -------------------------------------------------------------
+  
+  # Season Larval Fish
+  observeEvent(input$AT, {
+    if(input$AT == "atstats"){
+      mod_ATStats_server("ATStats_1")
+    }
+    if(input$AT == "atcs"){
+      mod_ATCases_server("ATCases_1")
+    }
+  })
   
   
   # Environmental -----------------------------------------------------------
