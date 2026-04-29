@@ -1470,41 +1470,42 @@ nav[class*="navbar"],
 }
 /* Style the accordion header */
 .accordion-button {
-  background-color: var(--primary-5) !important; 
-  color: var(--primary-5);  !important;  /* Header text color */
-  font-weight: bold; !important;
-  font-size: var(--font-size-xl)    !important;     
-  border-radius: 10px !important; /* Rounded header */
+  background-color: var(--primary-5) !important;
+  color: var(--primary-2) !important;
+  font-weight: var(--font-weight-bold) !important;
+  font-size: var(--font-size-xl) !important;
+  border-radius: 10px !important;
   border-color: var(--secondary-1) !important;
-  padding: 0.4rem 0.75rem; /* control size of button */
-  
+  padding: 0.4rem 0.75rem;
 }
 /* Optional: Change hover effect on header */
 .accordion-button:hover {
-  background-color: var(--background) !important; 
+  background-color: var(--background) !important;
   border-color: var(--secondary-1) !important;
-  color:  var(--primary-5); !important; 
+  color: var(--primary-2) !important;
 }
 
 /* Not active (collapsed) — pale background */
 .accordion-button.collapsed {
-  background-color: var(--background) !important; /* pale colour */
+  background-color: var(--background) !important;
   color: var(--primary-2) !important;
 }
 
 /* Optional: Change hover effect on header */
 .accordion-button:not(.collapsed) {
-  background-color: var(--primary-5)) !important; 
+  background-color: var(--primary-5) !important;
   border-color: var(--secondary-1) !important;
-  color:  var(--primary-5) !important; 
+  color: var(--primary-2) !important;
 }
 /* Style the accordion body */
 .accordion-body {
-  background-color: var(--neutral-2) !important;   
-  padding: 1rem; !important;   
-  border-top: 1px solid var(--primary-1) !important;   
-  border-radius: 0 0 10px 10px !important;   
-=======
+  background-color: var(--neutral-2) !important;
+  padding: 1rem !important;
+  border-top: 1px solid var(--primary-1) !important;
+  border-radius: 0 0 10px 10px !important;
+}
+
+/* ========================================
    UTILITY CLASSES FOR COMMON STYLES
    ======================================== */
 
@@ -1557,5 +1558,391 @@ nav[class*="navbar"],
 .col-no-spacing {
   padding: 0px;
   margin: 0px;
+}
+
+/* ========================================
+   ANIMAL TRACKING SPATIAL MODULE
+   ======================================== */
+
+/* Full-screen map container */
+.at-map-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ---- Sidebar -------------------------------------------- */
+.at-sidebar {
+  position: absolute;
+  top: 0;
+  right: -400px;
+  width: 380px;
+  height: 100%;
+  background: var(--neutral-2);
+  box-shadow: -4px 0 20px rgba(24, 44, 58, 0.18);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.3s ease;
+}
+
+.at-sidebar.open {
+  right: 0;
+}
+
+/* Sidebar header */
+.at-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: var(--primary-2);
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+.at-sidebar-header h3 {
+  font-size: var(--font-size-lg) !important;
+  font-weight: var(--font-weight-semibold) !important;
+  color: var(--text-3) !important;
+  line-height: var(--line-height-tight) !important;
+  margin: 0 !important;
+  flex: 1;
+  padding-right: 10px;
+}
+
+.at-sidebar-close {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0.8;
+  transition: opacity 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.at-sidebar-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Sidebar scrollable body */
+.at-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  font-size: var(--font-size-base);
+  color: var(--text-2);
+}
+
+/* ---- Summary stat cards --------------------------------- */
+.at-summary-stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.at-stat-card {
+  flex: 1;
+  background: var(--primary-5);
+  border-radius: 8px;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.at-stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-2);
+  line-height: var(--line-height-tight);
+}
+
+.at-stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--grey-700);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+/* ---- Station metadata ----------------------------------- */
+.at-station-meta {
+  background: var(--grey-300);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 18px;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--text-2);
+}
+
+.at-station-meta p {
+  margin: 0;
+}
+
+/* ---- Section header ------------------------------------- */
+.at-section-header {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--grey-700);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--primary-4);
+}
+
+/* ---- Species list --------------------------------------- */
+.at-species-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.at-species-row {
+  background: var(--grey-300);
+  border-left: 3px solid var(--primary-1);
+  border-radius: 0 6px 6px 0;
+  padding: 10px 12px;
+  transition: background 0.15s;
+}
+
+.at-species-row:hover {
+  background: var(--primary-5);
+}
+
+.at-species-row-expanded {
+  background: var(--primary-5);
+  border-left-color: var(--primary-1);
+}
+
+.at-species-name {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--text-1);
+  margin-bottom: 5px;
+}
+
+.at-species-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.at-stat-badge {
+  display: inline-block;
+  background: var(--primary-4);
+  color: var(--primary-2);
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* ---- Expandable chart sections -------------------------- */
+.at-chart-section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--primary-4);
+}
+
+.at-chart-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--grey-700);
+  margin-bottom: 6px;
+}
+
+/* ---- No-data state -------------------------------------- */
+.at-no-data {
+  padding: 20px 0;
+  color: var(--grey-700);
+  text-align: center;
+  font-size: var(--font-size-sm);
+}
+
+/* ---- Mapbox popup --------------------------------------- */
+.at-popup {
+  font-size: 13px;
+  min-width: 200px;
+}
+
+.at-popup-header {
+  background: var(--primary-2);
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  margin: -10px -10px 10px -10px;
+  border-radius: 4px 4px 0 0;
+}
+
+.at-popup-body {
+  padding: 0 2px;
+}
+
+.at-popup-name {
+  font-weight: var(--font-weight-bold);
+  font-size: 14px;
+  color: var(--primary-2);
+  margin-bottom: 4px;
+  line-height: var(--line-height-tight);
+}
+
+.at-popup-coords {
+  color: var(--grey-700);
+  font-size: 11px;
+  font-family: monospace;
+  margin-bottom: 6px;
+}
+
+.at-popup-has-data {
+  color: var(--state-complete);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+}
+
+/* ---- Floating legend panel ------------------------------ */
+.at-legend {
+  position: absolute;
+  bottom: 36px;
+  left: 12px;
+  background: var(--neutral-2);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(24, 44, 58, 0.18);
+  padding: 12px 14px;
+  z-index: 900;
+  min-width: 190px;
+}
+
+.at-legend-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--grey-700);
+  margin-bottom: 10px;
+}
+
+/* ---- Species filter panel (top-left floating) ----------- */
+.at-species-filter {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--neutral-2);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(24, 44, 58, 0.18);
+  padding: 12px 14px;
+  z-index: 900;
+  width: 300px;
+}
+
+.at-species-filter .at-legend-title {
+  margin-bottom: 8px;
+}
+
+/* Selectize overrides inside the species filter panel */
+.at-species-filter .selectize-control {
+  margin-bottom: 0;
+}
+
+.at-species-filter .selectize-input {
+  font-size: var(--font-size-sm) !important;
+  border-color: var(--primary-4) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  min-height: 34px !important;
+  background-color: var(--neutral-2) !important;
+  color: var(--text-2) !important;
+}
+
+.at-species-filter .selectize-input.focus {
+  border-color: var(--primary-1) !important;
+  box-shadow: 0 0 0 2px rgba(59, 110, 143, 0.2) !important;
+}
+
+.at-species-filter .selectize-dropdown {
+  font-size: var(--font-size-sm) !important;
+  border-color: var(--primary-4) !important;
+  border-radius: 0 0 6px 6px !important;
+  box-shadow: 0 4px 12px rgba(24, 44, 58, 0.12) !important;
+  background-color: var(--neutral-2) !important;
+}
+
+.at-species-filter .selectize-dropdown .option.selected,
+.at-species-filter .selectize-dropdown .option:hover {
+  background: var(--primary-5) !important;
+  color: var(--primary-2) !important;
+}
+
+.at-species-filter .selectize-input .item {
+  background: var(--primary-5) !important;
+  color: var(--primary-2) !important;
+  border: 1px solid var(--primary-4) !important;
+  border-radius: 4px !important;
+  font-size: var(--font-size-xs) !important;
+}
+
+/* ---- More Information section (in expanded species card) - */
+.at-more-info {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--primary-4);
+}
+
+.at-more-info-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--grey-700);
+  margin-bottom: 8px;
+}
+
+.at-more-info-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.at-more-info-links li a {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 6px !important;
+  font-size: var(--font-size-sm) !important;
+  color: var(--primary-1) !important;
+  text-decoration: none !important;
+  line-height: var(--line-height-normal) !important;
+  word-break: break-word;
+}
+
+.at-more-info-links li a:hover {
+  color: var(--secondary-1) !important;
+  text-decoration: underline !important;
+}
+
+.at-more-info-unavailable {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--grey-500);
+  line-height: var(--line-height-normal);
+  font-style: italic;
+}
+
+.at-more-info-icon {
+  flex-shrink: 0;
+  font-style: normal;
 }
 
