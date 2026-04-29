@@ -247,6 +247,10 @@ mod_ATSpatial_server <- function(id) {
       meta_block <- shiny::tags$div(
         class = "at-station-meta",
         shiny::tags$p(paste0("Coordinates: ", rx$lon, "\u00b0E, ", rx$lat, "\u00b0")),
+        shiny::tags$p(paste0(
+          "Receiver deployments: ",
+          format(rx$total_receivers, big.mark = ",")
+        )),
         shiny::tags$p(paste0("Deployed: ", deploy_str, " \u2013 ", recovery_str)),
         shiny::tags$p(
           "Status: ",

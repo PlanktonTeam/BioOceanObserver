@@ -64,7 +64,7 @@ at_load_data <- function() {
       dplyr::distinct(
         .data$animal_id, .data$installation_name,
         .data$species_common_name, .data$species_scientific_name,
-        .data$animal_sex, .data$Type, .data$Value
+        .data$animal_sex, .data$Length_Type, .data$Length_cm
       )
 
     # Sorted species list for the selectize filter
@@ -228,16 +228,16 @@ at_sex_donut_html <- function(inds) {
 #' @return character HTML string
 #' @noRd
 at_length_bar_html <- function(inds) {
-  inds_v <- inds %>% dplyr::filter(!is.na(.data$Value))
+  inds_v <- inds %>% dplyr::filter(!is.na(.data$Length_cm))
   if (nrow(inds_v) == 0) {
     return('<p style="color:var(--grey-700);font-size:12px;padding:4px 0">No length data available.</p>')
   }
 
   type_label <- inds_v %>%
-    dplyr::filter(!is.na(.data$Type)) %>%
-    dplyr::count(.data$Type, sort = TRUE) %>%
+    dplyr::filter(!is.na(.data$Length_Type)) %>%
+    dplyr::count(.data$Length_Type, sort = TRUE) %>%
     dplyr::slice(1) %>%
-    dplyr::pull(.data$Type)
+    dplyr::pull(.data$Length_Type)
   if (length(type_label) == 0) type_label <- "Length"
 
   sex_pal   <- c(MALE = "#3B6E8F", FEMALE = "#E76F51", UNKNOWN = "#BFBFBF")
@@ -249,7 +249,7 @@ at_length_bar_html <- function(inds) {
       sex_grp = ifelse(.data$sex_grp %in% sex_order, .data$sex_grp, "UNKNOWN")
     )
 
-  vals   <- inds_v$Value
+  vals   <- inds_v$Length_cm
   n_bins <- max(3, min(8, length(unique(round(vals)))))
   h      <- hist(vals, breaks = n_bins, plot = FALSE)
   breaks <- h$breaks
@@ -365,6 +365,18 @@ at_sparkline_html <- function(dates, values, colour) {
     return('<p style="color:var(--grey-700);font-size:11px;padding:2px 0">No data available.</p>')
   }
 
+  # Ensure dates are coerced to Date (handles character, POSIXct, etc.)
+  dates <- tryCatch(as.Date(dates), error = function(e) dates)
+
+  # Drop any rows where either date or value is NA
+  keep   <- !is.na(dates) & !is.na(values)
+  dates  <- dates[keep]
+  values <- values[keep]
+
+  if (length(dates) == 0) {
+    return('<p style="color:var(--grey-700);font-size:11px;padding:2px 0">No data available.</p>')
+  }
+
   ord    <- order(dates)
   dates  <- dates[ord]
   values <- values[ord]
@@ -377,7 +389,7 @@ at_sparkline_html <- function(dates, values, colour) {
   x_min <- as.numeric(min(dates))
   x_max <- as.numeric(max(dates))
   x_rng <- max(x_max - x_min, 1)
-  y_max <- max(values, 1)
+  y_max <- max(values, 1, na.rm = TRUE)
 
   to_px <- function(d, v) {
     list(

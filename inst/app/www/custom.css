@@ -1602,7 +1602,6 @@ nav[class*="navbar"],
 }
 
 .at-sidebar-header h3 {
-  font-family: "Poppins", "Open Sans", sans-serif !important;
   font-size: var(--font-size-lg) !important;
   font-weight: var(--font-weight-semibold) !important;
   color: var(--text-3) !important;
@@ -1636,7 +1635,6 @@ nav[class*="navbar"],
   flex: 1;
   overflow-y: auto;
   padding: 18px;
-  font-family: "Open Sans", sans-serif;
   font-size: var(--font-size-base);
   color: var(--text-2);
 }
@@ -1657,7 +1655,6 @@ nav[class*="navbar"],
 }
 
 .at-stat-value {
-  font-family: "Poppins", "Open Sans", sans-serif;
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
   color: var(--primary-2);
@@ -1689,7 +1686,6 @@ nav[class*="navbar"],
 
 /* ---- Section header ------------------------------------- */
 .at-section-header {
-  font-family: "Poppins", "Open Sans", sans-serif;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
@@ -1725,7 +1721,6 @@ nav[class*="navbar"],
 }
 
 .at-species-name {
-  font-family: "Poppins", "Open Sans", sans-serif;
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-sm);
   color: var(--text-1);
@@ -1745,7 +1740,6 @@ nav[class*="navbar"],
   font-size: var(--font-size-xs);
   padding: 2px 8px;
   border-radius: 10px;
-  font-family: "Open Sans", sans-serif;
 }
 
 /* ---- Expandable chart sections -------------------------- */
@@ -1756,7 +1750,6 @@ nav[class*="navbar"],
 }
 
 .at-chart-title {
-  font-family: "Poppins", "Open Sans", sans-serif;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
@@ -1771,12 +1764,10 @@ nav[class*="navbar"],
   color: var(--grey-700);
   text-align: center;
   font-size: var(--font-size-sm);
-  font-family: "Open Sans", sans-serif;
 }
 
 /* ---- Mapbox popup --------------------------------------- */
 .at-popup {
-  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 13px;
   min-width: 200px;
 }
@@ -1832,7 +1823,6 @@ nav[class*="navbar"],
 }
 
 .at-legend-title {
-  font-family: "Poppins", "Open Sans", sans-serif;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
@@ -1908,7 +1898,6 @@ nav[class*="navbar"],
 }
 
 .at-more-info-title {
-  font-family: "Poppins", "Open Sans", sans-serif;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
