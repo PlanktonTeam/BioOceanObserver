@@ -9,7 +9,7 @@ Authors@R: c(
   )
 Description: A visualisation tool for biological and oceanographic data.
 License: MIT + file LICENSE
-Imports: 
+Imports:
     bslib,
     config (>= 0.3.1),
     dplyr,
@@ -22,9 +22,12 @@ Imports:
     leaflet,
     lubridate,
     magrittr,
+    mapgl,
     patchwork,
     planktonr (>= 0.7.0),
+    purrr,
     rlang (>= 1.1.0),
+    sf,
     shiny (>= 1.6.0),
     shinycssloaders,
     stringr,
