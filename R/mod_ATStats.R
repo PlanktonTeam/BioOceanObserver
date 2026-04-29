@@ -32,7 +32,10 @@ mod_ATStats_ui <- function(id) {
       ),
       shiny::mainPanel(
         shiny::htmlOutput(ns("PlotExp1")),
-        fluidRow(column(12, DT::DTOutput(ns("AnimalDataTable")))),
+        fluidRow(column(12, DT::DTOutput(ns("SpeciesDataTable")))),
+        shiny::htmlOutput(ns("PlotExp2")),
+        fluidRow(column(12, DT::DTOutput(ns("locationsDataTable")))),
+        shiny::htmlOutput(ns("PlotExp3")),
         fluidRow(column(12, plotOutput(ns("gg1")))) %>% 
           shinycssloaders::withSpinner(color="#0dc5c1"),
         fluidRow(column(12, plotOutput(ns("gg2")))) %>% 
@@ -49,9 +52,9 @@ mod_ATStats_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
-    animalData <- reactive({
+    speciesData <- reactive({
       
-      animals <- readRDS("data-raw/AnimalTracking/AnimalSummary.rds")
+      species <- readRDS("data-raw/AnimalTracking/SpeciesSummary.rds")
       
     })
     
@@ -66,10 +69,10 @@ mod_ATStats_server <- function(id){
       if(input$filter == "None"){
         shiny::updateSelectizeInput(session, "selection", selected = NULL, choices = NULL)
       } else if (input$filter == "Species"){
-        species <- sort(unique(animalData()$species_common_name))
+        species <- sort(unique(speciesData()$species_common_name))
         shiny::updateSelectizeInput(session, "selection", selected = species[1], choices = species)
       } else {
-        locations <- sort(unique(animalData()$installation_name))
+        locations <- sort(unique(speciesData()$installation_name))
         shiny::updateSelectizeInput(session, "selection", selected = locations[1], choices = locations)
       }
       
@@ -77,33 +80,74 @@ mod_ATStats_server <- function(id){
     
     fdata <- reactive({
       if(input$filter == 'None'){
-        fdata <- animalData() 
+        fdata <- speciesData() 
       } else if (input$filter == 'Species'){
-        fdata <- animalData() %>% 
+        fdata <- speciesData() %>% 
           dplyr::filter(species_common_name %in% input$selection)
       } else {
-        fdata <- animalData() %>% 
+        fdata <- speciesData() %>% 
           dplyr::filter(installation_name %in% input$selection) 
       }
       
     }) %>% bindCache(input$filter, input$selection)
     
-    output$AnimalDataTable <- DT::renderDT(
+    ldata <- reactive({
+      if(input$filter == 'None'){
+        ldata <- locationData() 
+      } else if (input$filter == 'Species'){
+        ldata <- locationData() %>% 
+          dplyr::filter(installation_name %in% fdata()$installation_name)
+      } else {
+        ldata <- locationData() %>% 
+          dplyr::filter(installation_name %in% input$selection) 
+      }
+      
+    }) %>% bindCache(input$filter, input$selection)
+    
+    output$SpeciesDataTable <- DT::renderDT(
       fdata()
      )
 
+    output$locationsDataTable <- DT::renderDT(
+      ldata()
+    )
+    
     gg_out1 <- reactive({
       
       req(input$filter)
       
-      df <- fdata() %>% 
-        dplyr::mutate(Year = lubridate::year(date_UTC)) %>% 
-        dplyr::group_by(Year) %>% 
-        dplyr::summarise(Values = sum(total_detections, na.rm = TRUE))
+      ATbardata <- function(df, time){
+        df <- df %>% 
+          dplyr::mutate(Year = lubridate::year(month_UTC), 
+                        Month = lubridate::month(month_UTC)) %>% 
+          dplyr::group_by(!!rlang::sym(time)) %>% 
+          dplyr::summarise(Values = sum(total_detections, na.rm = TRUE))
+        
+      }
       
-      ggplot2::ggplot(data = df, ggplot2::aes(x = Year, y = Values)) +
-        ggplot2::geom_col() +
-        ggplot2::theme_bw()
+      ATbarPlot <- function(df, time){
+        p <- ggplot2::ggplot(data = df, ggplot2::aes(x = !!rlang::sym(time), y = Values)) +
+          ggplot2::geom_col(fill = "#E2ECF3", color = "#3B6E8F") + 
+          ggplot2::labs(y = "Number of Detections") +
+          ggplot2::scale_y_continuous(expand = c(0,0.05)) +
+          planktonr::theme_pr()
+          
+       if(rlang::as_string(time) %in% c("Month")){
+         p <- p + ggplot2::scale_x_continuous(breaks = seq(1, 12, length.out = 12),
+                                            labels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"))
+       } else {
+         p
+       }
+          return(p)
+      }
+      
+      daty <- ATbardata(fdata(), 'Year')
+      ploty <- ATbarPlot(daty, 'Year')
+      datm <- ATbardata(fdata(), 'Month')
+      plotm <- ATbarPlot(datm, 'Month') +
+        ggplot2::theme(axis.title.y = ggplot2::element_blank())
+
+      ploty + plotm
       
     }) %>% bindCache(input$filter, input$selection)
     
@@ -111,34 +155,33 @@ mod_ATStats_server <- function(id){
       gg_out1()
     })
     
-    gg_out2 <- reactive({
-      
-      req(input$filter)
-      
-      df <- fdata() %>% 
-        dplyr::mutate(Month = lubridate::month(date_UTC)) %>% 
-        dplyr::group_by(Month) %>% 
-        dplyr::summarise(Values = sum(total_detections, na.rm = TRUE))
-      
-      ggplot2::ggplot(data = df, ggplot2::aes(x = Month, y = Values)) +
-        ggplot2::geom_col() +
-        ggplot2::theme_bw()
-      
-    }) %>% bindCache(input$filter, input$selection)
-    
-    output$gg2 <- renderPlot({
-      gg_out2()
-    })
-    
-    
+
     # add text information
     output$PlotExp1 <- renderText({
       if(input$filter == 'None') {
-        "A table and bar plots of detections - unfiltered"
+        HTML("<h3>Table of detections - unfiltered</h3>")
       } else if(input$filter == 'Species') {
-        "A table and bar plots of detections - filtered by species"
+        HTML("<h3>Table of detections - filtered by species</h3>")
       } else {
-        "A table and bar plots of detections - filtered by location"
+        HTML("<h3>Table of detections - filtered by location</h3>")
+      }
+    })
+    output$PlotExp2 <- renderText({
+      if(input$filter == 'None') {
+        HTML("<h3>Table of receiver details at installation locations - unfiltered</h3>")
+      } else if(input$filter == 'Species') {
+        HTML("<h3>Table of receiver details at installation locations - filtered by species</h3>")
+      } else {
+        HTML("<h3>Table of receiver details at installation locations - filtered by location</h3>")
+      }
+    })
+    output$PlotExp3 <- renderText({
+      if(input$filter == 'None') {
+        HTML("<h3>Yearly and monthly bar plots of detections - unfiltered</h3>")
+      } else if(input$filter == 'Species') {
+        HTML("<h3>Yearly and monthly bar plots of detections - filtered by species</h3>")
+      } else {
+        HTML("<h3>Yearly and monthly plots of detections - filtered by location</h3>")
       }
     })
   })
