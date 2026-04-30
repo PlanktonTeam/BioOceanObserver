@@ -95,7 +95,7 @@ at_load_data <- function() {
       )
 
     # Build popup HTML column
-    receivers$popup_html <- vapply(seq_len(nrow(receivers)), function(i) {
+    receivers$popup_html <- purrr::map_chr(seq_len(nrow(receivers)), function(i) {
       r <- sf::st_drop_geometry(receivers[i, ])
       data_line <- paste0(
         '<span class="at-popup-has-data">&#10003;&nbsp;',
@@ -112,7 +112,7 @@ at_load_data <- function() {
         data_line,
         "</div></div>"
       )
-    }, character(1))
+    })
 
     pkg.env$AT_species_summary <- species_summary
     pkg.env$AT_receivers       <- receivers
@@ -197,7 +197,7 @@ at_sex_donut_html <- function(inds) {
   }
 
   legend <- paste0(
-    vapply(c("MALE", "FEMALE", "UNKNOWN"), function(sex) {
+    purrr::map_chr(c("MALE", "FEMALE", "UNKNOWN"), function(sex) {
       n   <- counts[sex]
       pct <- if (total > 0) round(100 * n / total) else 0
       paste0(
@@ -208,7 +208,7 @@ at_sex_donut_html <- function(inds) {
         labels[sex], ': <strong>', n, '</strong> (', pct, '%)',
         '</div>'
       )
-    }, character(1)),
+    }),
     collapse = ""
   )
 
@@ -260,13 +260,10 @@ at_length_bar_html <- function(inds) {
 
   bin_idx    <- findInterval(vals, breaks, rightmost.closed = TRUE)
   bin_idx    <- pmin(bin_idx, n_bars)
-  counts_mat <- matrix(
-    sapply(sex_order, function(s) {
-      tabulate(bin_idx[inds_v$sex_grp == s], nbins = n_bars)
-    }),
-    nrow = n_bars, ncol = length(sex_order),
-    dimnames = list(NULL, sex_order)
-  )
+  counts_mat <- do.call(cbind, purrr::map(sex_order, function(s) {
+    tabulate(bin_idx[inds_v$sex_grp == s], nbins = n_bars)
+  }))
+  dimnames(counts_mat) <- list(NULL, sex_order)
 
   total_per_bin <- rowSums(counts_mat)
   max_c <- max(total_per_bin, 1)
@@ -278,7 +275,7 @@ at_length_bar_html <- function(inds) {
   bw <- pw / n_bars
 
   bars <- paste0(
-    vapply(seq_len(n_bars), function(i) {
+    purrr::map_chr(seq_len(n_bars), function(i) {
       x     <- pl + (i - 1) * bw
       y_cur <- pt + ph
       segs  <- ""
@@ -294,12 +291,12 @@ at_length_bar_html <- function(inds) {
         )
       }
       segs
-    }, character(1)),
+    }),
     collapse = ""
   )
 
   x_ticks <- paste0(
-    vapply(seq_len(n_bars), function(i) {
+    purrr::map_chr(seq_len(n_bars), function(i) {
       if (i %% 2 == 0 && i < n_bars) return("")
       x <- pl + (i - 0.5) * bw
       paste0(
@@ -307,7 +304,7 @@ at_length_bar_html <- function(inds) {
         '" text-anchor="middle" font-size="9" fill="#595959">',
         round(mids[i]), '</text>'
       )
-    }, character(1)),
+    }),
     collapse = ""
   )
 
@@ -329,7 +326,7 @@ at_length_bar_html <- function(inds) {
 
   legend_y  <- pt + ph + 38
   leg_items <- paste0(
-    vapply(seq_along(sex_order), function(k) {
+    purrr::map_chr(seq_along(sex_order), function(k) {
       s     <- sex_order[k]
       lx    <- pl + (k - 1) * 72
       label <- paste0(toupper(substr(s, 1, 1)), tolower(substr(s, 2, nchar(s))))
@@ -340,7 +337,7 @@ at_length_bar_html <- function(inds) {
         '<text x="', lx + 12, '" y="', legend_y + 9,
         '" font-size="9" fill="#3C3C3C">', label, ' (', n_s, ')</text>'
       )
-    }, character(1)),
+    }),
     collapse = ""
   )
 
@@ -400,10 +397,10 @@ at_sparkline_html <- function(dates, values, colour) {
     )
   }
 
-  pts <- mapply(to_px, dates, values, SIMPLIFY = FALSE)
+  pts <- purrr::map2(dates, values, to_px)
 
   poly_pts <- paste(
-    sapply(pts, function(p) paste0(p$x, ",", p$y)),
+    purrr::map_chr(pts, function(p) paste0(p$x, ",", p$y)),
     collapse = " "
   )
 

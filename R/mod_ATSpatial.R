@@ -258,37 +258,44 @@ mod_ATSpatial_server <- function(id) {
         )
       )
 
-      # Summary stat cards
-      stats_row <- shiny::tags$div(
-        class = "at-summary-stats",
-        shiny::tags$div(
-          class = "at-stat-card",
-          shiny::tags$div(class = "at-stat-value", rx$n_species),
-          shiny::tags$div(class = "at-stat-label", "Species")
-        ),
-        shiny::tags$div(
-          class = "at-stat-card",
-          shiny::tags$div(class = "at-stat-value", format(rx$n_individuals, big.mark = ",")),
-          shiny::tags$div(class = "at-stat-label", "Individuals")
-        ),
-        shiny::tags$div(
-          class = "at-stat-card",
-          shiny::tags$div(class = "at-stat-value", format(rx$total_detections, big.mark = ",")),
-          shiny::tags$div(class = "at-stat-label", "Detections")
-        )
-      )
-
-      # Per-species cards (filter-aware)
+      # Per-species cards (filter-aware) — computed first so stats can reflect filter
       sel_sp   <- input$species_filter
       spp      <- station_species %>%
         dplyr::filter(.data$installation_name == name) %>%
         { if (!is.null(sel_sp) && length(sel_sp) > 0)
             dplyr::filter(., .data$species_common_name %in% sel_sp)
-          else . }
+          else . } %>%
+        dplyr::arrange(dplyr::desc(.data$total_detections))
+
+      # Derive stat values: use filtered aggregates when a species filter is active
+      filter_active <- !is.null(sel_sp) && length(sel_sp) > 0
+      stat_n_species   <- if (filter_active) nrow(spp)                    else rx$n_species
+      stat_n_inds      <- if (filter_active) sum(spp$n_individuals)        else rx$n_individuals
+      stat_detections  <- if (filter_active) sum(spp$total_detections)     else rx$total_detections
+
+      # Summary stat cards
+      stats_row <- shiny::tags$div(
+        class = "at-summary-stats",
+        shiny::tags$div(
+          class = "at-stat-card",
+          shiny::tags$div(class = "at-stat-value", stat_n_species),
+          shiny::tags$div(class = "at-stat-label", "Species")
+        ),
+        shiny::tags$div(
+          class = "at-stat-card",
+          shiny::tags$div(class = "at-stat-value", format(stat_n_inds, big.mark = ",")),
+          shiny::tags$div(class = "at-stat-label", "Individuals")
+        ),
+        shiny::tags$div(
+          class = "at-stat-card",
+          shiny::tags$div(class = "at-stat-value", format(stat_detections, big.mark = ",")),
+          shiny::tags$div(class = "at-stat-label", "Detections")
+        )
+      )
       inds_all  <- individual_data %>% dplyr::filter(.data$installation_name == name)
       expanded  <- expanded_species()
 
-      species_cards <- lapply(seq_len(nrow(spp)), function(j) {
+      species_cards <- purrr::map(seq_len(nrow(spp)), function(j) {
         s           <- spp[j, ]
         sp_name     <- s$species_common_name
         is_expanded <- !is.null(expanded) && expanded == sp_name
