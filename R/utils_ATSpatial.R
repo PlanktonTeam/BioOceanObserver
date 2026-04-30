@@ -35,6 +35,7 @@ at_load_data <- function() {
 
     receivers      <- readRDS(file.path(rds_dir, "ReceiverSummary.rds"))
     animal_summary <- readRDS(file.path(rds_dir, "AnimalSummary.rds"))
+    species_summary <- readRDS(file.path(rds_dir, "SpeciesSummary.rds"))
 
     # Station-level aggregate counts
     station_summary <- animal_summary %>%
@@ -113,6 +114,7 @@ at_load_data <- function() {
       )
     }, character(1))
 
+    pkg.env$AT_species_summary <- species_summary
     pkg.env$AT_receivers       <- receivers
     pkg.env$AT_station_species <- station_species
     pkg.env$AT_individual_data <- individual_data
