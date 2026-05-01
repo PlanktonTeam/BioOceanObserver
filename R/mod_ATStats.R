@@ -11,35 +11,26 @@ mod_ATStats_ui <- function(id) {
   ns <- NS(id)
   tagList(
     sidebarLayout(
-      shiny::sidebarPanel(
-        shiny::HTML("<h3>Select a filter:</h3>"),
-        shiny::fluidRow(class = "row_multicol", 
-                        tags$div(align = "left", 
-                                 class = "multicol",
+      shiny::sidebarPanel(width = 2, 
+        shiny::HTML("<h4>Select a filter:</h4>"),
+        shiny::fluidRow(tags$div(align = "left", 
+                                 style = "background-color: #E2ECF3 !important;",
                                  shiny::radioButtons(inputId = ns("filter"), 
                                                      label = NULL,
-                                                     choices = c("None", "Species", "Location"), 
-                                                     selected = "None"))),
-        shiny::HTML("<h3>Make your selection:</h3>"),
-        shiny::fluidRow(class = "row_multicol", 
-                        tags$div(align = "left", 
-                                 class = "multicol",
-                                 shiny::selectizeInput(inputId = ns("selection"), 
-                                                       label = NULL,
-                                                       choices = NULL, 
-                                                       selected = NULL,
-                                                       multiple = TRUE ))),
-      ),
-      shiny::mainPanel(
-        shiny::htmlOutput(ns("PlotExp1")),
-        fluidRow(column(12, DT::DTOutput(ns("SpeciesDataTable")))),
-        shiny::htmlOutput(ns("PlotExp2")),
-        fluidRow(column(12, DT::DTOutput(ns("locationsDataTable")))),
-        shiny::htmlOutput(ns("PlotExp3")),
-        fluidRow(column(12, plotOutput(ns("gg1")))) %>% 
-          shinycssloaders::withSpinner(color="#0dc5c1"),
-        fluidRow(column(12, plotOutput(ns("gg2")))) %>% 
-          shinycssloaders::withSpinner(color="#0dc5c1")
+                                                     choices = c("Species", "Receivers"), 
+                                                     selected = character(0)))),
+        shiny::uiOutput(ns("selections"))
+    ),
+      shiny::mainPanel(width = 10,
+                       shiny::htmlOutput(ns("PlotExp3")),
+                       fluidRow(column(12, plotOutput(ns("gg1")))) %>% 
+                       shinycssloaders::withSpinner(color="#0dc5c1"),
+                       shiny::htmlOutput(ns("PlotExp1")),
+                       fluidRow(column(12, DT::DTOutput(ns("SpeciesDataTable")))),
+                       shiny::htmlOutput(ns("PlotExp4")),
+                       fluidRow(column(12, DT::DTOutput(ns("SpeciesInfoTable")))),
+                       shiny::htmlOutput(ns("PlotExp2")),
+                       fluidRow(column(12, DT::DTOutput(ns("locationsDataTable")))),
       )
     )
   )
@@ -52,94 +43,167 @@ mod_ATStats_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
-    speciesData <- reactive({
-      
-      species <- readRDS("data-raw/AnimalTracking/SpeciesSummary.rds")
-      
-    })
-    
-    locationData <- reactive({
-      
-      locations <- readRDS("data-raw/AnimalTracking/ReceiverSummary.rds")
-      
-    })
-    
-    observeEvent(input$filter, {
-      
-      if(input$filter == "None"){
-        shiny::updateSelectizeInput(session, "selection", selected = NULL, choices = NULL)
-      } else if (input$filter == "Species"){
-        species <- sort(unique(speciesData()$species_common_name))
-        shiny::updateSelectizeInput(session, "selection", selected = species[1], choices = species)
-      } else {
-        locations <- sort(unique(speciesData()$installation_name))
-        shiny::updateSelectizeInput(session, "selection", selected = locations[1], choices = locations)
-      }
-      
-    })
-    
-    fdata <- reactive({
-      if(input$filter == 'None'){
-        fdata <- speciesData() 
-      } else if (input$filter == 'Species'){
-        fdata <- speciesData() %>% 
-          dplyr::filter(species_common_name %in% input$selection)
-      } else {
-        fdata <- speciesData() %>% 
-          dplyr::filter(installation_name %in% input$selection) 
-      }
-      
-    }) %>% bindCache(input$filter, input$selection)
-    
-    ldata <- reactive({
-      if(input$filter == 'None'){
-        ldata <- locationData() 
-      } else if (input$filter == 'Species'){
-        ldata <- locationData() %>% 
-          dplyr::filter(installation_name %in% fdata()$installation_name)
-      } else {
-        ldata <- locationData() %>% 
-          dplyr::filter(installation_name %in% input$selection) 
-      }
-      
-    }) %>% bindCache(input$filter, input$selection)
-    
-    output$SpeciesDataTable <- DT::renderDT(
-      fdata()
-     )
-
-    output$locationsDataTable <- DT::renderDT(
-      ldata()
-    )
-    
-    gg_out1 <- reactive({
-      
+## render ui on initial choice
+    output$selections <- renderUI({
       req(input$filter)
       
-      ATbardata <- function(df, time){
-        df <- df %>% 
-          dplyr::mutate(Year = lubridate::year(month_UTC), 
-                        Month = lubridate::month(month_UTC)) %>% 
-          dplyr::group_by(!!rlang::sym(time)) %>% 
-          dplyr::summarise(Values = sum(total_detections, na.rm = TRUE))
-        
+      if(input$filter == 'Species') {
+        header_text1 <- "Select species:"
+        header_text2 <- "Refine by installation:"
+        choices_1 <-  c("All Species", pkg.env$AT_all_species) 
+        selected_1  <-  "All Species"
+        choices_2 <- c("All Receivers", sort(unique(pkg.env$AT_receivers$installation_name)))
+        selected_2 <- "All Receivers"
+      } else {
+        header_text1 <- "Select installation:"
+        header_text2 <-  "Refine by species:"
+        choices_2 <-  pkg.env$AT_all_species 
+        selected_2  <-  pkg.env$AT_all_species 
+        choices_1 <- c("All Receivers", sort(unique(pkg.env$AT_receivers$installation_name))) 
+        selected_1 <- "All Receivers"
       }
+
+      tagList(
+        h4(header_text1),
+        shiny::selectizeInput(inputId = ns("select1"), 
+                            label = NULL,
+                            choices = choices_1, 
+                            selected = selected_1,
+                            multiple = TRUE ),
+        h4(header_text2),
+        shiny::selectizeInput(inputId = ns("select2"), 
+                            label = NULL,
+                            choices = choices_2, 
+                            selected = selected_2,
+                            multiple = TRUE,
+                            options = list(
+                              maxOptions = 10,       # Only shows 10 items at a time
+                              placeholder = 'Type to search...'
+                            ) ))
+
+      })
+
+    observeEvent(input$select1, {
+      req(input$filter)
       
-      ATbarPlot <- function(df, time){
-        p <- ggplot2::ggplot(data = df, ggplot2::aes(x = !!rlang::sym(time), y = Values)) +
-          ggplot2::geom_col(fill = "#E2ECF3", color = "#3B6E8F") + 
-          ggplot2::labs(y = "Number of Detections") +
-          ggplot2::scale_y_continuous(expand = c(0,0.05)) +
-          planktonr::theme_pr()
+      if(input$filter == "Species"){
+        if("All Species" %in% c(input$select1)){
+          species <- pkg.env$AT_all_species
+        } else {
+          species <- input$select1
+          }
+        
+        choices <- sort(unique(pkg.env$AT_station_species %>% 
+                                 dplyr::filter(species_common_name %in% species) %>% 
+                                 dplyr::pull(installation_name)))
+        
+        All <- "All Receivers"
+        
+      } else {
+        if("All Receivers" %in% c(input$select1)){  ## i haven't set this as select1 yet, so that is what should happen here
+          location <- sort(unique(pkg.env$AT_receivers$installation_name))
+        } else {
+          location <- input$select1
+        }
+        choices <- sort(unique(pkg.env$AT_station_species %>% 
+                                 dplyr::filter(installation_name %in% location) %>% 
+                                 dplyr::pull(species_common_name))) 
+        All <- "All Species"
+        }
+        
+        shiny::updateSelectizeInput(session, "select2", choices = c(All, choices), selected = All,
+                                    options = list(
+                                      maxOptions = 10,       # Only shows 10 items at a time
+                                      placeholder = 'Type to search...'
+                                      )
+                                    )
           
-       if(rlang::as_string(time) %in% c("Month")){
-         p <- p + ggplot2::scale_x_continuous(breaks = seq(1, 12, length.out = 12),
-                                            labels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"))
+    })
+
+## first step for data prep        
+   fdata <- reactive({
+     req(input$filter)
+     req(input$select1)
+
+     print(input$filter)
+     print(input$select1)
+     print(input$select2)
+     
+     if(input$filter == 'Species'){
+       if("All Species" %in% c(input$select1)){
+         species <- pkg.env$AT_all_species
        } else {
-         p
+         species <- input$select1
        }
-          return(p)
-      }
+       
+       if("All Receivers" %in% c(input$select2)){
+         location <- sort(unique(pkg.env$AT_station_species %>% 
+                                   dplyr::filter(species_common_name %in% species))$installation_name)
+       } else {
+         location <- input$select2
+       }
+       
+     } else {
+       if("All Receivers" %in% c(input$select1)){
+         location <- sort(unique(pkg.env$AT_receivers$installation_name))
+       } else {
+         location <- input$select1
+       }
+       if ("All Species" %in% c(input$select2)){
+         species <- sort(unique(pkg.env$AT_station_species %>% 
+                                  dplyr::filter(installation_name %in% location))$species_common_name)
+       } else {
+         species <- input$select2
+       }
+     }
+
+    fdata <- pkg.env$AT_species_summary %>% 
+           dplyr::filter(species_common_name %in% species, 
+                         installation_name %in% location)
+
+    }) %>% bindCache(input$select1, input$select2, input$filter)
+    
+    ldata <- reactive({
+      req(input$filter)
+      
+      ldata <- pkg.env$AT_receivers %>% 
+           sf::st_drop_geometry() %>% 
+           dplyr::filter(installation_name %in% fdata()$installation_name) %>% 
+           dplyr::select(Installation = installation_name, Lon = lon, Lat = lat, `No Receivers` = total_receivers, `Start Date` = deployment_date, 
+                         `End Date` = recovery_date, Active = active, `No Species` = n_species, `No Detections` = total_detections)
+
+    }) %>% bindCache(input$select1, input$select2, input$filter)
+    
+## prepare data for tables to speed up  render
+    fdataTable <- reactive({
+      fdataTable <- fdata()  %>% 
+        dplyr::select(Installation = installation_name, Date = month_UTC, `Common Name` = species_common_name, 
+                      `No individuals` = total_individuals, `No Detections` = total_detections)
+    }) %>% bindCache(input$select1, input$select2, input$filter)
+    
+    sdataTable <- reactive({
+      sdataTable <- fdata()  %>% 
+        dplyr::select(`Common Name` = species_common_name, `Scientific Name` = species_scientific_name, 
+                      `Aphia id` = WORMS_species_aphia_id) %>% 
+        dplyr::distinct()
+    }) %>% bindCache(input$select1, input$select2, input$filter)
+    
+## render the tables
+    output$SpeciesDataTable <- DT::renderDT({
+      DT::datatable(fdataTable(), options = DToptions, fillContainer = FALSE)
+    }, server = TRUE)
+    
+    output$SpeciesInfoTable <- DT::renderDT({
+      DT::datatable(sdataTable(), options = DToptions, fillContainer = FALSE)
+    }, server = TRUE)
+    
+    output$locationsDataTable <- DT::renderDT({
+      DT::datatable(ldata(), options = DToptions, fillContainer = FALSE)
+    }, server = TRUE)
+    
+
+## plot the graphs    
+    gg_out1 <- reactive({
       
       daty <- ATbardata(fdata(), 'Year')
       ploty <- ATbarPlot(daty, 'Year')
@@ -149,40 +213,25 @@ mod_ATStats_server <- function(id){
 
       ploty + plotm
       
-    }) %>% bindCache(input$filter, input$selection)
+    }) %>% bindCache(input$select1, input$select2, input$filter)
     
     output$gg1 <- renderPlot({
       gg_out1()
     })
     
 
-    # add text information
+## add text information
     output$PlotExp1 <- renderText({
-      if(input$filter == 'None') {
-        HTML("<h3>Table of detections - unfiltered</h3>")
-      } else if(input$filter == 'Species') {
-        HTML("<h3>Table of detections - filtered by species</h3>")
-      } else {
-        HTML("<h3>Table of detections - filtered by location</h3>")
-      }
+        HTML("<h4>Table of detections - filtered by species & location</h4>")
+    })
+    output$PlotExp4 <- renderText({
+      HTML("<h4>Species details</h4>")
     })
     output$PlotExp2 <- renderText({
-      if(input$filter == 'None') {
-        HTML("<h3>Table of receiver details at installation locations - unfiltered</h3>")
-      } else if(input$filter == 'Species') {
-        HTML("<h3>Table of receiver details at installation locations - filtered by species</h3>")
-      } else {
-        HTML("<h3>Table of receiver details at installation locations - filtered by location</h3>")
-      }
+        HTML("<h4>Table of selected receiver details</h4>")
     })
     output$PlotExp3 <- renderText({
-      if(input$filter == 'None') {
-        HTML("<h3>Yearly and monthly bar plots of detections - unfiltered</h3>")
-      } else if(input$filter == 'Species') {
-        HTML("<h3>Yearly and monthly bar plots of detections - filtered by species</h3>")
-      } else {
-        HTML("<h3>Yearly and monthly plots of detections - filtered by location</h3>")
-      }
+        HTML("<h4>Yearly and monthly bar plots of detections</h4>")
     })
   })
 }

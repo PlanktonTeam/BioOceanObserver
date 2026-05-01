@@ -481,13 +481,14 @@ a:focus {
 
 .table {
   font-family: "Open Sans", sans-serif !important;
-  font-size: var(--font-size-sm) !important;
+  font-size: var(--font-size-xs) !important;
   background-color: var(--neutral-2) !important;
 }
 
 .table th {
   font-family: "Poppins", sans-serif !important;
-  font-weight: var(--font-weight-semibold) !important;
+  font-weight: var(--font-weight-normal) !important;
+  line-height: var(--line-height-tight) !important;
   color: var(--primary-2) !important;
   background-color: var(--primary-5) !important;
   border-bottom: 2px solid var(--primary-4) !important;
@@ -501,6 +502,36 @@ a:focus {
 .table-striped tbody tr:nth-of-type(odd) {
   background-color: var(--grey-100) !important;
 }
+
+/* ========================================
+   DATA TABLES - DT
+   ======================================== */
+
+div[id*="Table"] table.dataTable {
+  font-family: "Open Sans", sans-serif !important;
+  font-weight: var(--font-weight-normal) !important;
+  line-height: var(--line-height-tight) !important;
+  font-size: var(--font-size-xs) !important;
+  background-color: var(--neutral-2) !important;
+}
+
+div[id*="Table"] table.dataTable thead th {
+  font-family: "Poppins", sans-serif !important;
+  font-weight: var(--font-weight-normal) !important;
+  color: var(--primary-2) !important;
+  background-color: var(--primary-5) !important;
+  border-bottom: 2px solid var(--primary-4) !important;
+}
+
+div[id*="Table"] table.dataTable td {
+  color: var(--text-2) !important;
+  border-bottom: 1px solid var(--grey-300) !important;
+}
+
+div[id*="Table"] table.dataTable-striped tbody tr:nth-of-type(odd) {
+  background-color: var(--grey-100) !important;
+}
+
 
 /* ========================================
    ALERTS AND NOTIFICATIONS
@@ -926,6 +957,12 @@ a:focus {
   border: 1px solid var(--primary-1) !important;
   color: var(--text-1) !important;
   font-size: var(--font-size-base) !important;
+}
+
+/* Limits the dropdown height and adds a scrollbar */
+.selectize-dropdown-content {
+  max-height: 200px !important;
+  overflow-y: auto !important;
 }
 
 /* Radio buttons and checkboxes in sidebar */

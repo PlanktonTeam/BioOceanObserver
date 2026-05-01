@@ -443,3 +443,56 @@ at_sparkline_html <- function(dates, values, colour) {
     '</div>'
   )
 }
+
+
+## Animal Tracking stats functions
+
+## settinga for the datatable style
+
+DToptions <- list(
+  scrollY = "300px",  # Set the height of the scrollable box
+  paging = FALSE,     # Disable pagination for continuous scroll
+  scrollCollapse = TRUE, # Shrink box if fewer records exist
+  orderClasses = FALSE,
+  dom = 't', # removes search bar and pagination
+  deferRender = TRUE # Only renders elements when needed
+)
+
+#' Bar plot data 
+#'
+#' @param df  data to plot
+#' @param time binned to 'Month' or 'Year'
+#' @return df for plotting
+#' @noRd
+ATbardata <- function(df, time){
+  df <- df %>% 
+    dplyr::mutate(Year = lubridate::year(month_UTC), 
+                  Month = lubridate::month(month_UTC)) %>% 
+    dplyr::group_by(!!rlang::sym(time)) %>% 
+    dplyr::summarise(Values = sum(total_detections, na.rm = TRUE))
+  }
+
+#' Bar plot data 
+#'
+#' @param df  data to plot from ATbardata
+#' @param time binned to 'Month' or 'Year'
+#' @return df for plotting
+#' @noRd
+ATbarPlot <- function(df, time){
+  p <- ggplot2::ggplot(data = df, ggplot2::aes(x = !!rlang::sym(time), y = Values)) +
+    ggplot2::geom_col(fill = "#E2ECF3", color = "#3B6E8F") + 
+    ggplot2::labs(y = "Number of Detections") +
+    ggplot2::scale_y_continuous(expand = c(0,0.05)) +
+    planktonr::theme_pr()
+  
+  if(rlang::as_string(time) %in% c("Month")){
+    p <- p + ggplot2::scale_x_continuous(breaks = seq(1, 12, length.out = 12),
+                                         labels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"))
+  } else {
+    p
+  }
+  return(p)
+  }
+
+  
+  
