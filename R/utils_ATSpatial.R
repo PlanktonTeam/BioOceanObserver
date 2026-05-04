@@ -444,8 +444,9 @@ at_sparkline_html <- function(dates, values, colour) {
   )
 }
 
-
+# ----------------------------------------------------------------------------
 ## Animal Tracking stats functions
+# ----------------------------------------------------------------------------
 
 ## settinga for the datatable style
 
