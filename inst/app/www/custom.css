@@ -665,6 +665,12 @@ div[id*="Table"] table.dataTable-striped tbody tr:nth-of-type(odd) {
   font-family: "Open Sans", sans-serif !important;
 }
 
+.shiny-output-error-my-hint {
+  color: var(--primary-1)
+  font-size: var(--font-size-base) !important;
+  font-weight: var(--font-weight-semibold) !important;
+}
+
 /* Progress Bars */
 .progress {
   background-color: var(--grey-300) !important;

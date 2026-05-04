@@ -125,10 +125,6 @@ mod_ATStats_server <- function(id){
      req(input$filter)
      req(input$select1)
 
-     print(input$filter)
-     print(input$select1)
-     print(input$select2)
-     
      if(input$filter == 'Species'){
        if("All Species" %in% c(input$select1)){
          species <- pkg.env$AT_all_species
@@ -176,9 +172,17 @@ mod_ATStats_server <- function(id){
     
 ## prepare data for tables to speed up  render
     fdataTable <- reactive({
-      fdataTable <- fdata()  %>% 
-        dplyr::select(Installation = installation_name, Date = month_UTC, `Common Name` = species_common_name, 
-                      `No individuals` = total_individuals, `No Detections` = total_detections)
+      
+      fdataTable <- fdata() %>%
+          dplyr::group_by(species_common_name, installation_name) %>%
+          dplyr::summarise(`First detection` = as.character(min(month_UTC)),
+                    `Last Detection` = as.character(max(month_UTC)),
+                    `No Detections` = sum(total_detections)) %>% 
+        dplyr::left_join(pkg.env$AT_station_species %>% dplyr::select(species_common_name, installation_name, n_individuals), 
+                         by = c("species_common_name", "installation_name")) %>% 
+        dplyr::select(Species = species_common_name, Installation = installation_name, `No individuals` = n_individuals, everything()) %>% 
+        dplyr::arrange(`No Detections`)
+      
     }) %>% bindCache(input$select1, input$select2, input$filter)
     
     sdataTable <- reactive({
@@ -216,22 +220,28 @@ mod_ATStats_server <- function(id){
     }) %>% bindCache(input$select1, input$select2, input$filter)
     
     output$gg1 <- renderPlot({
+      shiny::validate(need(!is.na(input$filter), "Please select a filter."),
+                      errorClass = "my-hint")
       gg_out1()
     })
     
 
 ## add text information
     output$PlotExp1 <- renderText({
-        HTML("<h4>Table of detections - filtered by species & location</h4>")
+      req(input$filter)
+      HTML("<h4>Details of selected detections</h4>")
     })
     output$PlotExp4 <- renderText({
-      HTML("<h4>Species details</h4>")
+      req(input$filter)
+      HTML("<h4>Details of selected species</h4>")
     })
     output$PlotExp2 <- renderText({
-        HTML("<h4>Table of selected receiver details</h4>")
+      req(input$filter)
+      HTML("<h4>Details of selected receivers</h4>")
     })
     output$PlotExp3 <- renderText({
-        HTML("<h4>Yearly and monthly bar plots of detections</h4>")
+      req(input$filter)
+      HTML("<h4>Selected detections yearly / monthly</h4>")
     })
   })
 }
