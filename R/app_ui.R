@@ -94,8 +94,9 @@ golem_add_external_resources <- function(){
   shiny::tags$head(
     # script for accessning google analytics from csiro server
     if( Sys.getenv('SHINY_PORT') != "" ) {
-      tags$head(includeHTML("GoogleAnalytics.html"))
-    },
+      tags$script(src = "GoogleAnalytics.html")
+      },
+    
     
     favicon(),    bundle_resources(
       path = app_sys('app/www'),
