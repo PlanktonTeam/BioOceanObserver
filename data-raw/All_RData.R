@@ -18,6 +18,16 @@ datNRSTrip <- planktonr::pr_get_trips(Survey = "NRS") %>%
 datCPRTrip <- planktonr::pr_get_trips(Survey = "CPR") %>% 
   dplyr::select(c("Latitude", "Year_Local", "Month_Local", "Region", "TripCode"))
 
+datCPRTripSO <- planktonr:::cpr_AAD %>%
+  dplyr::group_by(.data$TripCode, .data$BioRegion) %>%
+  dplyr::summarise(Latitude = mean(.data$Latitude, na.rm = TRUE),
+                   Longitude = mean(.data$Longitude, na.rm = TRUE),
+                   Samples = dplyr::n(),
+                   Year_Local = min(.data$Year_Local, na.rm = TRUE),
+                   Month_Local = min(.data$Month_Local, na.rm = TRUE),
+                   .groups = 'drop') %>%
+  dplyr::distinct()
+
 datHABTrip <- planktonr::pr_get_trips(Survey = "HAB") %>% 
   dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]"))) %>% 
   dplyr::summarise(Latitude = mean(Latitude),
@@ -39,16 +49,6 @@ datHABdataTable <- planktonr:::HABSamples %>%
                    .groups = 'drop') %>% 
   dplyr::select(State, DataOwner, AnalysedBy, StartDate, EndDate, Sites, Samples)
   
-datCPRTripSO <- planktonr:::cpr_AAD %>%
-  dplyr::group_by(.data$TripCode, .data$BioRegion) %>%
-  dplyr::summarise(Latitude = mean(.data$Latitude, na.rm = TRUE),
-                   Longitude = mean(.data$Longitude, na.rm = TRUE),
-                   Samples = dplyr::n(),
-                   Year_Local = min(.data$Year_Local, na.rm = TRUE),
-                   Month_Local = min(.data$Month_Local, na.rm = TRUE),
-                   .groups = 'drop') %>%
-  dplyr::distinct()
-
 NRSStation <- planktonr::pr_get_info(Source = "NRS") %>% 
   dplyr::select(-c("IMCRA", "IMCRA_PB", "ProjectName")) %>% 
   dplyr::arrange(desc(Latitude))

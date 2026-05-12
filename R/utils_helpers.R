@@ -148,12 +148,12 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = "Zooplankton",
     zoom <- 2
   } else if (Survey == "HAB"){
     meta_data <- pkg.env$datHABTrip %>% 
-      dplyr::distinct(Latitude, Longitude, State) %>% 
-      dplyr::summarise(Latitude = mean(Latitude),
-                       Longitude = mean(Longitude),
-                       .by = State) %>%
-      dplyr::mutate(StationName = State,
-                    StationCode = State)  
+      dplyr::distinct(.data$Latitude, .data$Longitude, .data$State) %>% 
+      dplyr::summarise(Latitude = mean(.data$Latitude, na.rm = TRUE),
+                       Longitude = mean(.data$Longitude, na.rm = TRUE),
+                       .by = .data$State) %>%
+      dplyr::mutate(StationName = .data$State,
+                    StationCode = .data$State)  
     lon_max <- 140
     lon_min <- 160
     lat_min <- -40
@@ -312,7 +312,7 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
         sf::st_as_sf()
     } else if (Survey == "GO-SHIP"){
       meta_data <- pkg.env$datGSm %>% 
-        dplyr::mutate(StationCode = StationName) 
+        dplyr::mutate(StationCode = .data$StationName) 
     } else if (Survey == "HAB"){
       meta_data <- pkg.env$datHABTrip %>% 
         dplyr::distinct(.data$Latitude, .data$Longitude, .data$State) %>% 
@@ -482,7 +482,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     selectedVar = "Bacterial_Temperature_Index_KD"
     min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
   } else if (stringr::str_detect(id, "HAB") == TRUE){ # Coastal Phytoplankton
-    choices <- unique(sort(dat$genus))
+    choices <- unique(sort(dat1$State))
     selectedSite <- c("NSW")
     idSite <- "site"
     selectedVar = "PhytoAbundance_CellsL"
@@ -535,7 +535,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       shiny::selectInput(inputId = ns("station1"), 
                          label = NULL,
                          choices = unique(sort(dat1$StationName)), 
-                         selected = NULL,
+                         selected = 'Bar Island',
                          multiple = TRUE)), 
     shiny::conditionalPanel(
       condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && input.", tabsetPanel_id, " == 2"),
@@ -555,7 +555,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       shiny::selectInput(inputId = ns("station2"),
                          label = NULL,
                          choices = unique(sort(dat1$StationName)),
-                         selected = NULL,
+                         selected = 'Storm Bay',
                          multiple = FALSE)),
     shiny::conditionalPanel(
       condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab'"),
