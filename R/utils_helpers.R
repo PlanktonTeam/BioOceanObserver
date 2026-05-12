@@ -500,7 +500,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
           shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
           leaflet::leafletOutput(ns("plotmap"), height = "400px")
         )
-      } else {
+      } else if(!stringr::str_detect(id, "HAB")) {
         shiny::tagList(
           shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
           leaflet::leafletOutput(ns("plotmap"), height = "400px")
@@ -529,7 +529,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                                class = "multicol",
                                shiny::checkboxGroupInput(inputId = ns("state"),
                                                          label = NULL,
-                                                         choices = unique(sort(dat1$State)),
+                                                         choices = choices, #c("NSW", "TAS"), #unique(sort(dat1$State)),
                                                          selected = c("NSW")))),
       shiny::HTML("<h3>Select one or more stations:</h3>"),
       shiny::selectInput(inputId = ns("station1"), 
@@ -549,7 +549,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                                class = "multicol",
                                shiny::checkboxGroupInput(inputId = ns("state"),
                                                          label = NULL,
-                                                         choices = unique(sort(dat1$State)),
+                                                         choices = choices, #unique(sort(dat1$State)),
                                                          selected = c("NSW")))),
       shiny::HTML("<h3>Select a station:</h3>"),
       shiny::selectInput(inputId = ns("station2"),
@@ -573,7 +573,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       shiny::HTML("Only taxa present in the selected stations will be available in this list."),
       shiny::selectInput(inputId = ns("taxgs1"),
                          label = NULL,
-                         choices = unique(sort(dat$genus)),
+                         choices = NULL, 
                          selected = "Amphora",
                          multiple = FALSE)
     ),
@@ -583,7 +583,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       shiny::HTML("Only taxa present in the selected stations will be available in this list."),
       shiny::selectInput(inputId = ns("taxgs2"),
                          label = NULL,
-                         choices = unique(sort(dat$genus)),
+                         choices = NULL, 
                          selected = "Amphora",
                          multiple = TRUE)
     ),

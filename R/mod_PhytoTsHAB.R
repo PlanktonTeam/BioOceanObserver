@@ -11,7 +11,7 @@ mod_PhytoTsHAB_ui <- function(id){
   nsPhytoTsHAB <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, tabsetPanel_id = "phabts", dat = pkg.env$datHABg, dat1 = pkg.env$datHABTrip), #TODO add pkg.env$ throughout
+      fPlanktonSidebar(id = id, tabsetPanel_id = "phabts", dat = pkg.env$datHABg, dat1 = pkg.env$datHABTrip), 
       fPLanktonPanel(id = id, tabsetPanel_id = "phabts")
     )
   )
@@ -33,17 +33,17 @@ mod_PhytoTsHAB_server <- function(id){
       fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
     })
 
-    observe({ 
-      
+    observe({
+
       req(input$state)
       req(input$tax)
-      
+
       select1 <- input$station1
       select2 <- input$station2
-      
+
       fLeafletUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
       fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
-      
+
       }) %>%  shiny::bindEvent(input$station1, input$station2)
 
       
@@ -62,7 +62,7 @@ mod_PhytoTsHAB_server <- function(id){
       selectedsites2 <- if(any(input$station2 %in% filtered_sites)){
         input$station2
       } else (
-        filtered_sites[3]
+        filtered_sites[1]
       )
 
       shiny::updateSelectInput(session, "station1",  choices = filtered_sites, selected = selectedsites1)
@@ -76,7 +76,7 @@ mod_PhytoTsHAB_server <- function(id){
       
       if(input$tax == "genus"){
         taxa <- pkg.env$datHABg %>%
-          dplyr::rename(TaxonName = .data$genus)
+          dplyr::rename(TaxonName = genus)
       } else {
         taxa <- pkg.env$datHABs 
       }
