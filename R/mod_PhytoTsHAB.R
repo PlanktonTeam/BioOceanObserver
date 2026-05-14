@@ -122,16 +122,16 @@ mod_PhytoTsHAB_server <- function(id){
       
       selectedData <- reactive({ 
         
-        req(input$station1)
-        req(input$state)
-        req(input$tax)
-        req(input$taxgs1)
-        req(input$parameter)
-        shiny::validate(need(!is.na(input$station1), "Error: Please select a station."))
-        shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
-        shiny::validate(need(!is.na(input$tax), "Error: Please select the taxonomic resolution."))
-        shiny::validate(need(!is.na(input$taxgs1), "Error: Please select the taxonomic resolution."))
-        shiny::validate(need(!is.na(input$state), "Error: Please select a state."))
+        # req(input$station1)
+        # req(input$state)
+        # req(input$tax)
+        # req(input$taxgs1)
+        # req(input$parameter)
+        # shiny::validate(need(!is.na(input$station1), "Error: Please select a station."))
+        # shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
+        # shiny::validate(need(!is.na(input$tax), "Error: Please select the taxonomic resolution."))
+        # shiny::validate(need(!is.na(input$taxgs1), "Error: Please select the taxonomic resolution."))
+        # shiny::validate(need(!is.na(input$state), "Error: Please select a state."))
         
         df <- taxa() %>%
           dplyr::filter(.data$TaxonName %in% input$taxgs1, 
@@ -154,14 +154,7 @@ mod_PhytoTsHAB_server <- function(id){
                         Values = ifelse(is.na(Values), 0, Values))
         
       }) %>% bindCache(input$state, input$parameter, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$tax, input$taxgs1)
-      # 
-      # #Update map1 with selections from station1 
-      # observe({
-      #   
-      #   fLeafletUpdate("plotmap1", session, unique(selectedData()$StationName), Survey = "HAB", Type = "Phytoplankton")
-      #   
-      # }) 
-      # 
+
       gg_out1 <- reactive({
         if (is.null(pkg.env$datHABg$StationCode)) {return(NULL)}
         
