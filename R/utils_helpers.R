@@ -519,10 +519,10 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     # have to do this in two stages as multiple cannot be changed dynamically with updateselectinput option
     shiny::conditionalPanel(
       condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && input.", tabsetPanel_id, " == 1"),
-      shiny::tagList(
-        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-        leaflet::leafletOutput(ns("plotmap1"), height = "400px")
-      ),
+      # shiny::tagList(
+      #   shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+      #   leaflet::leafletOutput(ns("plotmap1"), height = "400px")
+      # ),
       shiny::HTML("<h3>Select a state:</h3>"),
       shiny::fluidRow(class = "row_multicol",
                       tags$div(align = "left",
@@ -539,10 +539,10 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                          multiple = TRUE)), 
     shiny::conditionalPanel(
       condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && input.", tabsetPanel_id, " == 2"),
-      shiny::tagList(
-        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-        leaflet::leafletOutput(ns("plotmap2"), height = "400px")
-      ),
+      # shiny::tagList(
+      #   shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+      #   leaflet::leafletOutput(ns("plotmap2"), height = "400px")
+      # ),
       shiny::HTML("<h3>Select a state:</h3>"),
       shiny::fluidRow(class = "row_multicol",
                       tags$div(align = "left",

@@ -26,25 +26,25 @@ mod_PhytoTsHAB_server <- function(id){
     
     # # Sidebar ----------------------------------------------------------
     #Sidebar Maps - Initial render
-    output$plotmap1 <- leaflet::renderLeaflet({
-      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
-    })
-    output$plotmap2 <- leaflet::renderLeaflet({
-      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
-    })
-
-    observe({
-
-      req(input$state)
-      req(input$tax)
-
-      select1 <- input$station1
-      select2 <- input$station2
-
-      fLeafletUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
-      fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
-
-      }) %>%  shiny::bindEvent(input$station1, input$station2)
+    # output$plotmap1 <- leaflet::renderLeaflet({
+    #   fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
+    # })
+    # output$plotmap2 <- leaflet::renderLeaflet({
+    #   fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
+    # })
+    # 
+    # observe({
+    # 
+    #   req(input$state)
+    #   req(input$tax)
+    # 
+    #   select1 <- input$station1
+    #   select2 <- input$station2
+    # 
+    #   fLeafletUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
+    #   fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
+    # 
+    #   }) %>%  shiny::bindEvent(input$station1, input$station2)
 
       
     observe({
