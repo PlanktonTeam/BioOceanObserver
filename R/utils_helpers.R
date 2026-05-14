@@ -592,9 +592,9 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
         shiny::HTML("<h3>Dates:</h3>"),
         shiny::sliderInput(ns("DatesSlide"), 
                            label = NULL, 
-                           min = as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart"), 
+                           min = min_date, 
                            max = Sys.time(), 
-                           value = c(as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart"), Sys.time()-1), timeFormat="%m-%Y")),
+                           value = c(min_date, Sys.time()-1), timeFormat="%m-%Y")),
     # Parameter selection for Microbes
     # All subtabs (ie 1-3) using this input need to be created together
     shiny::conditionalPanel(
