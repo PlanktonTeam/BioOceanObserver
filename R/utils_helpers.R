@@ -685,8 +685,8 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                        if(tabsetPanel_id %in% c("phabts")){
                          shiny::tabPanel("Trend analysis by location", value = "1",
                                          shiny::htmlOutput(ns("PlotExp1")),
-                                         plotOutput(ns("timeseries1"), height = "auto") %>% 
-                                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                                         # plotOutput(ns("timeseries1"), height = "auto") %>% 
+                                         #   shinycssloaders::withSpinner(color="#0dc5c1"),
                                          div(class="download-button-container",
                                              fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                                              fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
@@ -695,8 +695,8 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                        if(tabsetPanel_id %in% c("phabts")){
                          shiny::tabPanel("Trend analysis by taxa", value = "2",
                                          shiny::htmlOutput(ns("PlotExp2")),  
-                                         plotOutput(ns("timeseries2"), height = "auto") %>% 
-                                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                                         # plotOutput(ns("timeseries2"), height = "auto") %>% 
+                                         #   shinycssloaders::withSpinner(color="#0dc5c1"),
                                          div(class="download-button-container",
                                              fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
                                              fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
