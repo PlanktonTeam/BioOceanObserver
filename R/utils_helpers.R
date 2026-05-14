@@ -137,8 +137,8 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = "Zooplankton",
     zoom <- 1.5
   } else if (Survey == "GO-SHIP"){
     meta_data <- pkg.env$datGSm %>% 
-      dplyr::distinct(Latitude, Longitude, .keep_all = TRUE) %>% 
-      dplyr::mutate(StationCode = StationName)
+      dplyr::distinct(.data$Latitude, .data$Longitude, .keep_all = TRUE) %>% 
+      dplyr::mutate(StationCode = .data$StationName)
     lon_max <- -150
     lon_min <- -180
     lat_min <- -60
@@ -685,8 +685,8 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                        if(tabsetPanel_id %in% c("phabts")){
                          shiny::tabPanel("Trend analysis by location", value = "1",
                                          shiny::htmlOutput(ns("PlotExp1")),
-                                         # plotOutput(ns("timeseries1"), height = "auto") %>% 
-                                         #   shinycssloaders::withSpinner(color="#0dc5c1"),
+                                         plotOutput(ns("timeseries1"), height = "auto") %>%
+                                           shinycssloaders::withSpinner(color="#0dc5c1"),
                                          div(class="download-button-container",
                                              fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                                              fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
@@ -695,8 +695,8 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                        if(tabsetPanel_id %in% c("phabts")){
                          shiny::tabPanel("Trend analysis by taxa", value = "2",
                                          shiny::htmlOutput(ns("PlotExp2")),  
-                                         # plotOutput(ns("timeseries2"), height = "auto") %>% 
-                                         #   shinycssloaders::withSpinner(color="#0dc5c1"),
+                                         plotOutput(ns("timeseries2"), height = "auto") %>%
+                                           shinycssloaders::withSpinner(color="#0dc5c1"),
                                          div(class="download-button-container",
                                              fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
                                              fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),

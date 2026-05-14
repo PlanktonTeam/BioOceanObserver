@@ -37,7 +37,7 @@ mod_NutrientsBGC_server <- function(id){
       shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       
       pkg.env$Nuts %>%
-        dplyr::select(-c(TripCode, Project)) %>% #TODO check if we need this
+        dplyr::select(-c(.data$TripCode, .data$Project)) %>% #TODO check if we need this
         dplyr::filter(.data$StationName %in% input$site,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$Parameters %in% input$parameter) %>% 
