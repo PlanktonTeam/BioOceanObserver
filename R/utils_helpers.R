@@ -438,7 +438,7 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
 #'
 #' @noRd 
 
-fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added for SOTS phytoplankton
+fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added for SOTS / HABS phytoplankton
 
   ns <- NS(id)
   
@@ -683,7 +683,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                            fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
                        )},
                        if(tabsetPanel_id %in% c("phabts")){
-                         shiny::tabPanel(id = "phabts1", "Trend analysis by location", value = "1",
+                         shiny::tabPanel("Trend analysis by location", value = "1",
                                          shiny::htmlOutput(ns("PlotExp1")),
                                          plotOutput(ns("timeseries1"), height = "auto") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1"),
@@ -693,7 +693,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                              fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
                          )},
                        if(tabsetPanel_id %in% c("phabts")){
-                         shiny::tabPanel(id = "phabts2", "Trend analysis by taxa", value = "2",
+                         shiny::tabPanel("Trend analysis by taxa", value = "2",
                                          shiny::htmlOutput(ns("PlotExp2")),  
                                          plotOutput(ns("timeseries2"), height = "auto") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1"),

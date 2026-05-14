@@ -95,7 +95,7 @@ mod_PhytoTsHAB_server <- function(id){
     
     param <- reactive({
       param <- taxa() %>% dplyr::filter(.data$Parameters %in% input$parameter)
-    }) %>% shiny::bindCache(input$parameter)
+    }) 
 
 
     # Plot Trends by location -------------------------------------------------------------
