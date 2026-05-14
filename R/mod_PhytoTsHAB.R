@@ -26,25 +26,25 @@ mod_PhytoTsHAB_server <- function(id){
     
     # # Sidebar ----------------------------------------------------------
     #Sidebar Maps - Initial render
-    # output$plotmap1 <- leaflet::renderLeaflet({
-    #   fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
-    # })
-    # output$plotmap2 <- leaflet::renderLeaflet({
-    #   fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
-    # })
-    # 
-    # observe({
-    # 
-    #   req(input$state)
-    #   req(input$tax)
-    # 
-    #   select1 <- input$station1
-    #   select2 <- input$station2
-    # 
-    #   fLeafletUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
-    #   fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
-    # 
-    #   }) %>%  shiny::bindEvent(input$station1, input$station2)
+    output$plotmap1 <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
+    })
+    output$plotmap2 <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
+    })
+
+    observe({
+
+      req(input$state)
+      req(input$tax)
+
+      select1 <- input$station1
+      select2 <- input$station2
+
+      fLeafletUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
+      fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
+
+      }) %>%  shiny::bindEvent(input$station1, input$station2)
 
       
     observe({
@@ -163,7 +163,8 @@ mod_PhytoTsHAB_server <- function(id){
       # }) 
       # 
       gg_out1 <- reactive({
-        if (is.null(datHABg$StationCode)) {return(NULL)}
+        if (is.null(pkg.env$datHABg$StationCode)) {return(NULL)}
+        
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
 
         if(input$parameter == 'PhytoAbundance_CellsL'){
@@ -271,7 +272,8 @@ mod_PhytoTsHAB_server <- function(id){
       })
 
       gg_out2 <- reactive({
-        if (is.null(datHABg$StationCode)) {return(NULL)}
+        if (is.null(pkg.env$datHABg$StationCode)) {return(NULL)}
+        
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
 
         p1 <- planktonr::pr_plot_Trends(selectedData2(), Trend = "Raw", method = "lm", trans = trans) 
