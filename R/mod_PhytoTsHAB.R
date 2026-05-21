@@ -38,7 +38,6 @@ mod_PhytoTsHAB_server <- function(id){
 
     observe({
 
-      req(input$statepick1)
       req(input$tax)
       req(input$station1)
 
@@ -50,7 +49,6 @@ mod_PhytoTsHAB_server <- function(id){
 
     observe({
       
-      req(input$statepick2)
       req(input$tax)
       req(input$station2)
       

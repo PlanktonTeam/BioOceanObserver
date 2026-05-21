@@ -147,13 +147,7 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = "Zooplankton",
     clat <- -40
     zoom <- 2
   } else if (Survey == "HAB"){
-    meta_data <- pkg.env$datHABTrip %>% 
-      dplyr::distinct(.data$Latitude, .data$Longitude, .data$State) %>% 
-      dplyr::summarise(Latitude = mean(.data$Latitude, na.rm = TRUE),
-                       Longitude = mean(.data$Longitude, na.rm = TRUE),
-                       .by = .data$State) %>%
-      dplyr::mutate(StationName = .data$State,
-                    StationCode = .data$State)  
+    meta_data <- readRDS("data-raw/aus_states_simplified.rds")  
     lon_max <- 140
     lon_min <- 160
     lat_min <- -40
@@ -222,7 +216,31 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = "Zooplankton",
                            fillOpacity = 0.7,
                            label = ~REGION,
                            highlight = leaflet::highlightOptions(weight = 2, bringToFront = TRUE))
-  } else { # Not CPR
+  } else if (Survey == "HAB") {
+    # Add color column based on selection for point datasets
+    meta_data <- meta_data %>%
+      dplyr::mutate(
+        Selected = .data$StateCode %in% sites,
+        Color = dplyr::if_else(.data$Selected, "red", "black"),
+        Opacity = dplyr::if_else(.data$Selected, 0.2, 0),
+        Radius = dplyr::if_else(.data$Selected, 2, 1)
+      )
+    
+    map <- map %>%
+      leaflet::addPolygons(data = meta_data,
+                           color = ~Color,
+                           opacity = ~Opacity, 
+                           fillColor = ~Color,
+                           fillOpacity = ~Opacity,
+                           weight = ~Radius,
+                           label = ~StationName,
+                           labelOptions = leaflet::labelOptions(
+                             style = list("font-weight" = "normal", "padding" = "3px 8px"),
+                             textsize = "12px",
+                             direction = "auto"
+                           ))
+    
+  } else { # Not CPR or  HAB
     
     # Add color column based on selection for point datasets
     meta_data <- meta_data %>%
@@ -314,12 +332,7 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
       meta_data <- pkg.env$datGSm %>% 
         dplyr::mutate(StationCode = .data$StationName) 
     } else if (Survey == "HAB"){
-      meta_data <- pkg.env$datHABTrip %>% 
-        dplyr::distinct(.data$Latitude, .data$Longitude, .data$State) %>% 
-        dplyr::summarise(Latitude = mean(.data$Latitude),
-                         Longitude = mean(.data$Longitude),
-                         .by = .data$State) %>%
-        dplyr::mutate(StationCode = .data$State)
+      meta_data <- readRDS("data-raw/aus_states_simplified.rds") 
 
       meta_data_station <- pkg.env$datHABTrip %>%
         dplyr::mutate(StationCode = .data$StationName)  
@@ -363,9 +376,10 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
       
       meta_data <- meta_data %>%
         dplyr::mutate(
-          Selected = .data$State %in% unique(meta_data_station$State),
+          Selected = .data$StateCode %in% unique(meta_data_station$State),
           Color = dplyr::if_else(.data$Selected, "red", "blue"),
-          Radius = dplyr::if_else(.data$Selected, 8, 6)
+          Opacity = dplyr::if_else(.data$Selected, 0.2, 0),
+          Radius = dplyr::if_else(.data$Selected, 2, 1)
         )
         
     } else {
@@ -381,21 +395,14 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
     if(Survey == "HAB"){
       proxy %>%
         leaflet::clearMarkers() %>%
-        leaflet::addCircleMarkers(
+        leaflet::clearShapes() %>%
+        leaflet::addPolygons(
           data = meta_data,
-          lng = ~Longitude,
-          lat = ~Latitude,
           color = ~Color,
+          opacity = ~Opacity, 
           fillColor = ~Color,
-          radius = ~Radius,
-          fillOpacity = 0.8,
-          opacity = 1,
-          weight = 2,
-          label = ~State,
-          labelOptions = leaflet::labelOptions(
-            style = list("font-weight" = "normal", "padding" = "3px 8px"),
-            textsize = "12px",
-            direction = "auto")) %>%
+          fillOpacity = ~Opacity,
+          weight = ~Radius) %>%
             leaflet::addCircleMarkers(
               data = meta_data_station,
               lng = ~Longitude,
@@ -403,7 +410,7 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
               color = ~Color,
               fillColor = ~Color,
               radius = ~Radius,
-              fillOpacity = 0.8,
+              fillOpacity = 0.5,
               opacity = 1,
               weight = 2,
               label = ~StationName,

@@ -9,7 +9,6 @@ modified_time <- lubridate::now()
 col12 <- RColorBrewer::brewer.pal(12, "Paired") %>% 
   stringr::str_replace("#FFFF99", "#000000") # Replace yellow with black
 
-
 # Trip Data Information ---------------------------------------------------
 
 datNRSTrip <- planktonr::pr_get_trips(Survey = "NRS") %>% 
