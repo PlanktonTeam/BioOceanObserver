@@ -541,7 +541,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       shiny::HTML("<h3>Select one or more stations:</h3>"),
       shiny::selectInput(inputId = ns("station1"), 
                          label = NULL,
-                         choices = unique(sort(dat1$StationName)), 
+                         choices = NULL, #unique(sort(dat1$StationName)), 
                          selected = 'Bar Island',
                          multiple = TRUE)), 
     shiny::conditionalPanel(
@@ -561,7 +561,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       shiny::HTML("<h3>Select a station:</h3>"),
       shiny::selectInput(inputId = ns("station2"),
                          label = NULL,
-                         choices = unique(sort(dat1$StationName)),
+                         choices = NULL, #unique(sort(dat1$StationName)),
                          selected = 'Storm Bay',
                          multiple = FALSE)),
     shiny::conditionalPanel(
