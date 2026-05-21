@@ -66,6 +66,8 @@ mod_MicroTsNRS_server <- function(id){
       fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
     })
     
+    outputOptions(output, "plotmap", suspendWhenHidden = FALSE) # prevent shiny from re-rendering as using this base map twice under phyto tab
+    
     # Update map when station selection changes
     observe({
       # Convert StationName to StationCode, handle empty selection
@@ -77,7 +79,7 @@ mod_MicroTsNRS_server <- function(id){
         character(0)
       }
       fLeafletUpdate("plotmap", session, stationCodes, 
-                     Survey = "NRS", Type = "Microbes")
+                     Survey = "NRS", Type = "Zooplankton")
     })
     
     # Add text information

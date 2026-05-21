@@ -32,44 +32,66 @@ mod_PhytoTsHAB_server <- function(id){
     output$plotmap2 <- leaflet::renderLeaflet({
       fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
     })
+    
+    outputOptions(output, "plotmap1", suspendWhenHidden = FALSE) # prevent shiny from re-rendering as using this base map twice under phyto tab
+    outputOptions(output, "plotmap2", suspendWhenHidden = FALSE)
 
     observe({
 
-      req(input$state)
+      req(input$statepick1)
       req(input$tax)
+      req(input$station1)
 
       select1 <- input$station1
-      select2 <- input$station2
 
       fLeafletUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
-      fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
 
-      }) %>%  shiny::bindEvent(input$station1, input$station2)
+      }) 
 
-      
     observe({
       
-      req(input$state)
+      req(input$statepick2)
+      req(input$tax)
+      req(input$station2)
+      
+      select2 <- input$station2
+      
+      fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
+      
+    }) 
+    
+    observeEvent({input$statepick1}, {
+      
+      req(input$statepick1)
 
       # Filter sites based on the selected state
-      filtered_sites <- unique(sort((pkg.env$datHABTrip %>% dplyr::filter(.data$State %in% input$state))$StationName))
+      filtered_sites <- unique(sort((pkg.env$datHABTrip %>% dplyr::filter(.data$State %in% input$statepick1))$StationName))
       # Update the site_input choices
       selectedsites1 <- if(any(input$station1 %in% filtered_sites)){
         input$station1
       } else (
         filtered_sites[1]
       )
+      shiny::updateSelectInput(session, "station1",  choices = filtered_sites, selected = selectedsites1)
+
+          }) 
+
+    observeEvent({input$statepick2}, {
+      
+      req(input$statepick2)
+      
+      # Filter sites based on the selected state
+      filtered_sites <- unique(sort((pkg.env$datHABTrip %>% dplyr::filter(.data$State %in% input$statepick2))$StationName))
+      # Update the site_input choices
       selectedsites2 <- if(any(input$station2 %in% filtered_sites)){
         input$station2
       } else (
         filtered_sites[1]
       )
-
-      shiny::updateSelectInput(session, "station1",  choices = filtered_sites, selected = selectedsites1)
       shiny::updateSelectInput(session, "station2",  choices = filtered_sites, selected = selectedsites2)
-
-          }) %>%  shiny::bindEvent(input$state)
-
+      
+    }) 
+    
     taxa <- reactive({
       
       req(input$tax)
@@ -84,6 +106,9 @@ mod_PhytoTsHAB_server <- function(id){
     
     
     observe({
+      req(input$statepick1)
+      req(input$statepick2)
+      
       dat <- taxa() %>% 
         dplyr::filter(.data$StationName %in% input$station1,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2]))
@@ -124,7 +149,8 @@ mod_PhytoTsHAB_server <- function(id){
       selectedData <- reactive({ 
         
         req(input$station1)
-        req(input$state)
+        req(input$statepick2)
+        req(input$statepick1)
         req(input$tax)
         req(input$taxgs1)
         req(input$parameter)
@@ -132,7 +158,7 @@ mod_PhytoTsHAB_server <- function(id){
         shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
         shiny::validate(need(!is.na(input$tax), "Error: Please select the taxonomic resolution."))
         shiny::validate(need(!is.na(input$taxgs1), "Error: Please select the taxonomic resolution."))
-        shiny::validate(need(!is.na(input$state), "Error: Please select a state."))
+        shiny::validate(need(!is.na(input$statepick1), "Error: Please select a state."))
         
         df <- taxa() %>%
           dplyr::filter(.data$TaxonName %in% input$taxgs1, 
@@ -154,7 +180,7 @@ mod_PhytoTsHAB_server <- function(id){
                         TaxonName = input$taxgs1, 
                         Values = ifelse(is.na(.data$Values), 0, .data$Values))
         
-      }) %>% bindCache(input$state, input$parameter, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$tax, input$taxgs1)
+      }) %>% bindCache(input$statepick1, input$parameter, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$tax, input$taxgs1)
 
       gg_out1 <- reactive({
         if (is.null(pkg.env$datHABg$StationCode)) {return(NULL)}
@@ -180,7 +206,7 @@ mod_PhytoTsHAB_server <- function(id){
         
         p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect") 
 
-      }) %>% bindCache(input$state, input$parameter, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$scaler1, input$tax, input$taxgs1)
+      }) %>% bindCache(input$statepick1, input$parameter, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$scaler1, input$tax, input$taxgs1)
 
       output$timeseries1 <- renderPlot({
         gg_out1()
@@ -221,7 +247,7 @@ mod_PhytoTsHAB_server <- function(id){
       selectedData2 <- reactive({ 
       
       req(input$station2)
-      req(input$state)
+      req(input$statepick2)
       req(input$tax)
       req(input$taxgs2)
       req(input$parameter)
@@ -229,7 +255,7 @@ mod_PhytoTsHAB_server <- function(id){
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       shiny::validate(need(!is.na(input$tax), "Error: Please select the taxonomic resolution."))
       shiny::validate(need(!is.na(input$taxgs2), "Error: Please select the taxonomic resolution."))
-      shiny::validate(need(!is.na(input$state), "Error: Please select a state."))
+      shiny::validate(need(!is.na(input$statepick2), "Error: Please select a state."))
       
       df <- taxa() %>%
         dplyr::filter(.data$TaxonName %in% input$taxgs2, 
@@ -256,7 +282,7 @@ mod_PhytoTsHAB_server <- function(id){
                       TaxonName = .data$Taxon) %>% 
         planktonr::planktonr_dat(Type = 'Phytoplankton', Survey = 'HAB')
       
-    }) %>% bindCache(input$state, input$parameter, input$station2, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$tax, input$taxgs2)
+    }) %>% bindCache(input$statepick2, input$parameter, input$station2, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$tax, input$taxgs2)
 
       #Update map2 with selections from station2
       observe({

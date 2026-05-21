@@ -161,7 +161,8 @@ datHABg <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Sub
   dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
   dplyr::select(-"TripCode") %>% 
-  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything())
+  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything()) 
+  
 datHABs <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'species') %>% 
   dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
