@@ -117,6 +117,31 @@ datCPRp <- planktonr::pr_get_Indices(Survey = "CPR", Type = "Phytoplankton", nea
 
 PCI <- planktonr::pr_get_PCIData()
 
+# HAB data from Coastal Phytoplankton
+SpecToInclude <- planktonr:::HABDat %>% 
+  dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = .data$TaxonName) %>% 
+  dplyr::filter(.data$non_zero_count > 50)
+  
+GenToInclude <- planktonr:::HABDat %>% 
+  dplyr::mutate(Genus = stringr::word(.data$TaxonName, 1)) %>% 
+  dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = .data$Genus) %>% 
+  dplyr::filter(.data$non_zero_count > 50) 
+
+datHABg <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'Genus') %>% 
+  dplyr::filter(Genus %in% GenToInclude$Genus) %>% 
+  dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
+                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
+  dplyr::select(-"TripCode") %>% 
+  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything()) %>%
+  dplyr::rename(TaxonName = .data$Genus)
+
+datHABs <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'Species') %>% 
+  dplyr::filter(TaxonName %in% SpecToInclude$TaxonName) %>% 
+  dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
+                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
+  dplyr::select(-"TripCode") %>% 
+  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything())
+
 # FG time series data -----------------------------------------------------
 
 NRSfgz <- planktonr::pr_get_FuncGroups(Survey = "NRS", Type = "Zooplankton")
@@ -154,19 +179,6 @@ CSChem <- planktonr::pr_get_data(Survey = "Coastal", Type = "Chemistry") %>%
                 SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'day')) %>% 
   dplyr::filter(Values != -9999)
-
-# HAB data from Coastal Phytoplankton
-datHABg <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'genus') %>% 
-  dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
-                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
-  dplyr::select(-"TripCode") %>% 
-  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything()) 
-  
-datHABs <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'species') %>% 
-  dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
-                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
-  dplyr::select(-"TripCode") %>% 
-  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything())
 
 # STI data ----------------------------------------------------------------
 

@@ -500,7 +500,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     
     # Put Map, Station names on all panels except HABS
     shiny::conditionalPanel(
-      condition = paste0("!(input.navbar == 'Phytoplankton' && input.phyto == 'phab')"), 
+      condition = paste0("!(input.navbar == 'Coastal Phytoplankton')"), 
       # Use leafletOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
       if(stringr::str_detect(id, "CPR")) {
         shiny::tagList(
@@ -525,7 +525,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     #Add state then multiple stations, and one genus or species options for HABs
     # have to do this in two stages as multiple cannot be changed dynamically with updateselectinput option
     shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && input.", tabsetPanel_id, " == 1"),
+      condition = paste0("input.navbar == 'Coastal Phytoplankton' && input.", tabsetPanel_id, " == 1"),
       shiny::tagList(
         shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
         leaflet::leafletOutput(ns("plotmap1"), height = "400px")
@@ -543,13 +543,43 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                          label = NULL,
                          choices = unique(sort(dat1$StationName)), 
                          selected = 'Bar Island',
-                         multiple = TRUE)), 
+                         multiple = TRUE),
+      shiny::HTML("<h3>Select taxonomic level:</h3>"),
+      shiny::fluidRow(class = "row_multicol",
+                      tags$div(align = "left",
+                               class = "multicol",
+                               shiny::radioButtons(inputId = ns("tax1"),
+                                                   label = NULL,
+                                                   choices = c("genus", "species"),
+                                                   selected = "genus"))),
+      shiny::HTML("<h3>Select a genera or species:</h3>"),
+      shiny::HTML("Only taxa present in the selected stations will be available in this list."),
+      shiny::selectInput(inputId = ns("taxgs1"),
+                         label = NULL,
+                         choices = NULL, 
+                         selected = "Amphora",
+                         multiple = FALSE)
+      ), 
     shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && input.", tabsetPanel_id, " == 2"),
+      condition = paste0("input.navbar == 'Coastal Phytoplankton' && input.", tabsetPanel_id, " == 2"),
       shiny::tagList(
         shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
         leaflet::leafletOutput(ns("plotmap2"), height = "400px")
       ),
+      shiny::HTML("<h3>Select taxonomic level:</h3>"),
+      shiny::fluidRow(class = "row_multicol",
+                      tags$div(align = "left",
+                               class = "multicol",
+                               shiny::radioButtons(inputId = ns("tax2"),
+                                                   label = NULL,
+                                                   choices = c("genus", "species"),
+                                                   selected = "genus"))),
+      shiny::HTML("<h3>Select one or more genera or species:</h3>"),
+      shiny::selectInput(inputId = ns("taxgs2"),
+                         label = NULL,
+                         choices = NULL, 
+                         selected = "Alexandrium",
+                         multiple = TRUE),
       shiny::HTML("<h3>Select a state:</h3>"),
       shiny::fluidRow(class = "row_multicol",
                       tags$div(align = "left",
@@ -559,41 +589,13 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                                                          choices = choices, #unique(sort(dat1$State)),
                                                          selected = c("NSW")))),
       shiny::HTML("<h3>Select a station:</h3>"),
+      shiny::HTML("Only stations where this taxa is present will be available in this list."),
       shiny::selectInput(inputId = ns("station2"),
                          label = NULL,
                          choices = unique(sort(dat1$StationName)),
-                         selected = 'Storm Bay',
-                         multiple = FALSE)),
-    shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab'"),
-      shiny::HTML("<h3>Select taxonomic level:</h3>"),
-      shiny::fluidRow(class = "row_multicol",
-                      tags$div(align = "left",
-                               class = "multicol",
-                               shiny::radioButtons(inputId = ns("tax"),
-                                                         label = NULL,
-                                                         choices = c("genus", "species"),
-                                                         selected = "genus")))),
-    shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && input.", tabsetPanel_id, " == 1"),
-      shiny::HTML("<h3>Select a genera or species:</h3>"),
-      shiny::HTML("Only taxa present in the selected stations will be available in this list."),
-      shiny::selectInput(inputId = ns("taxgs1"),
-                         label = NULL,
-                         choices = NULL, 
-                         selected = "Amphora",
+                         selected = 'Port Stephens',
                          multiple = FALSE)
-    ),
-    shiny::conditionalPanel(
-      condition = paste0("input.navbar == 'Phytoplankton' && input.phyto == 'phab' && input.", tabsetPanel_id, " == 2"),
-      shiny::HTML("<h3>Select a genera or species:</h3>"),
-      shiny::HTML("Only taxa present in the selected stations will be available in this list."),
-      shiny::selectInput(inputId = ns("taxgs2"),
-                         label = NULL,
-                         choices = NULL, 
-                         selected = "Amphora",
-                         multiple = TRUE)
-    ),
+  ),
     shiny::conditionalPanel(
         condition = paste0("input.", tabsetPanel_id, " <= 5"), 
         shiny::HTML("<h3>Dates:</h3>"),

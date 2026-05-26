@@ -52,6 +52,10 @@ app_server <- function( input, output, session ) {
       mod_PhytoTsNRS_server("PhytoTsNRS_ui_1")
     }
     
+    if(input$navbar == "Coastal Phytoplankton"){
+      mod_PhytoTsHAB_server("PhytoTsHAB_ui_1")
+    }
+    
     if(input$navbar == "Zooplankton") {
       mod_ZooTsNRS_server("ZooTsNRS_ui_1")
     }
@@ -113,11 +117,7 @@ app_server <- function( input, output, session ) {
     if(input$phyto == "distp"){
       mod_PhytoSpatial_server("PhytoSpatial_ui_1")
     }
-    
-    ### Phytoplankton Coastal HAB data  
-    if(input$phyto == "phab"){
-      mod_PhytoTsHAB_server("PhytoTsHAB_ui_1")
-    }
+
   })
   
   
