@@ -11,7 +11,7 @@ mod_PhytoTsHAB_ui <- function(id){
   nsPhytoTsHAB <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, tabsetPanel_id = "phabts", dat = pkg.env$datHABg, dat1 = pkg.env$datHABTrip), 
+      fPlanktonSidebar(id = id, tabsetPanel_id = "phabts", dat = pkg.env$datHABTrip), 
       fPLanktonPanel(id = id, tabsetPanel_id = "phabts")
     )
   )

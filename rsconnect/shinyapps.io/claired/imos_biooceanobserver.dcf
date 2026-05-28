@@ -1,0 +1,13 @@
+name: imos_biooceanobserver
+title:
+username: claired
+account: claired
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 17432515
+bundleId: 12054041
+url: https://claired.shinyapps.io/imos_biooceanobserver/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .Rbuildignore|app.R|dev/01_start.R|dev/02_dev.R|dev/03_deploy.R|dev/run_dev.R|tests/spelling.R|tests/testthat/setup.R|tests/testthat/test-golem-recommended.R|tests/testthat/test-shinytest2.R|tests/testthat.R

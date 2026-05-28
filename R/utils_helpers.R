@@ -447,7 +447,7 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
 #'
 #' @noRd 
 
-fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added for SOTS / HABS phytoplankton
+fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added for SOTS phytoplankton
 
   ns <- NS(id)
   
@@ -457,6 +457,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
     min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
     idSite <- "site"
+    choicesp <- planktonr:::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE)
     
     if(exists('dat1') == TRUE){
       df <- dat %>% 
@@ -479,6 +480,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     selectedSite <- c("Temperate East", "South-east")
     idSite <- "site"
     min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
+    choicesp <- planktonr:::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE)
     if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + CPR
       selectedVar = "ZoopAbundance_m3"
     } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + CPR
@@ -490,12 +492,15 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     idSite <- "site"
     selectedVar = "Bacterial_Temperature_Index_KD"
     min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
+    choicesp <- planktonr:::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE)
   } else if (stringr::str_detect(id, "HAB") == TRUE){ # Coastal Phytoplankton
-    choices <- unique(sort(dat1$State))
+    choices <- unique(sort(dat$State))
     selectedSite <- c("NSW")
     idSite <- "site"
     selectedVar = "PhytoAbundance_CellsL"
-    min_date <- as.POSIXct(paste0(min(dat$Year_Local), "-01-01 00:00"), format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
+    min_date <- as.POSIXct(paste0(min(lubridate::year(dat$StartDate)), "-01-01 00:00"), format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart") 
+    plist <- c("NoPhytoSpecies_Sample", "PhytoAbundance_CellsL", "Biovolume_um3L", "PhytoBiomassCarbon_pgL")
+    choicesp <- planktonr:::pr_relabel(plist, style = "simple", named = TRUE)
   } 
 
   shiny::sidebarPanel(
@@ -538,12 +543,12 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                                class = "multicol",
                                shiny::checkboxGroupInput(inputId = ns("statepick1"),
                                                          label = NULL,
-                                                         choices = choices, #c("NSW", "TAS"), #unique(sort(dat1$State)),
+                                                         choices = choices, 
                                                          selected = c("NSW")))),
       shiny::HTML("<h3>Select one or more stations:</h3>"),
       shiny::selectInput(inputId = ns("station1"), 
                          label = NULL,
-                         choices = unique(sort(dat1$StationName)), 
+                         choices = c("Bar Island", "Wapengo Lake", "Clyde River", "Wallis Lake", "Port Stephens"), 
                          selected = 'Bar Island',
                          multiple = TRUE),
       shiny::HTML("<h3>Select taxonomic level:</h3>"),
@@ -588,13 +593,13 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                                class = "multicol",
                                shiny::radioButtons(inputId = ns("statepick2"),
                                                          label = NULL,
-                                                         choices = choices, #unique(sort(dat1$State)),
+                                                         choices = choices, 
                                                          selected = c("NSW")))),
       shiny::HTML("<h3>Select a station:</h3>"),
       shiny::HTML("Only stations where this taxa is present will be available in this list."),
       shiny::selectInput(inputId = ns("station2"),
                          label = NULL,
-                         choices = unique(sort(dat1$StationName)),
+                         choices = c("Bar Island", "Wapengo Lake", "Clyde River", "Wallis Lake", "Port Stephens"),
                          selected = 'Bar Island',
                          multiple = FALSE)
   ),
@@ -629,7 +634,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       shiny::HTML("<h3>Select a parameter:</h3>"),
       shiny::selectInput(inputId = ns("parameter"), 
                          label = NULL, 
-                         choices = planktonr:::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
+                         choices = choicesp, 
                          selected = selectedVar),
       shiny::htmlOutput(ns("ParamDef")),
     ),

@@ -31,6 +31,7 @@ datHABTrip <- planktonr::pr_get_trips(Survey = "HAB") %>%
   dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]"))) %>% 
   dplyr::summarise(Latitude = mean(Latitude),
                    Longitude = mean(Longitude),
+                   StartDate = min(SampleDate),
                    .by = c(StationName, State))
 
 datHABdataTable <- planktonr:::HABSamples %>% 
@@ -383,7 +384,7 @@ usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   datCPRz, datCPRp, PCI,
                   datNRSz, datNRSp, datNRSw, 
                   datNRSm, datCSm, datGSm,
-                  datHABg, datHABs, datHABTrip, datHABdataTable,
+                  datHABg, datHABs, datHABTrip, datHABdataTable, 
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
                   SOTSp, SOTSfgp, 
                   stiz, stip, daynightz, daynightp,
