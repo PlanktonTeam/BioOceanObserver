@@ -22,7 +22,7 @@ mod_PhytoTsNRS_ui <- function(id){
 #' @noRd 
 mod_PhytoTsNRS_server <- function(id){
   
-  moduleServer(id, function(input, output, session){
+  moduleServer(id, function(input, output, session, NRSpts){
     
     # Sidebar ----------------------------------------------------------
     # observeEvent({input$NRSpt == 1 | input$NRSpt == 2}, {

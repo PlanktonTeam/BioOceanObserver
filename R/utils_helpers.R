@@ -369,14 +369,16 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
         )
     } else if (Survey == "HAB") {
       # Only plot the stations selected as there are too many otherwise
-      meta_data_station <- meta_data_station %>% 
-        dplyr::filter(.data$StationName %in% sites) %>% 
-        dplyr::mutate(Color = "Black",
-                      Radius = 3)
+      meta_data_station <- meta_data_station %>%
+        dplyr::mutate(
+          Selected = .data$StationName %in% sites,
+          Color = dplyr::if_else(.data$Selected, "black", "white"),
+          Opacity = dplyr::if_else(.data$Selected, 0.5, 0),
+          Radius = dplyr::if_else(.data$Selected, 2, 0.01))
       
       meta_data <- meta_data %>%
         dplyr::mutate(
-          Selected = .data$StateCode %in% unique(meta_data_station$State),
+          Selected = .data$StateCode %in% sites,
           Color = dplyr::if_else(.data$Selected, "red", "blue"),
           Opacity = dplyr::if_else(.data$Selected, 0.2, 0),
           Radius = dplyr::if_else(.data$Selected, 2, 1)
@@ -410,8 +412,8 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
               color = ~Color,
               fillColor = ~Color,
               radius = ~Radius,
-              fillOpacity = 0.5,
-              opacity = 1,
+              fillOpacity = ~Opacity,
+              opacity = ~Opacity,
               weight = 2,
               label = ~StationName,
               labelOptions = leaflet::labelOptions(
@@ -584,7 +586,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       shiny::fluidRow(class = "row_multicol",
                       tags$div(align = "left",
                                class = "multicol",
-                               shiny::checkboxGroupInput(inputId = ns("statepick2"),
+                               shiny::radioButtons(inputId = ns("statepick2"),
                                                          label = NULL,
                                                          choices = choices, #unique(sort(dat1$State)),
                                                          selected = c("NSW")))),
@@ -593,7 +595,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       shiny::selectInput(inputId = ns("station2"),
                          label = NULL,
                          choices = unique(sort(dat1$StationName)),
-                         selected = 'Port Stephens',
+                         selected = 'Bar Island',
                          multiple = FALSE)
   ),
     shiny::conditionalPanel(
