@@ -120,6 +120,10 @@ app_server <- function( input, output, session ) {
 
   })
   
+  # Coastal Phyto ----------------------------------------------------------------
+  
+  #only on tabpanel so observeEvent() within server for each minor tab
+  
   
   # Zooplankton -------------------------------------------------------------
   

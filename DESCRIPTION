@@ -46,4 +46,4 @@ Language: en-US
 Depends: 
     R (>= 3.5)
 Remotes: 
-    github::PlanktonTeam/planktonr@HAB
+    github::PlanktonTeam/planktonr
