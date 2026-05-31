@@ -96,9 +96,10 @@ golem_add_external_resources <- function(){
     if( Sys.getenv('SHINY_PORT') != "" ) {
       tags$script(src = "GoogleAnalytics.html")
       },
+
+        favicon(),    
     
-    
-    favicon(),    bundle_resources(
+   bundle_resources(
       path = app_sys('app/www'),
       app_title = 'Biological Ocean Observer'
     ),
