@@ -565,7 +565,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       shiny::selectInput(inputId = ns("taxgs1"),
                          label = NULL,
                          choices = NULL, 
-                         selected = "Amphora",
+                         selected = "Alexandrium",
                          multiple = FALSE)
       ), 
     shiny::conditionalPanel(
