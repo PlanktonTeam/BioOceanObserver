@@ -44,26 +44,6 @@ mod_PhytoTsHAB_server <- function(id){
 
       })
 
-    observe({
-      req(input$statepick2)
-      req(input$station2)
-
-      station <- tryCatch({
-        availableStations2()
-      }, error = function(e) {
-        return(NULL) # isTruthy(NULL) is FALSE
-      })
-      
-      if(isTruthy(station) && input$station2 %in% station){
-        select2 <- c(input$station2, input$statepick2)
-       } else {
-        select2 <- unname(input$statepick2)
-       }
-
-      fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
-    })
-
-
     observeEvent({input$statepick1}, {
       
       req(input$statepick1)
@@ -132,11 +112,6 @@ mod_PhytoTsHAB_server <- function(id){
     param1 <- reactive({
       param <- taxa1() %>% dplyr::filter(.data$Parameters %in% input$parameter)
     }) 
-
-    param2 <- reactive({
-      param <- taxa2() %>% dplyr::filter(.data$Parameters %in% input$parameter)
-    }) 
-    
 
     # Plot Trends by location -------------------------------------------------------------
     observeEvent({input$pHABts == 1}, {
@@ -248,6 +223,10 @@ mod_PhytoTsHAB_server <- function(id){
         
       })
       
+      param2 <- reactive({
+        param <- taxa2() %>% dplyr::filter(.data$Parameters %in% input$parameter)
+      }) 
+
       availableStations2 <- reactive({
         req(input$statepick2)
         req(input$tax2)
@@ -263,6 +242,25 @@ mod_PhytoTsHAB_server <- function(id){
         if (length(stationsInState) == 0) {
           return(character(0))
         }
+        
+        observe({
+          req(input$statepick2)
+          req(input$station2)
+          
+          station <- tryCatch({
+            availableStations2()
+          }, error = function(e) {
+            return(NULL) # isTruthy(NULL) is FALSE
+          })
+          
+          if(isTruthy(station) && input$station2 %in% station){
+            select2 <- c(input$station2, input$statepick2)
+          } else {
+            select2 <- unname(input$statepick2)
+          }
+          
+          fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
+        })
         
         dat <- taxa2()  %>% 
           dplyr::filter(StationName %in% stationsInState,
