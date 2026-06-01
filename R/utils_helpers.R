@@ -154,7 +154,7 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = "Zooplankton",
     lat_max <- -25
     clon <- 150
     clat <- -32.5
-    zoom <- 2
+    zoom <- 3.25
   }
   
   # Add SOTS for phytoplankton (only relevant for point datasets)

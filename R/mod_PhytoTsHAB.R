@@ -226,6 +226,8 @@ mod_PhytoTsHAB_server <- function(id){
       param2 <- reactive({
         param <- taxa2() %>% dplyr::filter(.data$Parameters %in% input$parameter)
       }) 
+      
+      output$ParamDef <- fParamDefServer(param2)
 
       availableStations2 <- reactive({
         req(input$statepick2)
@@ -375,11 +377,6 @@ mod_PhytoTsHAB_server <- function(id){
     output$downloadData2 <- fDownloadButtonServer(input, selectedData2, "TrendTaxa") # Download csv of data
     output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "TrendTaxa") # Download figure
 
-    observeEvent({input$phabts == "2"}, {
-      # Parameter Definition - only update when tab 2 is selected
-      output$ParamDef <- fParamDefServer(param2)
-    })
-    
     outputOptions(output, "timeseries2", suspendWhenHidden = FALSE)
     
     })
