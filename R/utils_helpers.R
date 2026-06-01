@@ -496,7 +496,8 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
   } else if (stringr::str_detect(id, "HAB") == TRUE){ # Coastal Phytoplankton
     choices <- unique(sort(dat$State))
     selectedSite <- c("NSW")
-    idSite <- "site"
+    choicestationhab <- c("Bar Island", "Wapengo Lake", "Clyde River", "Wallis Lake", "Port Stephens")
+        idSite <- "site"
     selectedVar = "PhytoAbundance_CellsL"
     min_date <- as.POSIXct(paste0(min(lubridate::year(dat$StartDate)), "-01-01 00:00"), format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart") 
     plist <- c("NoPhytoSpecies_Sample", "PhytoAbundance_CellsL", "Biovolume_um3L", "PhytoBiomassCarbon_pgL")
@@ -678,7 +679,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
   ns <- NS(id)
   shiny::mainPanel(
     shiny::tabsetPanel(id = tabsetPanel_id, type = "pills", selected = "1",
-                       if(!tabsetPanel_id %in% c("phabts")){
+                       if(!tabsetPanel_id %in% c("pHABts")){
                          shiny::tabPanel("Trend analysis", value = "1",
                                        shiny::htmlOutput(ns("PlotExp1")),
                                        plotOutput(ns("timeseries1"), height = "auto") %>% 
@@ -688,7 +689,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                            fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                                            fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
                        )},
-                       if(!tabsetPanel_id %in% c("phabts")){
+                       if(!tabsetPanel_id %in% c("pHABts")){
                        shiny::tabPanel("Climatologies", value = "2",
                                        shiny::htmlOutput(ns("PlotExp2")),  
                                        plotOutput(ns("timeseries2"), height = 800) %>% 
@@ -698,7 +699,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                            fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
                                            fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
                        )},
-                       if(tabsetPanel_id %in% c("phabts")){
+                       if(tabsetPanel_id %in% c("pHABts")){
                          shiny::tabPanel("Trend analysis by location", value = "1",
                                          shiny::htmlOutput(ns("PlotExp1")),
                                          plotOutput(ns("timeseries1"), height = "auto") %>%
@@ -708,7 +709,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                              fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                                              fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
                          )},
-                       if(tabsetPanel_id %in% c("phabts")){
+                       if(tabsetPanel_id %in% c("pHABts")){
                          shiny::tabPanel("Trend analysis by taxa", value = "2",
                                          shiny::htmlOutput(ns("PlotExp2")),  
                                          plotOutput(ns("timeseries2"), height = "auto") %>%
@@ -718,7 +719,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                              fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
                                              fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
                          )},
-                       if(!tabsetPanel_id %in% c("NRSmts", "CSmts", "phabts")){
+                       if(!tabsetPanel_id %in% c("NRSmts", "CSmts", "pHABts")){
                          shiny::tabPanel("Functional groups", value = "3",
                                          shiny::htmlOutput(ns("PlotExp3"), container = span),  
                                          plotOutput(ns("timeseries3"), height = "auto") %>% 

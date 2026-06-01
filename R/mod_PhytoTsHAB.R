@@ -11,8 +11,8 @@ mod_PhytoTsHAB_ui <- function(id){
   nsPhytoTsHAB <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, tabsetPanel_id = "phabts", dat = pkg.env$datHABTrip), 
-      fPLanktonPanel(id = id, tabsetPanel_id = "phabts")
+      fPlanktonSidebar(id = id, tabsetPanel_id = "pHABts", dat = pkg.env$datHABTrip), 
+      fPLanktonPanel(id = id, tabsetPanel_id = "pHABts")
     )
   )
 }
@@ -22,7 +22,7 @@ mod_PhytoTsHAB_ui <- function(id){
 #' @noRd 
 mod_PhytoTsHAB_server <- function(id){
   
-  moduleServer(id, function(input, output, session, phabts){
+  moduleServer(id, function(input, output, session, pHABts){
     
     # # Sidebar ----------------------------------------------------------
     #Sidebar Maps - Initial render
@@ -205,7 +205,7 @@ mod_PhytoTsHAB_server <- function(id){
     
 
     # Plot Trends by location -------------------------------------------------------------
-    observeEvent({input$phabts == 1}, {
+    observeEvent({input$pHABts == 1}, {
       
       selectedData <- reactive({ 
         
@@ -285,7 +285,9 @@ mod_PhytoTsHAB_server <- function(id){
     # Plot trends by taxa  -----------------------------------------------------------
     
     # Define selectedData2 outside observeEvent to ensure it reacts to input$station2 changes
-    selectedData2 <- reactive({
+    observeEvent({input$pHABts == 2}, {
+      
+      selectedData2 <- reactive({
      
     req(input$statepick2)
     req(input$tax2)
@@ -375,9 +377,11 @@ mod_PhytoTsHAB_server <- function(id){
       # Parameter Definition - only update when tab 2 is selected
       output$ParamDef <- fParamDefServer(param2)
     })
-
+    
     outputOptions(output, "timeseries2", suspendWhenHidden = FALSE)
     
+    })
+
     outputOptions(output, "plotmap1", suspendWhenHidden = FALSE) # prevent shiny from re-rendering as using this base map twice under phyto tab
     outputOptions(output, "plotmap2", suspendWhenHidden = FALSE)
     
