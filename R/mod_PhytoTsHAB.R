@@ -48,9 +48,13 @@ mod_PhytoTsHAB_server <- function(id){
       req(input$statepick2)
       req(input$station2)
 
-       station <- availableStations2()
-
-       if(isTruthy(station) && input$station2 %in% station){
+      station <- tryCatch({
+        availableStations2()
+      }, error = function(e) {
+        return(NULL) # isTruthy(NULL) is FALSE
+      })
+      
+      if(isTruthy(station) && input$station2 %in% station){
         select2 <- c(input$station2, input$statepick2)
        } else {
         select2 <- unname(input$statepick2)
@@ -114,76 +118,6 @@ mod_PhytoTsHAB_server <- function(id){
       
     })
     
-    taxa2 <- reactive({
-      
-      req(input$tax2)
-
-      taxa <- if(input$tax2 == "genus"){
-        taxa <- pkg.env$datHABg 
-      } else {
-        taxa <- pkg.env$datHABs 
-      }
-
-    }) #%>% bindCache(input$tax2)
-    
-    observe({
-      
-      taxa <- unique(sort(taxa2()$TaxonName))
-      selectedtaxa <- if(any(input$taxgs2 %in% taxa)){
-        input$taxgs2
-      } else {
-        taxa[1]
-      }
-      params <- planktonr:::pr_relabel(unique(sort(taxa2()$Parameters)), style = "simple", named = TRUE)
-      
-      shiny::updateSelectInput(session, 'taxgs2', choices = taxa, selected = selectedtaxa)
-      shiny::updateSelectInput(session, 'parameter', choices = params, selected = params[1])
-
-    })
-
-    availableStations2 <- reactive({
-      req(input$statepick2)
-      req(input$tax2)
-      req(input$taxgs2)
-      req(input$DatesSlide[1], input$DatesSlide[2])
-
-      stationsInState <- pkg.env$datHABTrip %>%
-        dplyr::filter(State %in% input$statepick2) %>%
-        dplyr::pull(StationName) %>%
-        unique() %>%
-        sort()
-
-      if (length(stationsInState) == 0) {
-        return(character(0))
-      }
-
-      dat <- taxa2()  %>% 
-        dplyr::filter(StationName %in% stationsInState,
-                      TaxonName %in% input$taxgs2) %>% 
-        dplyr::summarise(non_zero_count = sum(.data$Values != 0, na.rm = TRUE), .by = c(.data$TaxonName, .data$StationName)) %>% 
-        dplyr::filter(.data$non_zero_count > 50)
-      unique(sort(dat$StationName))
-    })
-
-    observeEvent(list(input$tax2, input$taxgs2, input$statepick2, input$DatesSlide[1], input$DatesSlide[2]),{
-      req(input$statepick2)
-      req(input$taxgs2)
-      
-      station <- availableStations2()
-      
-      if(length(station) < 1){
-        choices <- list("No stations available" = "")
-        selectedstation2 <- ""
-      } else if(input$station2 %in% station) {
-        choices <- station
-        selectedstation2 <- input$station2
-      } else {
-        choices <- station
-        selectedstation2 <- station[1]
-      }
-      shiny::updateSelectInput(session, 'station2', choices = choices, selected = selectedstation2)
-    })
-
     # add text information
     output$PlotExp1 <- renderText({
       "A plot of selected phytoplankton Parameters from the Coastal Phytoplankton collection, as a time series and a monthly climatology by station.
@@ -286,6 +220,76 @@ mod_PhytoTsHAB_server <- function(id){
     
     # Define selectedData2 outside observeEvent to ensure it reacts to input$station2 changes
     observeEvent({input$pHABts == 2}, {
+      
+      taxa2 <- reactive({
+        
+        req(input$tax2)
+        
+        taxa <- if(input$tax2 == "genus"){
+          taxa <- pkg.env$datHABg 
+        } else {
+          taxa <- pkg.env$datHABs 
+        }
+        
+      }) #%>% bindCache(input$tax2)
+      
+      observe({
+        
+        taxa <- unique(sort(taxa2()$TaxonName))
+        selectedtaxa <- if(any(input$taxgs2 %in% taxa)){
+          input$taxgs2
+        } else {
+          taxa[1]
+        }
+        params <- planktonr:::pr_relabel(unique(sort(taxa2()$Parameters)), style = "simple", named = TRUE)
+        
+        shiny::updateSelectInput(session, 'taxgs2', choices = taxa, selected = selectedtaxa)
+        shiny::updateSelectInput(session, 'parameter', choices = params, selected = params[1])
+        
+      })
+      
+      availableStations2 <- reactive({
+        req(input$statepick2)
+        req(input$tax2)
+        req(input$taxgs2)
+        req(input$DatesSlide[1], input$DatesSlide[2])
+        
+        stationsInState <- pkg.env$datHABTrip %>%
+          dplyr::filter(State %in% input$statepick2) %>%
+          dplyr::pull(StationName) %>%
+          unique() %>%
+          sort()
+        
+        if (length(stationsInState) == 0) {
+          return(character(0))
+        }
+        
+        dat <- taxa2()  %>% 
+          dplyr::filter(StationName %in% stationsInState,
+                        TaxonName %in% input$taxgs2) %>% 
+          dplyr::summarise(non_zero_count = sum(.data$Values != 0, na.rm = TRUE), .by = c(.data$TaxonName, .data$StationName)) %>% 
+          dplyr::filter(.data$non_zero_count > 50)
+        unique(sort(dat$StationName))
+      })
+      
+      observeEvent(list(input$tax2, input$taxgs2, input$statepick2, input$DatesSlide[1], input$DatesSlide[2]),{
+        req(input$statepick2)
+        req(input$taxgs2)
+        
+        station <- availableStations2()
+        
+        if(length(station) < 1){
+          choices <- list("No stations available" = "")
+          selectedstation2 <- ""
+        } else if(input$station2 %in% station) {
+          choices <- station
+          selectedstation2 <- input$station2
+        } else {
+          choices <- station
+          selectedstation2 <- station[1]
+        }
+        shiny::updateSelectInput(session, 'station2', choices = choices, selected = selectedstation2)
+      })
       
       selectedData2 <- reactive({
      
