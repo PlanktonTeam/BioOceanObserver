@@ -332,7 +332,7 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
       meta_data <- pkg.env$datGSm %>% 
         dplyr::mutate(StationCode = .data$StationName) 
     } else if (Survey == "HAB"){
-      meta_data <- readRDS("data-raw/aus_states_simplified.rds") 
+      meta_data <- pkg.env$AusStatesSimple 
 
       meta_data_station <- pkg.env$datHABTrip %>%
         dplyr::mutate(StationCode = .data$StationName)  
