@@ -18,7 +18,7 @@ pkg.env <- new.env(parent = emptyenv())
                  "SpInfoP", "SpInfoZ", "LFData", "LFDataAbs",
                  "datNRSTrip", "datCPRTrip", "datCPRTripSO",
                  "PSpNRSAccum", "PSpCPRAccum", "ZSpNRSAccum", "ZSpCPRAccum",
-                 "col12", "ParamDef")
+                 "col12", "ParamDef", "AusStatesSimple")
 
   tryCatch({
     # Access data from local server (fastest)

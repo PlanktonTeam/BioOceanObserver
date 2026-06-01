@@ -375,6 +375,8 @@ ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Zooplankton")
 # Parameter Definitions
 ParamDef <- readr::read_csv(file.path("data-raw", "ParameterDefn.csv"), na = character())
 
+AusStatesSimple <- readRDS("data-raw/aus_states_simplified.rds")
+
 # Add data to sysdata.rda -------------------------------------------------
 usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   fMapDataz, fMapDatap, 
@@ -391,6 +393,6 @@ usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   SpInfoP, SpInfoZ, LFData, LFDataAbs,
                   datNRSTrip, datCPRTrip, datCPRTripSO,
                   PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
-                  ParamDef, col12, modified_time,
+                  ParamDef, col12, modified_time, AusStatesSimple,
                   overwrite = TRUE, internal = TRUE)
 

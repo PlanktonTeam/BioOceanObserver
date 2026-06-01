@@ -147,7 +147,7 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = "Zooplankton",
     clat <- -40
     zoom <- 2
   } else if (Survey == "HAB"){
-    meta_data <- readRDS("data-raw/aus_states_simplified.rds")  
+    meta_data <- pkg.env$AusStatesSimple  
     lon_max <- 140
     lon_min <- 160
     lat_min <- -40
