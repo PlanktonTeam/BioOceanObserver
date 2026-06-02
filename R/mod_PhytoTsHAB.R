@@ -74,7 +74,7 @@ mod_PhytoTsHAB_server <- function(id){
         taxa <-pkg.env$datHABs 
       }
  
-    }) #%>% bindCache(input$tax1)
+    }) %>% bindCache(input$tax1)
 
     observe({
       req(input$statepick1)
@@ -96,7 +96,7 @@ mod_PhytoTsHAB_server <- function(id){
       shiny::updateSelectInput(session, 'taxgs1', choices = taxa, selected = selectedtaxa1)
       shiny::updateSelectInput(session, 'parameter', choices = params, selected = params[1])
       
-    })
+    }) 
     
     # add text information
     output$PlotExp1 <- renderText({
@@ -111,7 +111,7 @@ mod_PhytoTsHAB_server <- function(id){
     
     param1 <- reactive({
       param <- taxa1() %>% dplyr::filter(.data$Parameters %in% input$parameter)
-    }) 
+    }) %>% bindCache(input$parameter)
 
     # Plot Trends by location -------------------------------------------------------------
     observeEvent({input$pHABts == 1}, {
@@ -148,7 +148,10 @@ mod_PhytoTsHAB_server <- function(id){
           dplyr::left_join(df, by = c("SampleTime_Local", "StationName")) %>% 
           dplyr::mutate(Parameters = input$parameter,
                         TaxonName = input$taxgs1, 
-                        Values = ifelse(is.na(.data$Values), 0, .data$Values))
+                        Values = ifelse(is.na(.data$Values), 0, .data$Values),
+                        Month_Local = lubridate::month(.data$SampleTime_Local),
+                        Year_Local = lubridate::year(.data$SampleTime_Local), 
+                        StationCode = .data$StationName)
         
       }) %>% bindCache(input$statepick1, input$parameter, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$tax1, input$taxgs1)
 
@@ -219,7 +222,7 @@ mod_PhytoTsHAB_server <- function(id){
           taxa <- pkg.env$datHABs 
         }
         
-      }) #%>% bindCache(input$tax2)
+      }) %>% bindCache(input$tax2)
       
       observe({
         
@@ -234,11 +237,11 @@ mod_PhytoTsHAB_server <- function(id){
         shiny::updateSelectInput(session, 'taxgs2', choices = taxa, selected = selectedtaxa)
         shiny::updateSelectInput(session, 'parameter', choices = params, selected = params[1])
         
-      })
+      }) 
       
       param2 <- reactive({
         param <- taxa2() %>% dplyr::filter(.data$Parameters %in% input$parameter)
-      }) 
+      }) %>% bindCache(input$parameter)
       
       output$ParamDef <- fParamDefServer(param2)
 
@@ -246,8 +249,7 @@ mod_PhytoTsHAB_server <- function(id){
         req(input$statepick2)
         req(input$tax2)
         req(input$taxgs2)
-        req(input$DatesSlide[1], input$DatesSlide[2])
-        
+
         stationsInState <- pkg.env$datHABTrip %>%
           dplyr::filter(State %in% input$statepick2) %>%
           dplyr::pull(StationName) %>%
@@ -256,34 +258,37 @@ mod_PhytoTsHAB_server <- function(id){
         
         if (length(stationsInState) == 0) {
           return(character(0))
-        }
-        
-        observe({
-          req(input$statepick2)
-          req(input$station2)
-          
-          station <- tryCatch({
-            availableStations2()
-          }, error = function(e) {
-            return(NULL) # isTruthy(NULL) is FALSE
-          })
-          
-          if(isTruthy(station) && input$station2 %in% station){
-            select2 <- c(input$station2, input$statepick2)
-          } else {
-            select2 <- unname(input$statepick2)
-          }
-          
-          fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
-        })
-        
-        dat <- taxa2()  %>% 
+        } 
+
+      dat <- taxa2()  %>% 
           dplyr::filter(StationName %in% stationsInState,
                         TaxonName %in% input$taxgs2) %>% 
           dplyr::summarise(non_zero_count = sum(.data$Values != 0, na.rm = TRUE), .by = c(.data$TaxonName, .data$StationName)) %>% 
           dplyr::filter(.data$non_zero_count > 50)
-        unique(sort(dat$StationName))
-      })
+        
+      unique(sort(dat$StationName))
+        
+      }) %>% bindCache(input$statepick2, input$taxgs2, input$tax2)
+
+      observe({
+        req(input$statepick2)
+        req(input$station2)
+        
+        station <- tryCatch({
+          availableStations2()
+        }, error = function(e) {
+          return(NULL) # isTruthy(NULL) is FALSE
+        })
+        
+        if(isTruthy(station) && input$station2 %in% station){
+          select2 <- c(input$station2, input$statepick2)
+        } else {
+          select2 <- unname(input$statepick2)
+        }
+        
+        fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
+        
+      }) 
       
       observeEvent(list(input$tax2, input$taxgs2, input$statepick2, input$DatesSlide[1], input$DatesSlide[2]),{
         req(input$statepick2)
@@ -344,12 +349,14 @@ mod_PhytoTsHAB_server <- function(id){
         dplyr::mutate(Taxon = .data$StationName,  # change these around so planktonr::pr_plot_trends works without chaging the function
                       StationName = .data$TaxonName,
                       StationCode = .data$TaxonName, 
-                      TaxonName = .data$Taxon) %>% 
+                      TaxonName = .data$Taxon,
+                      Month_Local = lubridate::month(.data$SampleTime_Local),
+                      Year_Local = lubridate::year(.data$SampleTime_Local)) %>% 
         planktonr::planktonr_dat(Type = 'Phytoplankton', Survey = 'HAB')
       
       selectedData2
 
-    })
+    }) %>% bindCache(input$statepick2, input$parameter, input$station2, input$DatesSlide[1], input$DatesSlide[2], input$tax2, input$taxgs2)
 
     # Define gg_out2 outside observeEvent to ensure it reacts to input$station2 changes
     gg_out2 <- reactive({
@@ -371,7 +378,7 @@ mod_PhytoTsHAB_server <- function(id){
         ggplot2::ggplot() + ggplot2::theme_void()
       }
       
-    })
+    }) %>% bindCache(input$statepick2, input$parameter, input$station2, input$DatesSlide[1], input$DatesSlide[2], input$scaler2, input$tax2, input$taxgs2)
 
     # Render timeseries2 plot and output outside observeEvent
     output$timeseries2 <- renderPlot({
