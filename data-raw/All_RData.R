@@ -48,7 +48,7 @@ datHABdataTable <- planktonr:::HABSamples %>%
                    Sites = dplyr::n(),
                    .groups = 'drop') %>% 
   dplyr::select(State, DataOwner, AnalysedBy, StartDate, EndDate, Sites, Samples)
-  
+
 NRSStation <- planktonr::pr_get_info(Source = "NRS") %>% 
   dplyr::select(-c("IMCRA", "IMCRA_PB", "ProjectName")) %>% 
   dplyr::arrange(desc(Latitude))
@@ -233,14 +233,14 @@ rm(daynightzAll, daynightpAll)
 
 PolNRS <- planktonr::pr_get_EOVs(Survey = "NRS") %>% 
   dplyr::filter(!StationCode %in% c("NIN", "ESP")) #%>% #TODO add removing outliers as an option to BOO
-  #planktonr::pr_remove_outliers(4)
+#planktonr::pr_remove_outliers(4)
 
 PolCPR <- planktonr::pr_get_EOVs(Survey = "CPR", near_dist_km = 250) %>% 
   #planktonr::pr_remove_outliers(4) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None"))
 
 PolLTM <- planktonr::pr_get_EOVs(Survey = "LTM") #%>% 
-  #planktonr::pr_remove_outliers(4)
+#planktonr::pr_remove_outliers(4)
 
 PolSOTS <- planktonr::pr_get_EOVs(Survey = "SOTS") 
 
@@ -268,7 +268,7 @@ PM_NRS <- PM %>%
                    Longitude = dplyr::first(Longitude),
                    Samples = dplyr::n(),
                    .groups = "drop")
-  
+
 PM_CPR <- PM %>% 
   dplyr::filter(Survey == "CPR") %>% 
   dplyr::mutate(Latitude = round(Latitude, digits = 2),
@@ -277,9 +277,9 @@ PM_CPR <- PM %>%
   dplyr::distinct(Latitude, Longitude, SampleTime_Local, .keep_all = TRUE) %>% # For BOO for the moment, no labels and distinct data
   dplyr::arrange(.data$TripCode, .data$SampleTime_Local) %>% 
   dplyr::select(-c("TripCode", "SampleTime_Local", "Sample_ID"))
-  
+
 PM_CPR <- PM_CPR[seq(2, nrow(PM_CPR), 2),] # Only keep every 3rd row for the moment
-  
+
 PMapData <- list(NRS = PM_NRS, CPR = PM_CPR)
 
 rm(PM, PM_NRS, PM_CPR)
@@ -301,9 +301,9 @@ pr_get_mooringTS <- function(Stations, Depth, Names){
   
   # CLIM[DEPTH, TIME]
   tibble::tibble(CLIM = ncdf4::ncvar_get(file, varid = "CLIM", count = c(1, 365), start = c(i, 1)),
-                  DOY = ncdf4::ncvar_get(file, varid = "TIME", count = 365, start = 1),
-                  StationCode = Stations,
-                  Names = Names)
+                 DOY = ncdf4::ncvar_get(file, varid = "TIME", count = 365, start = 1),
+                 StationCode = Stations,
+                 Names = Names)
 }
 
 
