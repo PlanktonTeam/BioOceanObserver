@@ -357,10 +357,12 @@ mod_PhytoTsHAB_server <- function(id){
       if(nrow(dat) > 0) {
         trans <- dplyr::if_else(input$scaler1, "log10", "identity")
         
-        p1 <- planktonr::pr_plot_Trends(selectedData2(), Trend = "Raw", method = "lm", trans = trans) 
+        p1 <- planktonr::pr_plot_Trends(selectedData2(), Trend = "Raw", method = "lm", trans = trans) +
+          ggplot2::theme(strip.text = ggplot2::element_text(face = "italic", size = 12))
         
         p2 <- planktonr::pr_plot_Trends(selectedData2(), Trend = "Month", method = "loess", trans = trans) +
-          ggplot2::theme(axis.title.y = ggplot2::element_blank())
+          ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+                         strip.text = ggplot2::element_text(face = "italic", size = 12))
         
         p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect") +
           patchwork::plot_annotation(title = input$station2,
