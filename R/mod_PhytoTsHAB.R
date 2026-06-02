@@ -153,34 +153,47 @@ mod_PhytoTsHAB_server <- function(id){
       }) %>% bindCache(input$statepick1, input$parameter, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$tax1, input$taxgs1)
 
       gg_out1 <- reactive({
-        if (is.null(pkg.env$datHABg$StationCode)) {return(NULL)}
-        
-        trans <- dplyr::if_else(input$scaler1, "log10", "identity")
-
-        if(input$parameter == 'PhytoAbundance_CellsL'){
-          taxa <- input$taxgs1
-          titley <- bquote(" "*italic(.(taxa))*" (Cells L"^-1*")")
-        } else if (input$parameter == 'Biovolume_um3L'){
-          titley <- bquote(" "*italic(.(input$taxgs1))*" ("*mu*"m"^-3*")")
-        } else if (input$parameter == 'PhytoBiomassCarbon_pgL'){
-          titley <- bquote(" "*italic(.(input$taxgs1))*" (pgL"^-1*")")
+        dat <- selectedData()
+        if(nrow(dat) > 0) {
+          
+          trans <- dplyr::if_else(input$scaler1, "log10", "identity")
+          
+          if(input$parameter == 'PhytoAbundance_CellsL'){
+            taxa <- input$taxgs1
+            titley <- bquote(" "*italic(.(taxa))*" (Cells L"^-1*")")
+          } else if (input$parameter == 'Biovolume_um3L'){
+            titley <- bquote(" "*italic(.(input$taxgs1))*" ("*mu*"m"^-3*")")
+          } else if (input$parameter == 'PhytoBiomassCarbon_pgL'){
+            titley <- bquote(" "*italic(.(input$taxgs1))*" (pgL"^-1*")")
+          } else {
+            titley <- bquote(" "*italic(.(input$taxgs1))*" (No species)")
+          }
+          
+          p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", method = "lm", trans = trans) +
+            ggplot2::labs(y = titley) 
+          
+          p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", method = "loess", trans = trans) +
+            ggplot2::theme(axis.title.y = ggplot2::element_blank())
+          
+          p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect") 
         } else {
-          titley <- bquote(" "*italic(.(input$taxgs1))*" (No species)")
+          ggplot2::ggplot() + ggplot2::theme_void()
         }
-        
-        p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", method = "lm", trans = trans) +
-          ggplot2::labs(y = titley) 
-
-        p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", method = "loess", trans = trans) +
-          ggplot2::theme(axis.title.y = ggplot2::element_blank())
-        
-        p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect") 
-
       }) %>% bindCache(input$statepick1, input$parameter, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$scaler1, input$tax1, input$taxgs1)
-
+      
       output$timeseries1 <- renderPlot({
+        shiny::validate(
+          shiny::need(
+            nrow(gg_out1()$data) > 0, 
+            "Change your selections for a plot to appear."
+          )
+        )
+        
         gg_out1()
-      }, height = function() {length(unique(selectedData()$StationName)) * 200})
+        
+      }, height = function() {if(length(unique(selectedData()$StationName))>0) {
+        length(unique(selectedData()$StationName)) * 200
+      } else {200}})
 
       # Download -------------------------------------------------------
       output$downloadData1 <- fDownloadButtonServer(input, selectedData, "TrendLocation") # Download csv of data
