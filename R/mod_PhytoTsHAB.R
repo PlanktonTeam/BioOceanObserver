@@ -87,16 +87,16 @@ mod_PhytoTsHAB_server <- function(id){
       fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
     })
     
-    observe({
-      if (shiny::isTruthy(input$statepick1) && shiny::isTruthy(input$station1)) {
-        select1 <- c(input$station1, input$statepick1)
-      } else {
-        select1 <- c("Bar Island", "NSW") 
-      }
-      
-      fLeafletUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
-    })
-    
+    # observe({
+    #   if (shiny::isTruthy(input$statepick1) && shiny::isTruthy(input$station1)) {
+    #     select1 <- c(input$station1, input$statepick1)
+    #   } else {
+    #     select1 <- c("Bar Island", "NSW") 
+    #   }
+    #   
+    #   fLeafletUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
+    # })
+    # 
     # add text information
     output$PlotExp1 <- renderText({
       "A plot of selected phytoplankton Parameters from the Coastal Phytoplankton collection, as a time series and a monthly climatology by station.
@@ -271,25 +271,25 @@ mod_PhytoTsHAB_server <- function(id){
         
       }) %>% bindCache(input$statepick2, input$taxgs2, input$tax2)
 
-      # observe({
-      #   req(input$statepick2)
-      #   req(input$station2)
-      #   
-      #   station <- tryCatch({
-      #     availableStations2()
-      #   }, error = function(e) {
-      #     return(NULL) # isTruthy(NULL) is FALSE
-      #   })
-      #   
-      #   if(isTruthy(station) && input$station2 %in% station){
-      #     select2 <- c(input$station2, input$statepick2)
-      #   } else {
-      #     select2 <- unname(input$statepick2)
-      #   }
-      #   
-      #   fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
-      #   
-      # }) 
+      observe({
+        req(input$statepick2)
+        req(input$station2)
+
+        station <- tryCatch({
+          availableStations2()
+        }, error = function(e) {
+          return(NULL) # isTruthy(NULL) is FALSE
+        })
+
+        if(isTruthy(station) && input$station2 %in% station){
+          select2 <- c(input$station2, input$statepick2)
+        } else {
+          select2 <- unname(input$statepick2)
+        }
+
+        fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
+
+      })
       
       observeEvent(list(input$tax2, input$taxgs2, input$statepick2, input$DatesSlide[1], input$DatesSlide[2]),{
         req(input$statepick2)
@@ -404,8 +404,8 @@ mod_PhytoTsHAB_server <- function(id){
     
     })
 
-    outputOptions(output, "plotmap1", suspendWhenHidden = FALSE) # prevent shiny from re-rendering as using this base map twice under phyto tab
-    # outputOptions(output, "plotmap2", suspendWhenHidden = FALSE)
+    #outputOptions(output, "plotmap1", suspendWhenHidden = FALSE) # prevent shiny from re-rendering as using this base map twice under phyto tab
+    outputOptions(output, "plotmap2", suspendWhenHidden = FALSE)
     
   })
 }
