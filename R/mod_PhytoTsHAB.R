@@ -26,13 +26,13 @@ mod_PhytoTsHAB_server <- function(id){
     
     # # Sidebar ----------------------------------------------------------
     #Sidebar Maps - Initial render
-    # output$plotmap1 <- leaflet::renderLeaflet({
-    #   fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
-    # })
-    # output$plotmap2 <- leaflet::renderLeaflet({
-    #   fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
-    # })
-    # 
+    output$plotmap1 <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
+    })
+    output$plotmap2 <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
+    })
+
     # observe({
     # 
     #   req(input$statepick1)
@@ -227,8 +227,10 @@ mod_PhytoTsHAB_server <- function(id){
       observe({
         
         taxa <- unique(sort(taxa2()$TaxonName))
-        selectedtaxa <- if(any(input$taxgs2 %in% taxa)){
-          input$taxgs2
+        matched_taxa <- intersect(input$taxgs2, taxa)
+        
+        selectedtaxa <- if(length(matched_taxa) > 0){
+        matched_taxa
         } else {
           taxa[1]
         }
