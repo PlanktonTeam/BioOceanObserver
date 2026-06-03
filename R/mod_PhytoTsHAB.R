@@ -87,16 +87,16 @@ mod_PhytoTsHAB_server <- function(id){
       fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
     })
     
-    # observe({
-    #   if (shiny::isTruthy(input$statepick1) && shiny::isTruthy(input$station1)) {
-    #     select1 <- c(input$station1, input$statepick1)
-    #   } else {
-    #     select1 <- c("Bar Island", "NSW") 
-    #   }
-    #   
-    #   fLeafletUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
-    # })
-    # 
+    observe({
+      if (shiny::isTruthy(input$statepick1) && shiny::isTruthy(input$station1)) {
+        select1 <- c(input$station1, input$statepick1)
+      } else {
+        select1 <- c("Bar Island", "NSW")
+      }
+
+      fLeafletUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
+    })
+
     # add text information
     output$PlotExp1 <- renderText({
       "A plot of selected phytoplankton Parameters from the Coastal Phytoplankton collection, as a time series and a monthly climatology by station.
@@ -404,7 +404,7 @@ mod_PhytoTsHAB_server <- function(id){
     
     })
 
-    #outputOptions(output, "plotmap1", suspendWhenHidden = FALSE) # prevent shiny from re-rendering as using this base map twice under phyto tab
+    outputOptions(output, "plotmap1", suspendWhenHidden = FALSE) # prevent shiny from re-rendering as using this base map twice under phyto tab
     outputOptions(output, "plotmap2", suspendWhenHidden = FALSE)
     
   })
