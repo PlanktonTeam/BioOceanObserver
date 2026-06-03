@@ -535,8 +535,8 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     shiny::conditionalPanel(
       condition = paste0("input.navbar == 'Coastal Phytoplankton' && input.", tabsetPanel_id, " == 1"),
       shiny::tagList(
-        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-        leaflet::leafletOutput(ns("plotmap1"), height = "400px")
+        shiny::p("Note: Hover cursor over circles for station name", class = "small-text")#,
+        # leaflet::leafletOutput(ns("plotmap1"), height = "400px")
       ),
       shiny::HTML("<h3>Select a state:</h3>"),
       shiny::fluidRow(class = "row_multicol",
@@ -571,8 +571,8 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     shiny::conditionalPanel(
       condition = paste0("input.navbar == 'Coastal Phytoplankton' && input.", tabsetPanel_id, " == 2"),
       shiny::tagList(
-        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-        leaflet::leafletOutput(ns("plotmap2"), height = "400px")
+        shiny::p("Note: Hover cursor over circles for station name", class = "small-text")#,
+        #leaflet::leafletOutput(ns("plotmap2"), height = "400px")
       ),
       shiny::HTML("<h3>Select taxonomic level:</h3>"),
       shiny::fluidRow(class = "row_multicol",
