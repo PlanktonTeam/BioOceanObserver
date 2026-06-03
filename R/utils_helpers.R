@@ -405,21 +405,21 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
           fillColor = ~Color,
           fillOpacity = ~Opacity,
           weight = ~Radius) %>%
-            leaflet::addCircleMarkers(
-              data = meta_data_station,
-              lng = ~Longitude,
-              lat = ~Latitude,
-              color = ~Color,
-              fillColor = ~Color,
-              radius = ~Radius,
-              fillOpacity = ~Opacity,
-              opacity = ~Opacity,
-              weight = 2,
-              label = ~StationName,
-              labelOptions = leaflet::labelOptions(
-                style = list("font-weight" = "normal", "padding" = "3px 8px"),
-                textsize = "12px",
-                direction = "auto"))    
+        leaflet::addCircleMarkers(
+          data = meta_data_station,
+          lng = ~Longitude,
+          lat = ~Latitude,
+          color = ~Color,
+          fillColor = ~Color,
+          radius = ~Radius,
+          fillOpacity = ~Opacity,
+          opacity = ~Opacity,
+          weight = 2,
+          label = ~StationName,
+          labelOptions = leaflet::labelOptions(
+            style = list("font-weight" = "normal", "padding" = "3px 8px"),
+            textsize = "12px",
+            direction = "auto"))    
     } else { # for all other surveys
       proxy %>%
         leaflet::clearMarkers() %>%
@@ -535,8 +535,8 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     shiny::conditionalPanel(
       condition = paste0("input.navbar == 'Coastal Phytoplankton' && input.", tabsetPanel_id, " == 1"),
       shiny::tagList(
-        shiny::p("Note: Hover cursor over circles for station name", class = "small-text")#,
-        # leaflet::leafletOutput(ns("plotmap1"), height = "400px")
+        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+        leaflet::leafletOutput(ns("plotmap1"), height = "400px")
       ),
       shiny::HTML("<h3>Select a state:</h3>"),
       shiny::fluidRow(class = "row_multicol",

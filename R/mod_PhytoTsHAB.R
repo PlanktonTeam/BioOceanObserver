@@ -24,26 +24,6 @@ mod_PhytoTsHAB_server <- function(id){
   
   moduleServer(id, function(input, output, session, pHABts){
     
-    # # Sidebar ----------------------------------------------------------
-    #Sidebar Maps - Initial render
-    output$plotmap1 <- leaflet::renderLeaflet({
-      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
-    })
-    output$plotmap2 <- leaflet::renderLeaflet({
-      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
-    })
-
-    # observe({
-    # 
-    #   req(input$statepick1)
-    #   req(input$station1)
-    # 
-    #   select1 <- c(input$station1, input$statepick1)
-    # 
-    #   fLeafletUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
-    # 
-    #   })
-
     observeEvent({input$statepick1}, {
       
       req(input$statepick1)
@@ -97,6 +77,25 @@ mod_PhytoTsHAB_server <- function(id){
       shiny::updateSelectInput(session, 'parameter', choices = params, selected = params[1])
       
     }) 
+    
+    # # Sidebar ----------------------------------------------------------
+    #Sidebar Maps - Initial render
+    output$plotmap1 <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
+    })
+    output$plotmap2 <- leaflet::renderLeaflet({
+      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
+    })
+    
+    observe({
+      if (shiny::isTruthy(input$statepick1) && shiny::isTruthy(input$station1)) {
+        select1 <- c(input$station1, input$statepick1)
+      } else {
+        select1 <- c("Bar Island", "NSW") 
+      }
+      
+      fLeafletUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
+    })
     
     # add text information
     output$PlotExp1 <- renderText({
@@ -405,7 +404,7 @@ mod_PhytoTsHAB_server <- function(id){
     
     })
 
-    # outputOptions(output, "plotmap1", suspendWhenHidden = FALSE) # prevent shiny from re-rendering as using this base map twice under phyto tab
+    outputOptions(output, "plotmap1", suspendWhenHidden = FALSE) # prevent shiny from re-rendering as using this base map twice under phyto tab
     # outputOptions(output, "plotmap2", suspendWhenHidden = FALSE)
     
   })
