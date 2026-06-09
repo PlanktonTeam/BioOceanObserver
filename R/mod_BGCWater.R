@@ -63,7 +63,7 @@ mod_WaterBGC_server <- function(id){
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
       
-    }) %>% bindCache(input$site, input$parameter, input$date, input$smoother)
+    }) %>% bindCache(input$site, input$parameter, input$date)
     
     output$timeseries1 <- renderPlot({
       gg_out1()

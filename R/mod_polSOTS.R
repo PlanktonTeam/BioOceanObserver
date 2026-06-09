@@ -95,29 +95,31 @@ mod_PolSOTS_server <- function(id){
     ns <- session$ns
     
     # Sidebar ----------------------------------------------------------
+    # These depth-sliced datasets are static (no user inputs affect the filter),
+    # so they are cached with a fixed key to compute only once per session.
     selectedData0 <- reactive({
-      selectedData0 <- pkg.env$PolSOTS %>% 
+      selectedData0 <- pkg.env$PolSOTS %>%
         dplyr::filter(.data$SampleDepth_m == 0)
       
-    }) %>% bindCache(input$site, input$Parameters)
+    }) %>% bindCache("SOTS_0m")
     
     selectedData30 <- reactive({
-      selectedData30 <- pkg.env$PolSOTS %>% 
+      selectedData30 <- pkg.env$PolSOTS %>%
         dplyr::filter(.data$SampleDepth_m == 30 | is.na(.data$SampleDepth_m)) # phyto needs depths, then change this
       
-    }) %>% bindCache(input$site, input$Parameters)
+    }) %>% bindCache("SOTS_30m")
     
     selectedData200 <- reactive({
-      selectedData200 <- pkg.env$PolSOTS %>% 
+      selectedData200 <- pkg.env$PolSOTS %>%
         dplyr::filter(.data$SampleDepth_m == 200)
       
-    }) %>% bindCache(input$site, input$Parameters)
+    }) %>% bindCache("SOTS_200m")
     
     selectedData500 <- reactive({
-      selectedData500 <- pkg.env$PolSOTS %>% 
+      selectedData500 <- pkg.env$PolSOTS %>%
         dplyr::filter(.data$SampleDepth_m == 500)
       
-    }) %>% bindCache(input$site, input$Parameters)    
+    }) %>% bindCache("SOTS_500m")
     
     stationData <- reactive({
       stationData <- pkg.env$SOTSinfo  
@@ -128,11 +130,12 @@ mod_PolSOTS_server <- function(id){
       fLeafletMap(character(0), Survey = "NRS", Type = "Phytoplankton")
     })
     
-    # Update map when station selection changes
+    # Update map when station selection changes (SOTS has only one station so
+    # this only needs to fire once on load, not on every reactive invalidation)
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData0()$StationCode), 
+      fLeafletUpdate("plotmap", session, unique(selectedData0()$StationCode),
                      Survey = "NRS", Type = "Phytoplankton")
-    })
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     
     output$StationSummary <- shiny::renderText({ 
@@ -195,7 +198,7 @@ mod_PolSOTS_server <- function(id){
                        axis.text =  ggplot2::element_text(size = 10, face = "plain"),
                        plot.title = ggplot2::element_text(hjust = 0.5))
       
-    })
+    }) %>% bindCache("SOTS_bio")
     
     output$timeseries2 <- renderPlot({
       gg_out2()
@@ -223,7 +226,7 @@ mod_PolSOTS_server <- function(id){
                        axis.text =  ggplot2::element_text(size = 10, face = "plain"),
                        plot.title = ggplot2::element_text(hjust = 0.5))
       
-    })
+    }) %>% bindCache("SOTS_chem")
     
     output$timeseries3 <- renderPlot({
       gg_out3()
@@ -250,7 +253,7 @@ mod_PolSOTS_server <- function(id){
                        axis.text =  ggplot2::element_text(size = 10, face = "plain"),
                        plot.title = ggplot2::element_text(hjust = 0.5))
       
-    })
+    }) %>% bindCache("SOTS_phys")
     
     output$timeseries4 <- renderPlot({
       gg_out4()

@@ -453,58 +453,57 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
   
   ns <- NS(id)
   
-  if (stringr::str_detect(id, "NRS") == TRUE){ # NRS
+  if (stringr::str_detect(id, "NRS")) { # NRS
     
     choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
     min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
     idSite <- "site"
-    choicesp <- planktonr:::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE)
     
-    if(exists('dat1') == TRUE){
-      df <- dat %>% 
-        dplyr::bind_rows(dat1) %>% 
+    if (!is.null(dat1)) {
+      df <- dat %>%
+        dplyr::bind_rows(dat1) %>%
         planktonr:::pr_reorder()
       choices <- unique(sort(df$StationName))
-    } else {
-      choices <- unique(sort(dat$StationName))
     }
     
-    if (stringr::str_detect(id, "Micro") == TRUE){ # Microbes + NRS
+    if (stringr::str_detect(id, "Micro")) { # Microbes + NRS
       selectedVar <- "Bacterial_Temperature_Index_KD"
-    } else if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + NRS
+      choicesp <- pkg.env$choicespNRSm
+    } else if (stringr::str_detect(id, "Zoo")) { # Zoo + NRS
       selectedVar <- "Biomass_mgm3"
-    } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + NRS
-      selectedVar =  "PhytoAbundance_CellsL"
-    } 
-  } else if (stringr::str_detect(id, "CPR") == TRUE){ # CPR
+      choicesp <- pkg.env$choicespNRSz
+    } else if (stringr::str_detect(id, "Phyto")) { # Phyto + NRS
+      selectedVar <- "PhytoAbundance_CellsL"
+      choicesp <- pkg.env$choicespNRSp
+    }
+  } else if (stringr::str_detect(id, "CPR")) { # CPR
     choices <- unique(sort(dat$BioRegion))
     selectedSite <- c("Temperate East", "South-east")
     idSite <- "site"
     min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
-    choicesp <- planktonr:::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE)
-    if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + CPR
-      selectedVar = "ZoopAbundance_m3"
-    } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + CPR
-      selectedVar = "PhytoAbundance_Cellsm3"
+    if (stringr::str_detect(id, "Zoo")) { # Zoo + CPR
+      selectedVar <- "ZoopAbundance_m3"
+      choicesp <- pkg.env$choicespCPRz
+    } else if (stringr::str_detect(id, "Phyto")) { # Phyto + CPR
+      selectedVar <- "PhytoAbundance_Cellsm3"
+      choicesp <- pkg.env$choicespCPRp
     }
-  } else if (stringr::str_detect(id, "CS") == TRUE){ # Microbes Coastal
+  } else if (stringr::str_detect(id, "CS")) { # Microbes Coastal
     choices <- unique(sort(dat$State))
     selectedSite <- c("GBR")
     idSite <- "site"
-    selectedVar = "Bacterial_Temperature_Index_KD"
+    selectedVar <- "Bacterial_Temperature_Index_KD"
     min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
-    choicesp <- planktonr:::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE)
-  } else if (stringr::str_detect(id, "HAB") == TRUE){ # Coastal Phytoplankton
+    choicesp <- pkg.env$choicespCSm
+  } else if (stringr::str_detect(id, "HAB")) { # Coastal Phytoplankton
     choices <- unique(sort(dat$State))
     selectedSite <- c("NSW")
-    choicestationhab <- c("Bar Island", "Wapengo Lake", "Clyde River", "Wallis Lake", "Port Stephens")
     idSite <- "site"
-    selectedVar = "PhytoAbundance_CellsL"
-    min_date <- as.POSIXct(paste0(min(lubridate::year(dat$StartDate)), "-01-01 00:00"), format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart") 
-    plist <- c("NoPhytoSpecies_Sample", "PhytoAbundance_CellsL", "Biovolume_um3L", "PhytoBiomassCarbon_pgL")
-    choicesp <- planktonr:::pr_relabel(plist, style = "simple", named = TRUE)
-  } 
+    selectedVar <- "PhytoAbundance_CellsL"
+    min_date <- as.POSIXct(paste0(min(lubridate::year(dat$StartDate)), "-01-01 00:00"), format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
+    choicesp <- pkg.env$choicespHAB
+  }
   
   shiny::sidebarPanel(
     
@@ -1261,19 +1260,21 @@ LeafletObs <- function(sdf, name, Type = "PA"){
   Species <- unique(sdf$Species)
   
   if("Abundance_1000m3" %in% colnames(sdf)){
-    labs <- lapply(seq(nrow(sdf)), function(i) {
-      paste("<strong>Date:</strong>", sdf$SampleTime_Local[i], "<br>",
-            "<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
-            "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
-            "<strong>Count:</strong>", sdf$Count[i], "<br>",
-            "<strong>Abundance (1000 m\u207B\u00B3):</strong>", round(sdf$Abundance_1000m3[i], digits = 2), "<br>",
-            "<strong>Temperature (\u00B0C):</strong>", sdf$Temperature_degC[i], "<br>",
-            "<strong>Depth (m):</strong>", sdf$SampleDepth_m[i], "<br>")})
+    labs <- lapply(paste0(
+      "<strong>Date:</strong> ", sdf$SampleTime_Local, "<br>",
+      "<strong>Latitude:</strong> ", sdf$Latitude, "<br>",
+      "<strong>Longitude:</strong> ", sdf$Longitude, "<br>",
+      "<strong>Count:</strong> ", sdf$Count, "<br>",
+      "<strong>Abundance (1000 m\u207B\u00B3):</strong> ", round(sdf$Abundance_1000m3, digits = 2), "<br>",
+      "<strong>Temperature (\u00B0C):</strong> ", sdf$Temperature_degC, "<br>",
+      "<strong>Depth (m):</strong> ", sdf$SampleDepth_m
+    ), htmltools::HTML)
   } else if ("freqfac" %in% colnames(sdf)){
-    labs <- lapply(seq(nrow(sdf)), function(i) {
-      paste("<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
-            "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
-            "<strong>Frequency in sample:</strong>", sdf$freqfac[i], "<br>")})
+    labs <- lapply(paste0(
+      "<strong>Latitude:</strong> ", sdf$Latitude, "<br>",
+      "<strong>Longitude:</strong> ", sdf$Longitude, "<br>",
+      "<strong>Frequency in sample:</strong> ", sdf$freqfac
+    ), htmltools::HTML)
   } else {
     labs <- ''
   }

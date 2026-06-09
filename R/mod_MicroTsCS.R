@@ -191,7 +191,7 @@ mod_MicroTsCS_server <- function(id){
         ggplot2::ggplot() + ggplot2::geom_blank()
       }
 
-    }) %>% bindCache(input$p1, input$site, input$DatesSlide[1], input$DatesSlide[2], input$smoother)
+    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$smoother)
 
     output$timeseries3 <- renderPlot({
       req(input$CSmts == 3)

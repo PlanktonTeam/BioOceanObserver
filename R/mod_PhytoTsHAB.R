@@ -369,7 +369,7 @@ mod_PhytoTsHAB_server <- function(id){
         ggplot2::ggplot() + ggplot2::theme_void()
       }
       
-    }) %>% bindCache(input$statepick2, input$parameter, input$station2, input$DatesSlide[1], input$DatesSlide[2], input$scaler2, input$tax2, input$taxgs2)
+    }) %>% bindCache(input$statepick2, input$parameter, input$station2, input$DatesSlide[1], input$DatesSlide[2], input$scaler1, input$tax2, input$taxgs2)
 
     output$timeseries2 <- renderPlot({
       req(input$pHABts == 2)

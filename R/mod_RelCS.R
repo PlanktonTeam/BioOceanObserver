@@ -42,8 +42,8 @@ mod_RelCS_server <- function(id){
     })
     
     datx <- reactive({
-      dat1 <- pkg.env$CSChem         
-    }) %>% bindCache(input$groupx)
+      dat1 <- pkg.env$CSChem
+    }) %>% bindCache("CSChem")
     
     observeEvent(datx(), {
       choicesx <- planktonr:::pr_relabel(unique(datx()$Parameters), style = "simple", named = TRUE)

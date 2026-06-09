@@ -63,7 +63,10 @@ datNRSz <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Zooplankton")
 
 datNRSp <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Phytoplankton") 
 
-SOTSp <- planktonr::pr_get_Indices(Survey = "SOTS", Type = "Phytoplankton") 
+SOTSp <- planktonr::pr_get_Indices(Survey = "SOTS", Type = "Phytoplankton")
+
+# Pre-combined NRS + SOTS phytoplankton dataset (avoids repeated bind_rows() inside reactives)
+datNRSp_all <- dplyr::bind_rows(datNRSp, SOTSp)
 
 datNRSm <- planktonr::pr_get_data(Survey = "NRS", Type = "Micro") %>% 
   tidyr::drop_na() ## NRS microbial data
@@ -377,20 +380,35 @@ ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Zooplankton")
 # Parameter Definitions
 ParamDef <- readr::read_csv(file.path("data-raw", "ParameterDefn.csv"), na = character())
 
+# Pre-computed pr_relabel() parameter label lists for fPlanktonSidebar()
+# These are static and expensive to recompute at every UI build
+choicespNRSp <- planktonr:::pr_relabel(unique(datNRSp_all$Parameters), style = "simple", named = TRUE)
+choicespNRSz <- planktonr:::pr_relabel(unique(datNRSz$Parameters), style = "simple", named = TRUE)
+choicespNRSm <- planktonr:::pr_relabel(unique(datNRSm$Parameters), style = "simple", named = TRUE)
+choicespCPRp <- planktonr:::pr_relabel(unique(datCPRp$Parameters), style = "simple", named = TRUE)
+choicespCPRz <- planktonr:::pr_relabel(unique(datCPRz$Parameters), style = "simple", named = TRUE)
+choicespCSm  <- planktonr:::pr_relabel(unique(datCSm$Parameters),  style = "simple", named = TRUE)
+choicespHAB  <- planktonr:::pr_relabel(c("NoPhytoSpecies_Sample", "PhytoAbundance_CellsL",
+                                          "Biovolume_um3L", "PhytoBiomassCarbon_pgL"),
+                                        style = "simple", named = TRUE)
+
 AusStatesSimple <- readRDS("data-raw/aus_states_simplified.rds")
 
 # Add data to sysdata.rda -------------------------------------------------
 usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
-                  fMapDataz, fMapDatap, 
+                  fMapDataz, fMapDatap,
                   MooringTS, MooringClim,
                   PolNRS, PolCPR, PolLTM, PolSOTS,
                   NRSinfo, CPRinfo, SOTSinfo, NRSStation, SotsStation,
                   datCPRz, datCPRp, PCI,
-                  datNRSz, datNRSp, datNRSw, 
+                  datNRSz, datNRSp, datNRSw,
                   datNRSm, datCSm, datGSm,
-                  datHABg, datHABs, datHABTrip, datHABdataTable, 
+                  datHABg, datHABs, datHABTrip, datHABdataTable,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-                  SOTSp, SOTSfgp, 
+                  SOTSp, SOTSfgp,
+                  datNRSp_all,
+                  choicespNRSp, choicespNRSz, choicespNRSm,
+                  choicespCPRp, choicespCPRz, choicespCSm, choicespHAB,
                   stiz, stip, daynightz, daynightp,
                   SpInfoP, SpInfoZ, LFData, LFDataAbs,
                   datNRSTrip, datCPRTrip, datCPRTripSO,

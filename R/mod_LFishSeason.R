@@ -100,22 +100,22 @@ mod_LFishSeason_server <- function(id){
     # Summer
     output$LFMapSum <- leaflet::renderLeaflet({
       makeSeasonMap(LFDatar(), "December - February")
-    })
+    }) %>% bindCache(input$species, "sum")
 
     # Autumn
     output$LFMapAut <- leaflet::renderLeaflet({
       makeSeasonMap(LFDatar(), "March - May")
-    })
+    }) %>% bindCache(input$species, "aut")
 
     # Winter
     output$LFMapWin <- leaflet::renderLeaflet({
       makeSeasonMap(LFDatar(), "June - August")
-    })
+    }) %>% bindCache(input$species, "win")
 
     # Spring
     output$LFMapSpr <- leaflet::renderLeaflet({
       makeSeasonMap(LFDatar(), "September - November")
-    })
+    }) %>% bindCache(input$species, "spr")
     
   })
 }

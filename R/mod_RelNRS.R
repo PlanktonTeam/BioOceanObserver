@@ -88,7 +88,7 @@ mod_RelNRS_server <- function(id){
       dat1 <- dat1 %>% 
         dplyr::mutate(SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'month')) 
     
-      }) %>% bindCache(input$groupx)
+      }) %>% bindCache(input$groupx, input$all)
 
     observeEvent(datx(), {
       vars <- c("Biomass_mgm3", "PhytoAbundance_CellsL", 

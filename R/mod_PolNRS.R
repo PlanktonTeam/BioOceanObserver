@@ -95,10 +95,10 @@ mod_PolNRS_server <- function(id){
       req(input$site)
       shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       
-      selectedData <- pkg.env$PolNRS %>% 
+      selectedData <- pkg.env$PolNRS %>%
         dplyr::filter(.data$StationName %in% input$site)
       
-    }) %>% bindCache(input$site, input$Parameters)
+    }) %>% bindCache(input$site)
     
     shiny::exportTestValues(
       PolNRS = {ncol(selectedData())},
@@ -127,9 +127,9 @@ mod_PolNRS_server <- function(id){
     
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
+      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode),
                      Survey = "NRS", Type = "Zooplankton")
-    })
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     output$StationSummary <- shiny::renderText({ 
       paste('<h4 class="centered-heading">',input$site,'</h4>The IMOS ', input$site, ' National Reference Station is located at ', round(stationData()$Latitude,2), 

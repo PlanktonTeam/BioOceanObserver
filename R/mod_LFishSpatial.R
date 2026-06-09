@@ -44,15 +44,15 @@ mod_LFishSpatial_server <- function(id){
     # Render complete map: grey background dots + blue species dots
     output$LFMap <- leaflet::renderLeaflet({
       sdf <- LFDatar()
-      labs_fish <- lapply(seq(nrow(sdf)), function(i) {
-        paste("<strong>Date:</strong>", sdf$SampleTime_Local[i], "<br>",
-              "<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
-              "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
-              "<strong>Count:</strong>", sdf$Count[i], "<br>",
-              "<strong>Abundance (1000 m\u207B\u00B3):</strong>", round(sdf$Abundance_1000m3[i], digits = 2), "<br>",
-              "<strong>Temperature (\u00B0C):</strong>", sdf$Temperature_degC[i], "<br>",
-              "<strong>Depth (m):</strong>", sdf$SampleDepth_m[i], "<br>")
-      })
+      labs_fish <- lapply(paste0(
+        "<strong>Date:</strong> ", sdf$SampleTime_Local, "<br>",
+        "<strong>Latitude:</strong> ", sdf$Latitude, "<br>",
+        "<strong>Longitude:</strong> ", sdf$Longitude, "<br>",
+        "<strong>Count:</strong> ", sdf$Count, "<br>",
+        "<strong>Abundance (1000 m\u207B\u00B3):</strong> ", round(sdf$Abundance_1000m3, digits = 2), "<br>",
+        "<strong>Temperature (\u00B0C):</strong> ", sdf$Temperature_degC, "<br>",
+        "<strong>Depth (m):</strong> ", sdf$SampleDepth_m
+      ), htmltools::HTML)
 
       leaflet::leaflet(pkg.env$LFDataAbs %>%
                          dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
@@ -72,7 +72,7 @@ mod_LFishSpatial_server <- function(id){
                                   radius = 5,
                                   group = "Present",
                                   label = lapply(labs_fish, htmltools::HTML))
-    })
+    }) %>% bindCache(input$species)
     
   })
 }

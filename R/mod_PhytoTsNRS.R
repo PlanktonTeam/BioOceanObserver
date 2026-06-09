@@ -11,7 +11,7 @@ mod_PhytoTsNRS_ui <- function(id){
   nsPhytoTsNRS <- NS(id)
   tagList(
     sidebarLayout(
-      fPlanktonSidebar(id = id, tabsetPanel_id = "NRSpts", dat = pkg.env$datNRSp, dat1 = pkg.env$SOTSp),
+      fPlanktonSidebar(id = id, tabsetPanel_id = "NRSpts", dat = pkg.env$datNRSp_all),
       fPLanktonPanel(id = id, tabsetPanel_id = "NRSpts")
     )
   )
@@ -33,8 +33,7 @@ mod_PhytoTsNRS_server <- function(id){
       shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
-      selectedData <- pkg.env$datNRSp %>%
-        dplyr::bind_rows(pkg.env$SOTSp) %>% 
+      selectedData <- pkg.env$datNRSp_all %>%
         dplyr::filter(.data$StationName %in% input$site,
                       .data$Parameters %in% input$parameter,
                       dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>% 
