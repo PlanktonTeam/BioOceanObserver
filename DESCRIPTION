@@ -19,7 +19,6 @@ Imports:
     htmltools,
     httr,
     jsonlite,
-    leaflet,
     lubridate,
     magrittr,
     mapgl,

@@ -487,8 +487,8 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     
     # Put Map, Station names on all panels except HABS
     shiny::conditionalPanel(
-      condition = paste0("!(input.navbar == 'Coastal Phytoplankton')"), 
-      # Use leafletOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
+      condition = paste0("!(input.navbar == 'Coastal Phytoplankton')"),
+      # Use mapboxglOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
       if(stringr::str_detect(id, "CPR")) {
         shiny::tagList(
           shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
@@ -1350,7 +1350,7 @@ fProgressMap <- function(dat) {
       circle_radius  = 10,
       popup          = "popup_html"
     ) %>%
-    # Hide PCI-only layer by default (matches leaflet::hideGroup behaviour)
+    # Hide PCI-only layer by default (hidden on initial render)
     mapgl::set_layout_property(
       layer_id = "cpr_pci",
       name     = "visibility",
@@ -1381,7 +1381,7 @@ fProgressMap <- function(dat) {
         " onchange=\"var m=this.closest('.mapboxgl-map').map;",
         "m.setLayoutProperty('cpr_counts','visibility',this.checked?'visible':'none');\">",
         "CPR (Phyto/Zoo Counts)</label>",
-        # CPR PCI only — unchecked by default (matches leaflet::hideGroup)
+        # CPR PCI only — unchecked by default (hidden on initial render)
         "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;margin-bottom:2px;'>",
         "<input type='checkbox' style='cursor:pointer;width:14px;height:14px;'",
         " onchange=\"var m=this.closest('.mapboxgl-map').map;",
@@ -1448,144 +1448,6 @@ fProgressMap <- function(dat) {
 }
 
 
-#' Base leaflet plot for all sample points
-#'
-#' @note DEPRECATED for sidebar maps — sidebar maps now use fMapboxMap() /
-#'   fMapboxUpdate(). LeafletBase() and LeafletObs() are retained only because
-#'   they are no longer called anywhere in the app; they can be removed once
-#'   confirmed unused.
-#'
-#' @noRd
-LeafletBase <- function(df, Type = 'PA'){
-  
-  if(Type == 'frequency'){
-    
-    leaflet::leaflet(df %>% 
-                       dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
-      leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>% 
-      leaflet::addCircleMarkers(lng = ~ Longitude,
-                                lat = ~ Latitude,
-                                color = "#CCCCCC",
-                                opacity = 0,
-                                fillOpacity = 0,
-                                radius = 0.25, 
-                                group = "Absent") 
-    
-  } else {
-    leaflet::leaflet(df %>% 
-                       dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
-      leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>% 
-      leaflet::addCircleMarkers(lng = ~ Longitude,
-                                lat = ~ Latitude,
-                                color = "#CCCCCC",
-                                opacity = 1,
-                                fillOpacity = 1,
-                                radius = 0.25, 
-                                group = "Absent") 
-  }
-}
-
-#' Base leaflet plot for all sample points with observations for a particular species
-#'
-#' @noRd 
-LeafletObs <- function(sdf, name, Type = "PA"){
-  
-  Species <- unique(sdf$Species)
-  
-  if("Abundance_1000m3" %in% colnames(sdf)){
-    labs <- lapply(paste0(
-      "<strong>Date:</strong> ", sdf$SampleTime_Local, "<br>",
-      "<strong>Latitude:</strong> ", sdf$Latitude, "<br>",
-      "<strong>Longitude:</strong> ", sdf$Longitude, "<br>",
-      "<strong>Count:</strong> ", sdf$Count, "<br>",
-      "<strong>Abundance (1000 m\u207B\u00B3):</strong> ", round(sdf$Abundance_1000m3, digits = 2), "<br>",
-      "<strong>Temperature (\u00B0C):</strong> ", sdf$Temperature_degC, "<br>",
-      "<strong>Depth (m):</strong> ", sdf$SampleDepth_m
-    ), htmltools::HTML)
-  } else if ("freqfac" %in% colnames(sdf)){
-    labs <- lapply(paste0(
-      "<strong>Latitude:</strong> ", sdf$Latitude, "<br>",
-      "<strong>Longitude:</strong> ", sdf$Longitude, "<br>",
-      "<strong>Frequency in sample:</strong> ", sdf$freqfac
-    ), htmltools::HTML)
-  } else {
-    labs <- ''
-  }
-  
-  if(Type == 'frequency'){
-    dfCPR <- sdf %>% dplyr::filter(.data$Survey == 'CPR') %>% dplyr::arrange(.data$freqfac) 
-    dfNRS <- sdf %>% dplyr::filter(.data$Survey == 'NRS') %>% dplyr::arrange(.data$freqfac) 
-    
-    CPRpal <- leaflet::colorFactor(c("#CCCCCC", "#99CCFF", "#3399FF", "#0066CC", "#003366"), domain = sdf$freqfac)
-    NRSpal <- leaflet::colorFactor(c("#CCCCCC", "#CCFFCC", "#99FF99", "#009900", "#006600"), domain = sdf$freqfac)
-    
-    leaf <- leaflet::leafletProxy(name, data = sdf) %>%
-      leaflet::clearGroup(c("National Reference Stations", "Continuous Plankton Recorder")) %>%
-      leaflet::clearControls() %>%
-      leaflet::addCircleMarkers(data = dfCPR,
-                                group = 'Continuous Plankton Recorder', 
-                                lng = ~ Longitude,
-                                lat = ~ Latitude,
-                                color = ~CPRpal(freqfac),
-                                fill = ~CPRpal(freqfac),
-                                radius = 3) %>% 
-      leaflet::addCircleMarkers(data = dfNRS,
-                                group = 'National Reference Stations', 
-                                lng = ~ Longitude,
-                                lat = ~ Latitude,
-                                color = ~NRSpal(freqfac),
-                                fill = ~NRSpal(freqfac),
-                                radius = 3) %>% 
-      leaflet::addLayersControl( # Layers control
-        overlayGroups = c("National Reference Stations", "Continuous Plankton Recorder"),
-        position = "topright",
-        options = leaflet::layersControlOptions(collapsed = FALSE, fill = NA)) %>% 
-      leaflet::addLegend("bottomleft", pal = CPRpal, group = "Continuous Plankton Recorder", 
-                         values = sdf$freqfac, title = paste(Species, 'CPR')) %>% 
-      leaflet::addLegend("bottomleft", pal = NRSpal, group = "National Reference Stations", 
-                         values = sdf$freqfac, title = paste(Species, 'NRS'))
-    
-    htmltools::browsable(
-      htmltools::tagList(
-        list(
-          tags$head(
-            tags$style(
-              ".leaflet .legend {
-                   line-height: 5px;
-                   font-size: 5px;
-                   }",
-              ".leaflet .legend i{
-                  width: 5px;
-                  height: 5px;
-                   }"
-            )
-          ),
-          leaf)))
-    
-    leaf
-    
-  } else {
-    leaflet::leafletProxy(name, data = sdf) %>%
-      leaflet::clearGroup("Present") %>%
-      leaflet::clearControls() %>%
-      leaflet::addCircleMarkers(data = sdf, 
-                                lng = ~ Longitude,
-                                lat = ~ Latitude,
-                                color = 'blue',
-                                opacity = 1,
-                                fillOpacity = 1,
-                                radius = 2,
-                                group = "Present",
-                                label = lapply(labs, htmltools::HTML)) %>% 
-      leaflet::addLegend("bottomleft", 
-                         colors = c("blue",  "#CCCCCC"),
-                         labels = c("Seasonal Presence", "Seasonal Absence"),
-                         title = Species,
-                         opacity = 1)
-  }
-}
-
-
 
 fParamDefServer <- function(selectedData){
   shiny::renderText({
@@ -1599,9 +1461,7 @@ fParamDefServer <- function(selectedData){
 
 # ============================================================================
 # MAPBOX (mapgl) SPATIAL HELPERS
-# These parallel LeafletBase() / LeafletObs() but use mapgl::mapboxgl().
 # Used by mod_ZooSpatial and mod_PhytoSpatial main-panel maps.
-# Sidebar maps continue to use the leaflet helpers above.
 # ============================================================================
 
 #' Full Mapbox seasonal map (absence + presence in one render)
@@ -1814,8 +1674,7 @@ MapboxBase <- function(df, Type = "PA") {
 #' Update Mapbox presence layer with species observations
 #'
 #' Uses \code{mapboxgl_proxy()} to update the \code{"presence"} source layer
-#' with new species data, and refreshes the legend.  Mirrors the behaviour of
-#' \code{LeafletObs()} for the leaflet maps.
+#' with new species data, and refreshes the legend.
 #'
 #' @param sdf   Data frame of species observations for one season, filtered to
 #'   the selected species.  Must contain \code{Latitude}, \code{Longitude}, and
