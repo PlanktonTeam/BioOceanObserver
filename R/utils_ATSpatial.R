@@ -94,9 +94,10 @@ at_load_data <- function() {
         point_opacity    = pmin(1, pmax(0.1, log1p(.data$total_detections) / log1p(1e6)))
       )
 
-    # Build popup HTML column
-    receivers$popup_html <- purrr::map_chr(seq_len(nrow(receivers)), function(i) {
-      r <- sf::st_drop_geometry(receivers[i, ])
+    # Build popup HTML column — drop geometry once before the loop (5.2.1)
+    rx_df <- sf::st_drop_geometry(receivers)
+    receivers$popup_html <- purrr::map_chr(seq_len(nrow(rx_df)), function(i) {
+      r <- rx_df[i, ]
       data_line <- paste0(
         '<span class="at-popup-has-data">&#10003;&nbsp;',
         r$n_species, " species &bull; ",
@@ -486,7 +487,7 @@ ATbarPlot <- function(df, time){
     ggplot2::scale_y_continuous(expand = c(0,0.05)) +
     planktonr::theme_pr()
   
-  if(rlang::as_string(time) %in% c("Month")){
+  if (time == "Month") {
     p <- p + ggplot2::scale_x_continuous(breaks = seq(1, 12, length.out = 12),
                                          labels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"))
   } else {

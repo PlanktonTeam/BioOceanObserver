@@ -76,4 +76,9 @@ app_server <- function( input, output, session ) {
   # Relationships sub-tabs
   mod_RelCS_server("RelCS_ui_1")
   mod_RelCPR_server("RelCPR_ui_1")
+
+  # Animal Tracking sub-tabs
+  mod_ATSpatial_server("ATSpatial_1")
+  mod_ATStats_server("ATStats_1")
+  mod_ATCases_server("ATCases_1")
 }
