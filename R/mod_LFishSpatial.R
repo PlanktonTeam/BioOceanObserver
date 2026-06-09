@@ -41,39 +41,29 @@ mod_LFishSpatial_server <- function(id){
       
     }) %>% bindCache(input$species)
     
-    # Render basemap
+    # Render complete map: grey background dots + blue species dots
     output$LFMap <- leaflet::renderLeaflet({
-      
+      sdf <- LFDatar()
+      labs_fish <- lapply(seq(nrow(sdf)), function(i) {
+        paste("<strong>Date:</strong>", sdf$SampleTime_Local[i], "<br>",
+              "<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
+              "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
+              "<strong>Count:</strong>", sdf$Count[i], "<br>",
+              "<strong>Abundance (1000 m\u207B\u00B3):</strong>", round(sdf$Abundance_1000m3[i], digits = 2), "<br>",
+              "<strong>Temperature (\u00B0C):</strong>", sdf$Temperature_degC[i], "<br>",
+              "<strong>Depth (m):</strong>", sdf$SampleDepth_m[i], "<br>")
+      })
 
-      leaflet::leaflet(pkg.env$LFDataAbs %>% 
+      leaflet::leaflet(pkg.env$LFDataAbs %>%
                          dplyr::distinct(.data$Latitude, .data$Longitude)) %>%
-        leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>% 
-        # leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%
+        leaflet::addProviderTiles(provider = "Esri", layerId = "OceanBasemap") %>%
         leaflet::addCircleMarkers(lng = ~ Longitude,
                                   lat = ~ Latitude,
                                   color = "grey",
                                   opacity = 1,
                                   fillOpacity = 1,
-                                  radius = 2)
-      
-    })
-    
-    
-    # Add points for chosen larval fish
-    observe({
-      labs_fish <- lapply(seq(nrow(LFDatar())), function(i) {
-        paste("<strong>Date:</strong>", LFDatar()$SampleTime_Local[i], "<br>",
-              "<strong>Latitude:</strong>", LFDatar()$Latitude[i], "<br>",
-              "<strong>Longitude:</strong>", LFDatar()$Longitude[i], "<br>",
-              "<strong>Count:</strong>", LFDatar()$Count[i], "<br>",
-              "<strong>Abundance (1000 m\u207B\u00B3):</strong>", round(LFDatar()$Abundance_1000m3[i], digits = 2), "<br>",
-              "<strong>Temperature (\u00B0C):</strong>", LFDatar()$Temperature_degC[i], "<br>",
-              "<strong>Depth (m):</strong>", LFDatar()$SampleDepth_m[i], "<br>")})
-      
-      leaflet::leafletProxy("LFMap", data = LFDatar()) %>%
-        # leaflet::setMaxBounds(~110, ~-45, ~160, ~-10) %>%
-        leaflet::clearGroup("Present") %>%
-        leaflet::addCircleMarkers(data = LFDatar(), 
+                                  radius = 2) %>%
+        leaflet::addCircleMarkers(data = sdf,
                                   lng = ~ Longitude,
                                   lat = ~ Latitude,
                                   color = "blue",

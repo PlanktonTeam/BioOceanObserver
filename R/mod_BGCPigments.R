@@ -76,14 +76,8 @@ mod_PigmentsBGC_server <- function(id){
     output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Pigs") # Download csv of data
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Pigs") # Download figure
     
-    # Sidebar Map - Initial render
-    output$plotmap <- leaflet::renderLeaflet({ 
-      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
-    })
-    
-    # Update map when station selection changes
-    observe({
-      # Convert StationName to StationCode, handle empty selection
+    # Sidebar Map - Initial render with current selection
+    output$plotmap <- leaflet::renderLeaflet({
       stationCodes <- if (length(input$site) > 0) {
         pkg.env$NRSStation %>%
           dplyr::filter(.data$StationName %in% input$site) %>%
@@ -91,9 +85,21 @@ mod_PigmentsBGC_server <- function(id){
       } else {
         character(0)
       }
-      fLeafletUpdate("plotmap", session, stationCodes, 
-                     Survey = "NRS", Type = "Zooplankton")
+      fLeafletMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
     })
+    
+    # Update map when station selection changes
+    observe({
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fLeafletUpdate("plotmap", session, stationCodes,
+                     Survey = "NRS", Type = "Zooplankton")
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # add text information 
     output$PlotExp <- renderText({

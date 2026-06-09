@@ -69,7 +69,7 @@ mod_PolLTM_server <- function(id){
       PolLTMsdisNumeric = {class(selectedData()$sd)},
       PolLTMAnomalyisNumeric = {class(selectedData()$anomaly)},
       PolLTMDepthisNumeric = {class(selectedData()$SampleDepth_m)},
-      PolLTMDateisDate = {class(selectedData()$SampleTimee_Local)},
+      PolLTMDateisDate = {class(selectedData()$SampleTime_Local)},
       PolLTMProjectisChr = {class(selectedData()$Project)},
       PolLTMStationisChr = {class(selectedData()$StationName)},
       PolLTMCodeisChr = {class(selectedData()$StationCode)},

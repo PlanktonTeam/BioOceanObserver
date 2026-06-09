@@ -134,7 +134,7 @@ datHABg <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Sub
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
   dplyr::select(-c("TripCode", "Month_Local", "Year_Local", "StationCode")) %>% 
   dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything()) %>%
-  dplyr::rename(TaxonName = .data$Genus) %>% 
+  dplyr::rename(TaxonName = Genus) %>% 
   dplyr::filter(.data$Values != 0)
 
 datHABs <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'Species') %>% 
