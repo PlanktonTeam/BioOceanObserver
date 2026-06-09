@@ -137,8 +137,8 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = "Zooplankton",
     zoom <- 1.5
   } else if (Survey == "GO-SHIP"){
     meta_data <- pkg.env$datGSm %>% 
-      dplyr::distinct(Latitude, Longitude, .keep_all = TRUE) %>% 
-      dplyr::mutate(StationCode = StationName)
+      dplyr::distinct(.data$Latitude, .data$Longitude, .keep_all = TRUE) %>% 
+      dplyr::mutate(StationCode = .data$StationName)
     lon_max <- -150
     lon_min <- -180
     lat_min <- -60
@@ -146,10 +146,19 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = "Zooplankton",
     clon <- -179
     clat <- -40
     zoom <- 2
+  } else if (Survey == "HAB"){
+    meta_data <- pkg.env$AusStatesSimple  
+    lon_max <- 140
+    lon_min <- 160
+    lat_min <- -40
+    lat_max <- -25
+    clon <- 150
+    clat <- -32.5
+    zoom <- 3.25
   }
   
   # Add SOTS for phytoplankton (only relevant for point datasets)
-  if (Type == "Phytoplankton" && Survey != "CPR"){
+  if (Type == "Phytoplankton" && !Survey %in% c("CPR", "HAB")){
     sots <- data.frame(
       StationName = "SOTS",
       StationCode = "SOTS",
@@ -207,7 +216,32 @@ fLeafletMap <- function(sites, Survey = "NRS", Type = "Zooplankton",
                            fillOpacity = 0.7,
                            label = ~REGION,
                            highlight = leaflet::highlightOptions(weight = 2, bringToFront = TRUE))
-  } else { # Not CPR
+  } else if (Survey == "HAB") {
+    # Add color column based on selection for point datasets
+    meta_data <- meta_data %>%
+      dplyr::mutate(
+        Selected = .data$StateCode %in% sites,
+        Color = dplyr::if_else(.data$Selected, "red", "black"),
+        Opacity = dplyr::if_else(.data$Selected, 0.2, 0.0),
+        Radius = dplyr::if_else(.data$Selected, 2L, 1L)
+      ) %>%
+      sf::st_as_sf()
+    
+    map <- map %>%
+      leaflet::addPolygons(data = meta_data,
+                           color = ~Color,
+                           opacity = ~Opacity, 
+                           fillColor = ~Color,
+                           fillOpacity = ~Opacity,
+                           weight = ~Radius,
+                           label = ~StationName,
+                           labelOptions = leaflet::labelOptions(
+                             style = list("font-weight" = "normal", "padding" = "3px 8px"),
+                             textsize = "12px",
+                             direction = "auto"
+                           ))
+    
+  } else { # Not CPR or  HAB
     
     # Add color column based on selection for point datasets
     meta_data <- meta_data %>%
@@ -297,11 +331,17 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
         sf::st_as_sf()
     } else if (Survey == "GO-SHIP"){
       meta_data <- pkg.env$datGSm %>% 
-        dplyr::mutate(StationCode = StationName) 
+        dplyr::mutate(StationCode = .data$StationName) 
+    } else if (Survey == "HAB"){
+      meta_data <- pkg.env$AusStatesSimple 
+      
+      meta_data_station <- pkg.env$datHABTrip %>%
+        dplyr::mutate(StationCode = .data$StationName)  
+      
     }
     
     # Add SOTS for phytoplankton
-    if (Type == "Phytoplankton" && Survey != "CPR"){
+    if (Type == "Phytoplankton" && !Survey %in% c("CPR", "HAB")){
       
       sots <- data.frame(
         StationName = "SOTS",
@@ -328,6 +368,24 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
           Color = dplyr::if_else(.data$Selected, "red", "blue"),
           Radius = dplyr::if_else(.data$Selected, 8, 6)
         )
+    } else if (Survey == "HAB") {
+      # Only plot the stations selected as there are too many otherwise
+      meta_data_station <- meta_data_station %>%
+        dplyr::mutate(
+          Selected = .data$StationName %in% sites,
+          Color = dplyr::if_else(.data$Selected, "black", "white"),
+          Opacity = dplyr::if_else(.data$Selected, 0.5, 0),
+          Radius = dplyr::if_else(.data$Selected, 2, 0.01))
+      
+      meta_data <- meta_data %>%
+        dplyr::mutate(
+          Selected = .data$StateCode %in% sites,
+          Color = dplyr::if_else(.data$Selected, "red", "blue"),
+          Opacity = dplyr::if_else(.data$Selected, 0.2, 0.0),
+          Radius = dplyr::if_else(.data$Selected, 2L, 1L)
+        ) %>%
+        sf::st_as_sf()
+      
     } else {
       # Add color column based on selection
       meta_data <- meta_data %>%
@@ -337,27 +395,55 @@ fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopl
           Radius = dplyr::if_else(.data$Selected, 8, 6)
         )
     }
-    proxy %>%
-      leaflet::clearMarkers() %>%
-      leaflet::addCircleMarkers(
-        data = meta_data,
-        lng = ~Longitude,
-        lat = ~Latitude,
-        color = ~Color,
-        fillColor = ~Color,
-        radius = ~Radius,
-        fillOpacity = 0.8,
-        opacity = 1,
-        weight = 2,
-        label = ~StationName,
-        labelOptions = leaflet::labelOptions(
-          style = list("font-weight" = "normal", "padding" = "3px 8px"),
-          textsize = "12px",
-          direction = "auto"
-        )
-      )
+    
+    if(Survey == "HAB"){
+      proxy %>%
+        leaflet::clearMarkers() %>%
+        leaflet::clearShapes() %>%
+        leaflet::addPolygons(
+          data = meta_data,
+          color = ~Color,
+          opacity = ~Opacity, 
+          fillColor = ~Color,
+          fillOpacity = ~Opacity,
+          weight = ~Radius) %>%
+        leaflet::addCircleMarkers(
+          data = meta_data_station,
+          lng = ~Longitude,
+          lat = ~Latitude,
+          color = ~Color,
+          fillColor = ~Color,
+          radius = ~Radius,
+          fillOpacity = ~Opacity,
+          opacity = ~Opacity,
+          weight = 2,
+          label = ~StationName,
+          labelOptions = leaflet::labelOptions(
+            style = list("font-weight" = "normal", "padding" = "3px 8px"),
+            textsize = "12px",
+            direction = "auto"))    
+    } else { # for all other surveys
+      proxy %>%
+        leaflet::clearMarkers() %>%
+        leaflet::addCircleMarkers(
+          data = meta_data,
+          lng = ~Longitude,
+          lat = ~Latitude,
+          color = ~Color,
+          fillColor = ~Color,
+          radius = ~Radius,
+          fillOpacity = 0.8,
+          opacity = 1,
+          weight = 2,
+          label = ~StationName,
+          labelOptions = leaflet::labelOptions(
+            style = list("font-weight" = "normal", "padding" = "3px 8px"),
+            textsize = "12px",
+            direction = "auto"))  
+    }
   }
 }
+
 
 #' BOO Plankton Sidebar
 #'
@@ -367,64 +453,75 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
   
   ns <- NS(id)
   
-  if (stringr::str_detect(id, "NRS") == TRUE){ # NRS
+  if (stringr::str_detect(id, "NRS")) { # NRS
     
     choices <- unique(sort(dat$StationName))
     selectedSite <- c("Maria Island", "Port Hacking", "Yongala")
     min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
     idSite <- "site"
     
-    if(exists('dat1') == TRUE){
-      df <- dat %>% 
-        dplyr::bind_rows(dat1) %>% 
+    if (!is.null(dat1)) {
+      df <- dat %>%
+        dplyr::bind_rows(dat1) %>%
         planktonr:::pr_reorder()
       choices <- unique(sort(df$StationName))
-    } else {
-      choices <- unique(sort(dat$StationName))
     }
     
-    if (stringr::str_detect(id, "Micro") == TRUE){ # Microbes + NRS
+    if (stringr::str_detect(id, "Micro")) { # Microbes + NRS
       selectedVar <- "Bacterial_Temperature_Index_KD"
-    } else if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + NRS
+      choicesp <- pkg.env$choicespNRSm
+    } else if (stringr::str_detect(id, "Zoo")) { # Zoo + NRS
       selectedVar <- "Biomass_mgm3"
-    } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + NRS
-      selectedVar =  "PhytoAbundance_CellsL"
-    } 
-  } else if (stringr::str_detect(id, "CPR") == TRUE){ # CPR
+      choicesp <- pkg.env$choicespNRSz
+    } else if (stringr::str_detect(id, "Phyto")) { # Phyto + NRS
+      selectedVar <- "PhytoAbundance_CellsL"
+      choicesp <- pkg.env$choicespNRSp
+    }
+  } else if (stringr::str_detect(id, "CPR")) { # CPR
     choices <- unique(sort(dat$BioRegion))
     selectedSite <- c("Temperate East", "South-east")
     idSite <- "site"
     min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
-    if (stringr::str_detect(id, "Zoo") == TRUE){ # Zoo + CPR
-      selectedVar = "ZoopAbundance_m3"
-    } else if (stringr::str_detect(id, "Phyto") == TRUE){ # Phyto + CPR
-      selectedVar = "PhytoAbundance_Cellsm3"
+    if (stringr::str_detect(id, "Zoo")) { # Zoo + CPR
+      selectedVar <- "ZoopAbundance_m3"
+      choicesp <- pkg.env$choicespCPRz
+    } else if (stringr::str_detect(id, "Phyto")) { # Phyto + CPR
+      selectedVar <- "PhytoAbundance_Cellsm3"
+      choicesp <- pkg.env$choicespCPRp
     }
-  } else if (stringr::str_detect(id, "CS") == TRUE){ # Microbes Coastal
+  } else if (stringr::str_detect(id, "CS")) { # Microbes Coastal
     choices <- unique(sort(dat$State))
     selectedSite <- c("GBR")
     idSite <- "site"
-    selectedVar = "Bacterial_Temperature_Index_KD"
+    selectedVar <- "Bacterial_Temperature_Index_KD"
     min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
-    } 
+    choicesp <- pkg.env$choicespCSm
+  } else if (stringr::str_detect(id, "HAB")) { # Coastal Phytoplankton
+    choices <- unique(sort(dat$State))
+    selectedSite <- c("NSW")
+    idSite <- "site"
+    selectedVar <- "PhytoAbundance_CellsL"
+    min_date <- as.POSIXct(paste0(min(lubridate::year(dat$StartDate)), "-01-01 00:00"), format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
+    choicesp <- pkg.env$choicespHAB
+  }
   
   shiny::sidebarPanel(
     
-    # Put Map, Station names and date slider on all panels
+    # Put Map, Station names on all panels except HABS
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " <= 5"), 
+      condition = paste0("!(input.navbar == 'Coastal Phytoplankton')"), 
       # Use leafletOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
       if(stringr::str_detect(id, "CPR")) {
         shiny::tagList(
           shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
           leaflet::leafletOutput(ns("plotmap"), height = "400px")
         )
-      } else {
+      } else if(!stringr::str_detect(id, "HAB")) {
         shiny::tagList(
           shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
           leaflet::leafletOutput(ns("plotmap"), height = "400px")
         )
-      },
+      }, 
       shiny::HTML("<h3>Select a station:</h3>"),
       shiny::fluidRow(class = "row_multicol", 
                       tags$div(align = "left", 
@@ -432,19 +529,94 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                                shiny::checkboxGroupInput(inputId = ns(idSite), 
                                                          label = NULL,
                                                          choices = choices, 
-                                                         selected = selectedSite))),
+                                                         selected = selectedSite)))
+    ),
+    #Add state then multiple stations, and one genus or species options for HABs
+    # have to do this in two stages as multiple cannot be changed dynamically with updateselectinput option
+    shiny::conditionalPanel(
+      condition = paste0("input.navbar == 'Coastal Phytoplankton' && input['", id, "-", tabsetPanel_id, "'] == 1"),
+      shiny::tagList(
+        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+        leaflet::leafletOutput(ns("plotmap1"), height = "400px")
+      ),
+      shiny::HTML("<h3>Select a state:</h3>"),
+      shiny::fluidRow(class = "row_multicol",
+                      tags$div(align = "left",
+                               class = "multicol",
+                               shiny::checkboxGroupInput(inputId = ns("statepick1"),
+                                                         label = NULL,
+                                                         choices = choices, 
+                                                         selected = c("NSW")))),
+      shiny::HTML("<h3>Select one or more stations:</h3>"),
+      shiny::selectInput(inputId = ns("station1"), 
+                         label = NULL,
+                         choices = c("Bar Island", "Wapengo Lake", "Clyde River", "Wallis Lake", "Port Stephens"), 
+                         selected = 'Bar Island',
+                         multiple = TRUE),
+      shiny::HTML("<h3>Select taxonomic level:</h3>"),
+      shiny::fluidRow(class = "row_multicol",
+                      tags$div(align = "left",
+                               class = "multicol",
+                               shiny::radioButtons(inputId = ns("tax1"),
+                                                   label = NULL,
+                                                   choices = c("genus", "species"),
+                                                   selected = "genus"))),
+      shiny::HTML("<h3>Select a genera or species:</h3>"),
+      shiny::HTML("Only taxa present in the selected stations will be available in this list."),
+      shiny::selectInput(inputId = ns("taxgs1"),
+                         label = NULL,
+                         choices = NULL, 
+                         selected = "Alexandrium",
+                         multiple = FALSE)
+    ), 
+    shiny::conditionalPanel(
+      condition = paste0("input.navbar == 'Coastal Phytoplankton' && input['", id, "-", tabsetPanel_id, "'] == 2"),
+      shiny::tagList(
+        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+        leaflet::leafletOutput(ns("plotmap2"), height = "400px")
+      ),
+      shiny::HTML("<h3>Select taxonomic level:</h3>"),
+      shiny::fluidRow(class = "row_multicol",
+                      tags$div(align = "left",
+                               class = "multicol",
+                               shiny::radioButtons(inputId = ns("tax2"),
+                                                   label = NULL,
+                                                   choices = c("genus", "species"),
+                                                   selected = "genus"))),
+      shiny::HTML("<h3>Select one or more genera or species:</h3>"),
+      shiny::selectInput(inputId = ns("taxgs2"),
+                         label = NULL,
+                         choices = NULL, 
+                         selected = "Alexandrium",
+                         multiple = TRUE),
+      shiny::HTML("<h3>Select a state:</h3>"),
+      shiny::fluidRow(class = "row_multicol",
+                      tags$div(align = "left",
+                               class = "multicol",
+                               shiny::radioButtons(inputId = ns("statepick2"),
+                                                   label = NULL,
+                                                   choices = choices, 
+                                                   selected = c("NSW")))),
+      shiny::HTML("<h3>Select a station:</h3>"),
+      shiny::HTML("Only stations where this taxa is present will be available in this list."),
+      shiny::selectInput(inputId = ns("station2"),
+                         label = NULL,
+                         choices = c("Bar Island", "Wapengo Lake", "Clyde River", "Wallis Lake", "Port Stephens"),
+                         selected = 'Bar Island',
+                         multiple = FALSE)
+    ),
+    shiny::conditionalPanel(
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 5"),
       shiny::HTML("<h3>Dates:</h3>"),
       shiny::sliderInput(ns("DatesSlide"), 
                          label = NULL, 
                          min = min_date, 
                          max = Sys.time(), 
-                         value = c(min_date, Sys.time()-1), timeFormat="%m-%Y")
-    ),
-    
+                         value = c(min_date, Sys.time()-1), timeFormat="%m-%Y")),
     # Parameter selection for Microbes
     # All subtabs (ie 1-3) using this input need to be created together
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " <= 3 && input.navbar == 'Microbes'"), # Micro
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 3 && input.navbar == 'Microbes'"), # Micro
       shiny::HTML("<h3>Select a parameter:</h3>"),
       shiny::selectInput(inputId = ns("parameterm"), 
                          label = NULL, 
@@ -460,36 +632,36 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     # Parameter Selection for Plankton (Tabs 1-2)
     # All subtabs (ie 1-2) using this input need to be created together
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " <= 2 && input.navbar != 'Microbes'"), 
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 2 && input.navbar != 'Microbes'"),
       shiny::HTML("<h3>Select a parameter:</h3>"),
       shiny::selectInput(inputId = ns("parameter"), 
                          label = NULL, 
-                         choices = planktonr:::pr_relabel(unique(dat$Parameters), style = "simple", named = TRUE), 
+                         choices = choicesp, 
                          selected = selectedVar),
       shiny::htmlOutput(ns("ParamDef")),
     ),
     
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 1 | input.", tabsetPanel_id, " == 2"), 
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 1 | input['", id, "-", tabsetPanel_id, "'] == 2"),
       shiny::checkboxInput(inputId = ns("scaler1"), 
                            label = "Change the plot scale to log10",
                            value = FALSE),
     ),
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 3 && input.navbar != 'Microbes'"), # Plankton
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3 && input.navbar != 'Microbes'"), # Plankton
       shiny::checkboxInput(inputId = ns("scaler3"),
                            label = strong("Change the plot scale to proportion"),
                            value = FALSE),
     ),
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 3 && input.mic == 'mts' && input.navbar == 'Microbes'"), # MicroNRS
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3 && input.mic == 'mts' && input.navbar == 'Microbes'"), # MicroNRS
       shiny::selectizeInput(inputId = ns("interp"),
                             label = shiny::strong("Interpolate data?"),
                             choices = c("Interpolate", "Raw data"),
                             selected = "Raw data"),
     ),
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 3 && input.mic == 'mtsCS'"), # MicroCoastal
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3 && input.mic == 'mtsCS'"), # MicroCoastal
       shiny::HTML("<h3>Overlay trend line?</h3>"),
       shiny::selectizeInput(inputId = ns("smoother"),
                             label = NULL,
@@ -507,27 +679,49 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
 fPLanktonPanel <- function(id, tabsetPanel_id){
   ns <- NS(id)
   shiny::mainPanel(
-    shiny::tabsetPanel(id = tabsetPanel_id, type = "pills",
-                       shiny::tabPanel("Trend Analysis", value = 1,
-                                       shiny::htmlOutput(ns("PlotExp1")),
-                                       plotOutput(ns("timeseries1"), height = "auto") %>% 
-                                         shinycssloaders::withSpinner(color="#0dc5c1"),
-                                       div(class="download-button-container",
-                                           fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
-                                           fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
-                                           fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
-                       ),
-                       shiny::tabPanel("Climatologies", value = 2,
-                                       shiny::htmlOutput(ns("PlotExp2")),  
-                                       plotOutput(ns("timeseries2"), height = 800) %>% 
-                                         shinycssloaders::withSpinner(color="#0dc5c1"),
-                                       div(class="download-button-container",
-                                           fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
-                                           fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
-                                           fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
-                       ),
-                       if(!tabsetPanel_id %in% c("NRSmts", "CSmts")){
-                         shiny::tabPanel("Functional groups", value = 3,
+    shiny::tabsetPanel(id = ns(tabsetPanel_id), type = "pills", selected = "1",
+                       if(!tabsetPanel_id %in% c("pHABts")){
+                         shiny::tabPanel("Trend analysis", value = "1",
+                                         shiny::htmlOutput(ns("PlotExp1")),
+                                         plotOutput(ns("timeseries1"), height = "auto") %>% 
+                                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                                         div(class="download-button-container",
+                                             fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+                                             fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+                                             fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
+                         )},
+                       if(!tabsetPanel_id %in% c("pHABts")){
+                         shiny::tabPanel("Climatologies", value = "2",
+                                         shiny::htmlOutput(ns("PlotExp2")),  
+                                         plotOutput(ns("timeseries2"), height = 800) %>% 
+                                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                                         div(class="download-button-container",
+                                             fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
+                                             fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
+                                             fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
+                         )},
+                       if(tabsetPanel_id %in% c("pHABts")){
+                         shiny::tabPanel("Trend analysis by location", value = "1",
+                                         shiny::htmlOutput(ns("PlotExp1")),
+                                         plotOutput(ns("timeseries1"), height = "auto") %>%
+                                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                                         div(class="download-button-container",
+                                             fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
+                                             fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
+                                             fButtons(id, button_id = "downloadCode1", label = "R Code Example", Type = "Action"))
+                         )},
+                       if(tabsetPanel_id %in% c("pHABts")){
+                         shiny::tabPanel("Trend analysis by taxa", value = "2",
+                                         shiny::htmlOutput(ns("PlotExp2")),  
+                                         plotOutput(ns("timeseries2"), height = "auto") %>%
+                                           shinycssloaders::withSpinner(color="#0dc5c1"),
+                                         div(class="download-button-container",
+                                             fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
+                                             fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
+                                             fButtons(id, button_id = "downloadCode2", label = "R Code Example", Type = "Action"))
+                         )},
+                       if(!tabsetPanel_id %in% c("NRSmts", "CSmts", "pHABts")){
+                         shiny::tabPanel("Functional groups", value = "3",
                                          shiny::htmlOutput(ns("PlotExp3"), container = span),  
                                          plotOutput(ns("timeseries3"), height = "auto") %>% 
                                            shinycssloaders::withSpinner(color="#0dc5c1"),
@@ -547,29 +741,7 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
                                              fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
                                              fButtons(id, button_id = "downloadCode3", label = "R Code Example", Type = "Action"))
                          )
-                       }#,
-                       # if (tabsetPanel_id %in% c("NRSmts")){
-                       #   shiny::tabPanel("Scatter plots", value = 4,
-                       #                   h6(textOutput(ns("PlotExp4"), container = span)),
-                       #                   plotOutput(ns("timeseries4")) %>%
-                       #                     shinycssloaders::withSpinner(color="#0dc5c1"),
-                       #                   div(style="display:inline-block; float:right; width:60%",
-                       #                       fButtons(id, button_id = "downloadPlot4", label = "Plot", Type = "Download"),
-                       #                       fButtons(id, button_id = "downloadData4", label = "Data", Type = "Download"),
-                       #                       fButtons(id, button_id = "downloadCode4", label = "R Code Example", Type = "Action"))
-                       #   )
-                       # },
-                       # if (tabsetPanel_id %in% c("CSmts")){
-                       #   shiny::tabPanel("Traits", value = 5,
-                       #                   h6(textOutput(ns("PlotExp5"), container = span)),
-                       #                   plotOutput(ns("timeseries5")) %>%
-                       #                     shinycssloaders::withSpinner(color="#0dc5c1"),
-                       #                   div(style="display:inline-block; float:right; width:60%",
-                       #                       fButtons(id, button_id = "downloadPlot5", label = "Plot", Type = "Download"),
-                       #                       fButtons(id, button_id = "downloadData5", label = "Data", Type = "Download"),
-                       #                       fButtons(id, button_id = "downloadCode5", label = "R Code Example", Type = "Action"))
-                       #   )
-                       #}
+                       }
     )
   )
 }
@@ -591,23 +763,23 @@ fSpatialSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3){
   
   shiny::sidebarPanel(
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 1"), 
-      selectizeInput(inputId = ns('species'), label = labeltext, choices = unique(dat1$Species), 
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 1"),
+      selectizeInput(inputId = ns('species'), label = labeltext, choices = unique(dat1$Species),
                      selected = selectedVar),
-      shiny::checkboxInput(inputId = ns("scaler1"), 
-                           label = "Change between frequency or Presence/Absence plot", 
+      shiny::checkboxInput(inputId = ns("scaler1"),
+                           label = "Change between frequency or Presence/Absence plot",
                            value = FALSE)
     ),
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 2"), 
-      selectizeInput(inputId = ns('species1'), label = labeltext, choices = unique(dat2$Species), 
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 2"),
+      selectizeInput(inputId = ns('species1'), label = labeltext, choices = unique(dat2$Species),
                      selected = selectedVar),
       shiny::p("This is a reduced species list that only contains species with enough data to create an STI plot")
       
     ),
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id, " == 3"), 
-      selectizeInput(inputId = ns('species2'), label = labeltext, choices = unique(dat3$Species), 
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3"),
+      selectizeInput(inputId = ns('species2'), label = labeltext, choices = unique(dat3$Species),
                      selected = selectedVar),
       shiny::p("This is a reduced species list that only contains species with enough data to create a day night plot")
     ),
@@ -622,7 +794,7 @@ fSpatialSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3){
 fSpatialPanel <- function(id, tabsetPanel_id){
   ns <- NS(id)
   shiny::mainPanel(
-    tabsetPanel(id = tabsetPanel_id, type = "pills",
+    tabsetPanel(id = ns(tabsetPanel_id), type = "pills",
                 tabPanel("Observation maps", value = 1, 
                          p(textOutput(ns("DistMapExp"), container = span)),
                          fluidRow(
@@ -817,7 +989,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
       tags$head(tags$style(HTML("
                               .shiny-split-layout > div {overflow: visible;}
                                     "))),
-      condition = paste0("input.", tabsetPanel_id, " <= 2"),
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 2"),
       
       # Use plotlyOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
       if(stringr::str_detect(id, "CPR")) {
@@ -848,7 +1020,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
                            value = FALSE),
     ),    
     shiny::conditionalPanel(
-      condition = paste0("input.", tabsetPanel_id," == 1"),
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 1"),
       shiny::HTML("<h4>Select a group & variable for the x axis:</h4>"),
       shiny::splitLayout(
         shiny::selectizeInput(inputId = ns('groupx'), label = NULL, choices = ChoicesGroupx,
@@ -869,7 +1041,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
 fRelationPanel <- function(id, tabsetPanel_id){
   ns <- NS(id)
   shiny::mainPanel( 
-    shiny::tabsetPanel(id = tabsetPanel_id, type = "pills",
+    shiny::tabsetPanel(id = ns(tabsetPanel_id), type = "pills",
                        shiny::tabPanel("Scatter plots", value = 1,
                                        shiny::htmlOutput(ns("PlotExp1")),
                                        plotOutput(ns("scatter1")) %>% 
@@ -1015,13 +1187,7 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
       # Wrap the existing plot with copyright on the right, aligned to bottom
       gg_copy <- patchwork::wrap_plots(
         gg_id(),
-        copyright_plot, 
-        widths = c(1, 0.02)
-      )
-      
-      patchwork::wrap_plots(
-        gg_id(),
-        free(copyright_plot, "space", "b"),
+        patchwork::free(copyright_plot, "space", "b"),
         widths = c(1, 0.02)
       )
       
@@ -1094,19 +1260,21 @@ LeafletObs <- function(sdf, name, Type = "PA"){
   Species <- unique(sdf$Species)
   
   if("Abundance_1000m3" %in% colnames(sdf)){
-    labs <- lapply(seq(nrow(sdf)), function(i) {
-      paste("<strong>Date:</strong>", sdf$SampleTime_Local[i], "<br>",
-            "<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
-            "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
-            "<strong>Count:</strong>", sdf$Count[i], "<br>",
-            "<strong>Abundance (1000 m\u207B\u00B3):</strong>", round(sdf$Abundance_1000m3[i], digits = 2), "<br>",
-            "<strong>Temperature (\u00B0C):</strong>", sdf$Temperature_degC[i], "<br>",
-            "<strong>Depth (m):</strong>", sdf$SampleDepth_m[i], "<br>")})
+    labs <- lapply(paste0(
+      "<strong>Date:</strong> ", sdf$SampleTime_Local, "<br>",
+      "<strong>Latitude:</strong> ", sdf$Latitude, "<br>",
+      "<strong>Longitude:</strong> ", sdf$Longitude, "<br>",
+      "<strong>Count:</strong> ", sdf$Count, "<br>",
+      "<strong>Abundance (1000 m\u207B\u00B3):</strong> ", round(sdf$Abundance_1000m3, digits = 2), "<br>",
+      "<strong>Temperature (\u00B0C):</strong> ", sdf$Temperature_degC, "<br>",
+      "<strong>Depth (m):</strong> ", sdf$SampleDepth_m
+    ), htmltools::HTML)
   } else if ("freqfac" %in% colnames(sdf)){
-    labs <- lapply(seq(nrow(sdf)), function(i) {
-      paste("<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
-            "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
-            "<strong>Frequency in sample:</strong>", sdf$freqfac[i], "<br>")})
+    labs <- lapply(paste0(
+      "<strong>Latitude:</strong> ", sdf$Latitude, "<br>",
+      "<strong>Longitude:</strong> ", sdf$Longitude, "<br>",
+      "<strong>Frequency in sample:</strong> ", sdf$freqfac
+    ), htmltools::HTML)
   } else {
     labs <- ''
   }

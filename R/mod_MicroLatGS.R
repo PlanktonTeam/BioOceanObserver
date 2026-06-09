@@ -120,7 +120,7 @@ mod_MicroLatGS_server <- function(id){
       if(length(selectedData()$Parameters)>50){
         planktonr::pr_plot_latitude(selectedData(), na.fill = mean)
       } else {
-        ggplot2::ggplot + ggplot2::geom_blank()
+        ggplot2::ggplot() + ggplot2::geom_blank()
       }
     }) %>% bindCache(input$parameterm, input$LatSlide[1], input$LatSlide[2], input$DepthSlide[1], input$DepthSlide[2])
 

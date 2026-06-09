@@ -37,7 +37,7 @@ mod_NutrientsBGC_server <- function(id){
       shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
       
       pkg.env$Nuts %>%
-        dplyr::select(-c(TripCode, Project)) %>% #TODO check if we need this
+        dplyr::select(-c(.data$TripCode, .data$Project)) %>% #TODO check if we need this
         dplyr::filter(.data$StationName %in% input$site,
                .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
                .data$Parameters %in% input$parameter) %>% 
@@ -61,7 +61,7 @@ mod_NutrientsBGC_server <- function(id){
     gg_out1 <- reactive({
       
       if(input$parameter == 'Oxygen_umolL' & !("Maria Island" %in% input$site || "Rottnest Island" %in% input$site)){
-        ggplot2::ggplot + ggplot2::geom_blank()
+        ggplot2::ggplot() + ggplot2::geom_blank()
       } else {
         interp <- input$interp
       
@@ -85,14 +85,8 @@ mod_NutrientsBGC_server <- function(id){
     output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Nuts") # Download csv of data
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Nuts") # Download figure
     
-    # Sidebar Map - Initial render
-    output$plotmap <- leaflet::renderLeaflet({ 
-      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
-    })
-    
-    # Update map when station selection changes
-    observe({
-      # Convert StationName to StationCode, handle empty selection
+    # Sidebar Map - Initial render with current selection
+    output$plotmap <- leaflet::renderLeaflet({
       stationCodes <- if (length(input$site) > 0) {
         pkg.env$NRSStation %>%
           dplyr::filter(.data$StationName %in% input$site) %>%
@@ -100,9 +94,21 @@ mod_NutrientsBGC_server <- function(id){
       } else {
         character(0)
       }
-      fLeafletUpdate("plotmap", session, stationCodes, 
-                     Survey = "NRS", Type = "Zooplankton")
+      fLeafletMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
     })
+    
+    # Update map when station selection changes
+    observe({
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fLeafletUpdate("plotmap", session, stationCodes,
+                     Survey = "NRS", Type = "Zooplankton")
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # add text information 
     
@@ -119,17 +125,19 @@ mod_NutrientsBGC_server <- function(id){
     }) %>% bindCache(input$parameter)
     
     # Parameter Definition
-    
-    output$ParamDefb <- if(input$parameter == 'Oxygen_umolL'){
-            shiny::renderText({
-              paste("<p><strong>", planktonr:::pr_relabel('Oxygen_umolL', style = "plotly"), ":</strong> ",
-              pkg.env$ParamDef %>% 
-                dplyr::filter(.data$Parameter == 'Oxygen_umolL') %>% 
+    output$ParamDefb <- shiny::renderText({
+      if (input$parameter == 'Oxygen_umolL') {
+        paste("<p><strong>", planktonr:::pr_relabel('Oxygen_umolL', style = "plotly"), ":</strong> ",
+              pkg.env$ParamDef %>%
+                dplyr::filter(.data$Parameter == 'Oxygen_umolL') %>%
                 dplyr::pull("Definition"), ".</p>", sep = "")
-              })
-    } else {
-      fParamDefServer(selectedData) # Download csv of data
-    } %>% bindCache(input$parameter)
+      } else {
+        paste("<p><strong>", planktonr:::pr_relabel(unique(selectedData()$Parameters), style = "plotly"), ":</strong> ",
+              pkg.env$ParamDef %>%
+                dplyr::filter(.data$Parameter %in% unique(selectedData()$Parameters)) %>%
+                dplyr::pull("Definition"), ".</p>", sep = "")
+      }
+    }) %>% bindCache(input$parameter, input$site)
     
   })
 }

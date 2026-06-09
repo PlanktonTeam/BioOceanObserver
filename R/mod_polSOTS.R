@@ -20,7 +20,7 @@ mod_PolSOTS_ui <- function(id){
                             choices = "Southern Ocean Time Series", 
                             selected = "Southern Ocean Time Series"),
         shiny::conditionalPanel(
-          condition = paste0("input.EOV_SOTS == 1"), # Only first tab
+          condition = paste0("input['", id, "-EOV_SOTS'] == 1"), # Only first tab
           shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
           shiny::checkboxGroupInput(inputId = nsPolSOTS("Parameters"), label = NULL, 
                                     choices = planktonr:::pr_relabel(
@@ -47,7 +47,7 @@ mod_PolSOTS_ui <- function(id){
         shiny::hr(class = "hr-separator"),
         shiny::htmlOutput(nsPolSOTS("StationSummary")),
         shiny::br(),
-        shiny::tabsetPanel(id = "EOV_SOTS", type = "pills",
+        shiny::tabsetPanel(id = nsPolSOTS("EOV_SOTS"), type = "pills",
                            shiny::tabPanel("All", value = 1,
                                            
                                            shiny::plotOutput(nsPolSOTS("timeseries1"), height = 5 * 200) %>%
@@ -95,29 +95,31 @@ mod_PolSOTS_server <- function(id){
     ns <- session$ns
     
     # Sidebar ----------------------------------------------------------
+    # These depth-sliced datasets are static (no user inputs affect the filter),
+    # so they are cached with a fixed key to compute only once per session.
     selectedData0 <- reactive({
-      selectedData0 <- pkg.env$PolSOTS %>% 
+      selectedData0 <- pkg.env$PolSOTS %>%
         dplyr::filter(.data$SampleDepth_m == 0)
       
-    }) %>% bindCache(input$site, input$Parameters)
+    }) %>% bindCache("SOTS_0m")
     
     selectedData30 <- reactive({
-      selectedData30 <- pkg.env$PolSOTS %>% 
+      selectedData30 <- pkg.env$PolSOTS %>%
         dplyr::filter(.data$SampleDepth_m == 30 | is.na(.data$SampleDepth_m)) # phyto needs depths, then change this
       
-    }) %>% bindCache(input$site, input$Parameters)
+    }) %>% bindCache("SOTS_30m")
     
     selectedData200 <- reactive({
-      selectedData200 <- pkg.env$PolSOTS %>% 
+      selectedData200 <- pkg.env$PolSOTS %>%
         dplyr::filter(.data$SampleDepth_m == 200)
       
-    }) %>% bindCache(input$site, input$Parameters)
+    }) %>% bindCache("SOTS_200m")
     
     selectedData500 <- reactive({
-      selectedData500 <- pkg.env$PolSOTS %>% 
+      selectedData500 <- pkg.env$PolSOTS %>%
         dplyr::filter(.data$SampleDepth_m == 500)
       
-    }) %>% bindCache(input$site, input$Parameters)    
+    }) %>% bindCache("SOTS_500m")
     
     stationData <- reactive({
       stationData <- pkg.env$SOTSinfo  
@@ -128,11 +130,12 @@ mod_PolSOTS_server <- function(id){
       fLeafletMap(character(0), Survey = "NRS", Type = "Phytoplankton")
     })
     
-    # Update map when station selection changes
+    # Update map when station selection changes (SOTS has only one station so
+    # this only needs to fire once on load, not on every reactive invalidation)
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData0()$StationCode), 
+      fLeafletUpdate("plotmap", session, unique(selectedData0()$StationCode),
                      Survey = "NRS", Type = "Phytoplankton")
-    })
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     
     output$StationSummary <- shiny::renderText({ 
@@ -146,130 +149,118 @@ mod_PolSOTS_server <- function(id){
     col1 <- fEOVutilities(vector = "col", Survey = "SOTS")
     trans1 <- fEOVutilities(vector = "trans", Survey = "SOTS")
     
-    observeEvent({input$EOV_SOTS == 1}, {
+    gg_out1 <- reactive({
+      if(input$Depths == "30 m"){
+        dat <- selectedData30()
+        lab <- "At 30 m"
+      } else {
+        dat <- selectedData0()
+        lab <- "At 0 m"
+      }
       
-      gg_out1 <- reactive({
-        
-        if(input$Depths == "30 m"){
-          dat <- selectedData30()
-          lab <- "At 30 m"
-        } else {
-          dat <- selectedData0()
-          lab<- "At 0 m"
-        }
-        
-        p_list <- list()
-        for (idx in 1:length(input$Parameters)){
-          p <- planktonr::pr_plot_EOVs(dat, EOV = input$Parameters[idx], trans = trans1[[input$Parameters[idx]]], col = col1[[input$Parameters[idx]]])
-          p_list[[idx]] <- p
-        }
-        
-        patchwork::wrap_plots(patchwork::wrap_elements(grid::textGrob(lab, gp = grid::gpar(fontsize = 20))) / p_list, ncol = 1, byrow = TRUE)  &
-          ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
-                         axis.title = ggplot2::element_text(size = 12, face = "plain"),
-                         axis.text =  ggplot2::element_text(size = 10, face = "plain"),
-                         plot.title = ggplot2::element_text(hjust = 0.5))
-        
-      }) %>% bindCache(input$Parameters, input$Depths)
+      p_list <- list()
+      for (idx in 1:length(input$Parameters)){
+        p <- planktonr::pr_plot_EOVs(dat, EOV = input$Parameters[idx], trans = trans1[[input$Parameters[idx]]], col = col1[[input$Parameters[idx]]])
+        p_list[[idx]] <- p
+      }
       
-      output$timeseries1 <- renderPlot({
-        gg_out1()
-      })
+      patchwork::wrap_plots(patchwork::wrap_elements(grid::textGrob(lab, gp = grid::gpar(fontsize = 20))) / p_list, ncol = 1, byrow = TRUE) &
+        ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
+                       axis.title = ggplot2::element_text(size = 12, face = "plain"),
+                       axis.text =  ggplot2::element_text(size = 10, face = "plain"),
+                       plot.title = ggplot2::element_text(hjust = 0.5))
       
-      # Download -------------------------------------------------------
-      output$downloadData1 <- fDownloadButtonServer(input, selectedData0, "Policy_Select") # Download csv of data
-      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Policy_Select", papersize = "A4") # Download figure  
-      
+    }) %>% bindCache(input$Parameters, input$Depths)
+    
+    output$timeseries1 <- renderPlot({
+      req(input$EOV_SOTS == 1)
+      gg_out1()
     })
     
-    observeEvent({input$EOV_SOTS == 2}, {
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData0, "Policy_Select") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Policy_Select", papersize = "A4") # Download figure
+    
+    gg_out2 <- reactive({
+      req(input$EOV_SOTS == 2)
       
-      gg_out2 <- reactive({
-        
-        p10 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "ChlF_mgm3", trans = "identity", col = col1["ChlF_mgm3"], labels = FALSE) 
-        p130 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "ChlF_mgm3", trans = "identity", col = col1["ChlF_mgm3"], labels = FALSE)
-        p20 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col1["PhytoBiomassCarbon_pgL"], labels = FALSE) 
-        p230 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col1["PhytoBiomassCarbon_pgL"], labels = FALSE) 
-        p30 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE) 
-        p330 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE) 
-        
-        patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m', gp = grid::gpar(fontsize = 20))) / p10 / p20 / p30 /
-                                   patchwork::wrap_elements(grid::textGrob('At 30 m', gp = grid::gpar(fontsize = 20))) / p130 / p230 / p330) &
-          ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
-                         axis.title = ggplot2::element_text(size = 12, face = "plain"),
-                         axis.text =  ggplot2::element_text(size = 10, face = "plain"),
-                         plot.title = ggplot2::element_text(hjust = 0.5)) 
-        
-      }) 
+      p10 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "ChlF_mgm3", trans = "identity", col = col1["ChlF_mgm3"], labels = FALSE)
+      p130 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "ChlF_mgm3", trans = "identity", col = col1["ChlF_mgm3"], labels = FALSE)
+      p20 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col1["PhytoBiomassCarbon_pgL"], labels = FALSE)
+      p230 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col1["PhytoBiomassCarbon_pgL"], labels = FALSE)
+      p30 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE)
+      p330 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE)
       
-      output$timeseries2 <- renderPlot({
-        gg_out2()
-      })
+      patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m', gp = grid::gpar(fontsize = 20))) / p10 / p20 / p30 /
+                                 patchwork::wrap_elements(grid::textGrob('At 30 m', gp = grid::gpar(fontsize = 20))) / p130 / p230 / p330) &
+        ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
+                       axis.title = ggplot2::element_text(size = 12, face = "plain"),
+                       axis.text =  ggplot2::element_text(size = 10, face = "plain"),
+                       plot.title = ggplot2::element_text(hjust = 0.5))
       
-      # Download -------------------------------------------------------
-      output$downloadData2 <- fDownloadButtonServer(input, selectedData0, "Policy_Bio") # Download csv of data
-      #TODO - this needs to be 0m and 30m data, same goes for all downloads
-      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Policy_Bio", papersize = "A4") # Download figure  
-      
+    }) %>% bindCache("SOTS_bio")
+    
+    output$timeseries2 <- renderPlot({
+      gg_out2()
     })
     
-    observeEvent({input$EOV_SOTS == 3}, {
+    # Download -------------------------------------------------------
+    output$downloadData2 <- fDownloadButtonServer(input, selectedData0, "Policy_Bio") # Download csv of data
+    #TODO - this needs to be 0m and 30m data, same goes for all downloads
+    output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Policy_Bio", papersize = "A4") # Download figure
+    
+    gg_out3 <- reactive({
+      req(input$EOV_SOTS == 3)
       
-      gg_out3 <- reactive({
-        p20 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Nitrate_umolL", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
-        p230 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "Nitrate_umolL", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
-        p30 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Silicate_umolL", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE)
-        p330 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "Silicate_umolL", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE)
-        p40 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = FALSE)
-        p430 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = FALSE)
-        
-        patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m', gp = grid::gpar(fontsize = 20))) / p20 / p30/ p40 /
-                                   patchwork::wrap_elements(grid::textGrob('At 30 m', gp = grid::gpar(fontsize = 20))) /p230 / p330/ p430 ) & #/ p5) &
-          ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
-                         axis.title = ggplot2::element_text(size = 12, face = "plain"),
-                         axis.text =  ggplot2::element_text(size = 10, face = "plain"),
-                         plot.title = ggplot2::element_text(hjust = 0.5))
-        
-      }) 
+      p20 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Nitrate_umolL", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
+      p230 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "Nitrate_umolL", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
+      p30 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Silicate_umolL", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE)
+      p330 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "Silicate_umolL", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE)
+      p40 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = FALSE)
+      p430 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = FALSE)
       
-      output$timeseries3 <- renderPlot({
-        gg_out3()
-      })
+      patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m', gp = grid::gpar(fontsize = 20))) / p20 / p30 / p40 /
+                                 patchwork::wrap_elements(grid::textGrob('At 30 m', gp = grid::gpar(fontsize = 20))) / p230 / p330 / p430) &
+        ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
+                       axis.title = ggplot2::element_text(size = 12, face = "plain"),
+                       axis.text =  ggplot2::element_text(size = 10, face = "plain"),
+                       plot.title = ggplot2::element_text(hjust = 0.5))
       
-      # Download -------------------------------------------------------
-      output$downloadData3 <- fDownloadButtonServer(input, selectedData0, "Policy_Chem") # Download csv of data
-      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "Policy_Chem", papersize = "A4") # Download figure  
-      
+    }) %>% bindCache("SOTS_chem")
+    
+    output$timeseries3 <- renderPlot({
+      gg_out3()
     })
     
-    observeEvent({input$EOV_SOTS == 4}, {
-      gg_out4 <- reactive({
-        
-        p10 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Temperature_degC", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
-        p1200 <- planktonr::pr_plot_EOVs(selectedData200(), EOV = "Temperature_degC", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
-        p1500 <- planktonr::pr_plot_EOVs(selectedData500(), EOV = "Temperature_degC", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
-        p20 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Salinity", trans = "identity", col = col1["Salinity"])
-        p2200 <- planktonr::pr_plot_EOVs(selectedData200(), EOV = "Salinity", trans = "identity", col = col1["Salinity"])
-        
-        patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m', gp = grid::gpar(fontsize = 20))) / p10 / p20 /
-                                   patchwork::wrap_elements(grid::textGrob('At 200 m', gp = grid::gpar(fontsize = 20))) /p1200 / p2200 / 
-                                   patchwork::wrap_elements(grid::textGrob('At 500 m', gp = grid::gpar(fontsize = 20))) / p1500) &
-          ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
-                         axis.title = ggplot2::element_text(size = 12, face = "plain"),
-                         axis.text =  ggplot2::element_text(size = 10, face = "plain"),
-                         plot.title = ggplot2::element_text(hjust = 0.5))
-        
-      }) 
+    # Download -------------------------------------------------------
+    output$downloadData3 <- fDownloadButtonServer(input, selectedData0, "Policy_Chem") # Download csv of data
+    output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "Policy_Chem", papersize = "A4") # Download figure
+    
+    gg_out4 <- reactive({
+      req(input$EOV_SOTS == 4)
       
-      output$timeseries4 <- renderPlot({
-        gg_out4()
-      })
+      p10 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Temperature_degC", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
+      p1200 <- planktonr::pr_plot_EOVs(selectedData200(), EOV = "Temperature_degC", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
+      p1500 <- planktonr::pr_plot_EOVs(selectedData500(), EOV = "Temperature_degC", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
+      p20 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Salinity", trans = "identity", col = col1["Salinity"])
+      p2200 <- planktonr::pr_plot_EOVs(selectedData200(), EOV = "Salinity", trans = "identity", col = col1["Salinity"])
       
+      patchwork::wrap_elements(patchwork::wrap_elements(grid::textGrob('At 0 m', gp = grid::gpar(fontsize = 20))) / p10 / p20 /
+                                 patchwork::wrap_elements(grid::textGrob('At 200 m', gp = grid::gpar(fontsize = 20))) / p1200 / p2200 /
+                                 patchwork::wrap_elements(grid::textGrob('At 500 m', gp = grid::gpar(fontsize = 20))) / p1500) &
+        ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
+                       axis.title = ggplot2::element_text(size = 12, face = "plain"),
+                       axis.text =  ggplot2::element_text(size = 10, face = "plain"),
+                       plot.title = ggplot2::element_text(hjust = 0.5))
       
-      # Download -------------------------------------------------------
-      output$downloadData4 <- fDownloadButtonServer(input, selectedData0, "Policy_Phys") # Download csv of data
-      output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4, "Policy_Phys", papersize = "A4") # Download figure  
+    }) %>% bindCache("SOTS_phys")
+    
+    output$timeseries4 <- renderPlot({
+      gg_out4()
     })
     
+    # Download -------------------------------------------------------
+    output$downloadData4 <- fDownloadButtonServer(input, selectedData0, "Policy_Phys") # Download csv of data
+    output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4, "Policy_Phys", papersize = "A4") # Download figure
     
   })}

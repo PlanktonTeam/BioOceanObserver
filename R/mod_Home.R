@@ -11,7 +11,7 @@ mod_home_ui <- function(id){
   nsHome <- NS(id)
   
   tagList(
-    tabsetPanel(id = "home", type = "pills",
+    tabsetPanel(id = nsHome("home"), type = "pills",
                 tabPanel("Welcome", value = 1,
                          shiny::fluidPage(
                            # Main content with BOO_Hex.png at the start with text wrap
@@ -140,65 +140,54 @@ mod_home_ui <- function(id){
 #' @noRd 
 mod_home_server <- function(id){
   moduleServer(id, function(input, output, session){
-    ns <- session$nsHome
+    ns <- session$ns
     
     
-    observeEvent({input$home == 2}, {
-      output$progplot <- leaflet::renderLeaflet({
-        planktonr::pr_plot_ProgressMap(pkg.env$PMapData, interactive = TRUE, labels = FALSE)
-      })
+    output$progplot <- leaflet::renderLeaflet({
+      req(input$home == 2)
+      planktonr::pr_plot_ProgressMap(pkg.env$PMapData, interactive = TRUE, labels = FALSE)
     })
     
-    
-    observeEvent({input$home == 3}, {
+    output$gantt <- shiny::renderPlot({
+      req(input$home == 3)
+      ggCPR <- planktonr::pr_plot_Gantt(pkg.env$datCPRTrip)
+      ggNRS <- planktonr::pr_plot_Gantt(pkg.env$datNRSTrip)
       
-      output$gantt <- shiny::renderPlot({
-        ggCPR <- planktonr::pr_plot_Gantt(pkg.env$datCPRTrip)
-        ggNRS <- planktonr::pr_plot_Gantt(pkg.env$datNRSTrip)
-        
-        p <- patchwork::wrap_plots(ggCPR, ggNRS, ncol = 1) &
-          ggplot2::theme(text = ggplot2::element_text(size = 16, face = "bold"))
-        return(p)
-      })
+      p <- patchwork::wrap_plots(ggCPR, ggNRS, ncol = 1) &
+        ggplot2::theme(text = ggplot2::element_text(size = 16, face = "bold"))
+      return(p)
     })
     
+    output$SpAccum <- shiny::renderPlot({
+      req(input$home == 4)
+      p1 <- planktonr::pr_plot_TaxaAccum(pkg.env$PSpNRSAccum)
+      p2 <- planktonr::pr_plot_TaxaAccum(pkg.env$PSpCPRAccum)
+      p3 <- planktonr::pr_plot_TaxaAccum(pkg.env$ZSpNRSAccum)
+      p4 <- planktonr::pr_plot_TaxaAccum(pkg.env$ZSpCPRAccum)
+      
+      p <- patchwork::wrap_plots(p1, p2, p3, p4, ncol = 4) &
+        ggplot2::theme(text = ggplot2::element_text(size = 16, face = "bold"),
+                       aspect.ratio = 1)
+      return(p)
+    })
     
-    observeEvent({input$home == 4}, {
+    output$TaxaPie <- shiny::renderPlot({
+      req(input$home == 4)
+      p1 <- planktonr::pr_plot_PieFG(pkg.env$NRSfgp)
+      p2 <- planktonr::pr_plot_PieFG(pkg.env$CPRfgp)
+      p3 <- planktonr::pr_plot_PieFG(pkg.env$NRSfgz)
+      p4 <- planktonr::pr_plot_PieFG(pkg.env$CPRfgz)
       
-      output$SpAccum <- shiny::renderPlot({
-        p1 <- planktonr::pr_plot_TaxaAccum(pkg.env$PSpNRSAccum) 
-        p2 <- planktonr::pr_plot_TaxaAccum(pkg.env$PSpCPRAccum)
-        p3 <- planktonr::pr_plot_TaxaAccum(pkg.env$ZSpNRSAccum)
-        p4 <- planktonr::pr_plot_TaxaAccum(pkg.env$ZSpCPRAccum)
-        
-        p <- patchwork::wrap_plots(p1, p2, p3, p4, ncol = 4) &
-          ggplot2::theme(text = ggplot2::element_text(size = 16, face = "bold"),
-                         aspect.ratio = 1) 
-        return(p)
-      })
+      p <- (patchwork::wrap_plots(p1, p2, guides = "collect", ncol = 2) &
+              ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = ggplot2::element_text(face = "bold"))) |
+        (patchwork::wrap_plots(p3, p4, guides = "collect", ncol = 2) &
+           ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = ggplot2::element_text(face = "bold")))
       
-      
-      output$TaxaPie <- shiny::renderPlot({
-        
-        p1 <- planktonr::pr_plot_PieFG(pkg.env$NRSfgp)
-        p2 <- planktonr::pr_plot_PieFG(pkg.env$CPRfgp)
-        p3 <- planktonr::pr_plot_PieFG(pkg.env$NRSfgz)
-        p4 <- planktonr::pr_plot_PieFG(pkg.env$CPRfgz)
-        
-        p <- (patchwork::wrap_plots(p1, p2, guides = "collect", ncol = 2) &
-                ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = ggplot2::element_text(face = "bold"))) | 
-          (patchwork::wrap_plots(p3, p4, guides = "collect", ncol = 2) &
-             ggplot2::theme(text = ggplot2::element_text(size = 16), legend.position = "bottom", plot.title = ggplot2::element_text(face = "bold")))
-        
-        return(p)
-        
-        
-      })
-      
+      return(p)
     })
   }
   
-  )}  
+  )}
 ## To be copied in the UI
 # mod_home_ui("home_1")
 

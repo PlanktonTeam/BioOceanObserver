@@ -31,185 +31,49 @@ app_server <- function( input, output, session ) {
     
   }
   
+  # Register all module servers once at startup.
+  # Computation is deferred inside each module via req() gates on tab inputs.
   
-  ## only run if selected by tab - this should be home page for each Tab level
-  ### Snapshot page
-  observeEvent(input$navbar, {
-    
-    if(input$navbar == "Home") {
-      mod_home_server("home_1") 
-    }
-    
-    if(input$navbar == "EOVs") {
-      mod_PolNRS_server("PolNRS_ui_1")
-    }
-    
-    if(input$navbar == "Microbes") {
-      mod_MicroTsNRS_server("MicroTsNRS_ui_1")
-    }
-    
-    if(input$navbar == "Phytoplankton") {
-      mod_PhytoTsNRS_server("PhytoTsNRS_ui_1")
-    }
-    
-    if(input$navbar == "Zooplankton") {
-      mod_ZooTsNRS_server("ZooTsNRS_ui_1")
-    }
-    
-    if(input$navbar == "Larval Fish") {
-      mod_LFishSpatial_server("LFishSpatial_1")
-    }
-    
-    if(input$navbar == "Animal Tracking") {
-      mod_ATSpatial_server("ATSpatial_1")
-    }
-    
-    if(input$navbar == "Environmental Data") {
-      mod_NutrientsBGC_server("NutrientsBGC_ui_1")
-    }
-    
-    if(input$navbar == "Relationships") {
-      mod_RelNRS_server("RelNRS_ui_1")
-    }
-    
-    if(input$navbar == "Information") {
-      mod_info_server("info_1")
-    }
-  })
+  # Top-level navbar tabs
+  mod_home_server("home_1")
+  mod_PolNRS_server("PolNRS_ui_1")
+  mod_MicroTsNRS_server("MicroTsNRS_ui_1")
+  mod_PhytoTsNRS_server("PhytoTsNRS_ui_1")
+  mod_PhytoTsHAB_server("PhytoTsHAB_ui_1")
+  mod_ZooTsNRS_server("ZooTsNRS_ui_1")
+  mod_LFishSpatial_server("LFishSpatial_1")
+  mod_NutrientsBGC_server("NutrientsBGC_ui_1")
+  mod_RelNRS_server("RelNRS_ui_1")
+  mod_info_server("info_1")
   
+  # EOVs sub-tabs
+  mod_PolCPR_server("PolCPR_ui_1")
+  mod_PolLTM_server("PolLTM_ui_1")
+  mod_PolSOTS_server("PolSOTS_ui_1")
   
-  ## Run when changing page within tab
+  # Phytoplankton sub-tabs
+  mod_PhytoTsCPR_server("PhytoTsCPR_ui_1")
+  mod_PhytoSpatial_server("PhytoSpatial_ui_1")
   
+  # Zooplankton sub-tabs
+  mod_ZooTsCPR_server("ZooTsCPR_ui_1")
+  mod_ZooSpatial_server("ZooSpatial_ui_1")
   
-  # EOVs --------------------------------------------------------------------
+  # Microbes sub-tabs
+  mod_MicroTsCS_server("MicroTsCS_ui_1")
+  mod_MicroLatGS_server("MicroLatGS_ui_1")
   
-  observeEvent(input$pol, {
-    
-    ### Policy CPR time series data  
-    if(input$pol == "cpr"){
-      mod_PolCPR_server("PolCPR_ui_1")
-    }
-    
-    if(input$pol == "LTM"){
-      mod_PolLTM_server("PolLTM_ui_1")
-    }
-    
-    if(input$pol == "SOTS"){
-      mod_PolSOTS_server("PolSOTS_ui_1")
-    }
-  })
+  # Larval Fish sub-tabs
+  mod_LFishSeason_server("LFishSeason_1")
+  mod_LFishData_server("LFishData_1")
   
+  # Environmental sub-tabs
+  mod_PigmentsBGC_server("PigmentsBGC_ui_1")
+  mod_PicoBGC_server("PicoBGC_ui_1")
+  mod_WaterBGC_server("WaterBGC_ui_1")
+  mod_MoorBGC_server("MoorBGC_ui_1")
   
-  # Microbes ----------------------------------------------------------------
-  
-  #only on tabpanel so observeEvent() within server for each minor tab
-  
-  # Phytoplankton -----------------------------------------------------------
-  
-  observeEvent(input$phyto, {
-    
-    ### Phytoplankton CPR time series data  
-    if(input$phyto == "ptscpr"){
-      mod_PhytoTsCPR_server("PhytoTsCPR_ui_1")
-    }
-    
-    ### Phytoplankton Spatial data  
-    if(input$phyto == "distp"){
-      mod_PhytoSpatial_server("PhytoSpatial_ui_1")
-    }
-    
-  })
-  
-  
-  # Zooplankton -------------------------------------------------------------
-  
-  observeEvent(input$zoo, {
-    
-    ### Zooplankton CPR time series data
-    if(input$zoo == "ztscpr"){
-      mod_ZooTsCPR_server("ZooTsCPR_ui_1")
-    }
-    
-    ### Zooplankton Spatial data  
-    if(input$zoo == "dist"){
-      mod_ZooSpatial_server("ZooSpatial_ui_1")
-    }
-  })
-  
-  # Microbes -------------------------------------------------------------
-  
-  observeEvent(input$mic, {
-    
-    ### Microbes Coastal Data
-    if(input$mic == "mtsCS"){
-      mod_MicroTsCS_server("MicroTsCS_ui_1")
-    }
-    if(input$mic == "GSlat"){
-      mod_MicroLatGS_server("MicroLatGS_ui_1")
-    }
-  })
-    
-
-  # Larval Fish -------------------------------------------------------------
-  
-  # Season Larval Fish
-  observeEvent(input$fish, {
-    if(input$fish == "fseas"){
-      mod_LFishSeason_server("LFishSeason_1")
-    }
-    if(input$fish == "fdata"){
-      mod_LFishData_server("LFishData_1")
-    }
-  })
-  
-  # Animal Tracking -------------------------------------------------------------
-  
-  # Season Larval Fish
-  observeEvent(input$AT, {
-    if(input$AT == "atstats"){
-      mod_ATStats_server("ATStats_1")
-    }
-    if(input$AT == "atcs"){
-      mod_ATCases_server("ATCases_1")
-    }
-  })
-  
-  
-  # Environmental -----------------------------------------------------------
-  
-  observeEvent(input$env, {
-    
-    ### Pigments 
-    if(input$env == "pigs"){
-      mod_PigmentsBGC_server("PigmentsBGC_ui_1")
-    }
-    
-    # Picoplankton
-    if(input$env == "pico"){
-      mod_PicoBGC_server("PicoBGC_ui_1")
-    }
-    
-    # Nutrient data
-    if(input$env == "water"){
-      mod_WaterBGC_server("WaterBGC_ui_1")
-    }
-    
-    # Moorings
-    if(input$env == "moor"){
-      mod_MoorBGC_server("MoorBGC_ui_1")
-    }
-  })
-
-# Relationships -----------------------------------------------------------
-
-  # Coastal Microbes
-  observeEvent(input$rel, {
-    if(input$rel == "csRel"){
-      mod_RelCS_server("RelCS_ui_1")
-    }
-    
-    if(input$rel == "cprRel"){
-      mod_RelCPR_server("RelCPR_ui_1")
-    }
-  })
-  }
+  # Relationships sub-tabs
+  mod_RelCS_server("RelCS_ui_1")
+  mod_RelCPR_server("RelCPR_ui_1")
+}

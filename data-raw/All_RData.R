@@ -63,7 +63,10 @@ datNRSz <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Zooplankton")
 
 datNRSp <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Phytoplankton") 
 
-SOTSp <- planktonr::pr_get_Indices(Survey = "SOTS", Type = "Phytoplankton") 
+SOTSp <- planktonr::pr_get_Indices(Survey = "SOTS", Type = "Phytoplankton")
+
+# Pre-combined NRS + SOTS phytoplankton dataset (avoids repeated bind_rows() inside reactives)
+datNRSp_all <- dplyr::bind_rows(datNRSp, SOTSp)
 
 datNRSm <- planktonr::pr_get_data(Survey = "NRS", Type = "Micro") %>% 
   tidyr::drop_na() ## NRS microbial data
@@ -120,28 +123,30 @@ PCI <- planktonr::pr_get_PCIData()
 
 # HAB data from Coastal Phytoplankton
 SpecToInclude <- planktonr:::HABDat %>% 
-  dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = .data$TaxonName) %>% 
+  dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = TaxonName) %>% 
   dplyr::filter(.data$non_zero_count > 50)
-
+  
 GenToInclude <- planktonr:::HABDat %>% 
   dplyr::mutate(Genus = stringr::word(.data$TaxonName, 1)) %>% 
-  dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = .data$Genus) %>% 
+  dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = Genus) %>% 
   dplyr::filter(.data$non_zero_count > 50) 
 
 datHABg <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'Genus') %>% 
   dplyr::filter(Genus %in% GenToInclude$Genus) %>% 
   dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
-  dplyr::select(-"TripCode") %>% 
+  dplyr::select(-c("TripCode", "Month_Local", "Year_Local", "StationCode")) %>% 
   dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything()) %>%
-  dplyr::rename(TaxonName = .data$Genus)
+  dplyr::rename(TaxonName = Genus) %>% 
+  dplyr::filter(.data$Values != 0)
 
 datHABs <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'Species') %>% 
   dplyr::filter(TaxonName %in% SpecToInclude$TaxonName) %>% 
   dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
-  dplyr::select(-"TripCode") %>% 
-  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything())
+  dplyr::select(-c("TripCode", "Month_Local", "Year_Local", "StationCode")) %>% 
+  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything()) %>% 
+  dplyr::filter(.data$Values != 0)
 
 # FG time series data -----------------------------------------------------
 
@@ -374,22 +379,39 @@ ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Zooplankton")
 # Parameter Definitions
 ParamDef <- readr::read_csv(file.path("data-raw", "ParameterDefn.csv"), na = character())
 
+# Pre-computed pr_relabel() parameter label lists for fPlanktonSidebar()
+# These are static and expensive to recompute at every UI build
+choicespNRSp <- planktonr:::pr_relabel(unique(datNRSp_all$Parameters), style = "simple", named = TRUE)
+choicespNRSz <- planktonr:::pr_relabel(unique(datNRSz$Parameters), style = "simple", named = TRUE)
+choicespNRSm <- planktonr:::pr_relabel(unique(datNRSm$Parameters), style = "simple", named = TRUE)
+choicespCPRp <- planktonr:::pr_relabel(unique(datCPRp$Parameters), style = "simple", named = TRUE)
+choicespCPRz <- planktonr:::pr_relabel(unique(datCPRz$Parameters), style = "simple", named = TRUE)
+choicespCSm  <- planktonr:::pr_relabel(unique(datCSm$Parameters),  style = "simple", named = TRUE)
+choicespHAB  <- planktonr:::pr_relabel(c("NoPhytoSpecies_Sample", "PhytoAbundance_CellsL",
+                                          "Biovolume_um3L", "PhytoBiomassCarbon_pgL"),
+                                        style = "simple", named = TRUE)
+
+AusStatesSimple <- readRDS("data-raw/aus_states_simplified.rds")
+
 # Add data to sysdata.rda -------------------------------------------------
 usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
-                  fMapDataz, fMapDatap, 
+                  fMapDataz, fMapDatap,
                   MooringTS, MooringClim,
                   PolNRS, PolCPR, PolLTM, PolSOTS,
                   NRSinfo, CPRinfo, SOTSinfo, NRSStation, SotsStation,
                   datCPRz, datCPRp, PCI,
-                  datNRSz, datNRSp, datNRSw, 
+                  datNRSz, datNRSp, datNRSw,
                   datNRSm, datCSm, datGSm,
-                  datHABg, datHABs, datHABTrip, datHABdataTable, 
+                  datHABg, datHABs, datHABTrip, datHABdataTable,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-                  SOTSp, SOTSfgp, 
+                  SOTSp, SOTSfgp,
+                  datNRSp_all,
+                  choicespNRSp, choicespNRSz, choicespNRSm,
+                  choicespCPRp, choicespCPRz, choicespCSm, choicespHAB,
                   stiz, stip, daynightz, daynightp,
                   SpInfoP, SpInfoZ, LFData, LFDataAbs,
                   datNRSTrip, datCPRTrip, datCPRTripSO,
                   PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
-                  ParamDef, col12, modified_time,
+                  ParamDef, col12, modified_time, AusStatesSimple,
                   overwrite = TRUE, internal = TRUE)
 

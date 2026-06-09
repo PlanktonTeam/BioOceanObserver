@@ -39,6 +39,10 @@ app_ui <- function(request) {
                                                        shiny::tabPanel(value = "ptscpr", "Time Series CPR", mod_PhytoTsCPR_ui("PhytoTsCPR_ui_1")),
                                                        shiny::tabPanel(value = "distp", "Species information", mod_PhytoSpatial_ui("PhytoSpatial_ui_1"))
                                     )),
+                    shiny::tabPanel("Coastal Phytoplankton",
+                                    shiny::tabsetPanel(id = 'hab', type = "pills", 
+                                                       shiny::tabPanel(value = "phab", "Time Series", mod_PhytoTsHAB_ui("PhytoTsHAB_ui_1"))
+                                    )),
                     shiny::tabPanel("Zooplankton",
                                     shiny::tabsetPanel(id = 'zoo', type = "pills",
                                                        shiny::tabPanel(value = "zts", "Time Series NRS", mod_ZooTsNRS_ui("ZooTsNRS_ui_1")),
@@ -96,16 +100,15 @@ golem_add_external_resources <- function(){
   add_resource_path(
     'www', app_sys('app/www')
   )
-  
   shiny::tags$head(
     # script for accessning google analytics from csiro server
     if( Sys.getenv('SHINY_PORT') != "" ) {
       shiny::includeHTML(app_sys('app/www/GoogleAnalytics.html'))
       },
 
-        favicon(),    
-    
-   bundle_resources(
+    favicon(),    
+
+    bundle_resources(
       path = app_sys('app/www'),
       app_title = 'Biological Ocean Observer'
     ),

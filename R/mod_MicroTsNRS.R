@@ -61,14 +61,8 @@ mod_MicroTsNRS_server <- function(id){
       MicroTsValuesisNumeric = {class(selectedData()$Values)}
     )
     
-    # Sidebar Map - Initial render
+    # Sidebar Map - Initial render with current selection
     output$plotmap <- leaflet::renderLeaflet({
-      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
-    })
-    
-    # Update map when station selection changes
-    observe({
-      # Convert StationName to StationCode, handle empty selection
       stationCodes <- if (length(input$site) > 0) {
         pkg.env$NRSStation %>%
           dplyr::filter(.data$StationName %in% input$site) %>%
@@ -76,9 +70,23 @@ mod_MicroTsNRS_server <- function(id){
       } else {
         character(0)
       }
-      fLeafletUpdate("plotmap", session, stationCodes, 
-                     Survey = "NRS", Type = "Microbes")
+      fLeafletMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
     })
+    
+    outputOptions(output, "plotmap", suspendWhenHidden = FALSE) # prevent shiny from re-rendering as using this base map twice under phyto tab
+    
+    # Update map when station selection changes
+    observe({
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fLeafletUpdate("plotmap", session, stationCodes,
+                     Survey = "NRS", Type = "Zooplankton")
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # Add text information
     output$PlotExp1 <- renderText({
@@ -98,13 +106,9 @@ mod_MicroTsNRS_server <- function(id){
     
     
     # Plot Trends -------------------------------------------------------------
-    
-    observeEvent({input$NRSmts == 1}, {
-      
-      gg_out1 <- reactive({
+    gg_out1 <- reactive({
+      if(length(selectedData()$Parameters)>0){
         
-        if(length(selectedData()$Parameters)>0){
-          
         if(input$scaler1){
           trans <- 'log10'
         } else {
@@ -116,115 +120,100 @@ mod_MicroTsNRS_server <- function(id){
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
         
         p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
-        } else {
-          ggplot2::ggplot + ggplot2::geom_blank()
-        }
-        
-      }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      } else {
+        ggplot2::ggplot() + ggplot2::geom_blank()
+      }
       
-      output$timeseries1 <- renderPlot({
-        gg_out1()
-      }, height = function() {length(unique(selectedData()$StationName)) * 200}) 
-      
-      # Download -------------------------------------------------------
-      output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Trend") # Download csv of data
-      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Trend") # Download figure
-      
-      # Parameter Definition
-      output$ParamDefm <- fParamDefServer(selectedData) # Download csv of data
-      
-    })
+    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    
+    output$timeseries1 <- renderPlot({
+      req(input$NRSmts == 1)
+      gg_out1()
+    }, height = function() {length(unique(selectedData()$StationName)) * 200})
+    
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Trend") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Trend") # Download figure
+    
+    # Parameter Definition
+    output$ParamDefm <- fParamDefServer(selectedData)
     
     
     # Climatologies -----------------------------------------------------------
     
     # Plot abundance spectra by species
-    observeEvent({input$NRSmts == 2}, {
+    gg_out2 <- reactive({
+      if (is.null(pkg.env$datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
+        return(NULL)
       
-      gg_out2 <- reactive({
-        
-        if (is.null(pkg.env$datNRSm$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
-          return(NULL)
-        
-        trans <- 'identity'
-        if(input$scaler1){
-          trans <- 'log10'
-        }
-        
-        p1 <- planktonr::pr_plot_TimeSeries(selectedData(), trans = trans) + 
-          ggplot2::theme(legend.position = "none")
-        
-        p2 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Month", trans = trans) + 
-          ggplot2::theme(legend.position = "none")
-        
-        p3 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Year", trans = trans) + 
-          ggplot2::theme(axis.title.y = ggplot2::element_blank())
-        
-        #titley <- names(planktonr:::pr_relabel(unique(selectedData()$Parameters), style = "simple", named = TRUE))
-        
-        # p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
-        p1 / 
-          (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom")) #+
-        # patchwork::plot_annotation(title = titleplot)
-        
-      }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      trans <- 'identity'
+      if(input$scaler1){
+        trans <- 'log10'
+      }
       
-      output$timeseries2 <- renderPlot({
-        gg_out2()
-      })
+      p1 <- planktonr::pr_plot_TimeSeries(selectedData(), trans = trans) +
+        ggplot2::theme(legend.position = "none")
       
-      # Download -------------------------------------------------------
-      output$downloadData2 <- fDownloadButtonServer(input, selectedData, "Climate") # Download csv of data
-      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Climate") # Download figure
+      p2 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Month", trans = trans) +
+        ggplot2::theme(legend.position = "none")
       
-      # Parameter Definition
-      output$ParamDefm <- fParamDefServer(selectedData)
+      p3 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Year", trans = trans) +
+        ggplot2::theme(axis.title.y = ggplot2::element_blank())
       
+      #titley <- names(planktonr:::pr_relabel(unique(selectedData()$Parameters), style = "simple", named = TRUE))
+      
+      # p1 / (p2 | p3) + patchwork::plot_layout(guides = "collect")
+      p1 /
+        (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom")) #+
+      # patchwork::plot_annotation(title = titleplot)
+      
+    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    
+    output$timeseries2 <- renderPlot({
+      req(input$NRSmts == 2)
+      gg_out2()
     })
+    
+    # Download -------------------------------------------------------
+    output$downloadData2 <- fDownloadButtonServer(input, selectedData, "Climate") # Download csv of data
+    output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Climate") # Download figure
     
     # Plots by depths ---------------------------------------------------------
+    selectedDataDepth <- reactive({
+      selectedDataDepth <- selectedData() %>%
+        tidyr::drop_na() %>%
+        dplyr::mutate(SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'month')) %>%
+        planktonr::pr_remove_outliers(2) %>%
+        droplevels() %>%
+        planktonr:::pr_reorder()
+      
+    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2])
     
-    observeEvent({input$NRSmts == 3}, {
+    gg_out3 <- reactive({
+      interp <- input$interp
       
-      selectedDataDepth <- reactive({
-        
-        selectedDataDepth <- selectedData() %>% 
-          tidyr::drop_na() %>%
-          dplyr::mutate(SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'month')) %>%
-          planktonr::pr_remove_outliers(2) %>%
-          droplevels() %>%
-          planktonr:::pr_reorder()
-        
-      }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2])
+      if(interp == 'Interpolate'){
+        planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), na.fill = TRUE)
+      } else {
+        planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), na.fill = FALSE)
+      }
       
-      gg_out3 <-  reactive({  
-        
-        interp <-  input$interp
-        
-        if(interp == 'Interpolate'){
-          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), na.fill = TRUE)
-        } else {
-          planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), na.fill = FALSE)
-        }
-        
-      }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$interp)
-      
-      output$timeseries3 <- renderPlot({
-        gg_out3()
-      }, height = function() {
-        if(length(unique(selectedDataDepth()$StationName)) < 2) 
-        {300} else 
-        {length(unique(selectedDataDepth()$StationName)) * 200}})
-      
-      # Download -------------------------------------------------------
-      output$downloadData3 <- fDownloadButtonServer(input, selectedData, "Enviro") # Download csv of data
-      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "Enviro") # Download figure
-      
-      # Parameter Definition
-      output$ParamDefm <- fParamDefServer(selectedData)
-      
-    })
+    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$interp)
     
-
+    output$timeseries3 <- renderPlot({
+      req(input$NRSmts == 3)
+      gg_out3()
+    }, height = function() {
+      if(length(unique(selectedDataDepth()$StationName)) < 2)
+      {300} else
+      {length(unique(selectedDataDepth()$StationName)) * 200}})
+    
+    # Download -------------------------------------------------------
+    output$downloadData3 <- fDownloadButtonServer(input, selectedData, "Enviro") # Download csv of data
+    output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "Enviro") # Download figure
+    
+    # Parameter Definition
+    output$ParamDefm <- fParamDefServer(selectedData)
+    
   })
 }

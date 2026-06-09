@@ -28,8 +28,6 @@ mod_PhytoSpatial_server <- function(id){
   moduleServer( id, function(input, output, session, NRSspatp){
     # Subset data
     
-    type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-    
     AbsPdatar <- reactive({
       
       AbsPdatar <- pkg.env$fMapDatap %>%
@@ -81,98 +79,80 @@ mod_PhytoSpatial_server <- function(id){
     }) 
     
     # select initial map  ------------------------------------------------------------------------------
-    observeEvent({input$NRSspatp == 1}, {
-
-      # Create dot map of distribution
-      # Summer
-      output$MapSum <- leaflet::renderLeaflet({
-        type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-        lf <- LeafletBase(AbsPdatar(), Type = type)
+    # Create dot map of distribution
+    # Summer
+    output$MapSum <- leaflet::renderLeaflet({
+      req(input$NRSspatp == 1)
+      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+      lf <- LeafletBase(AbsPdatar(), Type = type)
       return(lf)
-    }) %>%  bindCache(input$species, input$scaler1)
+    }) %>% bindCache(input$species, input$scaler1)
     
     # Autumn
     output$MapAut <- leaflet::renderLeaflet({
+      req(input$NRSspatp == 1)
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
       lf <- LeafletBase(AbsPdatar(), Type = type)
       return(lf)
-    }) %>%  bindCache(input$species, input$scaler1)
+    }) %>% bindCache(input$species, input$scaler1)
     
     # Winter
     output$MapWin <- leaflet::renderLeaflet({
+      req(input$NRSspatp == 1)
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
       lf <- LeafletBase(AbsPdatar(), Type = type)
       return(lf)
-    }) %>%  bindCache(input$species, input$scaler1)
+    }) %>% bindCache(input$species, input$scaler1)
     
     # Spring
     output$MapSpr <- leaflet::renderLeaflet({
+      req(input$NRSspatp == 1)
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
       lf <- LeafletBase(AbsPdatar(), Type = type)
       return(lf)
-    }) %>%  bindCache(input$species, input$scaler1)
-
-    observe ({
+    }) %>% bindCache(input$species, input$scaler1)
+    
+    observe({
+      req(input$NRSspatp == 1)
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
       LeafletObs(sdf = PSdatar() %>% dplyr::filter(.data$Season == "December - February"), name = "MapSum", Type = type)
       LeafletObs(sdf = PSdatar() %>% dplyr::filter(.data$Season == "September - November"), name = "MapAut", Type = type)
       LeafletObs(sdf = PSdatar() %>% dplyr::filter(.data$Season == "June - August"), name = "MapWin", Type = type)
       LeafletObs(sdf = PSdatar() %>% dplyr::filter(.data$Season == "March - May"), name = "MapSpr", Type = type)
-    
-    }) 
-    
     })
     
     # STI plot -----------------------------------------------------------------------------------------
-    # Subset data
+    selectedSTI <- reactive({
+      req(input$species1)
+      shiny::validate(need(!is.na(input$species1), "Error: Please select a species"))
+      
+      selectedSTI <- pkg.env$stip %>%
+        dplyr::filter(.data$Species %in% input$species1)
+      
+    }) %>% bindCache(input$species1)
     
-    observeEvent({input$NRSspatp == 2}, {
-      
-      selectedSTI <- reactive({
-        
-        req(input$species1)
-        shiny::validate(need(!is.na(input$species1), "Error: Please select a species"))
-        
-        selectedSTI <- pkg.env$stip %>% 
-          dplyr::filter(.data$Species %in% input$species1) 
-
-        
-      }) %>% bindCache(input$species1)
-      
-      # sti plot
-      output$STIs <- renderPlot({
-        
-        planktonr::pr_plot_STI(selectedSTI())
-        
-      }) %>% bindCache(input$species1)
-      
-    })
+    # sti plot
+    output$STIs <- renderPlot({
+      req(input$NRSspatp == 2)
+      planktonr::pr_plot_STI(selectedSTI())
+    }) %>% bindCache(input$species1)
     
     # daynight plot -----------------------------------------------------------------------------------------
-    # Subset data
+    selecteddn <- reactive({
+      req(input$species2)
+      shiny::validate(need(!is.na(input$species2), "Error: Please select a species"))
+      
+      selecteddn <- pkg.env$daynightp %>%
+        dplyr::filter(.data$Species %in% input$species2)
+      
+    }) %>% bindCache(input$species2)
     
-    observeEvent({input$NRSspatp == 3}, {
-      
-      selecteddn <- reactive({
-        
-        req(input$species2)
-        shiny::validate(need(!is.na(input$species2), "Error: Please select a species"))
-        
-        selecteddn <- pkg.env$daynightp %>% 
-          dplyr::filter(.data$Species %in% input$species2) 
-
-        
-      }) %>% bindCache(input$species2)
-      
-      # daynight plot
-      output$DNs <- renderPlot({
-        
-        plotdn <- planktonr::pr_plot_DayNight(selecteddn())
-        plotdn
-        
-      }) %>% bindCache(input$species2)
-      
-    })
+    # daynight plot
+    output$DNs <- renderPlot({
+      req(input$NRSspatp == 3)
+      plotdn <- planktonr::pr_plot_DayNight(selecteddn())
+      plotdn
+    }) %>% bindCache(input$species2)
     
   })
 }
