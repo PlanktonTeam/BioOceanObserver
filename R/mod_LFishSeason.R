@@ -67,40 +67,55 @@ mod_LFishSeason_server <- function(id){
     }) %>% bindCache(input$species)
     
     
+    # Helper to build a complete seasonal map (base + species dots + legend)
+    makeSeasonMap <- function(dat_all, season_label) {
+      sdf <- dat_all %>% dplyr::filter(.data$Season == season_label)
+      Species <- unique(dat_all$Species)
+      labs <- lapply(seq(nrow(sdf)), function(i) {
+        paste("<strong>Date:</strong>", sdf$SampleTime_Local[i], "<br>",
+              "<strong>Latitude:</strong>", sdf$Latitude[i], "<br>",
+              "<strong>Longitude:</strong>", sdf$Longitude[i], "<br>",
+              "<strong>Count:</strong>", sdf$Count[i], "<br>",
+              "<strong>Abundance (1000 m\u207B\u00B3):</strong>", round(sdf$Abundance_1000m3[i], digits = 2), "<br>",
+              "<strong>Temperature (\u00B0C):</strong>", sdf$Temperature_degC[i], "<br>",
+              "<strong>Depth (m):</strong>", sdf$SampleDepth_m[i], "<br>")
+      })
+      LeafletBase(dat_all) %>%
+        leaflet::addCircleMarkers(data = sdf,
+                                  lng = ~ Longitude,
+                                  lat = ~ Latitude,
+                                  color = 'blue',
+                                  opacity = 1,
+                                  fillOpacity = 1,
+                                  radius = 2,
+                                  group = "Present",
+                                  label = lapply(labs, htmltools::HTML)) %>%
+        leaflet::addLegend("bottomleft",
+                           colors = c("blue", "#CCCCCC"),
+                           labels = c("Seasonal Presence", "Seasonal Absence"),
+                           title = Species,
+                           opacity = 1)
+    }
+
     # Summer
     output$LFMapSum <- leaflet::renderLeaflet({
-      lf <- LeafletBase(LFDatar())
-      return(lf)
-    })
-    
+      makeSeasonMap(LFDatar(), "December - February")
+    }) %>% bindCache(input$species, "sum")
+
     # Autumn
     output$LFMapAut <- leaflet::renderLeaflet({
-      lf <- LeafletBase(LFDatar())
-      return(lf)
-    })
-    
+      makeSeasonMap(LFDatar(), "March - May")
+    }) %>% bindCache(input$species, "aut")
+
     # Winter
     output$LFMapWin <- leaflet::renderLeaflet({
-      lf <- LeafletBase(LFDatar())
-      return(lf)
-    })
-    
+      makeSeasonMap(LFDatar(), "June - August")
+    }) %>% bindCache(input$species, "win")
+
     # Spring
     output$LFMapSpr <- leaflet::renderLeaflet({
-      lf <- LeafletBase(LFDatar())
-      return(lf)
-    })
-    
-    
-    
-    # Add points for chosen larval fish by season
-    observe({
-      LeafletObs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "December - February"), name = "LFMapSum", Type = 'PA')
-      LeafletObs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "September - November"), name = "LFMapAut", Type = 'PA')
-      LeafletObs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "June - August"), name = "LFMapWin", Type = 'PA')
-      LeafletObs(sdf = LFDatar() %>% dplyr::filter(.data$Season == "March - May"), name = "LFMapSpr", Type = 'PA')
-      
-    })
+      makeSeasonMap(LFDatar(), "September - November")
+    }) %>% bindCache(input$species, "spr")
     
   })
 }

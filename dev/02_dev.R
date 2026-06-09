@@ -88,7 +88,7 @@ pkgdown::build_site('https://github.com/PlanktonTeam/BioOceanObserver', examples
 usethis::use_coverage()
 
 # Create a summary readme for the testthat subdirectory
-covrpage::covrpage()
+#covrpage::covrpage()
 
 ## CI ----
 ## Use this part of the script if you need to set up a CI

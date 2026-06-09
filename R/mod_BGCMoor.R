@@ -45,9 +45,9 @@ mod_MoorBGC_server <- function(id){
     
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedClim()$StationCode), 
+      fLeafletUpdate("plotmap", session, unique(selectedClim()$StationCode),
                      Survey = "NRS", Type = "Zooplankton")
-    })
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # add climate plot
     gg_out1 <- reactive({ 

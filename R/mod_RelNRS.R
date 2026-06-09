@@ -88,7 +88,7 @@ mod_RelNRS_server <- function(id){
       dat1 <- dat1 %>% 
         dplyr::mutate(SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'month')) 
     
-      }) %>% bindCache(input$groupx)
+      }) %>% bindCache(input$groupx, input$all)
 
     observeEvent(datx(), {
       vars <- c("Biomass_mgm3", "PhytoAbundance_CellsL", 
@@ -135,14 +135,8 @@ mod_RelNRS_server <- function(id){
     })  
 
         
-    # Sidebar Map - Initial render
-    output$plotmap <- leaflet::renderLeaflet({ 
-      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
-    })
-    
-    # Update map when station selection changes
-    observe({
-      # Convert StationName to StationCode, handle empty selection
+    # Sidebar Map - Initial render with current selection
+    output$plotmap <- leaflet::renderLeaflet({
       stationCodes <- if (length(input$site) > 0) {
         pkg.env$NRSStation %>%
           dplyr::filter(.data$StationName %in% input$site) %>%
@@ -150,9 +144,21 @@ mod_RelNRS_server <- function(id){
       } else {
         character(0)
       }
-      fLeafletUpdate("plotmap", session, stationCodes, 
-                     Survey = "NRS", Type = "Zooplankton")
+      fLeafletMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
     })
+    
+    # Update map when station selection changes
+    observe({
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fLeafletUpdate("plotmap", session, stationCodes,
+                     Survey = "NRS", Type = "Zooplankton")
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # Add text information 
     output$PlotExp1 <- shiny::renderText({
@@ -175,29 +181,27 @@ mod_RelNRS_server <- function(id){
     
     ## scatter plot
     # Plot Trends -------------------------------------------------------------
-    observeEvent({input$relNRS == 1}, {
-      
-      gg_out1 <- reactive({
-      
-          trend <- input$smoother
-          y <- rlang::string(input$py)
-          x <- rlang::string(input$px)
+    gg_out1 <- reactive({
+      trend <- input$smoother
+      y <- rlang::string(input$py)
+      x <- rlang::string(input$px)
 
-     if(y %in% colnames(selectedData()) & 
-        x %in% colnames(selectedData()) & 
-        length(unique(selectedData()$SampleDepth_m)) > 0){
-          planktonr::pr_plot_scatter(selectedData(), x, y, trend)
-        } else{
-          ggplot2::ggplot + ggplot2::geom_blank()
-          }
+      if(y %in% colnames(selectedData()) &
+         x %in% colnames(selectedData()) &
+         length(unique(selectedData()$SampleDepth_m)) > 0){
+        planktonr::pr_plot_scatter(selectedData(), x, y, trend)
+      } else{
+        ggplot2::ggplot() + ggplot2::geom_blank()
+      }
 
     }) %>% bindCache(input$site, input$py, input$px, input$smoother)
 
     output$scatter1 <- renderPlot({
+      req(input$relNRS == 1)
       gg_out1()
     }, height = function() {
       if(input$groupy != 'Microbes - NRS')
-      {300} else if(length(unique(selectedData()$SampleDepth_m)) < 2) 
+      {300} else if(length(unique(selectedData()$SampleDepth_m)) < 2)
         {300}
       else {
         length(unique(selectedData()$SampleDepth_m)) * 200}
@@ -207,31 +211,26 @@ mod_RelNRS_server <- function(id){
     output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Scatter") # Download csv of data
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Scatter") # Download figure
 
+    ## box plot
+    gg_out2 <- reactive({
+      y <- rlang::string(input$py)
+
+      if(y %in% colnames(selectedData())){
+        planktonr::pr_plot_box(selectedData(), y)
+      } else{
+        ggplot2::ggplot() + ggplot2::geom_blank()
+      }
+    }) %>% bindCache(input$py, input$site)
+    
+    output$box2 <- renderPlot({
+      req(input$relNRS == 2)
+      gg_out2()
     })
     
-    ## scatter plot
-    # Plot Trends -------------------------------------------------------------
-    observeEvent({input$relNRS == 2}, {
-      
-      gg_out2 <- reactive({
-          y <- rlang::string(input$py)
-
-        if(y %in% colnames(selectedData())){
-        planktonr::pr_plot_box(selectedData(), y)
-        } else{
-          ggplot2::ggplot + ggplot2::geom_blank()
-        }
-      }) %>% bindCache(input$py, input$site)
-      
-      output$box2 <- renderPlot({
-        gg_out2()
-      })
-      
-      # Download -------------------------------------------------------
-      output$downloadData2 <- fDownloadButtonServer(input, selectedData, "Scatter") # Download csv of data
-      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Scatter") # Download figure
-      
-    })
+    # Download -------------------------------------------------------
+    output$downloadData2 <- fDownloadButtonServer(input, selectedData, "Scatter") # Download csv of data
+    output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Scatter") # Download figure
+    
   }
   )
 }
