@@ -31,7 +31,6 @@ app_server <- function( input, output, session ) {
     
   }
   
-  
   # Register all module servers once at startup.
   # Computation is deferred inside each module via req() gates on tab inputs.
   
@@ -78,4 +77,3 @@ app_server <- function( input, output, session ) {
   mod_RelCS_server("RelCS_ui_1")
   mod_RelCPR_server("RelCPR_ui_1")
 }
-

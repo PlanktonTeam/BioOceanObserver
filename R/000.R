@@ -3,6 +3,10 @@ pkg.env <- new.env(parent = emptyenv())
 # Load up-to-date data
 .onLoad <- function(libname, pkgname){
   cat(file=stderr(), "New data load call.\n")
+
+  # Load Animal Tracking data from bundled RDS files (or data-raw during dev)
+  at_load_data()
+
   # Non-grep vars: LTnuts, datCPRw, PMapData
   data.vars <- c("Nuts", "Pigs", "Pico", "ctd", "CSChem",
                  "fMapDataz", "fMapDatap",

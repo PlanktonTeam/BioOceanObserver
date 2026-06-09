@@ -1,0 +1,458 @@
+/* ============================================================
+   IMOS Animal Tracking Explorer – Prototype Stylesheet
+   ============================================================ */
+
+/* -- Reset & base ------------------------------------------ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  color: #2d3748;
+  overflow: hidden;
+}
+
+/* -- Full-screen map container ----------------------------- */
+.at-map-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* -- Sidebar ----------------------------------------------- */
+.at-sidebar {
+  position: absolute;
+  top: 0;
+  right: -400px;           /* hidden off-screen by default */
+  width: 380px;
+  height: 100vh;
+  background: #ffffff;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.3s ease;
+}
+
+.at-sidebar.open {
+  right: 0;
+}
+
+/* Sidebar header */
+.at-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: #1a365d;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.at-sidebar-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0;
+  flex: 1;
+  padding-right: 10px;
+}
+
+.at-sidebar-close {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0.8;
+  transition: opacity 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.at-sidebar-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Sidebar body */
+.at-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+}
+
+/* -- Summary stat cards ------------------------------------ */
+.at-summary-stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.at-stat-card {
+  flex: 1;
+  background: #ebf4ff;
+  border-radius: 8px;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.at-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a365d;
+  line-height: 1.1;
+}
+
+.at-stat-label {
+  font-size: 11px;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+/* -- Station metadata ------------------------------------- */
+.at-station-meta {
+  background: #f7fafc;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #4a5568;
+}
+
+.at-station-meta p {
+  margin: 0;
+}
+
+/* -- Section header --------------------------------------- */
+.at-section-header {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #718096;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* -- Species list ----------------------------------------- */
+.at-species-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.at-species-row {
+  background: #f7fafc;
+  border-left: 3px solid #0077b6;
+  border-radius: 0 6px 6px 0;
+  padding: 10px 12px;
+  transition: background 0.15s;
+}
+
+.at-species-row:hover {
+  background: #edf2f7;
+}
+
+.at-species-row-expanded {
+  background: #ebf4ff;
+  border-left-color: #0077b6;
+}
+
+.at-species-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: #2d3748;
+  margin-bottom: 5px;
+}
+
+.at-species-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.at-stat-badge {
+  display: inline-block;
+  background: #e2e8f0;
+  color: #4a5568;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* -- Expandable chart sections inside species cards --------- */
+.at-chart-section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.at-chart-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #718096;
+  margin-bottom: 6px;
+}
+
+/* -- No-data state ---------------------------------------- */
+.at-no-data {
+  padding: 20px 0;
+  color: #718096;
+  text-align: center;
+  font-size: 13px;
+}
+
+/* -- Mapbox popup ----------------------------------------- */
+.at-popup {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  min-width: 200px;
+}
+
+.at-popup-header {
+  background: #1a365d;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  margin: -10px -10px 10px -10px;   /* bleed to popup edges */
+  border-radius: 4px 4px 0 0;
+}
+
+.at-popup-body {
+  padding: 0 2px;
+}
+
+.at-popup-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #1a365d;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.at-popup-meta {
+  color: #718096;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.at-popup-coords {
+  color: #718096;
+  font-size: 11px;
+  font-family: monospace;
+  margin-bottom: 6px;
+}
+
+.at-popup-has-data {
+  color: #276749;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.at-popup-no-data {
+  color: #a0aec0;
+  font-size: 12px;
+}
+
+/* -- Floating legend panel -------------------------------- */
+.at-legend {
+  position: absolute;
+  bottom: 36px;
+  left: 12px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+  padding: 12px 14px;
+  z-index: 900;
+  min-width: 190px;
+}
+
+.at-legend-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #718096;
+  margin-bottom: 10px;
+}
+
+.at-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #2d3748;
+  user-select: none;
+}
+
+.at-legend-row:last-child {
+  margin-bottom: 0;
+}
+
+.at-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1.5px rgba(0,0,0,0.18);
+  flex-shrink: 0;
+}
+
+.at-legend-row input[type="checkbox"],
+.at-legend-row input[type="radio"] {
+  accent-color: #0077b6;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.at-legend-label {
+  cursor: pointer;
+  line-height: 1.3;
+}
+
+.at-legend-divider {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 10px 0;
+}
+
+.at-legend-key-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #a0aec0;
+  margin-bottom: 7px;
+}
+
+/* -- Species filter panel (top-left) -------------------------------------- */
+.at-species-filter {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+  padding: 12px 14px;
+  z-index: 900;
+  width: 300px;
+}
+
+.at-species-filter .at-legend-title {
+  margin-bottom: 8px;
+}
+
+/* Override selectize to fit the panel */
+.at-species-filter .selectize-control {
+  margin-bottom: 0;
+}
+
+.at-species-filter .selectize-input {
+  font-size: 13px;
+  border-color: #e2e8f0;
+  border-radius: 6px;
+  box-shadow: none;
+  min-height: 34px;
+}
+
+.at-species-filter .selectize-input.focus {
+  border-color: #0077b6;
+  box-shadow: 0 0 0 2px rgba(0, 119, 182, 0.2);
+}
+
+.at-species-filter .selectize-dropdown {
+  font-size: 13px;
+  border-color: #e2e8f0;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.at-species-filter .selectize-dropdown .option.selected,
+.at-species-filter .selectize-dropdown .option:hover {
+  background: #ebf4ff;
+  color: #1a365d;
+}
+
+.at-species-filter .selectize-input .item {
+  background: #ebf4ff;
+  color: #1a365d;
+  border: 1px solid #bee3f8;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* -- More Information section (inside expanded species card) ----------- */
+.at-more-info {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.at-more-info-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #718096;
+  margin-bottom: 8px;
+}
+
+.at-more-info-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.at-more-info-links li a {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  color: #2b6cb0;
+  text-decoration: none;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.at-more-info-links li a:hover {
+  color: #1a365d;
+  text-decoration: underline;
+}
+
+.at-more-info-unavailable {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  color: #a0aec0;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+.at-more-info-icon {
+  flex-shrink: 0;
+  font-style: normal;
+}
