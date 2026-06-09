@@ -49,16 +49,16 @@ mod_PhytoTsCPR_server <- function(id){
       PhytoTsCPRValuesisNumeric = {class(selectedData()$Values)}
     )
     
-    # Initial leaflet render with current selection
-    output$plotmap <- leaflet::renderLeaflet({
+    # Initial mapboxgl render with current selection
+    output$plotmap <- mapgl::renderMapboxgl({
       sites <- if (length(input$site) > 0) input$site else character(0)
-      fLeafletMap(sites, Survey = "CPR", Type = "Phytoplankton")
+      fMapboxMap(sites, Survey = "CPR", Type = "Phytoplankton")
     })
 
     # Update polygons when selection changes
     observe({
       sites <- if (length(input$site) > 0) input$site else character(0)
-      fLeafletUpdate("plotmap", session, sites, Survey = "CPR", Type = "Phytoplankton")
+      fMapboxUpdate("plotmap", session, sites, Survey = "CPR", Type = "Phytoplankton")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # add text information 

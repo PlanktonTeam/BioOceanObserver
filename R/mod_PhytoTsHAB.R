@@ -79,26 +79,26 @@ mod_PhytoTsHAB_server <- function(id){
     }) 
     
     # # Sidebar ----------------------------------------------------------
-    #Sidebar Maps - Initial render with current selection
-    output$plotmap1 <- leaflet::renderLeaflet({
+    # Sidebar Maps - Initial render with current selection
+    output$plotmap1 <- mapgl::renderMapboxgl({
       if (shiny::isTruthy(input$statepick1) && shiny::isTruthy(input$station1)) {
         select1 <- c(input$station1, input$statepick1)
       } else {
         select1 <- c("Bar Island", "NSW")
       }
-      fLeafletMap(select1, Survey = "HAB", Type = "Phytoplankton")
+      fMapboxMap(select1, Survey = "HAB", Type = "Phytoplankton")
     })
-    output$plotmap2 <- leaflet::renderLeaflet({
-      fLeafletMap(character(0), Survey = "HAB", Type = "Phytoplankton")
+    output$plotmap2 <- mapgl::renderMapboxgl({
+      fMapboxMap(character(0), Survey = "HAB", Type = "Phytoplankton")
     })
-    
+
     observe({
       if (shiny::isTruthy(input$statepick1) && shiny::isTruthy(input$station1)) {
         select1 <- c(input$station1, input$statepick1)
       } else {
         select1 <- c("Bar Island", "NSW")
       }
-      fLeafletUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
+      fMapboxUpdate("plotmap1", session, select1, Survey = "HAB", Type = "Phytoplankton")
     }) %>% shiny::bindEvent(input$statepick1, input$station1, ignoreNULL = FALSE)
 
     # add text information
@@ -279,7 +279,7 @@ mod_PhytoTsHAB_server <- function(id){
         select2 <- unname(input$statepick2)
       }
 
-      fLeafletUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
+      fMapboxUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
     }) %>% shiny::bindEvent(input$statepick2, input$station2, ignoreNULL = FALSE)
     
     observeEvent(list(input$tax2, input$taxgs2, input$statepick2, input$DatesSlide[1], input$DatesSlide[2]), {
@@ -389,7 +389,7 @@ mod_PhytoTsHAB_server <- function(id){
     output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "TrendTaxa") # Download figure
 
     outputOptions(output, "timeseries2", suspendWhenHidden = FALSE)
-    outputOptions(output, "plotmap1", suspendWhenHidden = FALSE) # prevent shiny from re-rendering as using this base map twice under phyto tab
+    outputOptions(output, "plotmap1", suspendWhenHidden = FALSE) # prevent shiny from suspending map when tab is hidden
     outputOptions(output, "plotmap2", suspendWhenHidden = FALSE)
     
   })

@@ -101,15 +101,15 @@ mod_RelCPR_server <- function(id){
             pkg.env$ParamDef %>% dplyr::filter(.data$Parameter == input$px) %>% dplyr::pull("Definition"), ".</p>", sep = "")
     })  
     
-    # Sidebar Map: render leaflet CPR polygon map with current selection
-    output$plotmap <- leaflet::renderLeaflet({
+    # Sidebar Map: render mapboxgl CPR polygon map with current selection
+    output$plotmap <- mapgl::renderMapboxgl({
       sites <- if (length(input$site) > 0) input$site else character(0)
-      fLeafletMap(sites, Survey = "CPR", Type = "Relation")
+      fMapboxMap(sites, Survey = "CPR", Type = "Relation")
     })
 
     observe({
       sites <- if (length(input$site) > 0) input$site else character(0)
-      fLeafletUpdate("plotmap", session, sites, Survey = "CPR", Type = "Relation")
+      fMapboxUpdate("plotmap", session, sites, Survey = "CPR", Type = "Relation")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # Add text information 

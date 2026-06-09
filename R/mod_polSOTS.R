@@ -12,7 +12,7 @@ mod_PolSOTS_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        leaflet::leafletOutput(nsPolSOTS("plotmap"), height = "400px"),
+        mapgl::mapboxglOutput(nsPolSOTS("plotmap"), height = "400px"),
         shiny::HTML("<h3><strong>Station:</strong></h3>"),
         # shiny::HTML("<p>Southern Ocean Time Series</p>"),
         shiny::radioButtons(inputId = nsPolSOTS("site"), 
@@ -126,15 +126,15 @@ mod_PolSOTS_server <- function(id){
     }) 
     
     # Sidebar Map - Initial render
-    output$plotmap <- leaflet::renderLeaflet({ 
-      fLeafletMap(character(0), Survey = "NRS", Type = "Phytoplankton")
+    output$plotmap <- mapgl::renderMapboxgl({
+      fMapboxMap(character(0), Survey = "NRS", Type = "Phytoplankton")
     })
-    
+
     # Update map when station selection changes (SOTS has only one station so
     # this only needs to fire once on load, not on every reactive invalidation)
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData0()$StationCode),
-                     Survey = "NRS", Type = "Phytoplankton")
+      fMapboxUpdate("plotmap", session, unique(selectedData0()$StationCode),
+                    Survey = "NRS", Type = "Phytoplankton")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     

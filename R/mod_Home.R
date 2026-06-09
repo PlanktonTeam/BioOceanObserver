@@ -101,9 +101,9 @@ mod_home_ui <- function(id){
                            )
                          )),
                 tabPanel("Sampling Progress", value = 2,
-                         leaflet::leafletOutput(nsHome("progplot"), height = 800) %>% 
+                         mapgl::mapboxglOutput(nsHome("progplot"), height = "800px") %>%
                            shinycssloaders::withSpinner()
-                ),
+                 ),
                 tabPanel("Sampling Status", value = 3,
                          shiny::br(),
                          shiny::HTML("Gantt plots to show the time range and regularity of samples processed from each NRS station 
@@ -143,9 +143,9 @@ mod_home_server <- function(id){
     ns <- session$ns
     
     
-    output$progplot <- leaflet::renderLeaflet({
+    output$progplot <- mapgl::renderMapboxgl({
       req(input$home == 2)
-      planktonr::pr_plot_ProgressMap(pkg.env$PMapData, interactive = TRUE, labels = FALSE)
+      fProgressMap(pkg.env$PMapData)
     })
     
     output$gantt <- shiny::renderPlot({

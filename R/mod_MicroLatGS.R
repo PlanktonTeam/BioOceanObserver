@@ -12,7 +12,7 @@ mod_MicroLatGS_ui <- function(id){
   tagList(
     sidebarLayout(
       shiny::sidebarPanel(
-        leaflet::leafletOutput(ns("plotmap"), height = "400px"),
+        mapgl::mapboxglOutput(ns("plotmap"), height = "400px"),
           shiny::HTML("<h3>Latitude range to plot:</h3>"),
           shiny::sliderInput(ns("LatSlide"), 
                              label = NULL, 
@@ -88,15 +88,15 @@ mod_MicroLatGS_server <- function(id){
     )
 
     # Sidebar Map - Initial render
-    output$plotmap <- leaflet::renderLeaflet({
-      fLeafletMap(sites = character(0), Survey = "GO-SHIP", Type = "Microbes")
+    output$plotmap <- mapgl::renderMapboxgl({
+      fMapboxMap(sites = character(0), Survey = "GO-SHIP", Type = "Microbes")
     })
-    
-    # Update map when station selection changes
+
+    # Update map when latitude range changes
     observe({
-      fLeafletUpdate("plotmap", session, sites = input$LatSlide, 
-                     Survey = "GO-SHIP", Type = "Microbes")
-    })
+      fMapboxUpdate("plotmap", session, sites = input$LatSlide,
+                    Survey = "GO-SHIP", Type = "Microbes")
+    }) %>% shiny::bindEvent(input$LatSlide, ignoreNULL = FALSE)
     
     
     # Add text information

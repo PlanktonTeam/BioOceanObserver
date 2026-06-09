@@ -39,14 +39,14 @@ mod_MoorBGC_server <- function(id){
     }) %>% bindCache(input$site)
     
     # Sidebar Map - Initial render
-    output$plotmap <- leaflet::renderLeaflet({ 
-      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
+    output$plotmap <- mapgl::renderMapboxgl({
+      fMapboxMap(character(0), Survey = "NRS", Type = "Zooplankton")
     })
-    
+
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedClim()$StationCode),
-                     Survey = "NRS", Type = "Zooplankton")
+      fMapboxUpdate("plotmap", session, unique(selectedClim()$StationCode),
+                    Survey = "NRS", Type = "Zooplankton")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # add climate plot

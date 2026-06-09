@@ -95,353 +95,331 @@ fPlotlyMap <- function(gg_map, tooltip = "colour") {
   
 }
 
-#' Create interactive leaflet map of station locations
+#' Create interactive Mapbox map of station locations
 #'
-#' @description Creates a leaflet map of station locations with colored points
-#' and hover labels. Map is constrained to Australian region with options to
-#' disable zooming/panning for a fixed view. More reliable than plotly for
-#' cross-platform tooltip display.
+#' @description Creates a mapboxgl map of station locations with colored points
+#' and hover tooltips. Handles NRS, LTM, Coastal, CPR (polygons), GO-SHIP, and
+#' HAB (state polygons + station points) survey types.
 #'
-#' @param sites A character vector of station codes to highlight (e.g., c("MAI", "PHB"))
-#' @param Survey Which Survey to plot ("NRS", "Coastal", "LTM")
-#' @param Type Must be "Phytoplankton" for SOTS to plot, or Microbes to drop NIN & ESP, otherwise has no impact
-#' @param allow_zoom Logical, should user be able to zoom? Default FALSE
-#' @param allow_pan Logical, should user be able to pan? Default FALSE
+#' @param sites A character vector of station codes/names/states to highlight
+#' @param Survey Which Survey to plot ("NRS", "Coastal", "LTM", "CPR", "GO-SHIP", "HAB")
+#' @param Type Must be "Phytoplankton" for SOTS to plot, or "Microbes" to drop NIN & ESP
 #'
-#' @return A leaflet map object ready for renderLeaflet()
+#' @return A mapboxgl map object ready for renderMapboxgl()
 #'
 #' @noRd
-fLeafletMap <- function(sites, Survey = "NRS", Type = "Zooplankton", 
-                        allow_zoom = TRUE, allow_pan = FALSE){
-  
-  # Determine map base and data depending on survey. This is the default
-  lat_min <- -45
-  lat_max <- -5
-  lon_min <- 110
-  lon_max <- 158
-  clon <- 133.7751 # Centre Long
-  clat <- -27 # Centre Lat
-  zoom <- 3.25
-  
-  if (Survey == "NRS"){
+fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
+
+  # --- Survey-specific settings ---
+  clon  <- 133.7751
+  clat  <- -27.0
+  zoom  <- 3.0
+
+  if (Survey == "CPR") {
+    clon <- 133.7751; clat <- -27.0; zoom <- 2.5
+  } else if (Survey == "GO-SHIP") {
+    clon <- -170.0; clat <- -40.0; zoom <- 2.0
+  } else if (Survey == "HAB") {
+    clon <- 150.0; clat <- -32.5; zoom <- 4.0
+  }
+
+  # --- Build base map ---
+  base_map <- mapgl::mapboxgl(
+    access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+    style        = mapgl::mapbox_style("light"),
+    center       = c(clon, clat),
+    zoom         = zoom,
+    projection   = "mercator"
+  )
+
+  # ---- CPR: fill polygons from planktonr::mbr ----
+  if (Survey == "CPR") {
+    mbr_df <- planktonr::mbr
+    if (!inherits(mbr_df, "sf")) mbr_df <- sf::st_as_sf(mbr_df)
+    mbr_df$REGION <- as.character(mbr_df$REGION)
+    if (!"Colour" %in% colnames(mbr_df)) mbr_df$Colour <- "#AAAAAA"
+    mbr_df$Colour <- as.character(mbr_df$Colour)
+    mbr_df$FillCol <- ifelse(
+      length(sites) > 0 & mbr_df$REGION %in% sites,
+      mbr_df$Colour, "#EEEEEE"
+    )
+    return(
+      base_map %>%
+        mapgl::add_fill_layer(
+          id           = "regions",
+          source       = mbr_df,
+          fill_color   = list("get", "FillCol"),
+          fill_opacity = 0.7,
+          tooltip      = "REGION"
+        ) %>%
+        mapgl::add_line_layer(
+          id           = "regions_outline",
+          source       = mbr_df,
+          line_color   = "black",
+          line_width   = 0.5
+        )
+    )
+  }
+
+  # ---- HAB: state fill polygons + station circle markers ----
+  if (Survey == "HAB") {
+    states_sf <- pkg.env$AusStatesSimple %>%
+      dplyr::mutate(
+        Selected    = .data$StateCode %in% sites,
+        FillColor   = dplyr::if_else(.data$Selected, "#FF0000", "#000000"),
+        FillOpacity = dplyr::if_else(.data$Selected, 0.2, 0.0)
+      ) %>%
+      sf::st_as_sf()
+
+    stations_df <- pkg.env$datHABTrip %>%
+      dplyr::distinct(.data$StationName, .data$Latitude, .data$Longitude, .data$State) %>%
+      dplyr::mutate(
+        Selected    = .data$StationName %in% sites,
+        DotColor    = dplyr::if_else(.data$Selected, "#000000", "#FFFFFF"),
+        DotOpacity  = dplyr::if_else(.data$Selected, 0.5, 0.0),
+        DotRadius   = dplyr::if_else(.data$Selected, 4, 0.1)
+      ) %>%
+      sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+    return(
+      base_map %>%
+        mapgl::add_fill_layer(
+          id              = "states",
+          source          = states_sf,
+          fill_color      = list("get", "FillColor"),
+          fill_opacity    = list("get", "FillOpacity"),
+          tooltip         = "StationName"
+        ) %>%
+        mapgl::add_circle_layer(
+          id             = "stations",
+          source         = stations_df,
+          circle_color   = list("get", "DotColor"),
+          circle_opacity = list("get", "DotOpacity"),
+          circle_radius  = list("get", "DotRadius"),
+          tooltip        = "StationName"
+        )
+    )
+  }
+
+  # ---- GO-SHIP: circle markers coloured by latitude range ----
+  if (Survey == "GO-SHIP") {
+    meta_data <- pkg.env$datGSm %>%
+      dplyr::distinct(.data$Latitude, .data$Longitude, .keep_all = TRUE) %>%
+      dplyr::mutate(StationName = .data$StationName) %>%
+      sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326, remove = FALSE)
+
+    lat_min <- if (length(sites) >= 2) sites[1] else min(meta_data$Latitude)
+    lat_max <- if (length(sites) >= 2) sites[2] else max(meta_data$Latitude)
+
+    # Data-driven colour: red if within selected latitude range, blue otherwise
+    color_expr <- list(
+      "case",
+      list("all",
+           list(">=", list("get", "Latitude"), lat_min),
+           list("<=", list("get", "Latitude"), lat_max)),
+      "#FF0000",
+      "#3399FF"
+    )
+
+    return(
+      base_map %>%
+        mapgl::add_circle_layer(
+          id             = "stations",
+          source         = meta_data,
+          circle_color   = color_expr,
+          circle_opacity = 0.8,
+          circle_radius  = 4,
+          tooltip        = "StationName"
+        )
+    )
+  }
+
+  # ---- NRS / LTM / Coastal: circle markers ----
+  if (Survey == "NRS") {
     meta_data <- pkg.env$NRSStation
   } else if (Survey == "LTM") {
     meta_data <- pkg.env$NRSStation %>%
       dplyr::filter(.data$StationCode %in% c("MAI", "PHB", "ROT"))
   } else if (Survey == "Coastal") {
-    meta_data <- planktonr::csDAT %>% 
-      sf::st_as_sf()
-  } else if (Survey == "CPR") {
-    lat_min <- -70
-    lat_max <- -5
-    zoom <- 1.5
-  } else if (Survey == "GO-SHIP"){
-    meta_data <- pkg.env$datGSm %>% 
-      dplyr::distinct(.data$Latitude, .data$Longitude, .keep_all = TRUE) %>% 
-      dplyr::mutate(StationCode = .data$StationName)
-    lon_max <- -150
-    lon_min <- -180
-    lat_min <- -60
-    lat_max <- -20
-    clon <- -179
-    clat <- -40
-    zoom <- 2
-  } else if (Survey == "HAB"){
-    meta_data <- pkg.env$AusStatesSimple  
-    lon_max <- 140
-    lon_min <- 160
-    lat_min <- -40
-    lat_max <- -25
-    clon <- 150
-    clat <- -32.5
-    zoom <- 3.25
+    meta_data <- planktonr::csDAT
+    if (inherits(meta_data, "sf")) meta_data <- sf::st_drop_geometry(meta_data)
   }
-  
-  # Add SOTS for phytoplankton (only relevant for point datasets)
-  if (Type == "Phytoplankton" && !Survey %in% c("CPR", "HAB")){
+
+  # Add SOTS for phytoplankton
+  if (Type == "Phytoplankton" && !Survey %in% c("CPR", "HAB")) {
     sots <- data.frame(
-      StationName = "SOTS",
+      StationName = "Southern Ocean Time Series",
       StationCode = "SOTS",
-      Latitude = -47.0,
-      Longitude = 142.0
+      Latitude    = -47.0,
+      Longitude   = 142.0
     )
     meta_data <- dplyr::bind_rows(meta_data, sots)
-    lat_min <- -55
-    lat_max <- -5
-  } else if (Type == "Microbes"){
+  } else if (Type == "Microbes") {
     meta_data <- meta_data %>%
       dplyr::filter(!.data$StationCode %in% c("NIN", "ESP"))
   }
-  
-  # Create leaflet map base with options
-  map <- leaflet::leaflet(
-    options = leaflet::leafletOptions(
-      zoomControl = allow_zoom,
-      doubleClickZoom = allow_zoom,
-      scrollWheelZoom = allow_zoom,
-      dragging = allow_pan,
-      minZoom = 1,
-      maxZoom = 18,
-      zoomSnap = 0.25,
-      zoomDelta = 0.25
-    )
-  ) %>%
-    leaflet::addProviderTiles(provider = "Esri.OceanBasemap") %>%
-    leaflet::setView(lng = clon, lat = clat, zoom = zoom) %>%
-    leaflet::setMaxBounds(lng1 = lon_min, lat1 = lat_min, lng2 = lon_max, lat2 = lat_max)
-  
-  # If CPR, draw bioregion polygons; otherwise add station points
-  if (Survey == "CPR"){
-    
-    # If sites provided, make non-selected transparent/grey
-    mbr_df <- planktonr::mbr
-    # Ensure it's an sf object and has character REGION/Colour columns
-    if (!inherits(mbr_df, "sf")) mbr_df <- sf::st_as_sf(mbr_df)
-    mbr_df$REGION <- as.character(mbr_df$REGION)
-    if (!"Colour" %in% colnames(mbr_df)) mbr_df$Colour <- "#AAAAAA"
-    mbr_df$Colour <- as.character(mbr_df$Colour)
-    
-    if (length(sites) > 0) {
-      # use base ifelse to avoid strict type coercion from dplyr::if_else
-      mbr_df$FillCol <- ifelse(mbr_df$REGION %in% sites, mbr_df$Colour, "#EEEEEE")
-    } else {
-      mbr_df$FillCol <- "#EEEEEE"
-    }
-    
-    map <- map %>%
-      leaflet::addPolygons(data = mbr_df,
-                           fillColor = ~FillCol,
-                           color = "black",
-                           weight = 0.5,
-                           fillOpacity = 0.7,
-                           label = ~REGION,
-                           highlight = leaflet::highlightOptions(weight = 2, bringToFront = TRUE))
-  } else if (Survey == "HAB") {
-    # Add color column based on selection for point datasets
+
+  # Colour by selection
+  if (Survey == "Coastal") {
     meta_data <- meta_data %>%
       dplyr::mutate(
-        Selected = .data$StateCode %in% sites,
-        Color = dplyr::if_else(.data$Selected, "red", "black"),
-        Opacity = dplyr::if_else(.data$Selected, 0.2, 0.0),
-        Radius = dplyr::if_else(.data$Selected, 2L, 1L)
-      ) %>%
-      sf::st_as_sf()
-    
-    map <- map %>%
-      leaflet::addPolygons(data = meta_data,
-                           color = ~Color,
-                           opacity = ~Opacity, 
-                           fillColor = ~Color,
-                           fillOpacity = ~Opacity,
-                           weight = ~Radius,
-                           label = ~StationName,
-                           labelOptions = leaflet::labelOptions(
-                             style = list("font-weight" = "normal", "padding" = "3px 8px"),
-                             textsize = "12px",
-                             direction = "auto"
-                           ))
-    
-  } else { # Not CPR or  HAB
-    
-    # Add color column based on selection for point datasets
-    meta_data <- meta_data %>%
-      dplyr::mutate(
-        Selected = .data$StationCode %in% sites,
-        Color = dplyr::if_else(.data$Selected, "red", "blue"),
-        Radius = dplyr::if_else(.data$Selected, 8, 6)
+        Selected   = .data$State %in% sites,
+        DotColor   = dplyr::if_else(.data$Selected, "#FF0000", "#3399FF"),
+        DotRadius  = dplyr::if_else(.data$Selected, 8, 6)
       )
-    
-    map <- map %>%
-      leaflet::addCircleMarkers(data = meta_data,
-                                lng = ~Longitude,
-                                lat = ~Latitude,
-                                color = ~Color,
-                                fillColor = ~Color,
-                                radius = ~Radius,
-                                fillOpacity = 0.8,
-                                opacity = 1,
-                                weight = 2,
-                                label = ~StationName,
-                                labelOptions = leaflet::labelOptions(
-                                  style = list("font-weight" = "normal", "padding" = "3px 8px"),
-                                  textsize = "12px",
-                                  direction = "auto"
-                                ))
+  } else {
+    meta_data <- meta_data %>%
+      dplyr::mutate(
+        Selected   = .data$StationCode %in% sites,
+        DotColor   = dplyr::if_else(.data$Selected, "#FF0000", "#3399FF"),
+        DotRadius  = dplyr::if_else(.data$Selected, 8, 6)
+      )
   }
-  
-  return(map)
+
+  stations_sf <- meta_data %>%
+    sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+  base_map %>%
+    mapgl::add_circle_layer(
+      id             = "stations",
+      source         = stations_sf,
+      circle_color   = list("get", "DotColor"),
+      circle_opacity = 0.8,
+      circle_radius  = list("get", "DotRadius"),
+      tooltip        = "StationName"
+    )
 }
 
-#' Update leaflet map markers using leafletProxy
+
+#' Update Mapbox sidebar map using mapboxgl_proxy
 #'
-#' @description Updates only the station markers on an existing leaflet map without
-#' redrawing the entire map. Much more efficient than re-rendering the whole map.
-#' Use this in an observe() block that watches for changes in station selection.
+#' @description Updates only the map layers on an existing mapboxgl sidebar map
+#' without redrawing the entire map. Use this in an observe() block that watches
+#' for changes in station selection.
 #'
 #' @param map_id Character string of the map output ID (e.g., "plotmap")
 #' @param session The Shiny session object
-#' @param sites A character vector of station codes to highlight (e.g., c("MAI", "PHB"))
-#' @param Survey Which Survey to plot ("NRS", "Coastal", "LTM")
+#' @param sites A character vector of station codes/names/states to highlight,
+#'   or a numeric vector of length 2 for GO-SHIP latitude range
+#' @param Survey Which Survey to plot ("NRS", "Coastal", "LTM", "CPR", "GO-SHIP", "HAB")
 #' @param Type Must be "Phytoplankton" for SOTS to plot, otherwise has no impact
 #'
 #' @return NULL (called for side effect of updating the map)
 #'
 #' @noRd
-fLeafletUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zooplankton"){
-  
-  # Update the map using leafletProxy
-  proxy <- leaflet::leafletProxy(map_id, session)
-  
-  if (Survey == "CPR"){
-    
-    # Update polygons: clear existing shapes and add polygons with selected fill
+fMapboxUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zooplankton") {
+
+  proxy <- mapgl::mapboxgl_proxy(map_id, session = session)
+
+  # ---- CPR: update fill polygon colours ----
+  if (Survey == "CPR") {
     mbr_df <- planktonr::mbr
     if (!inherits(mbr_df, "sf")) mbr_df <- sf::st_as_sf(mbr_df)
-    mbr_df$REGION <- as.character(mbr_df$REGION)
+    mbr_df$REGION  <- as.character(mbr_df$REGION)
     if (!"Colour" %in% colnames(mbr_df)) mbr_df$Colour <- "#AAAAAA"
-    mbr_df$Colour <- as.character(mbr_df$Colour)
-    
-    if (length(sites) > 0){
-      mbr_df$FillCol <- ifelse(mbr_df$REGION %in% sites, mbr_df$Colour, "#EEEEEE")
-    } else {
-      mbr_df$FillCol <- "#EEEEEE"
-    }
-    
+    mbr_df$Colour  <- as.character(mbr_df$Colour)
+    mbr_df$FillCol <- ifelse(
+      length(sites) > 0 & mbr_df$REGION %in% sites,
+      mbr_df$Colour, "#EEEEEE"
+    )
     proxy %>%
-      leaflet::clearShapes() %>%
-      leaflet::addPolygons(data = mbr_df,
-                           fillColor = ~FillCol,
-                           color = "black",
-                           weight = 0.5,
-                           fillOpacity = 0.7,
-                           label = ~REGION,
-                           highlight = leaflet::highlightOptions(weight = 2, bringToFront = TRUE))
-    
-  } else {
-    
-    # Get station metadata based on survey type
-    if(Survey == "NRS"){
-      meta_data <- pkg.env$NRSStation
-    } else if (Survey == "LTM") {
-      meta_data <- pkg.env$NRSStation %>%
-        dplyr::filter(.data$StationCode %in% c("MAI", "PHB", "ROT"))
-    } else if (Survey == "Coastal") {
-      # Use coastal stations data
-      meta_data <- planktonr::csDAT %>% 
-        sf::st_as_sf()
-    } else if (Survey == "GO-SHIP"){
-      meta_data <- pkg.env$datGSm %>% 
-        dplyr::mutate(StationCode = .data$StationName) 
-    } else if (Survey == "HAB"){
-      meta_data <- pkg.env$AusStatesSimple 
-      
-      meta_data_station <- pkg.env$datHABTrip %>%
-        dplyr::mutate(StationCode = .data$StationName)  
-      
-    }
-    
-    # Add SOTS for phytoplankton
-    if (Type == "Phytoplankton" && !Survey %in% c("CPR", "HAB")){
-      
-      sots <- data.frame(
-        StationName = "SOTS",
-        StationCode = "SOTS",
-        Latitude = -47.0,
-        Longitude = 142.0
-      )
-      meta_data <- dplyr::bind_rows(meta_data, sots)
-    }
-    
-    
-    if (Survey == "GO-SHIP"){
-      meta_data <- meta_data %>%
-        dplyr::mutate(
-          Selected = .data$Latitude >= sites[1] & .data$Latitude <= sites[2],
-          Color = dplyr::if_else(.data$Selected, "red", "blue"),
-          Radius = dplyr::if_else(.data$Selected, 8, 6)
-        )
-    } else if (Survey == "Coastal") {
-      # Coastal stations use State for selection
-      meta_data <- meta_data %>%
-        dplyr::mutate(
-          Selected = .data$State %in% sites,
-          Color = dplyr::if_else(.data$Selected, "red", "blue"),
-          Radius = dplyr::if_else(.data$Selected, 8, 6)
-        )
-    } else if (Survey == "HAB") {
-      # Only plot the stations selected as there are too many otherwise
-      meta_data_station <- meta_data_station %>%
-        dplyr::mutate(
-          Selected = .data$StationName %in% sites,
-          Color = dplyr::if_else(.data$Selected, "black", "white"),
-          Opacity = dplyr::if_else(.data$Selected, 0.5, 0),
-          Radius = dplyr::if_else(.data$Selected, 2, 0.01))
-      
-      meta_data <- meta_data %>%
-        dplyr::mutate(
-          Selected = .data$StateCode %in% sites,
-          Color = dplyr::if_else(.data$Selected, "red", "blue"),
-          Opacity = dplyr::if_else(.data$Selected, 0.2, 0.0),
-          Radius = dplyr::if_else(.data$Selected, 2L, 1L)
-        ) %>%
-        sf::st_as_sf()
-      
-    } else {
-      # Add color column based on selection
-      meta_data <- meta_data %>%
-        dplyr::mutate(
-          Selected = .data$StationCode %in% sites,
-          Color = dplyr::if_else(.data$Selected, "red", "blue"),
-          Radius = dplyr::if_else(.data$Selected, 8, 6)
-        )
-    }
-    
-    if(Survey == "HAB"){
-      proxy %>%
-        leaflet::clearMarkers() %>%
-        leaflet::clearShapes() %>%
-        leaflet::addPolygons(
-          data = meta_data,
-          color = ~Color,
-          opacity = ~Opacity, 
-          fillColor = ~Color,
-          fillOpacity = ~Opacity,
-          weight = ~Radius) %>%
-        leaflet::addCircleMarkers(
-          data = meta_data_station,
-          lng = ~Longitude,
-          lat = ~Latitude,
-          color = ~Color,
-          fillColor = ~Color,
-          radius = ~Radius,
-          fillOpacity = ~Opacity,
-          opacity = ~Opacity,
-          weight = 2,
-          label = ~StationName,
-          labelOptions = leaflet::labelOptions(
-            style = list("font-weight" = "normal", "padding" = "3px 8px"),
-            textsize = "12px",
-            direction = "auto"))    
-    } else { # for all other surveys
-      proxy %>%
-        leaflet::clearMarkers() %>%
-        leaflet::addCircleMarkers(
-          data = meta_data,
-          lng = ~Longitude,
-          lat = ~Latitude,
-          color = ~Color,
-          fillColor = ~Color,
-          radius = ~Radius,
-          fillOpacity = 0.8,
-          opacity = 1,
-          weight = 2,
-          label = ~StationName,
-          labelOptions = leaflet::labelOptions(
-            style = list("font-weight" = "normal", "padding" = "3px 8px"),
-            textsize = "12px",
-            direction = "auto"))  
-    }
+      mapgl::set_source(layer_id = "regions", source = mbr_df) %>%
+      mapgl::set_source(layer_id = "regions_outline", source = mbr_df)
+    return(invisible(NULL))
   }
+
+  # ---- HAB: update state fill + station circles ----
+  if (Survey == "HAB") {
+    states_sf <- pkg.env$AusStatesSimple %>%
+      dplyr::mutate(
+        Selected    = .data$StateCode %in% sites,
+        FillColor   = dplyr::if_else(.data$Selected, "#FF0000", "#000000"),
+        FillOpacity = dplyr::if_else(.data$Selected, 0.2, 0.0)
+      ) %>%
+      sf::st_as_sf()
+
+    stations_df <- pkg.env$datHABTrip %>%
+      dplyr::distinct(.data$StationName, .data$Latitude, .data$Longitude, .data$State) %>%
+      dplyr::mutate(
+        Selected    = .data$StationName %in% sites,
+        DotColor    = dplyr::if_else(.data$Selected, "#000000", "#FFFFFF"),
+        DotOpacity  = dplyr::if_else(.data$Selected, 0.5, 0.0),
+        DotRadius   = dplyr::if_else(.data$Selected, 4, 0.1)
+      ) %>%
+      sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+    proxy %>%
+      mapgl::set_source(layer_id = "states",   source = states_sf) %>%
+      mapgl::set_source(layer_id = "stations", source = stations_df)
+    return(invisible(NULL))
+  }
+
+  # ---- GO-SHIP: update paint expression with new latitude range ----
+  if (Survey == "GO-SHIP") {
+    lat_min <- if (length(sites) >= 2) sites[1] else -90
+    lat_max <- if (length(sites) >= 2) sites[2] else  90
+
+    color_expr <- list(
+      "case",
+      list("all",
+           list(">=", list("get", "Latitude"), lat_min),
+           list("<=", list("get", "Latitude"), lat_max)),
+      "#FF0000",
+      "#3399FF"
+    )
+    proxy %>%
+      mapgl::set_paint_property(layer_id = "stations",
+                                name     = "circle-color",
+                                value    = color_expr)
+    return(invisible(NULL))
+  }
+
+  # ---- NRS / LTM / Coastal: update circle marker colours ----
+  if (Survey == "NRS") {
+    meta_data <- pkg.env$NRSStation
+  } else if (Survey == "LTM") {
+    meta_data <- pkg.env$NRSStation %>%
+      dplyr::filter(.data$StationCode %in% c("MAI", "PHB", "ROT"))
+  } else if (Survey == "Coastal") {
+    meta_data <- planktonr::csDAT
+    if (inherits(meta_data, "sf")) meta_data <- sf::st_drop_geometry(meta_data)
+  }
+
+  # Add SOTS for phytoplankton
+  if (Type == "Phytoplankton" && !Survey %in% c("CPR", "HAB")) {
+    sots <- data.frame(
+      StationName = "Southern Ocean Time Series",
+      StationCode = "SOTS",
+      Latitude    = -47.0,
+      Longitude   = 142.0
+    )
+    meta_data <- dplyr::bind_rows(meta_data, sots)
+  }
+
+  # Colour by selection
+  if (Survey == "Coastal") {
+    meta_data <- meta_data %>%
+      dplyr::mutate(
+        Selected  = .data$State %in% sites,
+        DotColor  = dplyr::if_else(.data$Selected, "#FF0000", "#3399FF"),
+        DotRadius = dplyr::if_else(.data$Selected, 8, 6)
+      )
+  } else {
+    meta_data <- meta_data %>%
+      dplyr::mutate(
+        Selected  = .data$StationCode %in% sites,
+        DotColor  = dplyr::if_else(.data$Selected, "#FF0000", "#3399FF"),
+        DotRadius = dplyr::if_else(.data$Selected, 8, 6)
+      )
+  }
+
+  stations_sf <- meta_data %>%
+    sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+  proxy %>%
+    mapgl::set_source(layer_id = "stations", source = stations_sf)
+
+  invisible(NULL)
 }
 
 
@@ -514,12 +492,12 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       if(stringr::str_detect(id, "CPR")) {
         shiny::tagList(
           shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
-          leaflet::leafletOutput(ns("plotmap"), height = "400px")
+          mapgl::mapboxglOutput(ns("plotmap"), height = "400px")
         )
       } else if(!stringr::str_detect(id, "HAB")) {
         shiny::tagList(
           shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-          leaflet::leafletOutput(ns("plotmap"), height = "400px")
+          mapgl::mapboxglOutput(ns("plotmap"), height = "400px")
         )
       }, 
       shiny::HTML("<h3>Select a station:</h3>"),
@@ -537,7 +515,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       condition = paste0("input.navbar == 'Coastal Phytoplankton' && input['", id, "-", tabsetPanel_id, "'] == 1"),
       shiny::tagList(
         shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-        leaflet::leafletOutput(ns("plotmap1"), height = "400px")
+        mapgl::mapboxglOutput(ns("plotmap1"), height = "400px")
       ),
       shiny::HTML("<h3>Select a state:</h3>"),
       shiny::fluidRow(class = "row_multicol",
@@ -573,7 +551,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       condition = paste0("input.navbar == 'Coastal Phytoplankton' && input['", id, "-", tabsetPanel_id, "'] == 2"),
       shiny::tagList(
         shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-        leaflet::leafletOutput(ns("plotmap2"), height = "400px")
+        mapgl::mapboxglOutput(ns("plotmap2"), height = "400px")
       ),
       shiny::HTML("<h3>Select taxonomic level:</h3>"),
       shiny::fluidRow(class = "row_multicol",
@@ -795,32 +773,32 @@ fSpatialPanel <- function(id, tabsetPanel_id){
   ns <- NS(id)
   shiny::mainPanel(
     tabsetPanel(id = ns(tabsetPanel_id), type = "pills",
-                tabPanel("Observation maps", value = 1, 
+                tabPanel("Observation maps", value = 1,
                          p(textOutput(ns("DistMapExp"), container = span)),
                          fluidRow(
                            shiny::column(width = 6,
                                          class = "col-no-spacing",
                                          shiny::h4("December - February"),
-                                         leaflet::leafletOutput(ns("MapSum"), width = "99%", height = "300px") %>% 
-                                           shinycssloaders::withSpinner(color="#0dc5c1")), 
+                                         mapgl::mapboxglOutput(ns("MapSum"), width = "99%", height = "300px") %>%
+                                           shinycssloaders::withSpinner(color="#0dc5c1")),
                            shiny::column(width = 6,
                                          class = "col-no-spacing",
                                          shiny::h4("March - May"),
-                                         leaflet::leafletOutput(ns("MapAut"), width = "99%", height = "300px") %>%
+                                         mapgl::mapboxglOutput(ns("MapAut"), width = "99%", height = "300px") %>%
                                            shinycssloaders::withSpinner(color="#0dc5c1")
                            ),
                            shiny::column(width = 6,
                                          class = "col-no-spacing",
                                          shiny::h4("June - August"),
-                                         leaflet::leafletOutput(ns("MapWin"), width = "99%", height = "300px") %>% 
-                                           shinycssloaders::withSpinner(color="#0dc5c1")), 
+                                         mapgl::mapboxglOutput(ns("MapWin"), width = "99%", height = "300px") %>%
+                                           shinycssloaders::withSpinner(color="#0dc5c1")),
                            shiny::column(width = 6,
                                          class = "col-no-spacing",
                                          shiny::h4("September - November"),
-                                         leaflet::leafletOutput(ns("MapSpr"), width = "99%", height = "300px") %>% 
+                                         mapgl::mapboxglOutput(ns("MapSpr"), width = "99%", height = "300px") %>%
                                            shinycssloaders::withSpinner(color="#0dc5c1"))
                          )
-                ),        
+                ),
                 tabPanel("Species Temperature Index graphs", value = 2, 
                          shiny::p(textOutput(ns("STIsExp"), container = span)),
                          plotOutput(ns("STIs"), height = 700) %>% 
@@ -863,7 +841,7 @@ fEnviroSidebar <- function(id, dat = NULL){
   
   shiny::sidebarPanel(
     shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-    leaflet::leafletOutput(ns("plotmap"), height = "400px"),
+    mapgl::mapboxglOutput(ns("plotmap"), height = "400px"),
     shiny::HTML("<h3>Select a station:</h3>"),
     shiny::fluidRow(tags$div(align = "left", 
                              class = "multicol",
@@ -995,12 +973,12 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
       if(stringr::str_detect(id, "CPR")) {
         shiny::tagList(
           shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
-          leaflet::leafletOutput(ns("plotmap"), height = "400px")
+          mapgl::mapboxglOutput(ns("plotmap"), height = "400px")
         )
       } else {
         shiny::tagList(
           shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-          leaflet::leafletOutput(ns("plotmap"), height = "400px")
+          mapgl::mapboxglOutput(ns("plotmap"), height = "400px")
         )
       },
       # shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
@@ -1220,9 +1198,264 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
 
 
 
+#' Create interactive Mapbox progress map of IMOS plankton sampling coverage
+#'
+#' @description Replaces \code{planktonr::pr_plot_ProgressMap(interactive = TRUE)}
+#'   with a \code{mapboxgl} implementation. Renders four toggleable layers:
+#'   Marine Bioregions (CPR polygon fills), CPR samples with phyto/zoo counts,
+#'   CPR samples with PCI data only (hidden by default), and NRS stations.
+#'
+#' @param dat A list with components \code{$NRS} and \code{$CPR}, as stored in
+#'   \code{pkg.env$PMapData}. \code{$NRS} must contain \code{Name},
+#'   \code{Latitude}, \code{Longitude}, \code{Start_Date}, \code{End_Date},
+#'   \code{Samples}. \code{$CPR} must contain \code{Latitude},
+#'   \code{Longitude}, \code{ZoopAbundance_m3}, \code{PhytoAbundance_CellsL},
+#'   \code{PCI}, \code{Colour}, \code{Name}.
+#'
+#' @return A \code{mapboxgl} map object suitable for \code{renderMapboxgl()}.
+#'
+#' @noRd
+fProgressMap <- function(dat) {
+
+  # ---- Unpack data ----
+  df_CPR <- dat$CPR %>%
+    dplyr::filter(!is.na(.data$ZoopAbundance_m3) | !is.na(.data$PhytoAbundance_CellsL))
+
+  df_PCI <- dat$CPR %>%
+    dplyr::filter(is.na(.data$ZoopAbundance_m3) & is.na(.data$PhytoAbundance_CellsL))
+
+  df_NRS <- dat$NRS
+
+  # ---- Build popup HTML for NRS stations ----
+  df_NRS <- df_NRS %>%
+    dplyr::mutate(
+      end_label = dplyr::if_else(
+        lubridate::year(.data$End_Date) < 2020,
+        paste0(as.character(.data$End_Date), " (discontinued)"),
+        paste0(as.character(.data$End_Date), " (ongoing)")
+      ),
+      popup_html = paste0(
+        "<strong>National Reference Station:</strong> ", .data$Name, "<br>",
+        "<strong>First Sampling:</strong> ", as.character(.data$Start_Date), "<br>",
+        "<strong>Last Sampling:</strong> ", .data$end_label, "<br>",
+        "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
+        "<strong>Longitude:</strong> ", .data$Longitude, "<br>",
+        "<strong>Number of Sampling Trips:</strong> ", .data$Samples
+      )
+    )
+
+  # ---- Build popup HTML for CPR phyto/zoo samples ----
+  df_CPR <- df_CPR %>%
+    dplyr::mutate(
+      popup_html = paste0(
+        "<strong>Bioregion:</strong> ", .data$Name, "<br>",
+        "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
+        "<strong>Longitude:</strong> ", .data$Longitude, "<br>",
+        "<strong>Phytoplankton Abundance (L\u207B\u00B9):</strong> ",
+        round(.data$PhytoAbundance_CellsL, 2), "<br>",
+        "<strong>Zooplankton Abundance (m\u207B\u00B3):</strong> ",
+        round(.data$ZoopAbundance_m3, 2)
+      )
+    )
+
+  # ---- Build popup HTML for CPR PCI-only samples ----
+  df_PCI <- df_PCI %>%
+    dplyr::mutate(
+      popup_html = paste0(
+        "<strong>Bioregion:</strong> ", .data$Name, "<br>",
+        "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
+        "<strong>Longitude:</strong> ", .data$Longitude, "<br>",
+        "<strong>Phytoplankton Colour Index:</strong> ", .data$PCI
+      )
+    )
+
+  # ---- Convert to sf ----
+  nrs_sf <- df_NRS %>%
+    sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+  cpr_sf <- df_CPR %>%
+    sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+  pci_sf <- df_PCI %>%
+    sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+  # ---- Marine Bioregions (mbr polygons from planktonr) ----
+  mbr_sf <- planktonr::mbr
+  if (!inherits(mbr_sf, "sf")) mbr_sf <- sf::st_as_sf(mbr_sf)
+  mbr_sf$REGION  <- as.character(mbr_sf$REGION)
+  mbr_sf$Colour  <- as.character(mbr_sf$Colour)
+
+  # Build bioregion popup from CPRinfo (features description)
+  cpr_info <- pkg.env$CPRinfo
+  mbr_sf <- mbr_sf %>%
+    dplyr::left_join(
+      cpr_info %>% dplyr::select("BioRegion", "Features"),
+      by = c("REGION" = "BioRegion")
+    ) %>%
+    dplyr::mutate(
+      br_suffix = dplyr::if_else(.data$REGION == "Southern Ocean Region", "", " Bioregion"),
+      popup_html = paste0(
+        "<strong>The ", .data$REGION, .data$br_suffix, "</strong> is characterised by ",
+        dplyr::coalesce(.data$Features, "")
+      )
+    )
+
+  # ---- Build the map ----
+  # Centre shifted south and zoom reduced to include the Southern Ocean region
+  mapgl::mapboxgl(
+    access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+    style        = mapgl::mapbox_style("light"),
+    center       = c(134.0, -32.0),
+    zoom         = 2.8,
+    projection   = "mercator"
+  ) %>%
+    # Layer 1: Marine Bioregion fill polygons
+    mapgl::add_fill_layer(
+      id           = "bioregions",
+      source       = mbr_sf,
+      fill_color   = list("get", "Colour"),
+      fill_opacity = 0.4,
+      popup        = "popup_html"
+    ) %>%
+    mapgl::add_line_layer(
+      id         = "bioregions_outline",
+      source     = mbr_sf,
+      line_color = list("get", "Colour"),
+      line_width = 1
+    ) %>%
+    # Layer 2: CPR samples with phyto/zoo counts
+    mapgl::add_circle_layer(
+      id             = "cpr_counts",
+      source         = cpr_sf,
+      circle_color   = list("get", "Colour"),
+      circle_opacity = 0.8,
+      circle_radius  = 3,
+      popup          = "popup_html"
+    ) %>%
+    # Layer 3: CPR samples with PCI data only (hidden by default)
+    mapgl::add_circle_layer(
+      id             = "cpr_pci",
+      source         = pci_sf,
+      circle_color   = list("get", "Colour"),
+      circle_opacity = 0.8,
+      circle_radius  = 1,
+      popup          = "popup_html"
+    ) %>%
+    # Layer 4: NRS stations (orange, large)
+    mapgl::add_circle_layer(
+      id             = "nrs_stations",
+      source         = nrs_sf,
+      circle_color   = "#FFA500",
+      circle_opacity = 0.8,
+      circle_radius  = 10,
+      popup          = "popup_html"
+    ) %>%
+    # Hide PCI-only layer by default (matches leaflet::hideGroup behaviour)
+    mapgl::set_layout_property(
+      layer_id = "cpr_pci",
+      name     = "visibility",
+      value    = "none"
+    ) %>%
+    # Layer toggle control — custom checkbox panel (top-right).
+    # Each add_control() call MUST have a unique id= or they overwrite each other
+    # in map$x$custom_controls (a named list keyed by control_id).
+    # HTML attributes use single-quote delimiters; onchange uses double-quotes so
+    # JS strings inside can safely use single quotes.
+    mapgl::add_control(
+      id       = "layer-toggle",
+      position = "top-right",
+      html = paste0(
+        "<div style='background:rgba(255,255,255,0.92);padding:8px 12px;border-radius:6px;",
+        "box-shadow:0 1px 4px rgba(0,0,0,0.25);",
+        "font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;",
+        "font-size:13px;font-weight:normal;line-height:1.8;'>",
+        # NRS stations — checked by default
+        "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;margin-bottom:2px;'>",
+        "<input type='checkbox' checked style='cursor:pointer;width:14px;height:14px;'",
+        " onchange=\"var m=this.closest('.mapboxgl-map').map;",
+        "m.setLayoutProperty('nrs_stations','visibility',this.checked?'visible':'none');\">",
+        "National Reference Stations</label>",
+        # CPR phyto/zoo counts — checked by default
+        "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;margin-bottom:2px;'>",
+        "<input type='checkbox' checked style='cursor:pointer;width:14px;height:14px;'",
+        " onchange=\"var m=this.closest('.mapboxgl-map').map;",
+        "m.setLayoutProperty('cpr_counts','visibility',this.checked?'visible':'none');\">",
+        "CPR (Phyto/Zoo Counts)</label>",
+        # CPR PCI only — unchecked by default (matches leaflet::hideGroup)
+        "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;margin-bottom:2px;'>",
+        "<input type='checkbox' style='cursor:pointer;width:14px;height:14px;'",
+        " onchange=\"var m=this.closest('.mapboxgl-map').map;",
+        "m.setLayoutProperty('cpr_pci','visibility',this.checked?'visible':'none');\">",
+        "CPR (PCI Only)</label>",
+        # Marine Bioregions — checked by default
+        "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;'>",
+        "<input type='checkbox' checked style='cursor:pointer;width:14px;height:14px;'",
+        " onchange=\"var m=this.closest('.mapboxgl-map').map;",
+        "m.setLayoutProperty('bioregions','visibility',this.checked?'visible':'none');",
+        "m.setLayoutProperty('bioregions_outline','visibility',this.checked?'visible':'none');\">",
+        "Marine Bioregions</label>",
+        "</div>"
+      )
+    ) %>%
+    # Title control (top-left) — unique id to avoid overwriting
+    mapgl::add_control(
+      id       = "map-title",
+      html     = "<div style='background:rgba(255,255,255,0.85);padding:4px 10px;font-weight:bold;font-size:16px;border-radius:4px;'>Plankton sampling progress</div>",
+      position = "top-left"
+    ) %>%
+    mapgl::add_control(
+      id       = "map-subtitle",
+      html     = "<div style='background:rgba(255,255,255,0.85);padding:2px 10px;font-size:12px;border-radius:4px;'>Click items of interest for details</div>",
+      position = "top-left"
+    ) %>%
+    # Combined legend (bottom-left) as a custom HTML control.
+    # This allows mixed shapes: circle for NRS stations, square for bioregions.
+    # No legend title, as requested.
+    mapgl::add_control(
+      id       = "map-legend",
+      position = "bottom-left",
+      html     = {
+        # Build bioregion rows: coloured square + region name
+        mbr_distinct <- mbr_sf %>%
+          sf::st_drop_geometry() %>%
+          dplyr::distinct(.data$REGION, .keep_all = TRUE)
+
+        bioregion_rows <- paste0(
+          "<div style='display:flex;align-items:center;gap:6px;margin-bottom:3px;'>",
+          "<span style='display:inline-block;width:14px;height:14px;border-radius:2px;",
+          "background:", mbr_distinct$Colour, ";flex-shrink:0;'></span>",
+          "<span>", mbr_distinct$REGION, "</span>",
+          "</div>",
+          collapse = ""
+        )
+
+        paste0(
+          "<div style='background:rgba(255,255,255,0.92);padding:8px 12px;border-radius:6px;",
+          "box-shadow:0 1px 4px rgba(0,0,0,0.25);",
+          "font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;",
+          "font-size:12px;line-height:1.5;max-width:200px;'>",
+          # NRS entry: circle marker
+          "<div style='display:flex;align-items:center;gap:6px;margin-bottom:3px;'>",
+          "<span style='display:inline-block;width:14px;height:14px;border-radius:50%;",
+          "background:#FFA500;flex-shrink:0;'></span>",
+          "<span>National Reference Stations</span>",
+          "</div>",
+          bioregion_rows,
+          "</div>"
+        )
+      }
+    )
+}
+
+
 #' Base leaflet plot for all sample points
 #'
-#' @noRd 
+#' @note DEPRECATED for sidebar maps — sidebar maps now use fMapboxMap() /
+#'   fMapboxUpdate(). LeafletBase() and LeafletObs() are retained only because
+#'   they are no longer called anywhere in the app; they can be removed once
+#'   confirmed unused.
+#'
+#' @noRd
 LeafletBase <- function(df, Type = 'PA'){
   
   if(Type == 'frequency'){
@@ -1357,11 +1590,319 @@ LeafletObs <- function(sdf, name, Type = "PA"){
 fParamDefServer <- function(selectedData){
   shiny::renderText({
     paste("<p><strong>", planktonr:::pr_relabel(unique(selectedData()$Parameters), style = "plotly"), ":</strong> ",
-          pkg.env$ParamDef %>% 
-            dplyr::filter(.data$Parameter == unique(selectedData()$Parameters)) %>% 
+          pkg.env$ParamDef %>%
+            dplyr::filter(.data$Parameter == unique(selectedData()$Parameters)) %>%
             dplyr::pull("Definition"), ".</p>", sep = "")
   })
 }
 
+
+# ============================================================================
+# MAPBOX (mapgl) SPATIAL HELPERS
+# These parallel LeafletBase() / LeafletObs() but use mapgl::mapboxgl().
+# Used by mod_ZooSpatial and mod_PhytoSpatial main-panel maps.
+# Sidebar maps continue to use the leaflet helpers above.
+# ============================================================================
+
+#' Full Mapbox seasonal map (absence + presence in one render)
+#'
+#' Builds a complete \code{mapboxgl} map for a single season, including both
+#' the grey absence layer (all sample locations) and the coloured presence
+#' layer (species observations for that season).  This avoids the proxy timing
+#' issue where \code{set_source()} arrives before the map layers are ready.
+#'
+#' @param df_abs  Data frame of \strong{all} sample locations (used for the
+#'   absence layer).  Must contain \code{Latitude} and \code{Longitude}.
+#'   Typically \code{pkg.env$fMapDataz} or \code{pkg.env$fMapDatap}.
+#' @param df_pres  Data frame of species observations (already filtered to the
+#'   selected species, all seasons).  Must contain \code{Latitude},
+#'   \code{Longitude}, \code{Season}, \code{Survey}, \code{Species},
+#'   \code{freqfac}.  Typically the \code{ZSdatar()} / \code{PSdatar()}
+#'   reactive value.
+#' @param season_label  Character; one of \code{"December - February"},
+#'   \code{"March - May"}, \code{"June - August"},
+#'   \code{"September - November"}.
+#' @param Type  Character; \code{"frequency"} or \code{"PA"}.
+#'
+#' @return A \code{mapboxgl} map object suitable for \code{renderMapboxgl()}.
+#' @noRd
+MapboxSeason <- function(df_abs, df_pres, season_label, Type = "PA") {
+  
+  # --- Absence layer: all distinct sample locations ---
+  abs_sf <- df_abs %>%
+    dplyr::distinct(.data$Latitude, .data$Longitude) %>%
+    dplyr::mutate(id = dplyr::row_number()) %>%
+    sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+  
+  abs_opacity <- if (Type == "frequency") 0 else 1
+  
+  # --- Presence layer: species observations for this season ---
+  sdf <- df_pres %>% dplyr::filter(.data$Season == season_label)
+  
+  Species <- if (nrow(sdf) > 0) unique(sdf$Species)[1] else ""
+  
+  if (Type == "frequency") {
+    
+    freq_levels <- c("Absent", "Seen in 25%", "50%", "75%", "100% of Samples")
+    cpr_colors  <- c("#CCCCCC", "#99CCFF", "#3399FF", "#0066CC", "#003366")
+    nrs_colors  <- c("#CCCCCC", "#CCFFCC", "#99FF99", "#009900", "#006600")
+    
+    sdf <- sdf %>%
+      dplyr::mutate(
+        freqfac_chr = as.character(.data$freqfac),
+        dot_color = dplyr::case_when(
+          .data$Survey == "CPR" ~ cpr_colors[match(.data$freqfac_chr, freq_levels)],
+          .data$Survey == "NRS" ~ nrs_colors[match(.data$freqfac_chr, freq_levels)],
+          TRUE ~ "#CCCCCC"
+        ),
+        popup_html = paste0(
+          "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
+          "<strong>Longitude:</strong> ", .data$Longitude, "<br>",
+          "<strong>Frequency in sample:</strong> ", .data$freqfac_chr
+        )
+      )
+    
+    if (nrow(sdf) > 0) {
+      pres_sf <- sdf %>%
+        sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+    } else {
+      pres_sf <- abs_sf[0, ]
+    }
+    
+    mapgl::mapboxgl(
+      access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+      style        = mapgl::mapbox_style("light"),
+      center       = c(134.0, -27.0),
+      zoom         = 3.0,
+      projection   = "mercator"
+    ) %>%
+      mapgl::add_circle_layer(
+        id             = "absence",
+        source         = abs_sf,
+        circle_color   = "#CCCCCC",
+        circle_opacity = abs_opacity,
+        circle_radius  = 2
+      ) %>%
+      mapgl::add_circle_layer(
+        id             = "presence",
+        source         = pres_sf,
+        circle_color   = list("get", "dot_color"),
+        circle_opacity = 1,
+        circle_radius  = 3,
+        popup          = "popup_html"
+      ) %>%
+      mapgl::add_categorical_legend(
+        legend_title = "CPR",
+        values       = freq_levels,
+        colors       = cpr_colors,
+        position     = "bottom-left",
+        add          = FALSE
+      ) %>%
+      mapgl::add_categorical_legend(
+        legend_title = "NRS",
+        values       = freq_levels,
+        colors       = nrs_colors,
+        position     = "bottom-left",
+        add          = TRUE
+      )
+    
+  } else {
+    
+    # PA mode
+    if (nrow(sdf) > 0) {
+      sdf <- sdf %>%
+        dplyr::mutate(
+          popup_html = paste0(
+            "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
+            "<strong>Longitude:</strong> ", .data$Longitude, "<br>",
+            "<strong>Frequency in sample:</strong> ", as.character(.data$freqfac)
+          )
+        )
+      pres_sf <- sdf %>%
+        sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+    } else {
+      pres_sf <- abs_sf[0, ]
+    }
+    
+    mapgl::mapboxgl(
+      access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+      style        = mapgl::mapbox_style("light"),
+      center       = c(134.0, -27.0),
+      zoom         = 3.0,
+      projection   = "mercator"
+    ) %>%
+      mapgl::add_circle_layer(
+        id             = "absence",
+        source         = abs_sf,
+        circle_color   = "#CCCCCC",
+        circle_opacity = abs_opacity,
+        circle_radius  = 2
+      ) %>%
+      mapgl::add_circle_layer(
+        id             = "presence",
+        source         = pres_sf,
+        circle_color   = "blue",
+        circle_opacity = 1,
+        circle_radius  = 3,
+        popup          = "popup_html"
+      ) %>%
+      mapgl::add_categorical_legend(
+        legend_title = "",
+        values       = c("Seasonal Presence", "Seasonal Absence"),
+        colors       = c("blue", "#CCCCCC"),
+        position     = "bottom-left"
+      )
+  }
+}
+
+
+#' Base Mapbox map for all sample points (absence layer)
+#'
+#' Renders the initial mapboxgl map with a grey "absence" circle layer and a
+#' transparent placeholder "presence" layer (empty sf).  The presence layer is
+#' subsequently updated via \code{MapboxObs()} using \code{mapboxgl_proxy()}.
+#'
+#' @param df  Data frame with \code{Latitude} and \code{Longitude} columns
+#'   (all sample locations — used for the absence layer).
+#' @param Type Character; \code{"frequency"} or \code{"PA"} (presence/absence).
+#'   Controls whether absence dots are visible (\code{"PA"}) or hidden
+#'   (\code{"frequency"}).
+#'
+#' @return A \code{mapboxgl} map object suitable for \code{renderMapboxgl()}.
+#' @noRd
+MapboxBase <- function(df, Type = "PA") {
+  
+  # Absence layer: all distinct sample locations as grey dots
+  # NOTE: a non-geometry property column (id) is required so that
+  # geojsonsf::sf_geojson() produces a FeatureCollection (length 1)
+  # rather than individual geometry strings (length n).
+  abs_sf <- df %>%
+    dplyr::distinct(.data$Latitude, .data$Longitude) %>%
+    dplyr::mutate(id = dplyr::row_number()) %>%
+    sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+  
+  # Empty presence layer placeholder (same CRS, zero rows)
+  empty_sf <- abs_sf[0, ]
+  
+  abs_opacity <- if (Type == "frequency") 0 else 1
+  
+  mapgl::mapboxgl(
+    access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+    style        = mapgl::mapbox_style("light"),
+    center       = c(134.0, -27.0),
+    zoom         = 3.0,
+    projection   = "mercator"
+  ) %>%
+    mapgl::add_circle_layer(
+      id             = "absence",
+      source         = abs_sf,
+      circle_color   = "#CCCCCC",
+      circle_opacity = abs_opacity,
+      circle_radius  = 2
+    ) %>%
+    mapgl::add_circle_layer(
+      id             = "presence",
+      source         = empty_sf,
+      circle_color   = "blue",
+      circle_opacity = 1,
+      circle_radius  = 3,
+      popup          = "popup_html"
+    )
+}
+
+
+#' Update Mapbox presence layer with species observations
+#'
+#' Uses \code{mapboxgl_proxy()} to update the \code{"presence"} source layer
+#' with new species data, and refreshes the legend.  Mirrors the behaviour of
+#' \code{LeafletObs()} for the leaflet maps.
+#'
+#' @param sdf   Data frame of species observations for one season, filtered to
+#'   the selected species.  Must contain \code{Latitude}, \code{Longitude}, and
+#'   either \code{freqfac} (frequency mode) or standard columns.
+#' @param name  Character; the Shiny output ID of the target map (e.g.
+#'   \code{"MapSum"}).
+#' @param Type  Character; \code{"frequency"} or \code{"PA"}.
+#' @param session  The Shiny session object (passed from the module server).
+#'
+#' @return Called for side-effects only (proxy update).
+#' @noRd
+MapboxObs <- function(sdf, name, Type = "PA", session) {
+  
+  Species <- unique(sdf$Species)
+  proxy   <- mapgl::mapboxgl_proxy(name, session = session)
+  
+  if (Type == "frequency") {
+    
+    # Frequency palette: CPR (blues) and NRS (greens), matching LeafletObs()
+    freq_levels <- c("Absent", "Seen in 25%", "50%", "75%", "100% of Samples")
+    cpr_colors  <- c("#CCCCCC", "#99CCFF", "#3399FF", "#0066CC", "#003366")
+    nrs_colors  <- c("#CCCCCC", "#CCFFCC", "#99FF99", "#009900", "#006600")
+    
+    # Map freqfac to colour per survey
+    sdf <- sdf %>%
+      dplyr::mutate(
+        freqfac_chr = as.character(.data$freqfac),
+        dot_color = dplyr::case_when(
+          .data$Survey == "CPR" ~ cpr_colors[match(.data$freqfac_chr, freq_levels)],
+          .data$Survey == "NRS" ~ nrs_colors[match(.data$freqfac_chr, freq_levels)],
+          TRUE ~ "#CCCCCC"
+        ),
+        popup_html = paste0(
+          "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
+          "<strong>Longitude:</strong> ", .data$Longitude, "<br>",
+          "<strong>Frequency in sample:</strong> ", .data$freqfac_chr
+        )
+      )
+    
+    pres_sf <- sdf %>%
+      sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+    
+    proxy %>%
+      mapgl::set_source(layer_id = "presence", source = pres_sf) %>%
+      mapgl::set_paint_property(layer_id = "presence", name = "circle-color",
+                                value = list("get", "dot_color")) %>%
+      mapgl::clear_legend() %>%
+      mapgl::add_categorical_legend(
+        legend_title = paste(Species, "CPR"),
+        values       = freq_levels,
+        colors       = cpr_colors,
+        position     = "bottom-left",
+        add          = FALSE
+      ) %>%
+      mapgl::add_categorical_legend(
+        legend_title = paste(Species, "NRS"),
+        values       = freq_levels,
+        colors       = nrs_colors,
+        position     = "bottom-left",
+        add          = TRUE
+      )
+    
+  } else {
+    
+    # Presence/Absence mode
+    pres_sf <- sdf %>%
+      dplyr::mutate(
+        popup_html = paste0(
+          "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
+          "<strong>Longitude:</strong> ", .data$Longitude, "<br>",
+          "<strong>Frequency in sample:</strong> ", as.character(.data$freqfac)
+        )
+      ) %>%
+      sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+    
+    proxy %>%
+      mapgl::set_source(layer_id = "presence", source = pres_sf) %>%
+      mapgl::set_paint_property(layer_id = "presence", name = "circle-color",
+                                value = "blue") %>%
+      mapgl::clear_legend() %>%
+      mapgl::add_categorical_legend(
+        legend_title = Species,
+        values       = c("Seasonal Presence", "Seasonal Absence"),
+        colors       = c("blue", "#CCCCCC"),
+        position     = "bottom-left"
+      )
+  }
+}
 
 

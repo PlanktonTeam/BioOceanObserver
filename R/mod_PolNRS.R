@@ -13,7 +13,7 @@ mod_PolNRS_ui <- function(id){
     sidebarLayout(
       sidebarPanel(
         shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-        leaflet::leafletOutput(nsPolNRS("plotmap"), height = "400px"),
+        mapgl::mapboxglOutput(nsPolNRS("plotmap"), height = "400px"),
         shiny::HTML("<h3>Select a station:</h3>"),
         shiny::radioButtons(inputId = nsPolNRS("site"), 
                             label = NULL, 
@@ -121,14 +121,14 @@ mod_PolNRS_server <- function(id){
     }) %>% bindCache(input$site)
     
     # Sidebar Map - Initial render
-    output$plotmap <- leaflet::renderLeaflet({ 
-      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
+    output$plotmap <- mapgl::renderMapboxgl({
+      fMapboxMap(character(0), Survey = "NRS", Type = "Zooplankton")
     })
-    
+
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode),
-                     Survey = "NRS", Type = "Zooplankton")
+      fMapboxUpdate("plotmap", session, unique(selectedData()$StationCode),
+                    Survey = "NRS", Type = "Zooplankton")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     output$StationSummary <- shiny::renderText({ 

@@ -66,16 +66,16 @@ mod_ZooTsCPR_server <- function(id){
       ZtsCPRValuesisNumeric = {class(selectedData()$Values)}
     )
     
-    # Initial render of CPR leaflet map with current selection
-    output$plotmap <- leaflet::renderLeaflet({
+    # Initial mapboxgl render with current selection
+    output$plotmap <- mapgl::renderMapboxgl({
       sites <- if (length(input$site) > 0) input$site else character(0)
-      fLeafletMap(sites, Survey = "CPR", Type = "Zooplankton")
+      fMapboxMap(sites, Survey = "CPR", Type = "Zooplankton")
     })
 
     # Update polygons when selection changes
     observe({
       sites <- if (length(input$site) > 0) input$site else character(0)
-      fLeafletUpdate("plotmap", session, sites, Survey = "CPR", Type = "Zooplankton")
+      fMapboxUpdate("plotmap", session, sites, Survey = "CPR", Type = "Zooplankton")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # add text information 

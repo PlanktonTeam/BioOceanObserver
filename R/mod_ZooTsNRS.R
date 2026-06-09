@@ -52,7 +52,7 @@ mod_ZooTsNRS_server <- function(id){
     )
     
     # Sidebar Map - Initial render with current selection
-    output$plotmap <- leaflet::renderLeaflet({
+    output$plotmap <- mapgl::renderMapboxgl({
       stationCodes <- if (length(input$site) > 0) {
         pkg.env$NRSStation %>%
           dplyr::filter(.data$StationName %in% input$site) %>%
@@ -60,11 +60,11 @@ mod_ZooTsNRS_server <- function(id){
       } else {
         character(0)
       }
-      fLeafletMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
+      fMapboxMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
     })
 
-    outputOptions(output, "plotmap", suspendWhenHidden = FALSE) # prevent shiny from re-rendering as using this base map twice under phyto tab
-    
+    outputOptions(output, "plotmap", suspendWhenHidden = FALSE) # prevent shiny from suspending map when tab is hidden
+
     # Update map when station selection changes
     observe({
       stationCodes <- if (length(input$site) > 0) {
@@ -74,8 +74,8 @@ mod_ZooTsNRS_server <- function(id){
       } else {
         character(0)
       }
-      fLeafletUpdate("plotmap", session, stationCodes,
-                     Survey = "NRS", Type = "Zooplankton")
+      fMapboxUpdate("plotmap", session, stationCodes,
+                    Survey = "NRS", Type = "Zooplankton")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # Add text information 

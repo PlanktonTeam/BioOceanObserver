@@ -84,16 +84,16 @@ mod_RelCS_server <- function(id){
     })
     
     # Sidebar Map - Initial render with current selection
-    output$plotmap <- leaflet::renderLeaflet({
+    output$plotmap <- mapgl::renderMapboxgl({
       sites <- if (length(input$site) > 0) input$site else character(0)
-      fLeafletMap(sites, Survey = "Coastal", Type = "Zooplankton")
+      fMapboxMap(sites, Survey = "Coastal", Type = "Zooplankton")
     })
-    
+
     # Update map when station selection changes
     observe({
       sites <- if (length(input$site) > 0) input$site else character(0)
-      fLeafletUpdate("plotmap", session, sites,
-                     Survey = "Coastal", Type = "Zooplankton")
+      fMapboxUpdate("plotmap", session, sites,
+                    Survey = "Coastal", Type = "Zooplankton")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # Add text information

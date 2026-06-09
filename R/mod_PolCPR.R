@@ -12,7 +12,7 @@ mod_PolCPR_ui <- function(id){
   tagList(
     sidebarLayout(
       sidebarPanel(
-        leaflet::leafletOutput(nsPolCPR("plotmap"), height = "400px"),
+        mapgl::mapboxglOutput(nsPolCPR("plotmap"), height = "400px"),
         shiny::p("Note there is very little data in the North and North-west regions"),
         shiny::HTML("<h3>Select a bioregion:</h3>"),
         shiny::radioButtons(inputId = nsPolCPR("site"), label = NULL, 
@@ -86,14 +86,14 @@ mod_PolCPR_server <- function(id){
         dplyr::filter(.data$BioRegion == input$site) 
     }) %>% bindCache(input$site)
     
-    # Sidebar Map: use leaflet for CPR polygons
-    output$plotmap <- leaflet::renderLeaflet({
-      fLeafletMap(character(0), Survey = "CPR", Type = "Policy")
+    # Sidebar Map: use mapboxgl for CPR polygons
+    output$plotmap <- mapgl::renderMapboxgl({
+      fMapboxMap(character(0), Survey = "CPR", Type = "Policy")
     })
 
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData()$BioRegion), Survey = "CPR", Type = "Policy")
-    })
+      fMapboxUpdate("plotmap", session, unique(selectedData()$BioRegion), Survey = "CPR", Type = "Policy")
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     
     output$StationSummary <- shiny::renderText({ 

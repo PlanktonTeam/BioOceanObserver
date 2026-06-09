@@ -80,47 +80,43 @@ mod_ZooSpatial_server <- function(id){
     
     
     # select initial map  ------------------------------------------------------------------------------
-    # Create dot map of distribution
-    # Summer
-    output$MapSum <- leaflet::renderLeaflet({
+    # Create dot map of distribution using Mapbox
+    # Full re-render approach: each renderMapboxgl() builds the complete map
+    # (absence + presence) for its season in one call, avoiding proxy timing issues.
+    # df_abs = all sample locations (for grey absence dots)
+    # df_pres = species-filtered data (for coloured presence dots)
+    
+    # Summer (December - February)
+    output$MapSum <- mapgl::renderMapboxgl({
       req(input$NRSspatz == 1)
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-      lf <- LeafletBase(AbsZdatar(), Type = type)
-      return(lf)
+      MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
+                   season_label = "December - February", Type = type)
     }) %>% bindCache(input$species, input$scaler1)
     
-    # Autumn
-    output$MapAut <- leaflet::renderLeaflet({
+    # Autumn (September - November)
+    output$MapAut <- mapgl::renderMapboxgl({
       req(input$NRSspatz == 1)
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-      lf <- LeafletBase(AbsZdatar(), Type = type)
-      return(lf)
+      MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
+                   season_label = "September - November", Type = type)
     }) %>% bindCache(input$species, input$scaler1)
     
-    # Winter
-    output$MapWin <- leaflet::renderLeaflet({
+    # Winter (June - August)
+    output$MapWin <- mapgl::renderMapboxgl({
       req(input$NRSspatz == 1)
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-      lf <- LeafletBase(AbsZdatar(), Type = type)
-      return(lf)
+      MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
+                   season_label = "June - August", Type = type)
     }) %>% bindCache(input$species, input$scaler1)
     
-    # Spring
-    output$MapSpr <- leaflet::renderLeaflet({
+    # Spring (March - May)
+    output$MapSpr <- mapgl::renderMapboxgl({
       req(input$NRSspatz == 1)
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-      lf <- LeafletBase(AbsZdatar(), Type = type)
-      return(lf)
+      MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
+                   season_label = "March - May", Type = type)
     }) %>% bindCache(input$species, input$scaler1)
-    
-    observe({
-      req(input$NRSspatz == 1)
-      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-      LeafletObs(sdf = ZSdatar() %>% dplyr::filter(.data$Season == "December - February"), name = "MapSum", Type = type)
-      LeafletObs(sdf = ZSdatar() %>% dplyr::filter(.data$Season == "September - November"), name = "MapAut", Type = type)
-      LeafletObs(sdf = ZSdatar() %>% dplyr::filter(.data$Season == "June - August"), name = "MapWin", Type = type)
-      LeafletObs(sdf = ZSdatar() %>% dplyr::filter(.data$Season == "March - May"), name = "MapSpr", Type = type)
-    })
     
     # STI plot -----------------------------------------------------------------------------------------
     selectedSTI <- reactive({
@@ -166,4 +162,3 @@ mod_ZooSpatial_server <- function(id){
     
   })
 }
-

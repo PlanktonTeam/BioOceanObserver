@@ -1852,6 +1852,17 @@ nav[class*="navbar"],
   font-weight: var(--font-weight-medium);
 }
 
+/* ---- Mapbox GL legend tweaks -------------------------------------------- */
+/* Collapse the h2 title element when it is empty (legend_title = ""),        */
+/* removing the blank whitespace that would otherwise appear at the top.      */
+/* :empty matches elements with no child nodes (including text nodes).        */
+.mapboxgl-legend h2:empty {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 0 !important;
+}
+
 /* ---- Floating legend panel ------------------------------ */
 .at-legend {
   position: absolute;

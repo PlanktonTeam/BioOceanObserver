@@ -43,7 +43,7 @@ mod_PhytoTsNRS_server <- function(id){
     # })
     
     # Sidebar Map - Initial render with current selection
-    output$plotmap <- leaflet::renderLeaflet({
+    output$plotmap <- mapgl::renderMapboxgl({
       stationCodes <- if (length(input$site) > 0) {
         pkg.env$NRSStation %>%
           dplyr::bind_rows(pkg.env$SOTSinfo %>%
@@ -53,11 +53,11 @@ mod_PhytoTsNRS_server <- function(id){
       } else {
         character(0)
       }
-      fLeafletMap(stationCodes, Survey = "NRS", Type = "Phytoplankton")
+      fMapboxMap(stationCodes, Survey = "NRS", Type = "Phytoplankton")
     })
-    
-    outputOptions(output, "plotmap", suspendWhenHidden = FALSE) # prevent shiny from re-rendering as using this base map twice under phyto tab
-    
+
+    outputOptions(output, "plotmap", suspendWhenHidden = FALSE) # prevent shiny from suspending map when tab is hidden
+
     # Update map when station selection changes
     observe({
       stationCodes <- if (length(input$site) > 0) {
@@ -69,8 +69,8 @@ mod_PhytoTsNRS_server <- function(id){
       } else {
         character(0)
       }
-      fLeafletUpdate("plotmap", session, stationCodes,
-                     Survey = "NRS", Type = "Phytoplankton")
+      fMapboxUpdate("plotmap", session, stationCodes,
+                    Survey = "NRS", Type = "Phytoplankton")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
 
     # add text information

@@ -86,7 +86,7 @@ mod_NutrientsBGC_server <- function(id){
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Nuts") # Download figure
     
     # Sidebar Map - Initial render with current selection
-    output$plotmap <- leaflet::renderLeaflet({
+    output$plotmap <- mapgl::renderMapboxgl({
       stationCodes <- if (length(input$site) > 0) {
         pkg.env$NRSStation %>%
           dplyr::filter(.data$StationName %in% input$site) %>%
@@ -94,9 +94,9 @@ mod_NutrientsBGC_server <- function(id){
       } else {
         character(0)
       }
-      fLeafletMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
+      fMapboxMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
     })
-    
+
     # Update map when station selection changes
     observe({
       stationCodes <- if (length(input$site) > 0) {
@@ -106,8 +106,8 @@ mod_NutrientsBGC_server <- function(id){
       } else {
         character(0)
       }
-      fLeafletUpdate("plotmap", session, stationCodes,
-                     Survey = "NRS", Type = "Zooplankton")
+      fMapboxUpdate("plotmap", session, stationCodes,
+                    Survey = "NRS", Type = "Zooplankton")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # add text information 
