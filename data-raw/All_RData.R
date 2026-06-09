@@ -9,7 +9,6 @@ modified_time <- lubridate::now()
 col12 <- RColorBrewer::brewer.pal(12, "Paired") %>% 
   stringr::str_replace("#FFFF99", "#000000") # Replace yellow with black
 
-
 # Trip Data Information ---------------------------------------------------
 
 datNRSTrip <- planktonr::pr_get_trips(Survey = "NRS") %>% 
@@ -27,6 +26,28 @@ datCPRTripSO <- planktonr:::cpr_AAD %>%
                    Month_Local = min(.data$Month_Local, na.rm = TRUE),
                    .groups = 'drop') %>%
   dplyr::distinct()
+
+datHABTrip <- planktonr::pr_get_trips(Survey = "HAB") %>% 
+  dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]"))) %>% 
+  dplyr::summarise(Latitude = mean(Latitude),
+                   Longitude = mean(Longitude),
+                   StartDate = min(SampleDate),
+                   .by = c(StationName, State))
+
+datHABdataTable <- planktonr:::HABSamples %>% 
+  dplyr::left_join(planktonr:::HABSites %>% dplyr::select(SiteCode, State, Name, DataOwner, AnalysedBy), by = "SiteCode") %>% 
+  dplyr::group_by(State, Name, DataOwner, AnalysedBy) %>% 
+  dplyr::summarise(StartDate = min(.data$SampleDate, na.rm = TRUE),
+                   EndDate = max(.data$SampleDate, na.rm = TRUE),
+                   Samples = dplyr::n(),
+                   .groups = 'drop')  %>% 
+  dplyr::group_by(State, DataOwner, AnalysedBy) %>% 
+  dplyr::summarise(Samples = sum(Samples, na.rm = TRUE),
+                   StartDate = min(.data$StartDate, na.rm = TRUE),
+                   EndDate = max(.data$EndDate, na.rm = TRUE),
+                   Sites = dplyr::n(),
+                   .groups = 'drop') %>% 
+  dplyr::select(State, DataOwner, AnalysedBy, StartDate, EndDate, Sites, Samples)
 
 NRSStation <- planktonr::pr_get_info(Source = "NRS") %>% 
   dplyr::select(-c("IMCRA", "IMCRA_PB", "ProjectName")) %>% 
@@ -97,6 +118,31 @@ datCPRp <- planktonr::pr_get_Indices(Survey = "CPR", Type = "Phytoplankton", nea
 
 PCI <- planktonr::pr_get_PCIData()
 
+# HAB data from Coastal Phytoplankton
+SpecToInclude <- planktonr:::HABDat %>% 
+  dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = .data$TaxonName) %>% 
+  dplyr::filter(.data$non_zero_count > 50)
+
+GenToInclude <- planktonr:::HABDat %>% 
+  dplyr::mutate(Genus = stringr::word(.data$TaxonName, 1)) %>% 
+  dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = .data$Genus) %>% 
+  dplyr::filter(.data$non_zero_count > 50) 
+
+datHABg <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'Genus') %>% 
+  dplyr::filter(Genus %in% GenToInclude$Genus) %>% 
+  dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
+                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
+  dplyr::select(-"TripCode") %>% 
+  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything()) %>%
+  dplyr::rename(TaxonName = .data$Genus)
+
+datHABs <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'Species') %>% 
+  dplyr::filter(TaxonName %in% SpecToInclude$TaxonName) %>% 
+  dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
+                SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
+  dplyr::select(-"TripCode") %>% 
+  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything())
+
 # FG time series data -----------------------------------------------------
 
 NRSfgz <- planktonr::pr_get_FuncGroups(Survey = "NRS", Type = "Zooplankton")
@@ -134,7 +180,6 @@ CSChem <- planktonr::pr_get_data(Survey = "Coastal", Type = "Chemistry") %>%
                 SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = 'day')) %>% 
   dplyr::filter(Values != -9999)
-
 
 # STI data ----------------------------------------------------------------
 
@@ -186,14 +231,14 @@ rm(daynightzAll, daynightpAll)
 
 PolNRS <- planktonr::pr_get_EOVs(Survey = "NRS") %>% 
   dplyr::filter(!StationCode %in% c("NIN", "ESP")) #%>% #TODO add removing outliers as an option to BOO
-  #planktonr::pr_remove_outliers(4)
+#planktonr::pr_remove_outliers(4)
 
 PolCPR <- planktonr::pr_get_EOVs(Survey = "CPR", near_dist_km = 250) %>% 
   #planktonr::pr_remove_outliers(4) %>% 
   dplyr::filter(!BioRegion %in% c("North", "North-west", "None"))
 
 PolLTM <- planktonr::pr_get_EOVs(Survey = "LTM") #%>% 
-  #planktonr::pr_remove_outliers(4)
+#planktonr::pr_remove_outliers(4)
 
 PolSOTS <- planktonr::pr_get_EOVs(Survey = "SOTS") 
 
@@ -221,7 +266,7 @@ PM_NRS <- PM %>%
                    Longitude = dplyr::first(Longitude),
                    Samples = dplyr::n(),
                    .groups = "drop")
-  
+
 PM_CPR <- PM %>% 
   dplyr::filter(Survey == "CPR") %>% 
   dplyr::mutate(Latitude = round(Latitude, digits = 2),
@@ -230,9 +275,9 @@ PM_CPR <- PM %>%
   dplyr::distinct(Latitude, Longitude, SampleTime_Local, .keep_all = TRUE) %>% # For BOO for the moment, no labels and distinct data
   dplyr::arrange(.data$TripCode, .data$SampleTime_Local) %>% 
   dplyr::select(-c("TripCode", "SampleTime_Local", "Sample_ID"))
-  
+
 PM_CPR <- PM_CPR[seq(2, nrow(PM_CPR), 2),] # Only keep every 3rd row for the moment
-  
+
 PMapData <- list(NRS = PM_NRS, CPR = PM_CPR)
 
 rm(PM, PM_NRS, PM_CPR)
@@ -254,9 +299,9 @@ pr_get_mooringTS <- function(Stations, Depth, Names){
   
   # CLIM[DEPTH, TIME]
   tibble::tibble(CLIM = ncdf4::ncvar_get(file, varid = "CLIM", count = c(1, 365), start = c(i, 1)),
-                  DOY = ncdf4::ncvar_get(file, varid = "TIME", count = 365, start = 1),
-                  StationCode = Stations,
-                  Names = Names)
+                 DOY = ncdf4::ncvar_get(file, varid = "TIME", count = 365, start = 1),
+                 StationCode = Stations,
+                 Names = Names)
 }
 
 
@@ -338,6 +383,7 @@ usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   datCPRz, datCPRp, PCI,
                   datNRSz, datNRSp, datNRSw, 
                   datNRSm, datCSm, datGSm,
+                  datHABg, datHABs, datHABTrip, datHABdataTable, 
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
                   SOTSp, SOTSfgp, 
                   stiz, stip, daynightz, daynightp,
