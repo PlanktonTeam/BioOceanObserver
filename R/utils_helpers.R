@@ -73,17 +73,15 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
   
   # --- Survey-specific settings ---
   clon  <- 133.7751
-  clat  <- -27.0
-  zoom  <- 2.75
+  clat  <- -30.0
+  zoom  <- 2.5
   
   if (Survey == "CPR") {
-    clon <- 133.7751; clat <- -27.0; zoom <- 2.0
+    clon <- 133.7751; clat <- -30.0; zoom <- 2.0
   } else if (Survey == "GO-SHIP") {
     clon <- -170.0; clat <- -40.0; zoom <- 2.0
   } else if (Survey == "HAB") {
     clon <- 150.0; clat <- -32.5; zoom <- 4.0
-  } else if (Survey == "SOTS") {
-    clon  <- 133.7751; clat  <- -27.0; zoom <- 2.0
   } 
   
   # --- Build base map ---

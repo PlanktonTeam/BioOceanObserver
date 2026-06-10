@@ -129,11 +129,14 @@ mod_PolSOTS_server <- function(id){
     # SOTS is not in NRSStation; it is added by fMapboxMap when Type = "Phytoplankton".
     # Pass "SOTS" directly as the selected station code so the dot renders red on load.
     output$plotmap <- mapgl::renderMapboxgl({
-      fMapboxMap("SOTS", Survey = "NRS", Type = "Phytoplankton")
+      shiny::tagList(
+        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+        fMapboxMap("SOTS", Survey = "NRS", Type = "Phytoplankton")
+      )
     })
-
+    
     outputOptions(output, "plotmap", suspendWhenHidden = FALSE)
-
+    
     # Update map on site change (single fixed station, fires once on load)
     observe({
       fMapboxUpdate("plotmap", session, "SOTS",
@@ -148,7 +151,7 @@ mod_PolSOTS_server <- function(id){
             '. The station has been sampled since ', format(stationData()$StationStartDate, '%A %d %B %Y'), ' ', tolower(stationData()$now),
             '. The station is characterised by ', stationData()$Features, '.', sep = "")
     })
-
+    
     col1 <- fEOVutilities(vector = "col", Survey = "SOTS")
     trans1 <- fEOVutilities(vector = "trans", Survey = "SOTS")
     
