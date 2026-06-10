@@ -246,15 +246,29 @@ mod_ATSpatial_server <- function(id) {
 
       meta_block <- shiny::tags$div(
         class = "at-station-meta",
-        shiny::tags$p(paste0("Coordinates: ", rx$lon, "\u00b0E, ", rx$lat, "\u00b0")),
-        shiny::tags$p(paste0(
-          "Receiver deployments: ",
-          format(rx$total_receivers, big.mark = ",")
-        )),
-        shiny::tags$p(paste0("Deployed: ", deploy_str, " \u2013 ", recovery_str)),
         shiny::tags$p(
-          "Status: ",
+          shiny::tags$strong("Coordinates: "),
+          paste0(rx$lon, "\u00b0E, ", rx$lat, "\u00b0")
+        ),
+        shiny::tags$p(
+          shiny::tags$strong("Receiver deployments: "),
+          format(rx$total_receivers, big.mark = ",")
+        ),
+        shiny::tags$p(
+          shiny::tags$strong("Deployed: "),
+          paste0(deploy_str, " \u2013 ", recovery_str)
+        ),
+        shiny::tags$p(
+          shiny::tags$strong("Status: "),
           shiny::tags$strong(style = paste0("color:", status_colour, ";"), status_label)
+        ),
+        shiny::tags$p(
+          shiny::tags$strong("Funder(s): "),
+          rx$purchasing_organisation
+        ),
+        shiny::tags$p(
+          shiny::tags$strong("Project(s): "),
+          rx$receiver_project_name
         )
       )
 

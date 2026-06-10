@@ -31,7 +31,7 @@ at_load_data <- function() {
     rds_dir <- system.file("extdata", package = "biooceanobserver")
     if (nchar(rds_dir) == 0 || !file.exists(file.path(rds_dir, "ReceiverSummary.rds"))) {
       # Fall back to data-raw during development
-      rds_dir <- file.path("data-raw", "AnimalTracking")
+      rds_dir <- file.path("data-raw", "AnimalTracking", "Output")
     }
 
     receivers      <- readRDS(file.path(rds_dir, "ReceiverSummary.rds"))

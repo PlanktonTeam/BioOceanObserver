@@ -1861,6 +1861,29 @@ nav[class*="navbar"],
   font-weight: var(--font-weight-medium);
 }
 
+/* ---- Mapbox GL popup close button --------------------------------------- */
+.mapboxgl-popup-close-button {
+  color: #ffffff !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 6px;
+}
+
+.mapboxgl-popup-close-button:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.mapboxgl-popup-close-button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
 /* ---- Mapbox GL legend tweaks -------------------------------------------- */
 /* Collapse the h2 title element when it is empty (legend_title = ""),        */
 /* removing the blank whitespace that would otherwise appear at the top.      */
