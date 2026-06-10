@@ -38,14 +38,30 @@ mod_MoorBGC_server <- function(id){
       
     }) %>% bindCache(input$site)
     
-    # Sidebar Map - Initial render
+    # Sidebar Map - Initial render with current selection
     output$plotmap <- mapgl::renderMapboxgl({
-      fMapboxMap(character(0), Survey = "NRS", Type = "Zooplankton")
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fMapboxMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
     })
+
+    outputOptions(output, "plotmap", suspendWhenHidden = FALSE)
 
     # Update map when station selection changes
     observe({
-      fMapboxUpdate("plotmap", session, unique(selectedClim()$StationCode),
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fMapboxUpdate("plotmap", session, stationCodes,
                     Survey = "NRS", Type = "Zooplankton")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     

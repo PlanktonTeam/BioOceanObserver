@@ -125,15 +125,18 @@ mod_PolSOTS_server <- function(id){
       stationData <- pkg.env$SOTSinfo  
     }) 
     
-    # Sidebar Map - Initial render
+    # Sidebar Map - Initial render with SOTS selected.
+    # SOTS is not in NRSStation; it is added by fMapboxMap when Type = "Phytoplankton".
+    # Pass "SOTS" directly as the selected station code so the dot renders red on load.
     output$plotmap <- mapgl::renderMapboxgl({
-      fMapboxMap(character(0), Survey = "NRS", Type = "Phytoplankton")
+      fMapboxMap("SOTS", Survey = "NRS", Type = "Phytoplankton")
     })
 
-    # Update map when station selection changes (SOTS has only one station so
-    # this only needs to fire once on load, not on every reactive invalidation)
+    outputOptions(output, "plotmap", suspendWhenHidden = FALSE)
+
+    # Update map on site change (single fixed station, fires once on load)
     observe({
-      fMapboxUpdate("plotmap", session, unique(selectedData0()$StationCode),
+      fMapboxUpdate("plotmap", session, "SOTS",
                     Survey = "NRS", Type = "Phytoplankton")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     

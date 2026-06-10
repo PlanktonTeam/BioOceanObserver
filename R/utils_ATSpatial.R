@@ -26,6 +26,7 @@
 #'
 #' @noRd
 at_load_data <- function() {
+  . <- NULL  # suppress R CMD CHECK note for . used in sf::st_coordinates(.)
   tryCatch({
     rds_dir <- system.file("extdata", package = "biooceanobserver")
     if (nchar(rds_dir) == 0 || !file.exists(file.path(rds_dir, "ReceiverSummary.rds"))) {
@@ -254,7 +255,7 @@ at_length_bar_html <- function(inds) {
 
   vals   <- inds_v$Length_cm
   n_bins <- max(3, min(8, length(unique(round(vals)))))
-  h      <- hist(vals, breaks = n_bins, plot = FALSE)
+  h      <- graphics::hist(vals, breaks = n_bins, plot = FALSE)
   breaks <- h$breaks
   mids   <- h$mids
   n_bars <- length(mids)
@@ -467,11 +468,11 @@ DToptions <- list(
 #' @return df for plotting
 #' @noRd
 ATbardata <- function(df, time){
-  df <- df %>% 
-    dplyr::mutate(Year = lubridate::year(month_UTC), 
-                  Month = lubridate::month(month_UTC)) %>% 
-    dplyr::group_by(!!rlang::sym(time)) %>% 
-    dplyr::summarise(Values = sum(total_detections, na.rm = TRUE))
+  df <- df %>%
+    dplyr::mutate(Year = lubridate::year(.data$month_UTC),
+                  Month = lubridate::month(.data$month_UTC)) %>%
+    dplyr::group_by(!!rlang::sym(time)) %>%
+    dplyr::summarise(Values = sum(.data$total_detections, na.rm = TRUE))
   }
 
 #' Bar plot data 
@@ -481,7 +482,7 @@ ATbardata <- function(df, time){
 #' @return df for plotting
 #' @noRd
 ATbarPlot <- function(df, time){
-  p <- ggplot2::ggplot(data = df, ggplot2::aes(x = !!rlang::sym(time), y = Values)) +
+  p <- ggplot2::ggplot(data = df, ggplot2::aes(x = !!rlang::sym(time), y = .data$Values)) +
     ggplot2::geom_col(fill = "#E2ECF3", color = "#3B6E8F") + 
     ggplot2::labs(y = "Number of Detections") +
     ggplot2::scale_y_continuous(expand = c(0,0.05)) +

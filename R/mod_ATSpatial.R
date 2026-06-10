@@ -261,11 +261,11 @@ mod_ATSpatial_server <- function(id) {
       # Per-species cards (filter-aware) — computed first so stats can reflect filter
       sel_sp   <- input$species_filter
       spp      <- station_species %>%
-        dplyr::filter(.data$installation_name == name) %>%
-        { if (!is.null(sel_sp) && length(sel_sp) > 0)
-            dplyr::filter(., .data$species_common_name %in% sel_sp)
-          else . } %>%
-        dplyr::arrange(dplyr::desc(.data$total_detections))
+        dplyr::filter(.data$installation_name == name)
+      if (!is.null(sel_sp) && length(sel_sp) > 0) {
+        spp <- dplyr::filter(spp, .data$species_common_name %in% sel_sp)
+      }
+      spp <- dplyr::arrange(spp, dplyr::desc(.data$total_detections))
 
       # Derive stat values: use filtered aggregates when a species filter is active
       filter_active <- !is.null(sel_sp) && length(sel_sp) > 0

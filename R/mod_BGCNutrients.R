@@ -32,17 +32,17 @@ mod_NutrientsBGC_server <- function(id){
     
     selectedData <- reactive({
       req(input$site)
-      req(input$date)
-      shiny::validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
-      shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
+      req(input$DatesSlide)
+      shiny::validate(need(!is.na(input$DatesSlide[1]) & !is.na(input$DatesSlide[2]), "Error: Please provide both a start and an end date."))
+      shiny::validate(need(input$DatesSlide[1] < input$DatesSlide[2], "Error: Start date should be earlier than end date."))
       
       pkg.env$Nuts %>%
         dplyr::select(-c(.data$TripCode, .data$Project)) %>% #TODO check if we need this
         dplyr::filter(.data$StationName %in% input$site,
-               .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
-               .data$Parameters %in% input$parameter) %>% 
-        tidyr::drop_na() 
-    }) %>% bindCache(input$site, input$parameter, input$date)
+               .data$SampleTime_Local > as.POSIXct(input$DatesSlide[1]) & .data$SampleTime_Local < as.POSIXct(input$DatesSlide[2]),
+               .data$Parameters %in% input$parameter) %>%
+        tidyr::drop_na()
+    }) %>% bindCache(input$site, input$parameter, input$DatesSlide)
     
     shiny::exportTestValues(
       NutrientsBGC = {ncol(selectedData())},
@@ -72,7 +72,7 @@ mod_NutrientsBGC_server <- function(id){
       }
       }
       
-    }) %>% bindCache(input$site, input$parameter, input$date, input$interp)
+    }) %>% bindCache(input$site, input$parameter, input$DatesSlide, input$interp)
     
     output$timeseries1 <- renderPlot({
       gg_out1()

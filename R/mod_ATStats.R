@@ -4,11 +4,19 @@
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
-#' @noRd 
+#' @noRd
 #'
-#' @importFrom shiny NS tagList 
+#' @importFrom shiny NS tagList
 mod_ATStats_ui <- function(id) {
   ns <- NS(id)
+  # Guard: render a friendly message if AT data failed to load
+  if (!isTRUE(pkg.env$AT_data_loaded)) {
+    return(tagList(shiny::tags$div(
+      class = "alert alert-warning", style = "margin-top:2rem;",
+      shiny::tags$strong("Animal Tracking data unavailable."),
+      " The Animal Tracking dataset could not be loaded at startup."
+    )))
+  }
   tagList(
     sidebarLayout(
       shiny::sidebarPanel(width = 2, 
@@ -116,12 +124,12 @@ mod_ATStats_server <- function(id){
         species <- if (is.null(input$select1)) pkg.env$AT_all_species else input$select1
 
         choices <- sort(unique(pkg.env$AT_station_species %>%
-                                 dplyr::filter(species_common_name %in% species) %>%
-                                 dplyr::pull(installation_name)))
+                                 dplyr::filter(.data$species_common_name %in% species) %>%
+                                 dplyr::pull(.data$installation_name)))
 
         dates <- pkg.env$AT_species_summary %>%
-          dplyr::filter(species_common_name %in% species) %>%
-          dplyr::pull(month_UTC)
+          dplyr::filter(.data$species_common_name %in% species) %>%
+          dplyr::pull(.data$month_UTC)
 
         shiny::updateSelectizeInput(session, "select2", choices = choices,
                                     options = list(maxOptions = 10))
@@ -135,8 +143,8 @@ mod_ATStats_server <- function(id){
         location <- if (is.null(input$select1)) sort(unique(pkg.env$AT_receivers$installation_name)) else input$select1
 
         choices <- sort(unique(pkg.env$AT_station_species %>%
-                                 dplyr::filter(installation_name %in% location) %>%
-                                 dplyr::pull(species_common_name)))
+                                 dplyr::filter(.data$installation_name %in% location) %>%
+                                 dplyr::pull(.data$species_common_name)))
 
         shiny::updateSelectizeInput(session, "select2", choices = choices,
                                     options = list(maxOptions = 10))
@@ -153,8 +161,8 @@ mod_ATStats_server <- function(id){
         species  <- if (is.null(input$select1)) pkg.env$AT_all_species else input$select1
         location <- if (is.null(input$select2)) {
           sort(unique(pkg.env$AT_station_species %>%
-                        dplyr::filter(species_common_name %in% species) %>%
-                        dplyr::pull(installation_name)))
+                        dplyr::filter(.data$species_common_name %in% species) %>%
+                        dplyr::pull(.data$installation_name)))
         } else {
           input$select2
         }
@@ -162,17 +170,17 @@ mod_ATStats_server <- function(id){
         location <- if (is.null(input$select1)) sort(unique(pkg.env$AT_receivers$installation_name)) else input$select1
         species  <- if (is.null(input$select2)) {
           sort(unique(pkg.env$AT_station_species %>%
-                        dplyr::filter(installation_name %in% location) %>%
-                        dplyr::pull(species_common_name)))
+                        dplyr::filter(.data$installation_name %in% location) %>%
+                        dplyr::pull(.data$species_common_name)))
         } else {
           input$select2
         }
       }
 
       pkg.env$AT_species_summary %>%
-        dplyr::filter(species_common_name %in% species,
-                      installation_name   %in% location,
-                      dplyr::between(month_UTC, input$datesslide[1], input$datesslide[2]))
+        dplyr::filter(.data$species_common_name %in% species,
+                      .data$installation_name   %in% location,
+                      dplyr::between(.data$month_UTC, input$datesslide[1], input$datesslide[2]))
 
     }) %>% bindCache(input$select1, input$select2, input$filter, input$datesslide[1], input$datesslide[2])
     
@@ -181,11 +189,11 @@ mod_ATStats_server <- function(id){
 
       pkg.env$AT_receivers %>%
         sf::st_drop_geometry() %>%
-        dplyr::filter(installation_name %in% fdata()$installation_name) %>%
-        dplyr::select(Installation = installation_name, Lon = lon, Lat = lat,
-                      `No Receivers` = total_receivers, `Start Date` = deployment_date,
-                      `End Date` = recovery_date, Active = active,
-                      `No Species` = n_species, `No Detections` = total_detections)
+        dplyr::filter(.data$installation_name %in% fdata()$installation_name) %>%
+        dplyr::select(Installation = "installation_name", Lon = "lon", Lat = "lat",
+                      `No Receivers` = "total_receivers", `Start Date` = "deployment_date",
+                      `End Date` = "recovery_date", Active = "active",
+                      `No Species` = "n_species", `No Detections` = "total_detections")
 
     }) %>% bindCache(input$select1, input$select2, input$filter,
                      input$datesslide[1], input$datesslide[2])
@@ -193,25 +201,25 @@ mod_ATStats_server <- function(id){
 ## prepare data for tables to speed up render
     fdataTable <- reactive({
       fdata() %>%
-        dplyr::group_by(species_common_name, installation_name) %>%
-        dplyr::summarise(`First detection` = as.character(min(month_UTC, na.rm = TRUE)),
-                         `Last Detection`  = as.character(max(month_UTC, na.rm = TRUE)),
-                         `No Detections`   = sum(total_detections, na.rm = TRUE)) %>%
+        dplyr::group_by(.data$species_common_name, .data$installation_name) %>%
+        dplyr::summarise(`First detection` = as.character(min(.data$month_UTC, na.rm = TRUE)),
+                         `Last Detection`  = as.character(max(.data$month_UTC, na.rm = TRUE)),
+                         `No Detections`   = sum(.data$total_detections, na.rm = TRUE)) %>%
         dplyr::left_join(
           pkg.env$AT_station_species %>%
-            dplyr::select(species_common_name, installation_name, n_individuals),
+            dplyr::select("species_common_name", "installation_name", "n_individuals"),
           by = c("species_common_name", "installation_name")
         ) %>%
-        dplyr::select(Species = species_common_name, Installation = installation_name,
-                      `No individuals` = n_individuals, everything()) %>%
-        dplyr::arrange(dplyr::desc(`No Detections`))
+        dplyr::select(Species = "species_common_name", Installation = "installation_name",
+                      `No individuals` = "n_individuals", dplyr::everything()) %>%
+        dplyr::arrange(dplyr::desc(.data$`No Detections`))
     }) %>% bindCache(input$select1, input$select2, input$filter, input$datesslide[1], input$datesslide[2])
 
     sdataTable <- reactive({
       fdata() %>%
-        dplyr::select(`Common Name`    = species_common_name,
-                      `Scientific Name` = species_scientific_name,
-                      `Aphia id`        = WORMS_species_aphia_id) %>%
+        dplyr::select(`Common Name`    = "species_common_name",
+                      `Scientific Name` = "species_scientific_name",
+                      `Aphia id`        = "WORMS_species_aphia_id") %>%
         dplyr::distinct()
     }) %>% bindCache(input$select1, input$select2, input$filter)
     

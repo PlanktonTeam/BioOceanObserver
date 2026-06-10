@@ -44,7 +44,7 @@ mod_LFishSpatial_server <- function(id){
     output$LFMap <- mapgl::renderMapboxgl({
       sdf <- LFDatar()
       
-      # Build HTML popup column for presence points (matches original leaflet labels)
+      # Build HTML popup column for presence points
       sdf <- sdf %>%
         dplyr::mutate(
           popup_html = paste0(

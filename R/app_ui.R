@@ -82,9 +82,9 @@ app_ui <- function(request) {
                                       mod_info_ui("info_1")
                                     # )
                     ),
-                    shiny::navbarMenu("", icon = shiny::icon("github"),
-                                      shiny::tabPanel(shiny::tags$a(href = "https://github.com/PlanktonTeam/BioOceanObserver", target = "_blank", "BioOceanObserver Repository")),
-                                      shiny::tabPanel(shiny::tags$a(href = "https://github.com/PlanktonTeam/planktonr", target = "_blank", shiny::tags$em("planktonr"), " Repository" )))
+  #                   shiny::navbarMenu("", icon = shiny::icon("github"),
+  #                                     shiny::tabPanel(shiny::tags$a(href = "https://github.com/PlanktonTeam/BioOceanObserver", target = "_blank", "BioOceanObserver Repository")),
+  #                                     shiny::tabPanel(shiny::tags$a(href = "https://github.com/PlanktonTeam/planktonr", target = "_blank", shiny::tags$em("planktonr"), " Repository" )))
   )
 }
 

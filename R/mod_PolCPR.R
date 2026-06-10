@@ -86,13 +86,18 @@ mod_PolCPR_server <- function(id){
         dplyr::filter(.data$BioRegion == input$site) 
     }) %>% bindCache(input$site)
     
-    # Sidebar Map: use mapboxgl for CPR polygons
+    # Sidebar Map - Initial render with current selection
     output$plotmap <- mapgl::renderMapboxgl({
-      fMapboxMap(character(0), Survey = "CPR", Type = "Policy")
+      bioRegion <- if (length(input$site) > 0) input$site else character(0)
+      fMapboxMap(bioRegion, Survey = "CPR", Type = "Policy")
     })
 
+    outputOptions(output, "plotmap", suspendWhenHidden = FALSE)
+
+    # Update map when bioregion selection changes
     observe({
-      fMapboxUpdate("plotmap", session, unique(selectedData()$BioRegion), Survey = "CPR", Type = "Policy")
+      bioRegion <- if (length(input$site) > 0) input$site else character(0)
+      fMapboxUpdate("plotmap", session, bioRegion, Survey = "CPR", Type = "Policy")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     

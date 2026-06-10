@@ -212,8 +212,5 @@ mod_MicroTsNRS_server <- function(id){
     output$downloadData3 <- fDownloadButtonServer(input, selectedData, "Enviro") # Download csv of data
     output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "Enviro") # Download figure
     
-    # Parameter Definition
-    output$ParamDefm <- fParamDefServer(selectedData)
-    
   })
 }

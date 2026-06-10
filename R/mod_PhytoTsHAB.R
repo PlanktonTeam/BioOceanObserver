@@ -30,8 +30,8 @@ mod_PhytoTsHAB_server <- function(id){
 
       # Filter sites based on the selected state
       filtered_sites <- pkg.env$datHABTrip %>%
-        dplyr::filter(State %in% input$statepick1) %>%
-        dplyr::pull(StationName) %>%
+        dplyr::filter(.data$State %in% input$statepick1) %>%
+        dplyr::pull(.data$StationName) %>%
         unique() %>%
         sort()
       # Update the site_input choices
@@ -59,8 +59,8 @@ mod_PhytoTsHAB_server <- function(id){
     observe({
       req(input$statepick1)
 
-      dat <- taxa1()  %>% 
-        dplyr::filter(StationName %in% input$station1) %>% 
+      dat <- taxa1()  %>%
+        dplyr::filter(.data$StationName %in% input$station1) %>%
         dplyr::summarise(non_zero_count = sum(.data$Values != 0, na.rm = TRUE), .by = c(.data$TaxonName, .data$Parameters)) %>% 
         dplyr::filter(.data$non_zero_count > 50)  
       
@@ -89,7 +89,12 @@ mod_PhytoTsHAB_server <- function(id){
       fMapboxMap(select1, Survey = "HAB", Type = "Phytoplankton")
     })
     output$plotmap2 <- mapgl::renderMapboxgl({
-      fMapboxMap(character(0), Survey = "HAB", Type = "Phytoplankton")
+      if (shiny::isTruthy(input$statepick2) && shiny::isTruthy(input$station2)) {
+        select2 <- c(input$station2, input$statepick2)
+      } else {
+        select2 <- c("Bar Island", "NSW")
+      }
+      fMapboxMap(select2, Survey = "HAB", Type = "Phytoplankton")
     })
 
     observe({
@@ -200,9 +205,6 @@ mod_PhytoTsHAB_server <- function(id){
     output$downloadData1 <- fDownloadButtonServer(input, selectedData, "TrendLocation") # Download csv of data
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "TrendLocation") # Download figure
 
-    # Parameter Definition
-    output$ParamDef <- fParamDefServer(param1)
-
     # Plot trends by taxa  -----------------------------------------------------------
     taxa2 <- reactive({
       req(input$tax2)
@@ -243,8 +245,8 @@ mod_PhytoTsHAB_server <- function(id){
       req(input$taxgs2)
 
       stationsInState <- pkg.env$datHABTrip %>%
-        dplyr::filter(State %in% input$statepick2) %>%
-        dplyr::pull(StationName) %>%
+        dplyr::filter(.data$State %in% input$statepick2) %>%
+        dplyr::pull(.data$StationName) %>%
         unique() %>%
         sort()
       
@@ -253,8 +255,8 @@ mod_PhytoTsHAB_server <- function(id){
       }
 
       dat <- taxa2() %>%
-        dplyr::filter(StationName %in% stationsInState,
-                      TaxonName %in% input$taxgs2) %>%
+        dplyr::filter(.data$StationName %in% stationsInState,
+                      .data$TaxonName %in% input$taxgs2) %>%
         dplyr::summarise(non_zero_count = sum(.data$Values != 0, na.rm = TRUE), .by = c(.data$TaxonName, .data$StationName)) %>%
         dplyr::filter(.data$non_zero_count > 50)
       

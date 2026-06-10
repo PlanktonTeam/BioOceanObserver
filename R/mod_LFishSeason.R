@@ -72,7 +72,7 @@ mod_LFishSeason_server <- function(id){
       sdf <- dat_all %>% dplyr::filter(.data$Season == season_label)
       Species <- unique(dat_all$Species)
       
-      # Build HTML popup column for presence points (matches original leaflet labels)
+      # Build HTML popup column for presence points
       sdf <- sdf %>%
         dplyr::mutate(
           popup_html = paste0(

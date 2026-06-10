@@ -120,14 +120,30 @@ mod_PolNRS_server <- function(id){
         dplyr::filter(.data$StationName == input$site) 
     }) %>% bindCache(input$site)
     
-    # Sidebar Map - Initial render
+    # Sidebar Map - Initial render with current selection
     output$plotmap <- mapgl::renderMapboxgl({
-      fMapboxMap(character(0), Survey = "NRS", Type = "Zooplankton")
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fMapboxMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
     })
+
+    outputOptions(output, "plotmap", suspendWhenHidden = FALSE)
 
     # Update map when station selection changes
     observe({
-      fMapboxUpdate("plotmap", session, unique(selectedData()$StationCode),
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fMapboxUpdate("plotmap", session, stationCodes,
                     Survey = "NRS", Type = "Zooplankton")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
@@ -139,8 +155,6 @@ mod_PolNRS_server <- function(id){
             '. ', input$site, ' is in the ', stationData()$ManagementRegion, 
             ' management bioregion. The station is characterised by ', stationData()$Features, '.', sep = "")
     })
-    
-    titley <- planktonr:::pr_relabel(c("PigmentChla_mgm3"), style = "ggplot")
     
     col1 <- fEOVutilities(vector = "col")
     trans1 <- fEOVutilities(vector = "trans")

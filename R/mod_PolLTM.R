@@ -82,14 +82,30 @@ mod_PolLTM_server <- function(id){
         dplyr::filter(.data$StationName == input$siteLTM) 
     }) %>% bindCache(input$siteLTM)
     
-    # Sidebar Map - Initial render
+    # Sidebar Map - Initial render with current selection
     output$plotmap <- mapgl::renderMapboxgl({
-      fMapboxMap(character(0), Survey = "LTM", Type = "Zooplankton")
+      stationCodes <- if (length(input$siteLTM) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$siteLTM) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fMapboxMap(stationCodes, Survey = "LTM", Type = "Zooplankton")
     })
+
+    outputOptions(output, "plotmap", suspendWhenHidden = FALSE)
 
     # Update map when station selection changes
     observe({
-      fMapboxUpdate("plotmap", session, unique(selectedData()$StationCode),
+      stationCodes <- if (length(input$siteLTM) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$siteLTM) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fMapboxUpdate("plotmap", session, stationCodes,
                     Survey = "LTM", Type = "Zooplankton")
     }) %>% shiny::bindEvent(input$siteLTM, ignoreNULL = FALSE)
     

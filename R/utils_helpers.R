@@ -55,45 +55,6 @@ fEOVutilities <- function(vector = "col", Survey = "NRS"){
   
 }
 
-#' Convert ggplot map to interactive plotly with tight margins
-#'
-#' @description Takes a ggplot object (typically a map) and converts it to an 
-#' interactive plotly plot with consistent styling - no margins, no axes, 
-#' transparent background, and responsive resizing enabled.
-#'
-#' @param gg_map A ggplot object to convert to plotly
-#' @param tooltip Character vector specifying which aesthetic to show in tooltip.
-#'   Default is "colour" which works well for colored station points.
-#'
-#' @return A plotly object ready for renderPlotly()
-#'
-#' @noRd
-fPlotlyMap <- function(gg_map, tooltip = "colour") {
-  
-  plotly::ggplotly(gg_map, tooltip = tooltip, dynamicTicks = TRUE) %>%
-    plotly::layout(
-      showlegend = FALSE,
-      margin = list(l = 0, r = 0, t = 0, b = 0, pad = 0),
-      xaxis = list(
-        showticklabels = FALSE,
-        showgrid = FALSE,
-        zeroline = FALSE,
-        automargin = FALSE,
-        fixedrange = TRUE
-      ),
-      yaxis = list(
-        showticklabels = FALSE,
-        showgrid = FALSE,
-        zeroline = FALSE,
-        automargin = FALSE,
-        fixedrange = TRUE
-      ),
-      paper_bgcolor = 'rgba(0,0,0,0)',
-      plot_bgcolor = 'rgba(0,0,0,0)'
-    ) %>%
-    plotly::config(displayModeBar = FALSE)
-  
-}
 
 #' Create interactive Mapbox map of station locations
 #'
@@ -109,20 +70,22 @@ fPlotlyMap <- function(gg_map, tooltip = "colour") {
 #'
 #' @noRd
 fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
-
+  
   # --- Survey-specific settings ---
   clon  <- 133.7751
   clat  <- -27.0
-  zoom  <- 3.0
-
+  zoom  <- 2.75
+  
   if (Survey == "CPR") {
-    clon <- 133.7751; clat <- -27.0; zoom <- 2.5
+    clon <- 133.7751; clat <- -27.0; zoom <- 2.0
   } else if (Survey == "GO-SHIP") {
     clon <- -170.0; clat <- -40.0; zoom <- 2.0
   } else if (Survey == "HAB") {
     clon <- 150.0; clat <- -32.5; zoom <- 4.0
-  }
-
+  } else if (Survey == "SOTS") {
+    clon  <- 133.7751; clat  <- -27.0; zoom <- 2.0
+  } 
+  
   # --- Build base map ---
   base_map <- mapgl::mapboxgl(
     access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
@@ -131,7 +94,7 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
     zoom         = zoom,
     projection   = "mercator"
   )
-
+  
   # ---- CPR: fill polygons from planktonr::mbr ----
   if (Survey == "CPR") {
     mbr_df <- planktonr::mbr
@@ -160,7 +123,7 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
         )
     )
   }
-
+  
   # ---- HAB: state fill polygons + station circle markers ----
   if (Survey == "HAB") {
     states_sf <- pkg.env$AusStatesSimple %>%
@@ -170,7 +133,7 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
         FillOpacity = dplyr::if_else(.data$Selected, 0.2, 0.0)
       ) %>%
       sf::st_as_sf()
-
+    
     stations_df <- pkg.env$datHABTrip %>%
       dplyr::distinct(.data$StationName, .data$Latitude, .data$Longitude, .data$State) %>%
       dplyr::mutate(
@@ -180,7 +143,7 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
         DotRadius   = dplyr::if_else(.data$Selected, 4, 0.1)
       ) %>%
       sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-
+    
     return(
       base_map %>%
         mapgl::add_fill_layer(
@@ -200,17 +163,17 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
         )
     )
   }
-
+  
   # ---- GO-SHIP: circle markers coloured by latitude range ----
   if (Survey == "GO-SHIP") {
     meta_data <- pkg.env$datGSm %>%
       dplyr::distinct(.data$Latitude, .data$Longitude, .keep_all = TRUE) %>%
       dplyr::mutate(StationName = .data$StationName) %>%
       sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326, remove = FALSE)
-
+    
     lat_min <- if (length(sites) >= 2) sites[1] else min(meta_data$Latitude)
     lat_max <- if (length(sites) >= 2) sites[2] else max(meta_data$Latitude)
-
+    
     # Data-driven colour: red if within selected latitude range, blue otherwise
     color_expr <- list(
       "case",
@@ -220,7 +183,7 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
       "#FF0000",
       "#3399FF"
     )
-
+    
     return(
       base_map %>%
         mapgl::add_circle_layer(
@@ -233,7 +196,7 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
         )
     )
   }
-
+  
   # ---- NRS / LTM / Coastal: circle markers ----
   if (Survey == "NRS") {
     meta_data <- pkg.env$NRSStation
@@ -244,7 +207,7 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
     meta_data <- planktonr::csDAT
     if (inherits(meta_data, "sf")) meta_data <- sf::st_drop_geometry(meta_data)
   }
-
+  
   # Add SOTS for phytoplankton
   if (Type == "Phytoplankton" && !Survey %in% c("CPR", "HAB")) {
     sots <- data.frame(
@@ -258,7 +221,7 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
     meta_data <- meta_data %>%
       dplyr::filter(!.data$StationCode %in% c("NIN", "ESP"))
   }
-
+  
   # Colour by selection
   if (Survey == "Coastal") {
     meta_data <- meta_data %>%
@@ -275,10 +238,10 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
         DotRadius  = dplyr::if_else(.data$Selected, 8, 6)
       )
   }
-
+  
   stations_sf <- meta_data %>%
     sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-
+  
   base_map %>%
     mapgl::add_circle_layer(
       id             = "stations",
@@ -308,9 +271,9 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
 #'
 #' @noRd
 fMapboxUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zooplankton") {
-
+  
   proxy <- mapgl::mapboxgl_proxy(map_id, session = session)
-
+  
   # ---- CPR: update fill polygon colours ----
   if (Survey == "CPR") {
     mbr_df <- planktonr::mbr
@@ -327,7 +290,7 @@ fMapboxUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopla
       mapgl::set_source(layer_id = "regions_outline", source = mbr_df)
     return(invisible(NULL))
   }
-
+  
   # ---- HAB: update state fill + station circles ----
   if (Survey == "HAB") {
     states_sf <- pkg.env$AusStatesSimple %>%
@@ -337,7 +300,7 @@ fMapboxUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopla
         FillOpacity = dplyr::if_else(.data$Selected, 0.2, 0.0)
       ) %>%
       sf::st_as_sf()
-
+    
     stations_df <- pkg.env$datHABTrip %>%
       dplyr::distinct(.data$StationName, .data$Latitude, .data$Longitude, .data$State) %>%
       dplyr::mutate(
@@ -347,18 +310,18 @@ fMapboxUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopla
         DotRadius   = dplyr::if_else(.data$Selected, 4, 0.1)
       ) %>%
       sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-
+    
     proxy %>%
       mapgl::set_source(layer_id = "states",   source = states_sf) %>%
       mapgl::set_source(layer_id = "stations", source = stations_df)
     return(invisible(NULL))
   }
-
+  
   # ---- GO-SHIP: update paint expression with new latitude range ----
   if (Survey == "GO-SHIP") {
     lat_min <- if (length(sites) >= 2) sites[1] else -90
     lat_max <- if (length(sites) >= 2) sites[2] else  90
-
+    
     color_expr <- list(
       "case",
       list("all",
@@ -373,7 +336,7 @@ fMapboxUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopla
                                 value    = color_expr)
     return(invisible(NULL))
   }
-
+  
   # ---- NRS / LTM / Coastal: update circle marker colours ----
   if (Survey == "NRS") {
     meta_data <- pkg.env$NRSStation
@@ -384,7 +347,7 @@ fMapboxUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopla
     meta_data <- planktonr::csDAT
     if (inherits(meta_data, "sf")) meta_data <- sf::st_drop_geometry(meta_data)
   }
-
+  
   # Add SOTS for phytoplankton
   if (Type == "Phytoplankton" && !Survey %in% c("CPR", "HAB")) {
     sots <- data.frame(
@@ -395,7 +358,7 @@ fMapboxUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopla
     )
     meta_data <- dplyr::bind_rows(meta_data, sots)
   }
-
+  
   # Colour by selection
   if (Survey == "Coastal") {
     meta_data <- meta_data %>%
@@ -412,13 +375,13 @@ fMapboxUpdate <- function(map_id, session, sites, Survey = "NRS", Type = "Zoopla
         DotRadius = dplyr::if_else(.data$Selected, 8, 6)
       )
   }
-
+  
   stations_sf <- meta_data %>%
     sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-
+  
   proxy %>%
     mapgl::set_source(layer_id = "stations", source = stations_sf)
-
+  
   invisible(NULL)
 }
 
@@ -526,9 +489,9 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                                                          choices = choices, 
                                                          selected = c("NSW")))),
       shiny::HTML("<h3>Select one or more stations:</h3>"),
-      shiny::selectInput(inputId = ns("station1"), 
+      shiny::selectInput(inputId = ns("station1"),
                          label = NULL,
-                         choices = c("Bar Island", "Wapengo Lake", "Clyde River", "Wallis Lake", "Port Stephens"), 
+                         choices = sort(unique(pkg.env$datHABTrip$StationName)),
                          selected = 'Bar Island',
                          multiple = TRUE),
       shiny::HTML("<h3>Select taxonomic level:</h3>"),
@@ -579,7 +542,7 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
       shiny::HTML("Only stations where this taxa is present will be available in this list."),
       shiny::selectInput(inputId = ns("station2"),
                          label = NULL,
-                         choices = c("Bar Island", "Wapengo Lake", "Clyde River", "Wallis Lake", "Port Stephens"),
+                         choices = sort(unique(pkg.env$datHABTrip$StationName)),
                          selected = 'Bar Island',
                          multiple = FALSE)
     ),
@@ -731,12 +694,12 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
 fSpatialSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3){
   ns <- NS(id)
   
-  if (stringr::str_detect(id, "Zoo") == TRUE){ # Phyto
+  if (stringr::str_detect(id, "Zoo")) { # Zoo
     selectedVar <- "Acartia danae"
-    labeltext = "Select a zooplankton species"
-  } else { # Zoo 
+    labeltext <- "Select a zooplankton species"
+  } else { # Phyto
     selectedVar <- "Tripos furca"
-    labeltext = "Select a phytoplankton species"
+    labeltext <- "Select a phytoplankton species"
   }
   
   shiny::sidebarPanel(
@@ -819,24 +782,21 @@ fSpatialPanel <- function(id, tabsetPanel_id){
 fEnviroSidebar <- function(id, dat = NULL){
   ns <- NS(id)
   
-  if (id == "NutrientsBGC_ui_1"){
-    selectedVar = "Silicate_umolL"
-    ignoreStat <- c("PH4", "NIN", "ESP") # Stations to ignore
-  }
-  if (id == "PicoBGC_ui_1"){
-    selectedVar = "Prochlorococcus_cellsmL"
-    ignoreStat <- c("PH4", "NIN", "ESP") # Stations to ignore
-  }
-  if (id == "PigmentsBGC_ui_1"){
-    selectedVar = "TotalChla"
-    ignoreStat <- c("PH4") # Stations to ignore
-  }
-  if (id == "WaterBGC_ui_1"){
-    selectedVar = "CTDTemperature_degC"
-    ignoreStat <- c("PH4") # Stations to ignore
-  }
-  if (id == "MoorBGC_ui_1"){
-    ignoreStat <- c("PH4", "NIN", "ESP", 'VBM') # Stations to ignore
+  if (id == "NutrientsBGC_ui_1") {
+    selectedVar <- "Silicate_umolL"
+    ignoreStat  <- c("PH4", "NIN", "ESP") # Stations to ignore
+  } else if (id == "PicoBGC_ui_1") {
+    selectedVar <- "Prochlorococcus_cellsmL"
+    ignoreStat  <- c("PH4", "NIN", "ESP") # Stations to ignore
+  } else if (id == "PigmentsBGC_ui_1") {
+    selectedVar <- "TotalChla"
+    ignoreStat  <- c("PH4") # Stations to ignore
+  } else if (id == "WaterBGC_ui_1") {
+    selectedVar <- "CTDTemperature_degC"
+    ignoreStat  <- c("PH4") # Stations to ignore
+  } else if (id == "MoorBGC_ui_1") {
+    selectedVar <- NULL # No parameter selector for moorings
+    ignoreStat  <- c("PH4", "NIN", "ESP", "VBM") # Stations to ignore
   }
   
   shiny::sidebarPanel(
@@ -857,7 +817,7 @@ fEnviroSidebar <- function(id, dat = NULL){
       shiny::conditionalPanel(
         condition = "input.env != 'moor'",
         shiny::HTML("<h3>Select dates:</h3>"),
-        sliderInput(ns("date"), label = NULL, min = lubridate::ymd(20090101), max = Sys.Date(), 
+        sliderInput(ns("DatesSlide"), label = NULL, min = lubridate::ymd(20090101), max = Sys.Date(),
                     value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%m-%Y")
       )
     },
@@ -932,7 +892,7 @@ fEnviroPanel <- function(id){
 fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ #dat 1-3 group data vars, dat4 physical, dat5 chemical params
   ns <- NS(id)
   
-  if(stringr::str_detect(id, "CS") == TRUE){
+  if(stringr::str_detect(id, "CS")){
     ChoiceSite = unique(sort(dat1$State))
     ChoicesGroupy = 'Microbes - Coastal'
     ChoicesGroupx = 'Physical'
@@ -941,7 +901,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
     SelectedGroupx = 'Physical'
     selectedParamy = 'Bacterial_Temperature_Index_KD'
     selectedParamx = 'Temperature_degC'
-  } else if (stringr::str_detect(id, "NRS") == TRUE){
+  } else if (stringr::str_detect(id, "NRS")){
     ChoiceSite = unique(sort(dat1$StationName))
     ChoicesGroupy = c("Zooplankton", "Phytoplankton", "Microbes - NRS", "Physical", "Chemical")
     ChoicesGroupx = c("Zooplankton", "Phytoplankton", "Microbes - NRS", "Physical", "Chemical")
@@ -950,7 +910,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
     SelectedGroupx = 'Physical'
     selectedParamy = 'Biomass_mgm3'
     selectedParamx = 'CTD_Temperature_degC'
-  } else if (stringr::str_detect(id, "CPR") == TRUE){
+  } else if (stringr::str_detect(id, "CPR")){
     ChoiceSite = unique(sort(dat1$BioRegion))
     ChoicesGroupy = c("Zooplankton", "Phytoplankton", "Physical")
     ChoicesGroupx = c("Zooplankton", "Phytoplankton", "Physical")
@@ -1216,16 +1176,16 @@ fDownloadPlotServer <- function(input, gg_id, gg_prefix, papersize = "A4r") {
 #'
 #' @noRd
 fProgressMap <- function(dat) {
-
+  
   # ---- Unpack data ----
   df_CPR <- dat$CPR %>%
     dplyr::filter(!is.na(.data$ZoopAbundance_m3) | !is.na(.data$PhytoAbundance_CellsL))
-
+  
   df_PCI <- dat$CPR %>%
     dplyr::filter(is.na(.data$ZoopAbundance_m3) & is.na(.data$PhytoAbundance_CellsL))
-
+  
   df_NRS <- dat$NRS
-
+  
   # ---- Build popup HTML for NRS stations ----
   df_NRS <- df_NRS %>%
     dplyr::mutate(
@@ -1243,7 +1203,7 @@ fProgressMap <- function(dat) {
         "<strong>Number of Sampling Trips:</strong> ", .data$Samples
       )
     )
-
+  
   # ---- Build popup HTML for CPR phyto/zoo samples ----
   df_CPR <- df_CPR %>%
     dplyr::mutate(
@@ -1257,7 +1217,7 @@ fProgressMap <- function(dat) {
         round(.data$ZoopAbundance_m3, 2)
       )
     )
-
+  
   # ---- Build popup HTML for CPR PCI-only samples ----
   df_PCI <- df_PCI %>%
     dplyr::mutate(
@@ -1268,23 +1228,23 @@ fProgressMap <- function(dat) {
         "<strong>Phytoplankton Colour Index:</strong> ", .data$PCI
       )
     )
-
+  
   # ---- Convert to sf ----
   nrs_sf <- df_NRS %>%
     sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-
+  
   cpr_sf <- df_CPR %>%
     sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-
+  
   pci_sf <- df_PCI %>%
     sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-
+  
   # ---- Marine Bioregions (mbr polygons from planktonr) ----
   mbr_sf <- planktonr::mbr
   if (!inherits(mbr_sf, "sf")) mbr_sf <- sf::st_as_sf(mbr_sf)
   mbr_sf$REGION  <- as.character(mbr_sf$REGION)
   mbr_sf$Colour  <- as.character(mbr_sf$Colour)
-
+  
   # Build bioregion popup from CPRinfo (features description)
   cpr_info <- pkg.env$CPRinfo
   mbr_sf <- mbr_sf %>%
@@ -1299,7 +1259,7 @@ fProgressMap <- function(dat) {
         dplyr::coalesce(.data$Features, "")
       )
     )
-
+  
   # ---- Build the map ----
   # Centre shifted south and zoom reduced to include the Southern Ocean region
   mapgl::mapboxgl(
@@ -1419,7 +1379,7 @@ fProgressMap <- function(dat) {
         mbr_distinct <- mbr_sf %>%
           sf::st_drop_geometry() %>%
           dplyr::distinct(.data$REGION, .keep_all = TRUE)
-
+        
         bioregion_rows <- paste0(
           "<div style='display:flex;align-items:center;gap:6px;margin-bottom:3px;'>",
           "<span style='display:inline-block;width:14px;height:14px;border-radius:2px;",
@@ -1428,7 +1388,7 @@ fProgressMap <- function(dat) {
           "</div>",
           collapse = ""
         )
-
+        
         paste0(
           "<div style='background:rgba(255,255,255,0.92);padding:8px 12px;border-radius:6px;",
           "box-shadow:0 1px 4px rgba(0,0,0,0.25);",
@@ -1453,7 +1413,7 @@ fParamDefServer <- function(selectedData){
   shiny::renderText({
     paste("<p><strong>", planktonr:::pr_relabel(unique(selectedData()$Parameters), style = "plotly"), ":</strong> ",
           pkg.env$ParamDef %>%
-            dplyr::filter(.data$Parameter == unique(selectedData()$Parameters)) %>%
+            dplyr::filter(.data$Parameter %in% unique(selectedData()$Parameters)) %>%
             dplyr::pull("Definition"), ".</p>", sep = "")
   })
 }
