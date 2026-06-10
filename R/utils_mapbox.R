@@ -401,6 +401,20 @@ fProgressMap <- function(dat) {
       )
     )
   
+  # ---- Build popup HTML for Coastal stations ----
+  cs_colour <- "#2E8B57"
+  cs_sf <- planktonr::csDAT %>%
+    sf::st_drop_geometry() %>%
+    dplyr::mutate(
+      popup_html = paste0(
+        "<strong>Coastal Station:</strong> ", .data$StationName, "<br>",
+        "<strong>State:</strong> ", .data$State, "<br>",
+        "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
+        "<strong>Longitude:</strong> ", .data$Longitude
+      )
+    ) %>%
+    sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
   # ---- Convert to sf ----
   nrs_sf <- df_NRS %>%
     sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
@@ -461,7 +475,7 @@ fProgressMap <- function(dat) {
       source         = cpr_sf,
       circle_color   = list("get", "Colour"),
       circle_opacity = 0.8,
-      circle_radius  = 3,
+      circle_radius  = 5,
       popup          = "popup_html"
     ) %>%
     # Layer 3: CPR samples with PCI data only (hidden by default)
@@ -470,8 +484,9 @@ fProgressMap <- function(dat) {
       source         = pci_sf,
       circle_color   = list("get", "Colour"),
       circle_opacity = 0.8,
-      circle_radius  = 1,
-      popup          = "popup_html"
+      circle_radius  = 3,
+      popup          = "popup_html",
+      visibility     = "none"
     ) %>%
     # Layer 4: NRS stations (orange, large)
     mapgl::add_circle_layer(
@@ -482,11 +497,16 @@ fProgressMap <- function(dat) {
       circle_radius  = 10,
       popup          = "popup_html"
     ) %>%
-    # Hide PCI-only layer by default (hidden on initial render)
-    mapgl::set_layout_property(
-      layer_id = "cpr_pci",
-      name     = "visibility",
-      value    = "none"
+    # Layer 5: Coastal stations (sea green, square-ish)
+    mapgl::add_circle_layer(
+      id                  = "coastal_stations",
+      source              = cs_sf,
+      circle_color        = cs_colour,
+      circle_opacity      = 0.85,
+      circle_radius       = 8,
+      circle_stroke_color = "#ffffff",
+      circle_stroke_width = 2,
+      popup               = "popup_html"
     ) %>%
     # Layer toggle control — custom checkbox panel (top-right).
     # Each add_control() call MUST have a unique id= or they overwrite each other
@@ -507,6 +527,12 @@ fProgressMap <- function(dat) {
         " onchange=\"var m=this.closest('.mapboxgl-map').map;",
         "m.setLayoutProperty('nrs_stations','visibility',this.checked?'visible':'none');\">",
         "National Reference Stations</label>",
+        # Coastal stations — checked by default
+        "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;margin-bottom:2px;'>",
+        "<input type='checkbox' checked style='cursor:pointer;width:14px;height:14px;'",
+        " onchange=\"var m=this.closest('.mapboxgl-map').map;",
+        "m.setLayoutProperty('coastal_stations','visibility',this.checked?'visible':'none');\">",
+        "Coastal Stations</label>",
         # CPR phyto/zoo counts — checked by default
         "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;margin-bottom:2px;'>",
         "<input type='checkbox' checked style='cursor:pointer;width:14px;height:14px;'",
@@ -532,7 +558,7 @@ fProgressMap <- function(dat) {
     # Title control (top-left) — unique id to avoid overwriting
     mapgl::add_control(
       id       = "map-title",
-      html     = "<div style='background:rgba(255,255,255,0.85);padding:4px 10px;font-weight:bold;font-size:16px;border-radius:4px;'>Plankton sampling progress</div>",
+      html     = "<div style='background:rgba(255,255,255,0.85);padding:4px 10px;font-weight:bold;font-size:16px;border-radius:4px;'>Biological Ocean Observer Sampling Progress</div>",
       position = "top-left"
     ) %>%
     mapgl::add_control(
@@ -571,6 +597,12 @@ fProgressMap <- function(dat) {
           "<span style='display:inline-block;width:14px;height:14px;border-radius:50%;",
           "background:#FFA500;flex-shrink:0;'></span>",
           "<span>National Reference Stations</span>",
+          "</div>",
+          # Coastal Stations entry: circle marker
+          "<div style='display:flex;align-items:center;gap:6px;margin-bottom:3px;'>",
+          "<span style='display:inline-block;width:14px;height:14px;border-radius:50%;",
+          "background:", cs_colour, ";flex-shrink:0;'></span>",
+          "<span>Coastal Stations</span>",
           "</div>",
           bioregion_rows,
           "</div>"
