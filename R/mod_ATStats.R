@@ -9,14 +9,7 @@
 #' @importFrom shiny NS tagList
 mod_ATStats_ui <- function(id) {
   ns <- NS(id)
-  # Guard: render a friendly message if AT data failed to load
-  if (!isTRUE(pkg.env$AT_data_loaded)) {
-    return(tagList(shiny::tags$div(
-      class = "alert alert-warning", style = "margin-top:2rem;",
-      shiny::tags$strong("Animal Tracking data unavailable."),
-      " The Animal Tracking dataset could not be loaded at startup."
-    )))
-  }
+ 
   tagList(
     sidebarLayout(
       shiny::sidebarPanel(width = 2, 

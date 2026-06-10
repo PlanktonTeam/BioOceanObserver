@@ -13,20 +13,6 @@
 mod_ATSpatial_ui <- function(id) {
   ns <- NS(id)
 
-  # Guard: render a friendly message if data failed to load
-  if (!isTRUE(pkg.env$AT_data_loaded)) {
-    return(tagList(
-      shiny::fluidPage(
-        shiny::tags$div(
-          class = "alert alert-warning",
-          style = "margin-top:2rem;",
-          shiny::tags$strong("Animal Tracking data unavailable."),
-          " The receiver and animal summary files could not be loaded."
-        )
-      )
-    ))
-  }
-
   tagList(
     # ---- Inline JavaScript (namespaced) ------------------------------------
     shiny::tags$head(
@@ -128,7 +114,7 @@ mod_ATSpatial_server <- function(id) {
     ns <- session$ns
 
     # Guard: exit early if data is not available
-    if (!isTRUE(pkg.env$AT_data_loaded)) return(invisible(NULL))
+    if (is.null(pkg.env$AT_receivers) || nrow(pkg.env$AT_receivers) == 0) return(invisible(NULL))
 
     # Convenience aliases to pkg.env data
     receivers       <- pkg.env$AT_receivers
