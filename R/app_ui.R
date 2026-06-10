@@ -5,18 +5,18 @@
 #' @noRd
 
 app_ui <- function(request) {
-  # Your application UI logic 
-  shiny::navbarPage(id = "navbar",  
+  # Your application UI logic
+  shiny::navbarPage(id = "navbar",
                     title = shiny::div(
                       shiny::img(src = "www/IMOS_logo-wide-_Colour.png", height = 30),
                       shiny::div("Biological Ocean Observer", class = "brand-text")),
                     windowTitle = "Biological Ocean Observer",
                     header = golem_add_external_resources(), # Add external resources in header
-                    theme = bslib::bs_theme(version = 5, 
+                    theme = bslib::bs_theme(version = 5,
                                             bootswatch = "flatly",
                                             "border-width" = "0px",
                                             "enable-rounded" = TRUE), #https://rstudio.github.io/bslib/articles/bslib.html#custom
-                    selected = "Home", 
+                    selected = "Home",
                     shiny::tabPanel("Home", mod_home_ui("home_1")
                     ),
                     shiny::tabPanel("EOVs",
@@ -77,14 +77,8 @@ app_ui <- function(request) {
                                                        shiny::tabPanel(value = "cprRel", "CPR relationship", mod_RelCPR_ui("RelCPR_ui_1"))
                                     )),
                     shiny::tabPanel("Information",
-                                    # value = "info",
-                                    # shiny::fluidPage(
-                                      mod_info_ui("info_1")
-                                    # )
+                                    mod_info_ui("info_1")
                     ),
-  #                   shiny::navbarMenu("", icon = shiny::icon("github"),
-  #                                     shiny::tabPanel(shiny::tags$a(href = "https://github.com/PlanktonTeam/BioOceanObserver", target = "_blank", "BioOceanObserver Repository")),
-  #                                     shiny::tabPanel(shiny::tags$a(href = "https://github.com/PlanktonTeam/planktonr", target = "_blank", shiny::tags$em("planktonr"), " Repository" )))
   )
 }
 
@@ -104,10 +98,10 @@ golem_add_external_resources <- function(){
     # script for accessning google analytics from csiro server
     if( Sys.getenv('SHINY_PORT') != "" ) {
       shiny::includeHTML(app_sys('app/www/GoogleAnalytics.html'))
-      },
-
+    },
+    
     favicon(),    
-
+    
     bundle_resources(
       path = app_sys('app/www'),
       app_title = 'Biological Ocean Observer'

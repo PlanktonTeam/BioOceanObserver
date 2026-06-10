@@ -666,7 +666,7 @@ div[id*="Table"] table.dataTable-striped tbody tr:nth-of-type(odd) {
 }
 
 .shiny-output-error-my-hint {
-  color: var(--primary-1)
+  color: var(--primary-1);
   font-size: var(--font-size-base) !important;
   font-weight: var(--font-weight-semibold) !important;
 }
@@ -800,14 +800,17 @@ div[id*="Table"] table.dataTable-striped tbody tr:nth-of-type(odd) {
 }
 
 /* Home page footer section */
+/* The footer is rendered inside navbarPage's .container-fluid (15px padding each side).
+   Negative margins pull it flush to the viewport edges. */
 .home-footer {
   background-color: var(--primary-5) !important;
-  padding: 20px !important;
+  padding: 20px 30px !important;
   margin-top: 30px !important;
-  margin-left: calc(-50vw + 50%) !important;
-  margin-right: calc(-50vw + 50%) !important;
-  width: 100vw !important;
-  position: relative !important;
+  margin-left: -15px !important;
+  margin-right: -15px !important;
+  width: calc(100% + 30px) !important;
+  box-sizing: border-box !important;
+  border-radius: 0 !important;
 }
 
 /* Footer content layout */
@@ -815,10 +818,10 @@ div[id*="Table"] table.dataTable-striped tbody tr:nth-of-type(odd) {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  flex-wrap: wrap !important;
-  max-width: 1200px !important;
-  margin: 0 auto !important;
-  padding: 0 15px !important;
+  flex-wrap: nowrap !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 /* Funding section layout */
@@ -826,25 +829,30 @@ div[id*="Table"] table.dataTable-striped tbody tr:nth-of-type(odd) {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  margin-bottom: 10px !important;
+  flex-wrap: nowrap !important;
   width: 100% !important;
+  margin-bottom: 0 !important;
+  gap: 20px !important;
 }
 
 .funding-title {
-  margin-right: 20px !important;
-  margin-bottom: 0 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
 }
 
 .funding-logos {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 60px !important;
-  flex-wrap: wrap !important;
+  gap: clamp(15px, 2vw, 40px) !important;
+  flex-wrap: nowrap !important;
 }
 
 .funding-logos img {
-  height: 60px !important;
+  height: 55px !important;
+  width: auto !important;
+  flex-shrink: 1 !important;
 }
 
 
@@ -861,6 +869,7 @@ div[id*="Table"] table.dataTable-striped tbody tr:nth-of-type(odd) {
 .tab-content,
 .tab-pane {
   background-color: var(--neutral-2) !important;
+  overflow-x: visible !important;
 }
 
 /* Target main container but exclude navbar and footer areas */
