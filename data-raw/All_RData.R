@@ -2,6 +2,10 @@
 library(tidyverse)
 library(planktonr)
 
+# Animal Tracking needs to be reprocessed from the summary files every 6 months or so.
+
+reprocess_AT <- FALSE
+
 modified_time <- lubridate::now()
 
 # Set up colours for the app ----------------------------------------------
@@ -393,6 +397,97 @@ choicespHAB  <- planktonr:::pr_relabel(c("NoPhytoSpecies_Sample", "PhytoAbundanc
 
 AusStatesSimple <- readRDS("data-raw/aus_states_simplified.rds")
 
+
+
+# Animal Tracking ----
+
+if (isTRUE(reprocess_AT)){source("data-raw/AnimalTracking/AT_DataProcessing.R")}
+
+rds_dir <- file.path("data-raw", "AnimalTracking", "Output")
+
+AT_receivers      <- readRDS(file.path(rds_dir, "ReceiverSummary.rds"))
+AT_animal_summary <- readRDS(file.path(rds_dir, "AnimalSummary.rds"))
+AT_species_summary <- readRDS(file.path(rds_dir, "SpeciesSummary.rds"))
+
+## Station-level aggregate counts ----
+AT_station_summary <- AT_animal_summary %>%
+  dplyr::group_by(.data$installation_name) %>%
+  dplyr::summarise(
+    n_species        = dplyr::n_distinct(.data$species_common_name),
+    n_individuals    = dplyr::n_distinct(.data$animal_id),
+    total_detections = sum(.data$total_detections),
+    .groups = "drop"
+  )
+
+## Species breakdown per station ----
+AT_station_species <- AT_animal_summary %>%
+  dplyr::group_by(
+    .data$installation_name, .data$species_common_name,
+    .data$species_scientific_name, .data$WORMS_species_aphia_id
+  ) %>%
+  dplyr::summarise(
+    n_individuals    = dplyr::n_distinct(.data$animal_id),
+    total_detections = sum(.data$total_detections),
+    .groups = "drop"
+  ) %>%
+  dplyr::arrange(.data$installation_name, .data$species_common_name)
+
+## Individual-level data (one row per animal per station) ----
+AT_individual_data <- AT_animal_summary %>%
+  dplyr::distinct(
+    .data$animal_id, .data$installation_name,
+    .data$species_common_name, .data$species_scientific_name,
+    .data$animal_sex, .data$Length_Type, .data$Length_cm
+  )
+
+## Sorted species list for the selectize filter ----
+AT_all_species <- sort(unique(AT_animal_summary$species_common_name))
+
+## Daily time-series per station x species ----
+AT_daily_summary <- AT_animal_summary %>%
+  dplyr::group_by(.data$installation_name, .data$species_common_name, .data$date_UTC) %>%
+  dplyr::summarise(
+    n_individuals    = dplyr::n_distinct(.data$animal_id),
+    total_detections = sum(.data$total_detections),
+    .groups = "drop"
+  )
+
+## Enrich receiver sf object — keep only stations with detection data  ----
+AT_receivers <- AT_receivers %>%
+  dplyr::left_join(AT_station_summary, by = "installation_name") %>%
+  dplyr::filter(!is.na(.data$n_species)) %>%
+  dplyr::mutate(
+    has_data         = TRUE,
+    n_species        = as.integer(.data$n_species),
+    n_individuals    = as.integer(.data$n_individuals),
+    total_detections = as.integer(.data$total_detections),
+    lon              = round(sf::st_coordinates(.)[, 1], 5),
+    lat              = round(sf::st_coordinates(.)[, 2], 5),
+    point_opacity    = pmin(1, pmax(0.1, log1p(.data$total_detections) / log1p(1e6)))
+  )
+
+## Build popup HTML column ----
+rx_df <- sf::st_drop_geometry(AT_receivers)
+AT_receivers$popup_html <- purrr::map_chr(seq_len(nrow(rx_df)), function(i) {
+  r <- rx_df[i, ]
+  data_line <- paste0(
+    '<span class="at-popup-has-data">&#10003;&nbsp;',
+    r$n_species, " species &bull; ",
+    format(r$n_individuals, big.mark = ","), " individuals",
+    "</span>"
+  )
+  paste0(
+    '<div class="at-popup">',
+    '<div class="at-popup-header">RECEIVER STATION</div>',
+    '<div class="at-popup-body">',
+    '<div class="at-popup-name">', htmltools::htmlEscape(r$installation_name), "</div>",
+    '<div class="at-popup-coords">', r$lon, ", ", r$lat, "</div>",
+    data_line,
+    "</div></div>"
+  )
+})
+
+
 # Add data to sysdata.rda -------------------------------------------------
 usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   fMapDataz, fMapDatap,
@@ -413,5 +508,7 @@ usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   datNRSTrip, datCPRTrip, datCPRTripSO,
                   PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
                   ParamDef, col12, modified_time, AusStatesSimple,
+                  AT_species_summary, AT_receivers, AT_station_species,
+                  AT_individual_data, AT_all_species, AT_daily_summary,
                   overwrite = TRUE, internal = TRUE)
 

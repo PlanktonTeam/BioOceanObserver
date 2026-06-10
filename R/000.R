@@ -4,8 +4,6 @@ pkg.env <- new.env(parent = emptyenv())
 .onLoad <- function(libname, pkgname){
   cat(file=stderr(), "New data load call.\n")
 
-  # Load Animal Tracking data from bundled RDS files (or data-raw during dev)
-  at_load_data()
 
   # Non-grep vars: LTnuts, datCPRw, PMapData
   data.vars <- c("Nuts", "Pigs", "Pico", "ctd", "CSChem",
@@ -25,7 +23,9 @@ pkg.env <- new.env(parent = emptyenv())
                  "SpInfoP", "SpInfoZ", "LFData", "LFDataAbs",
                  "datNRSTrip", "datCPRTrip", "datCPRTripSO",
                  "PSpNRSAccum", "PSpCPRAccum", "ZSpNRSAccum", "ZSpCPRAccum",
-                 "col12", "ParamDef", "AusStatesSimple")
+                 "col12", "ParamDef", "AusStatesSimple",
+                 "AT_species_summary", "AT_receivers", "AT_station_species",
+                 "AT_individual_data", "AT_all_species", "AT_daily_summary")
 
   # tryCatch({
   #   # Access data from local server (fastest)
