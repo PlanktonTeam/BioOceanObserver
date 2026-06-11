@@ -481,7 +481,7 @@ a:focus {
 
 .table {
   font-family: "Open Sans", sans-serif !important;
-  font-size: var(--font-size-xs) !important;
+  font-size: var(--font-size-sm) !important;
   background-color: var(--neutral-2) !important;
 }
 
@@ -511,7 +511,7 @@ div[id*="Table"] table.dataTable {
   font-family: "Open Sans", sans-serif !important;
   font-weight: var(--font-weight-normal) !important;
   line-height: var(--line-height-tight) !important;
-  font-size: var(--font-size-xs) !important;
+  font-size: var(--font-size-sm) !important;
   background-color: var(--neutral-2) !important;
 }
 
@@ -530,6 +530,21 @@ div[id*="Table"] table.dataTable td {
 
 div[id*="Table"] table.dataTable-striped tbody tr:nth-of-type(odd) {
   background-color: var(--grey-100) !important;
+}
+
+/* Selected row highlight - override DataTables' default bright blue */
+div[id*="Table"] table.dataTable tbody tr.selected,
+div[id*="Table"] table.dataTable tbody tr.selected td,
+table.dataTable tbody tr.selected,
+table.dataTable tbody tr.selected td {
+  background-color: color-mix(in srgb, var(--secondary-1) 25%, transparent) !important;
+  color: var(--text-1) !important;
+  box-shadow: none !important;
+}
+
+table.dataTable tbody tr.selected:hover,
+table.dataTable tbody tr.selected:hover td {
+  background-color: color-mix(in srgb, var(--secondary-1) 35%, transparent) !important;
 }
 
 
@@ -954,7 +969,7 @@ div[id*="Table"] table.dataTable-striped tbody tr:nth-of-type(odd) {
 .well .form-control,
 .well .form-select,
 .well select,
-.well input[type="text"],
+.well input[type="text"]:not(.selectize-input *),
 .well input[type="number"],
 .well input[type="email"],
 .well input[type="password"],
@@ -962,6 +977,15 @@ div[id*="Table"] table.dataTable-striped tbody tr:nth-of-type(odd) {
   background-color: transparent !important;
   border: 1px solid var(--primary-1) !important;
   color: var(--text-1) !important;
+}
+
+/* Explicitly remove border from the inner selectize text input */
+.well .selectize-control .selectize-input input[type="text"],
+.well .selectize-input input {
+  border: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  outline: none !important;
 }
 
 /* Dropdown/Select elements in sidebar */
@@ -972,6 +996,14 @@ div[id*="Table"] table.dataTable-striped tbody tr:nth-of-type(odd) {
   border: 1px solid var(--primary-1) !important;
   color: var(--text-1) !important;
   font-size: var(--font-size-base) !important;
+}
+
+/* Selected items (tags) inside selectize in sidebar - match sidebar background */
+.well .selectize-input .item {
+  background-color: var(--primary-5) !important;
+  color: var(--text-1) !important;
+  border: none !important;
+  border-radius: 4px !important;
 }
 
 /* Limits the dropdown height and adds a scrollbar */
@@ -1096,6 +1128,14 @@ div[id*="Table"] table.dataTable-striped tbody tr:nth-of-type(odd) {
   border: 1px solid var(--primary-1) !important;
   color: var(--text-1) !important;
   font-size: var(--font-size-base) !important;
+}
+
+/* Selected item tags in sidebar selectize - match sidebar background, no border */
+.well .selectize-control .selectize-input .item {
+  background-color: var(--primary-5) !important;
+  color: var(--text-1) !important;
+  border: none !important;
+  border-radius: 4px !important;
 }
 
 .well .selectize-control .selectize-input input {
@@ -1610,6 +1650,15 @@ nav[class*="navbar"],
 .col-no-spacing {
   padding: 0px;
   margin: 0px;
+}
+
+/* ========================================
+   ANIMAL TRACKING STATISTICS MODULE
+   ======================================== */
+
+/* Radio button filter row background - matches sidebar colour */
+.at-stats-filter-radio {
+  background-color: var(--primary-5) !important;
 }
 
 /* ========================================

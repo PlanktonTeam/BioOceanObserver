@@ -398,14 +398,13 @@ choicespHAB  <- planktonr:::pr_relabel(c("NoPhytoSpecies_Sample", "PhytoAbundanc
 AusStatesSimple <- readRDS("data-raw/aus_states_simplified.rds")
 
 
-
 # Animal Tracking ----
 
 if (isTRUE(reprocess_AT)){source("data-raw/AnimalTracking/AT_DataProcessing.R")}
 
 rds_dir <- file.path("data-raw", "AnimalTracking", "Output")
 
-AT_receivers      <- readRDS(file.path(rds_dir, "ReceiverSummary.rds"))
+AT_receivers <- readRDS(file.path(rds_dir, "ReceiverSummary.rds"))
 AT_animal_summary <- readRDS(file.path(rds_dir, "AnimalSummary.rds"))
 AT_species_summary <- readRDS(file.path(rds_dir, "SpeciesSummary.rds"))
 

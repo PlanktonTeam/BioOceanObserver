@@ -59,6 +59,70 @@ keep_cols <- c("animal_id", "date_UTC", "nb_detections", "species_common_name", 
                "tag_deployment_project_name", "installation_name", "station_name", "receiver_project_name", "receiver_name",
                "receiver_deployment_id")
 
+
+# Receivers ----
+# Build receivers FIRST so the installation_name lookup is available for dat
+
+APIreceivers <- function(url) {
+  tmp <- tempfile(fileext = ".zip")
+  download.file(url, tmp, mode = "wb", quiet = TRUE)
+  files <- unzip(tmp, list = TRUE)
+  csv_path <- unzip(tmp, files = files$Name[1], exdir = tempdir())
+  data <- read_csv(csv_path)
+  return(data)
+}
+
+
+# Load receiver data from the portal
+receivers_raw <- APIreceivers(url = "https://animaltracking.aodn.org.au/api/receiver/deployment/deployments.zip") %>%
+  mutate(
+    active = active == "YES",
+    installation_name = dplyr::recode(installation_name, !!!installation_name_fixes)
+  ) 
+
+
+# First fix what is easy
+receivers_fix <- receivers_raw %>%
+  dplyr::filter_out(installation_name == "Cleveland Bay" & receiver_deployment_longitude > 150) %>%  # Some sites are off Lord Howe Island
+  dplyr::filter_out(installation_name == "Port Stephens VPS" & station_name == "Station 4") %>%  # incorrect latitude
+  dplyr::filter_out(installation_name == "IMOS-ATF Coffs Harbour line" & receiver_deployment_longitude < -31) %>%  # incorrect latitude
+  # Then mutate and create distance columns  
+  dplyr::mutate(diff_lat = max(receiver_deployment_latitude, na.rm = TRUE) - min(receiver_deployment_latitude, na.rm = TRUE),
+                diff_lon = max(receiver_deployment_longitude, na.rm = TRUE) - min(receiver_deployment_longitude, na.rm = TRUE),
+                .by = c("installation_name")) %>% 
+  # Use if_else to create a new installation column - either standard or `installation (station)`
+  dplyr::rename(installation_name_orig = installation_name) %>%
+  dplyr::mutate(installation_name = dplyr::if_else(diff_lat >= 2 | diff_lon >= 2,
+                                                   paste0(installation_name_orig, " (", station_name, ")"),
+                                                   installation_name_orig),
+                .by = c("installation_name_orig"))
+
+
+# Build a lookup: (installation_name_orig, station_name) -> new installation_name
+# This is used to propagate the split installation names into the detection data.
+installation_name_lookup <- receivers_fix %>%
+  dplyr::distinct(installation_name_orig, station_name, installation_name)
+
+
+receivers <- receivers_fix %>%
+  sf::st_as_sf(coords = c("receiver_deployment_longitude", "receiver_deployment_latitude"), crs = 4326, remove = FALSE) %>%
+  summarise(
+    total_receivers = n(),
+    deployment_date = lubridate::as_date(min(receiver_deployment_datetime, na.rm = TRUE)),
+    deployment_date = if_else(is.finite(deployment_date), deployment_date, NA),
+    recovery_date = lubridate::as_date(max(receiver_recovery_datetime, na.rm = TRUE)),
+    recovery_date = if_else(is.finite(recovery_date), recovery_date, NA),
+    n_purchasing_organisation = length(unique(purchasing_organisation)),
+    n_receiver_project_name = length(unique(receiver_project_name)),
+    purchasing_organisation = paste(unique(purchasing_organisation), collapse = "; "),
+    receiver_project_name = paste(unique(receiver_project_name), collapse = "; "),
+    active = any(active, na.rm = TRUE),
+    geometry = st_union(geometry),
+    .by = c("installation_name")
+  ) %>%
+  sf::st_centroid()
+
+
 # Load species data from AODN public S3 bucket
 # https://data.aodn.org.au/?prefix=IMOS/AATAMS/acoustic_detections_QC_summary/
 
@@ -89,8 +153,21 @@ dat <- dat %>%
   dplyr::select(all_of(keep_cols)) %>% 
   mutate(
     species_common_name = stringr::str_to_title(species_common_name),
+    # Apply simple canonical name fixes first (same as receivers_raw)
     installation_name   = dplyr::recode(installation_name, !!!installation_name_fixes)
   ) %>%
+  # Apply the split-installation lookup so that installations spanning >= 2 degrees
+  # get the same "installation_name (station_name)" label used in ReceiverSummary.rds.
+  # Rows whose (installation_name, station_name) pair is not in the lookup (i.e. the
+  # installation was NOT split) retain their original installation_name unchanged.
+  dplyr::left_join(
+    installation_name_lookup,
+    by = c("installation_name" = "installation_name_orig", "station_name")
+  ) %>%
+  dplyr::mutate(
+    installation_name = dplyr::coalesce(installation_name.y, installation_name)
+  ) %>%
+  dplyr::select(-installation_name.y) %>%
   summarise(
     total_detections = sum(nb_detections),
     .by = c("animal_id", "installation_name", "date_UTC",
@@ -129,9 +206,6 @@ dat <- dat %>%
   ) %>%
   select(-aphia_id_fetched)
 
-write_rds(dat, "data-raw/AnimalTracking/Output/AnimalSummary.rds", compress = "xz")
-
-
 
 # Species Summary -----
 
@@ -142,67 +216,9 @@ dat_spp <- dat %>%
             .by = c("installation_name", "month_UTC", "species_common_name", 
                     "species_scientific_name", "WORMS_species_aphia_id"))
 
-write_rds(dat_spp, "data-raw/AnimalTracking/Output/SpeciesSummary.rds", compress = "xz")
 
+# Save all outputs at the end ---------------------------------------------------
 
-
-# Receivers ----
-
-APIreceivers <- function(url) {
-  tmp <- tempfile(fileext = ".zip")
-  download.file(url, tmp, mode = "wb", quiet = TRUE)
-  files <- unzip(tmp, list = TRUE)
-  csv_path <- unzip(tmp, files = files$Name[1], exdir = tempdir())
-  data <- read_csv(csv_path)
-  return(data)
-}
-
-
-# Load receiver data from the portal
-receivers_raw <- APIreceivers(url = "https://animaltracking.aodn.org.au/api/receiver/deployment/deployments.zip") %>%
-  mutate(
-    active = active == "YES",
-    installation_name = dplyr::recode(installation_name, !!!installation_name_fixes)
-  ) 
-
-
-# First fix what is easy
-receivers_fix <- receivers_raw %>%
-  dplyr::filter_out(installation_name == "Cleveland Bay" & receiver_deployment_longitude > 150) %>%  # Some sites are off Lord Howe Island
-  dplyr::filter_out(installation_name == "Port Stephens VPS" & station_name == "Station 4") %>%  # incorrect latitude
-  dplyr::filter_out(installation_name == "IMOS-ATF Coffs Harbour line" & receiver_deployment_longitude < -31) %>%  # incorrect latitude
-  # Then mutate and create distance columns  
-  dplyr::mutate(diff_lat = max(receiver_deployment_latitude, na.rm = TRUE) - min(receiver_deployment_latitude, na.rm = TRUE),
-                diff_lon = max(receiver_deployment_longitude, na.rm = TRUE) - min(receiver_deployment_longitude, na.rm = TRUE),
-                .by = c("installation_name")) %>% 
-  # Use if_else to create a new installation column - either standard or `installation (station)`
-  dplyr::rename(installation_name_orig = installation_name) %>%
-  dplyr::mutate(installation_name = dplyr::if_else(diff_lat >= 2 | diff_lon >= 2,
-                                                   paste0(installation_name_orig, " (", station_name, ")"),
-                                                   installation_name_orig),
-                .by = c("installation_name_orig"))
-
-
-receivers <- receivers_fix %>%
-  sf::st_as_sf(coords = c("receiver_deployment_longitude", "receiver_deployment_latitude"), crs = 4326, remove = FALSE) %>%
-  summarise(
-    total_receivers = n(),
-    deployment_date = lubridate::as_date(min(receiver_deployment_datetime, na.rm = TRUE)),
-    deployment_date = if_else(is.finite(deployment_date), deployment_date, NA),
-    recovery_date = lubridate::as_date(max(receiver_recovery_datetime, na.rm = TRUE)),
-    recovery_date = if_else(is.finite(recovery_date), recovery_date, NA),
-    n_purchasing_organisation = length(unique(purchasing_organisation)),
-    n_receiver_project_name = length(unique(receiver_project_name)),
-    purchasing_organisation = paste(unique(purchasing_organisation), collapse = "; "),
-    receiver_project_name = paste(unique(receiver_project_name), collapse = "; "),
-    active = any(active, na.rm = TRUE),
-    geometry = st_union(geometry),
-    .by = c("installation_name")
-  ) %>%
-  sf::st_centroid()
-
-# With no manip - dim = [277 10]
-# With fix - dim [1079 10]
-
-write_rds(receivers, "data-raw/AnimalTracking/Output/ReceiverSummary.rds")
-
+write_rds(dat,      "data-raw/AnimalTracking/Output/AnimalSummary.rds",  compress = "xz")
+write_rds(dat_spp,  "data-raw/AnimalTracking/Output/SpeciesSummary.rds", compress = "xz")
+write_rds(receivers,"data-raw/AnimalTracking/Output/ReceiverSummary.rds")

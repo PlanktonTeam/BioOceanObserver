@@ -12,40 +12,34 @@ mod_ATStats_ui <- function(id) {
  
   tagList(
     sidebarLayout(
-      shiny::sidebarPanel(width = 2, 
+      shiny::sidebarPanel(width = 3, 
         shiny::HTML("<h4>Select a filter:</h4>"),
-        shiny::fluidRow(tags$div(align = "left", 
-                                 style = "background-color: #E2ECF3 !important;",
-                                 shiny::radioButtons(inputId = ns("filter"), 
+        shiny::fluidRow(tags$div(align = "left",
+                                 class = "at-stats-filter-radio",
+                                 shiny::radioButtons(inputId = ns("filter"),
                                                      label = NULL,
-                                                     choices = c("Species", "Receivers"), 
+                                                     choices = c("Species", "Installation"),
                                                      selected = "Species"))),
         h4(shiny::textOutput(ns("header_text1"))),
         shiny::selectizeInput(inputId = ns("select1"),
                               label = NULL,
                               choices = pkg.env$AT_all_species,
                               multiple = TRUE,
-                              options = list(
-                                maxOptions = 10,       # Only shows 10 items at a time
-                                placeholder = "All species"
-                              )),
+                              options = list(placeholder = "All Species")),
         h4(shiny::textOutput(ns("header_text2"))),
         shiny::selectizeInput(inputId = ns("select2"),
                               label = NULL,
                               choices = c(sort(unique(pkg.env$AT_receivers$installation_name))),
                               multiple = TRUE,
-                              options = list(
-                                maxOptions = 10,       # Only shows 10 items at a time
-                                placeholder = "All receivers"
-                              )),
+                              options = list(placeholder = "All Installations")),
         shiny::HTML("<h4>Select dates:</h4>"),
         shiny::sliderInput(ns("datesslide"), label = NULL, min = lubridate::ymd(min(pkg.env$AT_receivers$deployment_date)), max = Sys.Date(), 
                            value = c(lubridate::ymd(min(pkg.env$AT_receivers$deployment_date)), Sys.Date()-1), 
                            timeFormat="%m-%Y"),
         shiny::br(),
-        shiny::actionButton(ns("reset_filter"), "Reset to remove filters", icon = icon("undo"))
+        shiny::actionButton(ns("reset_filter"), "Reset filters", icon = icon("undo"))
     ),
-      shiny::mainPanel(width = 10,
+      shiny::mainPanel(width = 9,
                        shiny::htmlOutput(ns("PlotExp3")),
                        fluidRow(column(12, plotOutput(ns("gg1")))) %>% 
                        shinycssloaders::withSpinner(color="#0dc5c1"),
@@ -55,6 +49,9 @@ mod_ATStats_ui <- function(id) {
                        fluidRow(column(12, DT::DTOutput(ns("SpeciesInfoTable")))),
                        shiny::htmlOutput(ns("PlotExp2")),
                        fluidRow(column(12, DT::DTOutput(ns("locationsDataTable")))),
+                       shiny::br(),
+                       shiny::br(),
+                       shiny::br()
       )
     )
   )
@@ -68,40 +65,38 @@ mod_ATStats_server <- function(id){
     ns <- session$ns
 
     output$header_text1 <- renderText({
-      if (input$filter == "Species") "Select species:" else "Select receivers:"
+      if (input$filter == "Species") "Select Species:" else "Select Installations:"
     })
     
     output$header_text2 <- renderText({
-      if (input$filter == "Species") "Refine by receivers:" else "Refine by species:"
+      if (input$filter == "Species") "Refine by Installations:" else "Refine by Species:"
     })
     
     observeEvent(list(input$filter,input$reset_filter), {
       req(input$filter)
 
-      if(input$filter == 'Species') {
+      if(input$filter == "Species") {
         choices_1 <-  c(pkg.env$AT_all_species)
         choices_2 <- c(sort(unique(pkg.env$AT_receivers$installation_name)))
-        placeholder1 <- "All species"
-        placeholder2 <- "All receivers"
+        placeholder1 <- "All Species"
+        placeholder2 <- "All Installations"
       } else {
         choices_2 <-  pkg.env$AT_all_species
         choices_1 <- c(sort(unique(pkg.env$AT_receivers$installation_name)))
-        placeholder1 <- "All receivers"
-        placeholder2 <- "All species"
+        placeholder1 <- "All Installations"
+        placeholder2 <- "All Species"
       }
 
         shiny::updateSelectizeInput(session, "select1",
                               label = NULL,
                               choices = choices_1,
                               options = list(
-                                maxOptions = 10,       # Only shows 10 items at a time
                                 placeholder = placeholder1
                               ))
         shiny::updateSelectizeInput(session, "select2",
                               label = NULL,
                               choices = choices_2,
                               options = list(
-                                maxOptions = 10,       # Only shows 10 items at a time
                                 placeholder = placeholder2
                               ))
         shiny::updateSliderInput(session, "datesslide", 
@@ -124,8 +119,7 @@ mod_ATStats_server <- function(id){
           dplyr::filter(.data$species_common_name %in% species) %>%
           dplyr::pull(.data$month_UTC)
 
-        shiny::updateSelectizeInput(session, "select2", choices = choices,
-                                    options = list(maxOptions = 10))
+        shiny::updateSelectizeInput(session, "select2", choices = choices)
 
         shiny::updateSliderInput(session, "datesslide",
                                  min   = min(dates), max   = max(dates),
@@ -139,8 +133,7 @@ mod_ATStats_server <- function(id){
                                  dplyr::filter(.data$installation_name %in% location) %>%
                                  dplyr::pull(.data$species_common_name)))
 
-        shiny::updateSelectizeInput(session, "select2", choices = choices,
-                                    options = list(maxOptions = 10))
+        shiny::updateSelectizeInput(session, "select2", choices = choices)
       }
 
     }, ignoreInit = FALSE)
@@ -150,7 +143,7 @@ mod_ATStats_server <- function(id){
     fdata <- reactive({
       req(input$filter)
 
-      if (input$filter == 'Species') {
+      if (input$filter == "Species") {
         species  <- if (is.null(input$select1)) pkg.env$AT_all_species else input$select1
         location <- if (is.null(input$select2)) {
           sort(unique(pkg.env$AT_station_species %>%
