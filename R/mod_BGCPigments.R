@@ -34,18 +34,18 @@ mod_PigmentsBGC_server <- function(id){
     
     selectedData <- reactive({
       req(input$site)
-      req(input$date)
-      shiny::validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
-      shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
+      req(input$DatesSlide)
+      shiny::validate(need(!is.na(input$DatesSlide[1]) & !is.na(input$DatesSlide[2]), "Error: Please provide both a start and an end date."))
+      shiny::validate(need(input$DatesSlide[1] < input$DatesSlide[2], "Error: Start date should be earlier than end date."))
       
       pkg.env$Pigs %>%
         dplyr::filter(.data$StationName %in% input$site,
-               .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
+               .data$SampleTime_Local > as.POSIXct(input$DatesSlide[1]) & .data$SampleTime_Local < as.POSIXct(input$DatesSlide[2]),
                .data$Parameters %in% input$parameter) %>%
         dplyr::mutate(name = as.factor(.data$Parameters),
                       SampleDepth_m = round(.data$SampleDepth_m, -1)) %>%
-        tidyr::drop_na() 
-    }) %>% bindCache(input$site, input$parameter, input$date)
+        tidyr::drop_na()
+    }) %>% bindCache(input$site, input$parameter, input$DatesSlide)
     
     shiny::exportTestValues(
       PigsBGC = {ncol(selectedData())},
@@ -66,7 +66,7 @@ mod_PigmentsBGC_server <- function(id){
       trend <-  input$smoother
       planktonr::pr_plot_Enviro(selectedData(), Trend = trend)
       
-    }) %>% bindCache(input$site, input$parameter, input$date, input$smoother)
+    }) %>% bindCache(input$site, input$parameter, input$DatesSlide, input$smoother)
     
     output$timeseries1 <- renderPlot({
       gg_out1()
@@ -76,14 +76,8 @@ mod_PigmentsBGC_server <- function(id){
     output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Pigs") # Download csv of data
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Pigs") # Download figure
     
-    # Sidebar Map - Initial render
-    output$plotmap <- leaflet::renderLeaflet({ 
-      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
-    })
-    
-    # Update map when station selection changes
-    observe({
-      # Convert StationName to StationCode, handle empty selection
+    # Sidebar Map - Initial render with current selection
+    output$plotmap <- mapgl::renderMapboxgl({
       stationCodes <- if (length(input$site) > 0) {
         pkg.env$NRSStation %>%
           dplyr::filter(.data$StationName %in% input$site) %>%
@@ -91,9 +85,21 @@ mod_PigmentsBGC_server <- function(id){
       } else {
         character(0)
       }
-      fLeafletUpdate("plotmap", session, stationCodes, 
-                     Survey = "NRS", Type = "Zooplankton")
+      fMapboxMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
     })
+
+    # Update map when station selection changes
+    observe({
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fMapboxUpdate("plotmap", session, stationCodes,
+                    Survey = "NRS", Type = "Zooplankton")
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # add text information 
     output$PlotExp <- renderText({

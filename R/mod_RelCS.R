@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_RelCS_ui <- function(id){
-  nsRelCS <- NS(id)
+  ns <- NS(id)
   
   tagList(
     sidebarLayout(
@@ -42,8 +42,8 @@ mod_RelCS_server <- function(id){
     })
     
     datx <- reactive({
-      dat1 <- pkg.env$CSChem         
-    }) %>% bindCache(input$groupx)
+      dat1 <- pkg.env$CSChem
+    }) %>% bindCache("CSChem")
     
     observeEvent(datx(), {
       choicesx <- planktonr:::pr_relabel(unique(datx()$Parameters), style = "simple", named = TRUE)
@@ -83,18 +83,18 @@ mod_RelCS_server <- function(id){
               dplyr::pull("Definition"), ".</p>", sep = "")
     })
     
-    # Sidebar Map - Initial render
-    output$plotmap <- leaflet::renderLeaflet({ 
-      fLeafletMap(character(0), Survey = "Coastal", Type = "Zooplankton")
+    # Sidebar Map - Initial render with current selection
+    output$plotmap <- mapgl::renderMapboxgl({
+      sites <- if (length(input$site) > 0) input$site else character(0)
+      fMapboxMap(sites, Survey = "Coastal", Type = "Zooplankton")
     })
-    
+
     # Update map when station selection changes
     observe({
-      # Use input$site directly (State), handle empty selection
       sites <- if (length(input$site) > 0) input$site else character(0)
-      fLeafletUpdate("plotmap", session, sites, 
-                     Survey = "Coastal", Type = "Zooplankton")
-    })
+      fMapboxUpdate("plotmap", session, sites,
+                    Survey = "Coastal", Type = "Zooplankton")
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # Add text information
     output$PlotExp1 <- shiny::renderText({
@@ -115,57 +115,47 @@ mod_RelCS_server <- function(id){
     })  %>% bindCache(input$py)
     
     ## scatter plot
-    # Plot Trends -------------------------------------------------------------
-    observeEvent({input$RelCS == 1}, {
-      
-      gg_out1 <- reactive({
-        
-         trend <- input$smoother
-         y <- rlang::string(input$py)
-         x <- rlang::string(input$px)
+    gg_out1 <- reactive({
+      trend <- input$smoother
+      y <- rlang::string(input$py)
+      x <- rlang::string(input$px)
 
-         if(y %in% colnames(selectedData()) & x %in% colnames(selectedData())){
-           planktonr::pr_plot_scatter(selectedData(), x, y, Trend = trend)
-         } else {
-           ggplot2::ggplot + ggplot2::geom_blank()
-         }
-         }) %>% bindCache(input$py, input$px, input$site, input$smoother)
+      if(y %in% colnames(selectedData()) & x %in% colnames(selectedData())){
+        planktonr::pr_plot_scatter(selectedData(), x, y, Trend = trend)
+      } else {
+        ggplot2::ggplot() + ggplot2::geom_blank()
+      }
+    }) %>% bindCache(input$py, input$px, input$site, input$smoother)
+    
+    output$scatter1 <- renderPlot({
+      req(is.null(input$RelCS) || input$RelCS == "1")
+      gg_out1()
+    }, height = function() {length(unique(selectedData()$SampleDepth_m)) * 200})
+    
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Scatter") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Scatter") # Download figure
+    
+    ## box plot
+    gg_out2 <- reactive({
+      y <- rlang::string(input$py)
+
+      if(y %in% colnames(selectedData())){
+        planktonr::pr_plot_box(selectedData(), y)
+      } else {
+        ggplot2::ggplot() + ggplot2::geom_blank()
+      }
       
-      output$scatter1 <- renderPlot({
-           gg_out1()
-      }, height = function() {length(unique(selectedData()$SampleDepth_m)) * 200})
-      
-      # Download -------------------------------------------------------
-      output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Scatter") # Download csv of data
-      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Scatter") # Download figure
-      
+    }) %>% bindCache(input$py, input$site)
+    
+    output$box2 <- renderPlot({
+      gg_out2()
     })
     
-    ## scatter plot
-    # Plot Trends -------------------------------------------------------------
-    observeEvent({input$RelCS == 2}, {
-      
-      gg_out2 <- reactive({
-        
-        y <- rlang::string(input$py)
-
-        if(y %in% colnames(selectedData())){
-          planktonr::pr_plot_box(selectedData(), y)
-        } else {
-          ggplot2::ggplot + ggplot2::geom_blank()
-        }
-        
-      }) %>% bindCache(input$py, input$site)
-      
-      output$box2 <- renderPlot({
-        gg_out2()
-      })
-      
-      # Download -------------------------------------------------------
-      output$downloadData2 <- fDownloadButtonServer(input, selectedData, "Scatter") # Download csv of data
-      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Scatter") # Download figure
-      
-    })
+    # Download -------------------------------------------------------
+    output$downloadData2 <- fDownloadButtonServer(input, selectedData, "Scatter") # Download csv of data
+    output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Scatter") # Download figure
+    
   }
   )
   

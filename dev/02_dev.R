@@ -46,6 +46,9 @@ golem::add_module( name = "ZooSpatial" ) # Name of the module
 golem::add_module( name = "EnvDataBGC" ) # Name of the module
 golem::add_module( name = "Snapshot" ) # Name of the module
 golem::add_module( name = "Help" ) # Name of the module
+golem::add_module( name = "ATSpatial" ) # Name of the module
+golem::add_module( name = "ATStats" )
+golem::add_module( name = "ATCases" )
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*
@@ -88,7 +91,7 @@ pkgdown::build_site('https://github.com/PlanktonTeam/BioOceanObserver', examples
 usethis::use_coverage()
 
 # Create a summary readme for the testthat subdirectory
-covrpage::covrpage()
+#covrpage::covrpage()
 
 ## CI ----
 ## Use this part of the script if you need to set up a CI

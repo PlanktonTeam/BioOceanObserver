@@ -8,21 +8,21 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_PolNRS_ui <- function(id){
-  nsPolNRS <- NS(id)
+  ns <- NS(id)
   tagList(
     sidebarLayout(
       sidebarPanel(
         shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-        leaflet::leafletOutput(nsPolNRS("plotmap"), height = "400px"),
+        mapgl::mapboxglOutput(ns("plotmap"), height = "400px"),
         shiny::HTML("<h3>Select a station:</h3>"),
-        shiny::radioButtons(inputId = nsPolNRS("site"), 
+        shiny::radioButtons(inputId = ns("site"), 
                             label = NULL, 
                             choices = unique(sort(pkg.env$PolNRS$StationName)), 
                             selected = "Maria Island"),
         shiny::conditionalPanel(
-          condition = paste0("input.EOV_NRS == 1"), # Only first tab
+          condition = paste0("input['", id, "-EOV_NRS'] == 1"), # Only first tab
           shiny::HTML("<h3>Select a parameter:</h3>"),
-          shiny::checkboxGroupInput(inputId = nsPolNRS("Parameters"), label = NULL, 
+          shiny::checkboxGroupInput(inputId = ns("Parameters"), label = NULL, 
                                     choices = planktonr:::pr_relabel(
                                       c("Biomass_mgm3", "PhytoBiomassCarbon_pgL", "ShannonPhytoDiversity", "ShannonCopepodDiversity", 
                                         "CTDTemperature_degC", "Salinity", "PigmentChla_mgm3", "Ammonium_umolL", "Nitrate_umolL", 
@@ -41,36 +41,37 @@ mod_PolNRS_ui <- function(id){
                         feasiblity to take consistent measurements. They are commonly measured by observing systems and 
                         frequently used in policy making and input into reporting such as State of Environment."),
         shiny::hr(class = "hr-separator"),
-        shiny::htmlOutput(nsPolNRS("StationSummary")),
+        shiny::htmlOutput(ns("StationSummary")),
         shiny::br(),
-        shiny::tabsetPanel(id = "EOV_NRS", type = "pills",
-                           shiny::tabPanel("All", value = 1,
+        bslib::navset_pill(id = ns("EOV_NRS"),
+                           selected = "1",
+                           bslib::nav_panel("All", value = "1",
                                            
-                                           shiny::plotOutput(nsPolNRS("timeseries1"), height = 5 * 200) %>%
+                                           shiny::plotOutput(ns("timeseries1"), height = 5 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
                                            div(class="download-button-container",
                                                fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                                                fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                                                fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action"))
                            ),
-                           shiny::tabPanel("Biological", value = 2,
-                                           shiny::plotOutput(nsPolNRS("timeseries2"), height = 5 * 200) %>%
+                           bslib::nav_panel("Biological", value = "2",
+                                           shiny::plotOutput(ns("timeseries2"), height = 5 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
                                            div(class="download-button-container",
                                                fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
                                                fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
                                                fButtons(id, button_id = "downloadCode2", label = "Code", Type = "Action"))
                            ),
-                           shiny::tabPanel("Chemical", value = 3,
-                                           shiny::plotOutput(nsPolNRS("timeseries3"), height = 5 * 200) %>%
+                           bslib::nav_panel("Chemical", value = "3",
+                                           shiny::plotOutput(ns("timeseries3"), height = 5 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
                                            div(class="download-button-container",
                                                fButtons(id, button_id = "downloadPlot3", label = "Plot", Type = "Download"),
                                                fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
                                                fButtons(id, button_id = "downloadCode3", label = "Code", Type = "Action"))
                            ),
-                           shiny::tabPanel("Physical", value = 4,
-                                           shiny::plotOutput(nsPolNRS("timeseries4"), height = 2 * 200) %>%
+                           bslib::nav_panel("Physical", value = "4",
+                                           shiny::plotOutput(ns("timeseries4"), height = 2 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
                                            div(class="download-button-container",
                                                fButtons(id, button_id = "downloadPlot4", label = "Plot", Type = "Download"),
@@ -95,10 +96,10 @@ mod_PolNRS_server <- function(id){
       req(input$site)
       shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       
-      selectedData <- pkg.env$PolNRS %>% 
+      selectedData <- pkg.env$PolNRS %>%
         dplyr::filter(.data$StationName %in% input$site)
       
-    }) %>% bindCache(input$site, input$Parameters)
+    }) %>% bindCache(input$site)
     
     shiny::exportTestValues(
       PolNRS = {ncol(selectedData())},
@@ -120,16 +121,32 @@ mod_PolNRS_server <- function(id){
         dplyr::filter(.data$StationName == input$site) 
     }) %>% bindCache(input$site)
     
-    # Sidebar Map - Initial render
-    output$plotmap <- leaflet::renderLeaflet({ 
-      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
+    # Sidebar Map - Initial render with current selection
+    output$plotmap <- mapgl::renderMapboxgl({
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fMapboxMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
     })
-    
+
+    outputOptions(output, "plotmap", suspendWhenHidden = FALSE)
+
     # Update map when station selection changes
     observe({
-      fLeafletUpdate("plotmap", session, unique(selectedData()$StationCode), 
-                     Survey = "NRS", Type = "Zooplankton")
-    })
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fMapboxUpdate("plotmap", session, stationCodes,
+                    Survey = "NRS", Type = "Zooplankton")
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     output$StationSummary <- shiny::renderText({ 
       paste('<h4 class="centered-heading">',input$site,'</h4>The IMOS ', input$site, ' National Reference Station is located at ', round(stationData()$Latitude,2), 
@@ -140,124 +157,104 @@ mod_PolNRS_server <- function(id){
             ' management bioregion. The station is characterised by ', stationData()$Features, '.', sep = "")
     })
     
-    titley <- planktonr:::pr_relabel(c("PigmentChla_mgm3"), style = "ggplot")
-    
     col1 <- fEOVutilities(vector = "col")
     trans1 <- fEOVutilities(vector = "trans")
     
     
-    observeEvent({input$EOV_NRS == 1}, {
+    gg_out1 <- reactive({
+      p_list <- list()
+      for (idx in 1:length(input$Parameters)){
+        p <- planktonr::pr_plot_EOVs(selectedData(), EOV = input$Parameters[idx], trans = trans1[[input$Parameters[idx]]], col = col1[[input$Parameters[idx]]])
+        p_list[[idx]] <- p
+      }
       
-      gg_out1 <- reactive({
-        
-        p_list <- list()
-        for (idx in 1:length(input$Parameters)){
-          p <- planktonr::pr_plot_EOVs(selectedData(), EOV = input$Parameters[idx], trans = trans1[[input$Parameters[idx]]], col = col1[[input$Parameters[idx]]])
-          p_list[[idx]] <- p
-        }
-        
-        patchwork::wrap_plots(p_list, ncol = 1, byrow = TRUE)  &
-          ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
-                         axis.title = ggplot2::element_text(size = 12, face = "plain"),
-                         axis.text =  ggplot2::element_text(size = 10, face = "plain"),
-                         plot.title = ggplot2::element_text(hjust = 0.5))
-        
-      }) %>% bindCache(input$site, input$Parameters)
+      patchwork::wrap_plots(p_list, ncol = 1, byrow = TRUE) &
+        ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
+                       axis.title = ggplot2::element_text(size = 12, face = "plain"),
+                       axis.text =  ggplot2::element_text(size = 10, face = "plain"),
+                       plot.title = ggplot2::element_text(hjust = 0.5))
       
-      
-      output$timeseries1 <- renderPlot({
-        gg_out1()
-      })
-      
-      # Download -------------------------------------------------------
-      output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Policy_Select") # Download csv of data
-      output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Policy_Select", papersize = "A4") # Download figure  
-      
+    }) %>% bindCache(input$site, input$Parameters)
+    
+    output$timeseries1 <- renderPlot({
+      req(is.null(input$EOV_NRS) || input$EOV_NRS == "1")
+      gg_out1()
     })
     
+    # Download -------------------------------------------------------
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Policy_Select") # Download csv of data
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Policy_Select", papersize = "A4") # Download figure
     
-    observeEvent({input$EOV_NRS == 2}, {
+    gg_out2 <- reactive({
+      p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "PigmentChla_mgm3", trans = "log10", col = col1["PigmentChla_mgm3"], labels = FALSE)
+      p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col1["PhytoBiomassCarbon_pgL"], labels = FALSE)
+      p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Biomass_mgm3", trans = "log10", col = col1["Biomass_mgm3"], labels = FALSE)
+      p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE)
+      p5 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonCopepodDiversity", trans = "log10", col = col1["ShannonCopepodDiversity"])
       
-      gg_out2 <- reactive({
-        p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "PigmentChla_mgm3", trans = "log10", col = col1["PigmentChla_mgm3"], labels = FALSE) 
-        p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col1["PhytoBiomassCarbon_pgL"], labels = FALSE) 
-        p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Biomass_mgm3", trans = "log10", col = col1["Biomass_mgm3"], labels = FALSE) 
-        p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE)
-        p5 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonCopepodDiversity", trans = "log10", col = col1["ShannonCopepodDiversity"]) 
-        
-        patchwork::wrap_elements(p1 / p2 / p3 / p4 / p5) &
-          ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
-                         axis.title = ggplot2::element_text(size = 12, face = "plain"),
-                         axis.text =  ggplot2::element_text(size = 10, face = "plain"),
-                         plot.title = ggplot2::element_text(hjust = 0.5))
-        
-      }) %>% bindCache(input$site)
+      patchwork::wrap_elements(p1 / p2 / p3 / p4 / p5) &
+        ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
+                       axis.title = ggplot2::element_text(size = 12, face = "plain"),
+                       axis.text =  ggplot2::element_text(size = 10, face = "plain"),
+                       plot.title = ggplot2::element_text(hjust = 0.5))
       
-      output$timeseries2 <- renderPlot({
-        gg_out2()
-      })
-      
-      # Download -------------------------------------------------------
-      output$downloadData2 <- fDownloadButtonServer(input, selectedData, "Policy_Bio") # Download csv of data
-      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Policy_Bio", papersize = "A4") # Download figure  
-      
+    }) %>% bindCache(input$site)
+    
+    output$timeseries2 <- renderPlot({
+      gg_out2()
     })
     
-    observeEvent({input$EOV_NRS == 3}, {
+    # Download -------------------------------------------------------
+    output$downloadData2 <- fDownloadButtonServer(input, selectedData, "Policy_Bio") # Download csv of data
+    output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Policy_Bio", papersize = "A4") # Download figure
+    
+    gg_out3 <- reactive({
+      p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Ammonium_umolL", trans = "identity", col = col1["Ammonium_umolL"], labels = FALSE)
+      p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Nitrate_umolL", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
+      p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Silicate_umolL", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE)
       
-      gg_out3 <- reactive({
-        p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Ammonium_umolL", trans = "identity", col = col1["Ammonium_umolL"], labels = FALSE)
-        p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Nitrate_umolL", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
-        p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Silicate_umolL", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE)
-        
-        if(input$site %in% c('Maria Island', 'Rottnest Island')){
-          p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = FALSE)
-          p5 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Oxygen_umolL", trans = "identity", col = col1["Oxygen_umolL"])
-        } else {
-          p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = TRUE)
-          p5 <- ggplot2::ggplot() + ggplot2::geom_blank() + ggplot2::theme_void()
-        }
-        
-        patchwork::wrap_elements(p1 / p2 / p3/ p4 / p5) &
-          ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
-                         axis.title = ggplot2::element_text(size = 12, face = "plain"),
-                         axis.text =  ggplot2::element_text(size = 10, face = "plain"),
-                         plot.title = ggplot2::element_text(hjust = 0.5))
-        
-      }) %>% bindCache(input$site)
+      if(input$site %in% c('Maria Island', 'Rottnest Island')){
+        p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = FALSE)
+        p5 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Oxygen_umolL", trans = "identity", col = col1["Oxygen_umolL"])
+      } else {
+        p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Phosphate_umolL", trans = "log10", col = col1["Phosphate_umolL"], labels = TRUE)
+        p5 <- ggplot2::ggplot() + ggplot2::geom_blank() + ggplot2::theme_void()
+      }
       
-      output$timeseries3 <- renderPlot({
-        gg_out3()
-      })
+      patchwork::wrap_elements(p1 / p2 / p3 / p4 / p5) &
+        ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
+                       axis.title = ggplot2::element_text(size = 12, face = "plain"),
+                       axis.text =  ggplot2::element_text(size = 10, face = "plain"),
+                       plot.title = ggplot2::element_text(hjust = 0.5))
       
-      # Download -------------------------------------------------------
-      output$downloadData3 <- fDownloadButtonServer(input, selectedData, "Policy_Chem") # Download csv of data
-      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "Policy_Chem", papersize = "A4") # Download figure  
-      
+    }) %>% bindCache(input$site)
+    
+    output$timeseries3 <- renderPlot({
+      gg_out3()
     })
     
-    observeEvent({input$EOV_NRS == 4}, {
-      gg_out4 <- reactive({
-        p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "CTDTemperature_degC", trans = "identity", col = col1["CTDTemperature_degC"], labels = FALSE)
-        p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Salinity", trans = "identity", col = col1["Salinity"])
-        
-        patchwork::wrap_elements(p1 / p2) &
-          ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
-                         axis.title = ggplot2::element_text(size = 12, face = "plain"),
-                         axis.text =  ggplot2::element_text(size = 10, face = "plain"),
-                         plot.title = ggplot2::element_text(hjust = 0.5))
-        
-      }) %>% bindCache(input$site)
-      
-      output$timeseries4 <- renderPlot({
-        gg_out4()
-      })
-      
-      
-      # Download -------------------------------------------------------
-      output$downloadData4 <- fDownloadButtonServer(input, selectedData, "Policy_Phys") # Download csv of data
-      output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4, "Policy_Phys", papersize = "A4r") # Download figure  
-    })
+    # Download -------------------------------------------------------
+    output$downloadData3 <- fDownloadButtonServer(input, selectedData, "Policy_Chem") # Download csv of data
+    output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "Policy_Chem", papersize = "A4") # Download figure
     
+    gg_out4 <- reactive({
+      p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "CTDTemperature_degC", trans = "identity", col = col1["CTDTemperature_degC"], labels = FALSE)
+      p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Salinity", trans = "identity", col = col1["Salinity"])
+      
+      patchwork::wrap_elements(p1 / p2) &
+        ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),
+                       axis.title = ggplot2::element_text(size = 12, face = "plain"),
+                       axis.text =  ggplot2::element_text(size = 10, face = "plain"),
+                       plot.title = ggplot2::element_text(hjust = 0.5))
+      
+    }) %>% bindCache(input$site)
+    
+    output$timeseries4 <- renderPlot({
+      gg_out4()
+    })
+
+    # Download -------------------------------------------------------
+    output$downloadData4 <- fDownloadButtonServer(input, selectedData, "Policy_Phys") # Download csv of data
+    output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4, "Policy_Phys", papersize = "A4r") # Download figure
     
   })}

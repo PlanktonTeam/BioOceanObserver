@@ -289,37 +289,232 @@ html .navbar {
   border-bottom: none !important;
 }
 
+/* Active state for dropdown toggles when a child page is selected.
+   Bootstrap 3-compat: .active is on the <li>, not the <a>.
+   Bootstrap 5: .active may be on the <a> directly.
+   Both patterns need the same pill treatment as the Home nav-link. */
+.navbar-nav li.active > a.dropdown-toggle,
+.navbar-nav li.active > .nav-link.dropdown-toggle,
+.navbar-nav .nav-item.active > a.dropdown-toggle,
+.navbar-nav .nav-item.active > .nav-link.dropdown-toggle {
+  color: var(--text-3) !important;
+  background-color: var(--primary-1) !important;
+  border-radius: 4px !important;
+  border-bottom: none !important;
+}
+
+/* ========================================
+   NAVBAR DROPDOWN MENU STYLING (nav_menu)
+   ======================================== */
+
+/* ── Fix: bslib/Shiny renders navbar <ul> with nav-underline class which
+         suppresses Bootstrap 5 dropdown display. Override to restore
+         standard navbar-nav dropdown behaviour. ── */
+
+/* Restore pointer-events and cursor on the dropdown TOGGLE <a> in the navbar.
+   The rule at line ~1370 (.navbar-nav .dropdown-menu li > a:first-child)
+   sets pointer-events:none, which also matches li.dropdown > a.dropdown-toggle.
+   This override must come AFTER that rule in the file, but we use higher
+   specificity here to ensure it wins regardless of order. */
+.navbar-nav li.dropdown > a.dropdown-toggle,
+.nav-underline li.dropdown > a.dropdown-toggle {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+
+/* Ensure the dropdown <li> is positioned so the menu can appear below it */
+.nav-underline .dropdown,
+.navbar-nav.nav-underline .dropdown {
+  position: relative !important;
+}
+
+/* Position the dropdown-menu correctly below the toggle.
+   Hidden by default. */
+.nav-underline .dropdown-menu,
+.navbar-nav.nav-underline .dropdown-menu {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  z-index: 1050 !important;
+  display: none;
+}
+
+/* Bootstrap 3 (bs3compat): adds .open to the parent <li> on click */
+.nav-underline li.open > .dropdown-menu,
+.navbar-nav.nav-underline li.open > .dropdown-menu {
+  display: block !important;
+}
+
+/* Bootstrap 5: adds .show to the <ul class="dropdown-menu"> on click */
+.nav-underline .dropdown-menu.show,
+.navbar-nav.nav-underline .dropdown-menu.show {
+  display: block !important;
+}
+
+/* Remove nav-underline's bottom-border indicator on dropdown toggles */
+.nav-underline .dropdown-toggle.nav-link::after,
+.nav-underline .dropdown-toggle.nav-link {
+  border-bottom: none !important;
+  text-decoration: none !important;
+}
+
+/* Dropdown toggle caret */
+.navbar-nav .dropdown-toggle::after,
+.nav-underline .dropdown-toggle::after {
+  display: inline-block !important;
+  margin-left: 0.35em !important;
+  vertical-align: 0.2em !important;
+  content: "" !important;
+  border-top: 0.3em solid !important;
+  border-right: 0.3em solid transparent !important;
+  border-bottom: 0 !important;
+  border-left: 0.3em solid transparent !important;
+  color: var(--primary-2) !important;
+}
+
+/* Caret on hover — change to primary-1 teal */
+.navbar-nav .dropdown-toggle:hover::after {
+  color: var(--primary-1) !important;
+  border-top-color: var(--primary-1) !important;
+}
+
+/* Caret when dropdown is open (aria-expanded=true) or active —
+   must be white to match white text on dark (primary-1) background.
+   Covers both: clicking a dropdown to open it, and the selected tab state. */
+.navbar-nav .nav-link.active.dropdown-toggle::after,
+.navbar-nav .dropdown-toggle.active::after,
+.navbar-nav li.active > .dropdown-toggle::after,
+.navbar-nav .show > .dropdown-toggle::after,
+.navbar-nav .dropdown-toggle[aria-expanded="true"]::after,
+.navbar-nav li.show > .dropdown-toggle::after,
+.navbar-nav li.open > .dropdown-toggle::after {
+  color: var(--text-3) !important;
+  border-top-color: var(--text-3) !important;
+}
+
+/* Dropdown panel container */
+.navbar-nav .dropdown-menu,
+.nav-underline .dropdown-menu {
+  background-color: var(--neutral-2) !important;
+  border: 1px solid var(--primary-4) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 12px rgba(24, 44, 58, 0.15) !important;
+  padding: 0.25rem 0 !important;
+  min-width: 220px !important;
+  margin-top: 2px !important;
+}
+
+/* Individual dropdown items */
+.navbar-nav .dropdown-menu .dropdown-item,
+.nav-underline .dropdown-menu .dropdown-item {
+  font-family: "Open Sans", sans-serif !important;
+  font-size: var(--font-size-base) !important;
+  font-weight: var(--font-weight-normal) !important;
+  color: var(--primary-2) !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 0 !important;
+  transition: background-color 0.2s ease, color 0.2s ease !important;
+  white-space: normal !important;
+  display: block !important;
+}
+
+.navbar-nav .dropdown-menu .dropdown-item:hover,
+.navbar-nav .dropdown-menu .dropdown-item:focus,
+.nav-underline .dropdown-menu .dropdown-item:hover,
+.nav-underline .dropdown-menu .dropdown-item:focus {
+  background-color: var(--primary-5) !important;
+  color: var(--primary-1) !important;
+  text-decoration: none !important;
+}
+
+.navbar-nav .dropdown-menu .dropdown-item.active,
+.navbar-nav .dropdown-menu .dropdown-item:active,
+.nav-underline .dropdown-menu .dropdown-item.active,
+.nav-underline .dropdown-menu .dropdown-item:active {
+  background-color: var(--primary-1) !important;
+  color: var(--text-3) !important;
+}
+
+/* Dropdown divider */
+.navbar-nav .dropdown-menu .dropdown-divider,
+.nav-underline .dropdown-menu .dropdown-divider {
+  border-top: 1px solid var(--primary-4) !important;
+  margin: 0.25rem 0 !important;
+}
+
 /* ========================================
    TAB STYLING
    ======================================== */
 
-/* Tab Navigation */
-.nav-pills .nav-link {
+/* Tab Navigation — nav-pills (tabsetPanel type="pills")
+   
+   Two HTML structures exist depending on Shiny/bslib version:
+   
+   Structure A — newer bslib BS5 rendering (outer tabsets in nav_panel):
+     <ul class="nav nav-pills">
+       <li class="nav-item">
+         <a class="nav-link active">Tab</a>   ← <a> has .nav-link
+   
+   Structure B — older Shiny BS3-compat rendering (inner tabsets in modules):
+     <ul class="nav nav-pills">
+       <li class="active">
+         <a>Tab</a>                           ← <a> has NO .nav-link
+   
+   Both structures are also descendants of the bslib navbar:
+     <ul class="nav navbar-nav nav-underline">
+   so Bootstrap 5's .nav-underline .nav-link rule bleeds in.
+   
+   Fix: target BOTH .nav-link AND bare <a> inside .nav-pills li. */
+
+/* ── Structure A: <a class="nav-link"> ── */
+.navbar-nav .nav-pills .nav-link,
+.nav-underline .nav-pills .nav-link,
+.nav-pills .nav-link,
+/* ── Structure B: bare <a> inside <li> ── */
+.navbar-nav .nav-pills li > a,
+.nav-underline .nav-pills li > a,
+.nav-pills li > a {
   font-family: "Open Sans", sans-serif !important;
   font-size: var(--font-size-base) !important;
   font-weight: var(--font-weight-medium) !important;
   color: var(--primary-1) !important;
   background-color: var(--neutral-2) !important;
   border: 1px solid var(--primary-1) !important;
+  border-bottom: 1px solid var(--primary-1) !important;
   border-radius: 6px !important;
   margin-right: 0.5rem !important;
   margin-bottom: 0.5rem !important;
   padding: 0.5rem 1rem !important;
   transition: all 0.3s ease !important;
+  text-decoration: none !important;
+  display: inline-block !important;
 }
 
-.nav-pills .nav-link:hover {
+.navbar-nav .nav-pills .nav-link:hover,
+.nav-underline .nav-pills .nav-link:hover,
+.nav-pills .nav-link:hover,
+.navbar-nav .nav-pills li > a:hover,
+.nav-underline .nav-pills li > a:hover,
+.nav-pills li > a:hover {
   color: var(--text-3) !important;
   background-color: var(--primary-1) !important;
-  border-color: var(--primary-1) !important;
+  border: 1px solid var(--primary-1) !important;
+  border-bottom: 1px solid var(--primary-1) !important;
   text-decoration: none !important;
-  border-bottom: none !important;
 }
 
-.nav-pills .nav-link.active {
+/* Active state — Structure A: .nav-link.active, Structure B: li.active > a */
+.navbar-nav .nav-pills .nav-link.active,
+.nav-underline .nav-pills .nav-link.active,
+.nav-pills .nav-link.active,
+.navbar-nav .nav-pills li.active > a,
+.nav-underline .nav-pills li.active > a,
+.nav-pills li.active > a {
   color: var(--text-3) !important;
   background-color: var(--primary-2) !important;
-  border-color: var(--primary-2) !important;
+  border: 1px solid var(--primary-2) !important;
+  border-bottom: 1px solid var(--primary-2) !important;
   text-decoration: none !important;
 }
 
@@ -487,7 +682,8 @@ a:focus {
 
 .table th {
   font-family: "Poppins", sans-serif !important;
-  font-weight: var(--font-weight-semibold) !important;
+  font-weight: var(--font-weight-normal) !important;
+  line-height: var(--line-height-tight) !important;
   color: var(--primary-2) !important;
   background-color: var(--primary-5) !important;
   border-bottom: 2px solid var(--primary-4) !important;
@@ -501,6 +697,51 @@ a:focus {
 .table-striped tbody tr:nth-of-type(odd) {
   background-color: var(--grey-100) !important;
 }
+
+/* ========================================
+   DATA TABLES - DT
+   ======================================== */
+
+div[id*="Table"] table.dataTable {
+  font-family: "Open Sans", sans-serif !important;
+  font-weight: var(--font-weight-normal) !important;
+  line-height: var(--line-height-tight) !important;
+  font-size: var(--font-size-sm) !important;
+  background-color: var(--neutral-2) !important;
+}
+
+div[id*="Table"] table.dataTable thead th {
+  font-family: "Poppins", sans-serif !important;
+  font-weight: var(--font-weight-normal) !important;
+  color: var(--primary-2) !important;
+  background-color: var(--primary-5) !important;
+  border-bottom: 2px solid var(--primary-4) !important;
+}
+
+div[id*="Table"] table.dataTable td {
+  color: var(--text-2) !important;
+  border-bottom: 1px solid var(--grey-300) !important;
+}
+
+div[id*="Table"] table.dataTable-striped tbody tr:nth-of-type(odd) {
+  background-color: var(--grey-100) !important;
+}
+
+/* Selected row highlight - override DataTables' default bright blue */
+div[id*="Table"] table.dataTable tbody tr.selected,
+div[id*="Table"] table.dataTable tbody tr.selected td,
+table.dataTable tbody tr.selected,
+table.dataTable tbody tr.selected td {
+  background-color: color-mix(in srgb, var(--secondary-1) 25%, transparent) !important;
+  color: var(--text-1) !important;
+  box-shadow: none !important;
+}
+
+table.dataTable tbody tr.selected:hover,
+table.dataTable tbody tr.selected:hover td {
+  background-color: color-mix(in srgb, var(--secondary-1) 35%, transparent) !important;
+}
+
 
 /* ========================================
    ALERTS AND NOTIFICATIONS
@@ -556,6 +797,8 @@ a:focus {
     font-size: var(--font-size-lg) !important;
   }
   
+  .navbar-nav .nav-pills .nav-link,
+  .nav-underline .nav-pills .nav-link,
   .nav-pills .nav-link {
     font-size: var(--font-size-xs) !important;
     padding: 0.4rem 0.8rem !important;
@@ -634,6 +877,12 @@ a:focus {
   font-family: "Open Sans", sans-serif !important;
 }
 
+.shiny-output-error-my-hint {
+  color: var(--primary-1);
+  font-size: var(--font-size-base) !important;
+  font-weight: var(--font-weight-semibold) !important;
+}
+
 /* Progress Bars */
 .progress {
   background-color: var(--grey-300) !important;
@@ -690,13 +939,23 @@ a:focus {
 }
 
 /* Nav-pills focus - matches active nav-pills background */
-.nav-pills .nav-link:focus {
+.navbar-nav .nav-pills .nav-link:focus,
+.nav-underline .nav-pills .nav-link:focus,
+.nav-pills .nav-link:focus,
+.navbar-nav .nav-pills li > a:focus,
+.nav-underline .nav-pills li > a:focus,
+.nav-pills li > a:focus {
   outline: 2px solid var(--primary-2) !important;
   outline-offset: 2px !important;
 }
 
 /* Nav-pills hover focus - matches hover state */
-.nav-pills .nav-link:hover:focus {
+.navbar-nav .nav-pills .nav-link:hover:focus,
+.nav-underline .nav-pills .nav-link:hover:focus,
+.nav-pills .nav-link:hover:focus,
+.navbar-nav .nav-pills li > a:hover:focus,
+.nav-underline .nav-pills li > a:hover:focus,
+.nav-pills li > a:hover:focus {
   outline: 2px solid var(--primary-1) !important;
   outline-offset: 2px !important;
 }
@@ -763,14 +1022,17 @@ a:focus {
 }
 
 /* Home page footer section */
+/* The footer is rendered inside navbarPage's .container-fluid (15px padding each side).
+   Negative margins pull it flush to the viewport edges. */
 .home-footer {
   background-color: var(--primary-5) !important;
-  padding: 20px !important;
+  padding: 20px 30px !important;
   margin-top: 30px !important;
-  margin-left: calc(-50vw + 50%) !important;
-  margin-right: calc(-50vw + 50%) !important;
-  width: 100vw !important;
-  position: relative !important;
+  margin-left: -15px !important;
+  margin-right: -15px !important;
+  width: calc(100% + 30px) !important;
+  box-sizing: border-box !important;
+  border-radius: 0 !important;
 }
 
 /* Footer content layout */
@@ -778,10 +1040,10 @@ a:focus {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  flex-wrap: wrap !important;
-  max-width: 1200px !important;
-  margin: 0 auto !important;
-  padding: 0 15px !important;
+  flex-wrap: nowrap !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 /* Funding section layout */
@@ -789,25 +1051,30 @@ a:focus {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  margin-bottom: 10px !important;
+  flex-wrap: nowrap !important;
   width: 100% !important;
+  margin-bottom: 0 !important;
+  gap: 20px !important;
 }
 
 .funding-title {
-  margin-right: 20px !important;
-  margin-bottom: 0 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
 }
 
 .funding-logos {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 60px !important;
-  flex-wrap: wrap !important;
+  gap: clamp(15px, 2vw, 40px) !important;
+  flex-wrap: nowrap !important;
 }
 
 .funding-logos img {
-  height: 60px !important;
+  height: 55px !important;
+  width: auto !important;
+  flex-shrink: 1 !important;
 }
 
 
@@ -824,6 +1091,7 @@ a:focus {
 .tab-content,
 .tab-pane {
   background-color: var(--neutral-2) !important;
+  overflow-x: visible !important;
 }
 
 /* Target main container but exclude navbar and footer areas */
@@ -908,7 +1176,7 @@ a:focus {
 .well .form-control,
 .well .form-select,
 .well select,
-.well input[type="text"],
+.well input[type="text"]:not(.selectize-input *),
 .well input[type="number"],
 .well input[type="email"],
 .well input[type="password"],
@@ -916,6 +1184,15 @@ a:focus {
   background-color: transparent !important;
   border: 1px solid var(--primary-1) !important;
   color: var(--text-1) !important;
+}
+
+/* Explicitly remove border from the inner selectize text input */
+.well .selectize-control .selectize-input input[type="text"],
+.well .selectize-input input {
+  border: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  outline: none !important;
 }
 
 /* Dropdown/Select elements in sidebar */
@@ -926,6 +1203,20 @@ a:focus {
   border: 1px solid var(--primary-1) !important;
   color: var(--text-1) !important;
   font-size: var(--font-size-base) !important;
+}
+
+/* Selected items (tags) inside selectize in sidebar - match sidebar background */
+.well .selectize-input .item {
+  background-color: var(--primary-5) !important;
+  color: var(--text-1) !important;
+  border: none !important;
+  border-radius: 4px !important;
+}
+
+/* Limits the dropdown height and adds a scrollbar */
+.selectize-dropdown-content {
+  max-height: 130px !important;
+  overflow-y: auto !important;
 }
 
 /* Radio buttons and checkboxes in sidebar */
@@ -1046,6 +1337,14 @@ a:focus {
   font-size: var(--font-size-base) !important;
 }
 
+/* Selected item tags in sidebar selectize - match sidebar background, no border */
+.well .selectize-control .selectize-input .item {
+  background-color: var(--primary-5) !important;
+  color: var(--text-1) !important;
+  border: none !important;
+  border-radius: 4px !important;
+}
+
 .well .selectize-control .selectize-input input {
   color: var(--text-1) !important;
   font-size: var(--font-size-base) !important;
@@ -1144,67 +1443,6 @@ a:focus {
   border-radius: 6px !important;
   background-color: var(--neutral-2) !important;
   box-shadow: 0 4px 8px rgba(59, 110, 143, 0.15) !important;
-}
-
-/* ========================================
-   DROPDOWN MENU ITEMS HOVER FIX
-   ======================================== */
-
-/* Fix dropdown menu item hover to prevent extra background slivers */
-.navbar-nav .dropdown-menu li {
-  background-color: transparent !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-.navbar-nav .dropdown-menu li:hover {
-  background-color: transparent !important;
-}
-
-/* Target the outer Shiny-generated anchor tag (disable its hover) */
-.navbar-nav .dropdown-menu li > a:first-child {
-  display: block !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background-color: transparent !important;
-  border: none !important;
-  width: 100% !important;
-  pointer-events: none !important; /* Disable hover on outer anchor */
-}
-
-.navbar-nav .dropdown-menu li > a:first-child:hover {
-  background-color: transparent !important;
-  color: inherit !important;
-  text-decoration: none !important;
-}
-
-/* Target the inner anchor tag (the actual link) */
-.navbar-nav .dropdown-menu li > a > a {
-  display: block !important;
-  padding: 0.5rem 1rem !important;
-  color: var(--text-2) !important;
-  text-decoration: none !important;
-  background-color: transparent !important;
-  border: none !important;
-  width: 100% !important;
-  transition: background-color 0.3s ease !important;
-  pointer-events: auto !important; /* Enable hover on inner anchor */
-}
-
-.navbar-nav .dropdown-menu li > a > a:hover,
-.navbar-nav .dropdown-menu li a:hover,
-.navbar-nav .dropdown-menu .dropdown-item:hover,
-.dropdown-menu li > a:hover,
-.dropdown-menu a:hover {
-  background-color: var(--primary-1) !important;
-  color: var(--text-3) !important;
-  text-decoration: none !important;
-}
-
-/* Ensure no other nested elements create hover areas */
-.navbar-nav .dropdown-menu li > a > a > * {
-  background-color: transparent !important;
-  pointer-events: none !important;
 }
 
 /* ========================================
@@ -1470,41 +1708,42 @@ nav[class*="navbar"],
 }
 /* Style the accordion header */
 .accordion-button {
-  background-color: var(--primary-5) !important; 
-  color: var(--primary-5);  !important;  /* Header text color */
-  font-weight: bold; !important;
-  font-size: var(--font-size-xl)    !important;     
-  border-radius: 10px !important; /* Rounded header */
+  background-color: var(--primary-5) !important;
+  color: var(--primary-2) !important;
+  font-weight: var(--font-weight-bold) !important;
+  font-size: var(--font-size-xl) !important;
+  border-radius: 10px !important;
   border-color: var(--secondary-1) !important;
-  padding: 0.4rem 0.75rem; /* control size of button */
-  
+  padding: 0.4rem 0.75rem;
 }
 /* Optional: Change hover effect on header */
 .accordion-button:hover {
-  background-color: var(--background) !important; 
+  background-color: var(--background) !important;
   border-color: var(--secondary-1) !important;
-  color:  var(--primary-5); !important; 
+  color: var(--primary-2) !important;
 }
 
 /* Not active (collapsed) — pale background */
 .accordion-button.collapsed {
-  background-color: var(--background) !important; /* pale colour */
+  background-color: var(--background) !important;
   color: var(--primary-2) !important;
 }
 
 /* Optional: Change hover effect on header */
 .accordion-button:not(.collapsed) {
-  background-color: var(--primary-5)) !important; 
+  background-color: var(--primary-5) !important;
   border-color: var(--secondary-1) !important;
-  color:  var(--primary-5) !important; 
+  color: var(--primary-2) !important;
 }
 /* Style the accordion body */
 .accordion-body {
-  background-color: var(--neutral-2) !important;   
-  padding: 1rem; !important;   
-  border-top: 1px solid var(--primary-1) !important;   
-  border-radius: 0 0 10px 10px !important;   
-=======
+  background-color: var(--neutral-2) !important;
+  padding: 1rem !important;
+  border-top: 1px solid var(--primary-1) !important;
+  border-radius: 0 0 10px 10px !important;
+}
+
+/* ========================================
    UTILITY CLASSES FOR COMMON STYLES
    ======================================== */
 
@@ -1557,5 +1796,526 @@ nav[class*="navbar"],
 .col-no-spacing {
   padding: 0px;
   margin: 0px;
+}
+
+/* ========================================
+   ANIMAL TRACKING STATISTICS MODULE
+   ======================================== */
+
+/* Radio button filter row background - matches sidebar colour */
+.at-stats-filter-radio {
+  background-color: var(--primary-5) !important;
+}
+
+/* ========================================
+   ANIMAL TRACKING SPATIAL MODULE
+   ======================================== */
+
+/* Full-screen map container */
+.at-map-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ---- Sidebar -------------------------------------------- */
+.at-sidebar {
+  position: absolute;
+  top: 0;
+  right: -400px;
+  width: 380px;
+  height: 100%;
+  background: var(--neutral-2);
+  box-shadow: -4px 0 20px rgba(24, 44, 58, 0.18);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.3s ease;
+}
+
+.at-sidebar.open {
+  right: 0;
+}
+
+/* Sidebar header */
+.at-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: var(--primary-2);
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+.at-sidebar-header h3 {
+  font-size: var(--font-size-lg) !important;
+  font-weight: var(--font-weight-semibold) !important;
+  color: var(--text-3) !important;
+  line-height: var(--line-height-tight) !important;
+  margin: 0 !important;
+  flex: 1;
+  padding-right: 10px;
+}
+
+.at-sidebar-close {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0.8;
+  transition: opacity 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.at-sidebar-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Sidebar scrollable body */
+.at-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  font-size: var(--font-size-base);
+  color: var(--text-2);
+}
+
+/* ---- Summary stat cards --------------------------------- */
+.at-summary-stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.at-stat-card {
+  flex: 1;
+  background: var(--primary-5);
+  border-radius: 8px;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.at-stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-2);
+  line-height: var(--line-height-tight);
+}
+
+.at-stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--grey-700);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+/* ---- Station metadata ----------------------------------- */
+.at-station-meta {
+  background: var(--grey-300);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 18px;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--text-2);
+}
+
+.at-station-meta p {
+  margin: 0;
+}
+
+/* ---- Section header ------------------------------------- */
+.at-section-header {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--grey-700);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--primary-4);
+}
+
+/* ---- Species list --------------------------------------- */
+.at-species-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.at-species-row {
+  background: var(--grey-300);
+  border-left: 3px solid var(--primary-1);
+  border-radius: 0 6px 6px 0;
+  padding: 10px 12px;
+  transition: background 0.15s;
+}
+
+.at-species-row:hover {
+  background: var(--primary-5);
+}
+
+.at-species-row-expanded {
+  background: var(--primary-5);
+  border-left-color: var(--primary-1);
+}
+
+.at-species-name {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--text-1);
+  margin-bottom: 5px;
+}
+
+.at-species-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.at-stat-badge {
+  display: inline-block;
+  background: var(--primary-4);
+  color: var(--primary-2);
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* ---- Expandable chart sections -------------------------- */
+.at-chart-section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--primary-4);
+}
+
+.at-chart-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--grey-700);
+  margin-bottom: 6px;
+}
+
+/* ---- No-data state -------------------------------------- */
+.at-no-data {
+  padding: 20px 0;
+  color: var(--grey-700);
+  text-align: center;
+  font-size: var(--font-size-sm);
+}
+
+/* ---- Mapbox popup --------------------------------------- */
+.at-popup {
+  font-size: 13px;
+  min-width: 200px;
+}
+
+.at-popup-header {
+  background: var(--primary-2);
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  margin: -10px -10px 10px -10px;
+  border-radius: 4px 4px 0 0;
+}
+
+.at-popup-body {
+  padding: 0 2px;
+}
+
+.at-popup-name {
+  font-weight: var(--font-weight-bold);
+  font-size: 14px;
+  color: var(--primary-2);
+  margin-bottom: 4px;
+  line-height: var(--line-height-tight);
+}
+
+.at-popup-coords {
+  color: var(--grey-700);
+  font-size: 11px;
+  font-family: monospace;
+  margin-bottom: 6px;
+}
+
+.at-popup-has-data {
+  color: var(--state-complete);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+}
+
+/* ---- Mapbox GL popup close button --------------------------------------- */
+.mapboxgl-popup-close-button {
+  color: #ffffff !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 6px;
+}
+
+.mapboxgl-popup-close-button:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.mapboxgl-popup-close-button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* ---- Mapbox GL legend tweaks -------------------------------------------- */
+/* Collapse the h2 title element when it is empty (legend_title = ""),        */
+/* removing the blank whitespace that would otherwise appear at the top.      */
+/* :empty matches elements with no child nodes (including text nodes).        */
+.mapboxgl-legend h2:empty {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 0 !important;
+}
+
+/* ---- Floating legend panel ------------------------------ */
+.at-legend {
+  position: absolute;
+  bottom: 36px;
+  left: 12px;
+  background: var(--neutral-2);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(24, 44, 58, 0.18);
+  padding: 12px 14px;
+  z-index: 900;
+  min-width: 190px;
+}
+
+.at-legend-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--grey-700);
+  margin-bottom: 10px;
+}
+
+/* ---- Species filter panel (top-left floating) ----------- */
+.at-species-filter {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--neutral-2);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(24, 44, 58, 0.18);
+  padding: 12px 14px;
+  z-index: 900;
+  width: 300px;
+}
+
+.at-species-filter .at-legend-title {
+  margin-bottom: 8px;
+}
+
+/* Selectize overrides inside the species filter panel */
+.at-species-filter .selectize-control {
+  margin-bottom: 0;
+}
+
+.at-species-filter .selectize-input {
+  font-size: var(--font-size-sm) !important;
+  border-color: var(--primary-4) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  min-height: 34px !important;
+  background-color: var(--neutral-2) !important;
+  color: var(--text-2) !important;
+}
+
+.at-species-filter .selectize-input.focus {
+  border-color: var(--primary-1) !important;
+  box-shadow: 0 0 0 2px rgba(59, 110, 143, 0.2) !important;
+}
+
+.at-species-filter .selectize-dropdown {
+  font-size: var(--font-size-sm) !important;
+  border-color: var(--primary-4) !important;
+  border-radius: 0 0 6px 6px !important;
+  box-shadow: 0 4px 12px rgba(24, 44, 58, 0.12) !important;
+  background-color: var(--neutral-2) !important;
+}
+
+.at-species-filter .selectize-dropdown .option.selected,
+.at-species-filter .selectize-dropdown .option:hover {
+  background: var(--primary-5) !important;
+  color: var(--primary-2) !important;
+}
+
+.at-species-filter .selectize-input .item {
+  background: var(--primary-5) !important;
+  color: var(--primary-2) !important;
+  border: 1px solid var(--primary-4) !important;
+  border-radius: 4px !important;
+  font-size: var(--font-size-xs) !important;
+}
+
+/* ---- More Information section (in expanded species card) - */
+.at-more-info {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--primary-4);
+}
+
+.at-more-info-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--grey-700);
+  margin-bottom: 8px;
+}
+
+.at-more-info-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.at-more-info-links li a {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 6px !important;
+  font-size: var(--font-size-sm) !important;
+  color: var(--primary-1) !important;
+  text-decoration: none !important;
+  line-height: var(--line-height-normal) !important;
+  word-break: break-word;
+}
+
+.at-more-info-links li a:hover {
+  color: var(--secondary-1) !important;
+  text-decoration: underline !important;
+}
+
+.at-more-info-unavailable {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--grey-500);
+  line-height: var(--line-height-normal);
+  font-style: italic;
+}
+
+.at-more-info-icon {
+  flex-shrink: 0;
+  font-style: normal;
+}
+
+/* ========================================
+   HAB ANALYSIS TYPE SELECTOR BOX
+   ======================================== */
+
+/* Highlighted box around the "Select analysis type" radio buttons
+   in the Coastal HABs sidebar. Uses primary-4 (#C5D8E7) as a
+   slightly darker background to draw attention to the selector. */
+.hab-analysis-box {
+  background-color: var(--primary-4) !important;
+  border: 1px solid var(--primary-1) !important;
+  border-radius: 8px !important;
+  padding: 10px 12px 6px 12px !important;
+  margin-top: 6px !important;
+  margin-bottom: 4px !important;
+}
+
+.hab-analysis-box h3 {
+  margin-top: 0 !important;
+  margin-bottom: 6px !important;
+}
+
+/* ========================================
+   SECTION BANNER (below navbar, above content)
+   ======================================== */
+
+/* Full-width banner that identifies the current dropdown section.
+   Uses --primary-1 (#3B6E8F) to match plot/download buttons.
+   Negative horizontal margins pull it flush to the container edges. */
+.section-banner {
+  background-color: var(--primary-1) !important;
+  color: var(--text-3) !important;
+  border-bottom: 2px solid var(--primary-2) !important;
+  padding: 0.45rem 1.25rem !important;
+  margin-top: 0.25rem !important;
+  margin-left: -15px !important;
+  margin-right: -15px !important;
+  width: calc(100% + 30px) !important;
+  box-sizing: border-box !important;
+  border-radius: 0 !important;
+  margin-bottom: 0.375rem !important;
+  text-align: center !important;
+}
+
+.section-banner h2 {
+  font-family: "Poppins", sans-serif !important;
+  font-size: var(--font-size-3xl) !important;
+  font-weight: var(--font-weight-semibold) !important;
+  color: var(--text-3) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: var(--line-height-tight) !important;
+}
+
+/* ========================================
+   SPLIT LAYOUT SELECTIZE OVERFLOW FIX
+   (Data Analytics sidebar: y/x axis selectors)
+   ======================================== */
+
+/* Allow the selectize input inside splitLayout cells to wrap its
+   selected item text rather than clipping it. Without this, long
+   parameter names like "Bacterial Temperature Index" are cut off
+   because splitLayout enforces overflow:hidden on each cell. */
+.shiny-split-layout > div {
+  overflow: visible !important;
+}
+
+.shiny-split-layout .selectize-input {
+  white-space: nowrap !important;
+  height: auto !important;
+  min-height: 34px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.shiny-split-layout .selectize-input .item {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+
+/* Ensure the selectize control itself doesn't clip the dropdown */
+.shiny-split-layout .selectize-control {
+  overflow: visible !important;
+}
+
+/* Ensure the shiny-input-container inside split layout doesn't clip the dropdown */
+.shiny-split-layout .shiny-input-container {
+  overflow: visible !important;
 }
 

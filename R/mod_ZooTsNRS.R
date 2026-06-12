@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_ZooTsNRS_ui <- function(id){
-  nsZooTsNRS <- NS(id)
+  ns <- NS(id)
   tagList(
     sidebarLayout(
       fPlanktonSidebar(id = id, tabsetPanel_id = "NRSzts", dat = pkg.env$datNRSz),
@@ -22,7 +22,6 @@ mod_ZooTsNRS_ui <- function(id){
 #' @noRd 
 mod_ZooTsNRS_server <- function(id){
   moduleServer(id, function(input, output, session, NRSzts){
-    
     
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
@@ -51,14 +50,8 @@ mod_ZooTsNRS_server <- function(id){
       ZtsNRSValuesisNumeric = {class(selectedData()$Values)}
     )
     
-    # Sidebar Map - Initial render
-    output$plotmap <- leaflet::renderLeaflet({ 
-      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
-    })
-    
-    # Update map when station selection changes
-    observe({
-      # Convert StationName to StationCode, handle empty selection
+    # Sidebar Map - Initial render with current selection
+    output$plotmap <- mapgl::renderMapboxgl({
       stationCodes <- if (length(input$site) > 0) {
         pkg.env$NRSStation %>%
           dplyr::filter(.data$StationName %in% input$site) %>%
@@ -66,9 +59,23 @@ mod_ZooTsNRS_server <- function(id){
       } else {
         character(0)
       }
-      fLeafletUpdate("plotmap", session, stationCodes, 
-                     Survey = "NRS", Type = "Zooplankton")
+      fMapboxMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
     })
+
+    outputOptions(output, "plotmap", suspendWhenHidden = FALSE) # prevent shiny from suspending map when tab is hidden
+
+    # Update map when station selection changes
+    observe({
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fMapboxUpdate("plotmap", session, stationCodes,
+                    Survey = "NRS", Type = "Zooplankton")
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # Add text information 
     output$PlotExp1 <- renderText({
@@ -85,111 +92,86 @@ mod_ZooTsNRS_server <- function(id){
     
     
     # Plot Trends -------------------------------------------------------------
-    observeEvent({input$NRSzts == 1}, {
+    
+    gg_out1 <- reactive({
+      if (is.null(pkg.env$datNRSz$StationCode)){return(NULL)}
+      trans <- dplyr::if_else(input$scaler1, "log10", "identity")
       
-      gg_out1 <- reactive({
-        
-        if (is.null(pkg.env$datNRSz$StationCode)){return(NULL)}
-        trans <- dplyr::if_else(input$scaler1, "log10", "identity")
-        
-        p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", method = "lm", trans = trans)
-        p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", method = "loess", trans = trans) +
-          ggplot2::theme(axis.title.y = ggplot2::element_blank())
-        
-        p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
-        
-      }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      p1 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Raw", method = "lm", trans = trans)
+      p2 <- planktonr::pr_plot_Trends(selectedData(), Trend = "Month", method = "loess", trans = trans) +
+        ggplot2::theme(axis.title.y = ggplot2::element_blank())
       
-      output$timeseries1 <- renderPlot({
-        gg_out1()
-      }, height = function() {length(unique(selectedData()$StationName)) * 200})
+      p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
       
-      # Download -------------------------------------------------------
-  
-      output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Trend") # Download csv of data
-      
-      output$downloadPlot1 <- fDownloadPlotServer(input, gg_out1, "Trend") # Download figure
-      
-      # Parameter Definition
-      output$ParamDef <- fParamDefServer(selectedData)
-      
-    })
+    }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    
+    output$timeseries1 <- renderPlot({
+      req(is.null(input$NRSzts) || input$NRSzts == "1")
+      gg_out1()
+    }, height = function() {length(unique(selectedData()$StationName)) * 200})
+    
+    output$downloadData1 <- fDownloadButtonServer(input, selectedData, "Trend")
+    output$downloadPlot1 <- fDownloadPlotServer(input, gg_out1, "Trend")
+    output$ParamDef <- fParamDefServer(selectedData)
+    
     # Climatologies -----------------------------------------------------------
     
-    # Plot abundance spectra by species
-    observeEvent({input$NRSzts == 2}, {
+    gg_out2 <- reactive({
+      if (is.null(pkg.env$datNRSz$StationCode)){return(NULL)}
+      trans <- dplyr::if_else(input$scaler1, "log10", "identity")
       
-      gg_out2 <- reactive({   
-        if (is.null(pkg.env$datNRSz$StationCode))  ## was reading datNRSi() as function so had to change to this, there should always be a code
-          return(NULL)
-        
-        trans <- dplyr::if_else(input$scaler1, "log10", "identity")
-        
-        p1 <- planktonr::pr_plot_TimeSeries(selectedData(), trans = trans) + 
-          ggplot2::theme(legend.position = "none")
-        
-        p2 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Month", trans = trans) + 
-          ggplot2::theme(legend.position = "none")
-        
-        p3 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Year", trans = trans) + 
-          ggplot2::theme(axis.title.y = ggplot2::element_blank(),
-                         legend.position = "bottom")
-        
-        p1 / 
-          (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom"))
-        
-      }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+      p1 <- planktonr::pr_plot_TimeSeries(selectedData(), trans = trans) +
+        ggplot2::theme(legend.position = "none")
       
-      output$timeseries2 <- renderPlot({
-        gg_out2()
-      })
+      p2 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Month", trans = trans) +
+        ggplot2::theme(legend.position = "none")
       
-      # Download -------------------------------------------------------
-      output$downloadData2 <- fDownloadButtonServer(input, selectedData, "Climate") # Download csv of data
-      output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Climate") # Download figure
+      p3 <- planktonr::pr_plot_Climatology(selectedData(), Trend = "Year", trans = trans) +
+        ggplot2::theme(axis.title.y = ggplot2::element_blank(),
+                       legend.position = "bottom")
       
-      # Parameter Definition
-      output$ParamDef <- fParamDefServer(selectedData)
+      p1 /
+        (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom"))
       
+    }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    
+    output$timeseries2 <- renderPlot({
+      gg_out2()
     })
+    
+    output$downloadData2 <- fDownloadButtonServer(input, selectedData, "Climate")
+    output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Climate")
     
     # Functional groups -------------------------------------------------------
     
-    observeEvent({input$NRSzts == 3}, {
-      selectedDataFG <- reactive({
-        req(input$site)
-        shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
-        selectedDataFG <- pkg.env$NRSfgz %>% 
-          dplyr::filter(.data$StationName %in% input$site,
-                        dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-          droplevels()
-      }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2])
+    selectedDataFG <- reactive({
+      req(input$site)
+      shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
+      pkg.env$NRSfgz %>%
+        dplyr::filter(.data$StationName %in% input$site,
+                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+        droplevels()
+    }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2])
+    
+    gg_out3 <- reactive({
+      scale <- dplyr::if_else(input$scaler3, "Proportion", "Actual")
       
-      
-      gg_out3 <- reactive({
-        
-        scale <- dplyr::if_else(input$scaler3, "Proportion", "Actual")
-        
-        p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
-        p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") + 
-          ggplot2::theme(axis.title.y = ggplot2::element_blank())
-        p1 + p2 + patchwork::plot_layout(widths = c(3,1), guides = "collect") &
-          ggplot2::theme(legend.position = "bottom")
-      }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
-      
-      
-      output$timeseries3 <- renderPlot({
-        gg_out3()
-      }, height = function() {
-        if(length(unique(selectedDataFG()$StationName)) < 2) 
-        {300} else 
-        {length(unique(selectedDataFG()$StationName)) * 200}})
-      
-      # Download -------------------------------------------------------
-      output$downloadData3 <- fDownloadButtonServer(input, selectedDataFG, "FuncGroup") # Download csv of data
-      output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "FuncGroup") # Download figure
-      
-    })
+      p1 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale)
+      p2 <- planktonr::pr_plot_tsfg(selectedDataFG(), Scale = scale, Trend = "Month") +
+        ggplot2::theme(axis.title.y = ggplot2::element_blank())
+      p1 + p2 + patchwork::plot_layout(widths = c(3,1), guides = "collect") &
+        ggplot2::theme(legend.position = "bottom")
+    }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
+    
+    output$timeseries3 <- renderPlot({
+      gg_out3()
+    }, height = function() {
+      if(length(unique(selectedDataFG()$StationName)) < 2)
+      {300} else
+      {length(unique(selectedDataFG()$StationName)) * 200}})
+
+    output$downloadData3 <- fDownloadButtonServer(input, selectedDataFG, "FuncGroup")
+    output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "FuncGroup")
     
   })
 }

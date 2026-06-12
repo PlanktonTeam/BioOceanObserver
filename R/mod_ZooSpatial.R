@@ -9,7 +9,7 @@
 #' @importFrom shiny NS tagList 
 mod_ZooSpatial_ui <- function(id){
   
-  nsZooSpatial <- NS(id)
+  ns <- NS(id)
   
   tagList(
 
@@ -26,9 +26,8 @@ mod_ZooSpatial_ui <- function(id){
 #' @noRd 
 mod_ZooSpatial_server <- function(id){
   moduleServer( id, function(input, output, session, NRSspatz){
-    # Subset data
     
-    type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+    # Subset data
     
     AbsZdatar <- reactive({
       
@@ -44,8 +43,10 @@ mod_ZooSpatial_server <- function(id){
       req(input$species)
       shiny::validate(need(!is.na(input$species), "Error: Please select a species"))
       
+      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+      
       ZSdatar <- pkg.env$fMapDataz %>%
-        dplyr::filter(.data$Species == input$species) 
+        dplyr::filter(.data$Species == input$species)
       
       if(type == "frequency"){
         ZSdatar <- ZSdatar %>% dplyr::bind_rows(AbsZdatar()) %>%
@@ -80,112 +81,83 @@ mod_ZooSpatial_server <- function(id){
     
     
     # select initial map  ------------------------------------------------------------------------------
+    # Create dot map of distribution using Mapbox
+    # Full re-render approach: each renderMapboxgl() builds the complete map
+    # (absence + presence) for its season in one call, avoiding proxy timing issues.
+    # df_abs = all sample locations (for grey absence dots)
+    # df_pres = species-filtered data (for coloured presence dots)
     
-    observeEvent({input$NRSspat == 1}, {
-      # Create dot map of distribution
-      # Summer
-      output$MapSum <- leaflet::renderLeaflet({
-        type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-        lf <- LeafletBase(AbsZdatar(), Type = type)
-        return(lf)
-      }) %>%  bindCache(input$species, input$scaler1)
-      
-      # Autumn
-      output$MapAut <- leaflet::renderLeaflet({
-        type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-        lf <- LeafletBase(AbsZdatar(), Type = type)
-        return(lf)
-      }) %>%  bindCache(input$species, input$scaler1)
-      
-      # Winter
-      output$MapWin <- leaflet::renderLeaflet({
-        type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-        lf <- LeafletBase(AbsZdatar(), Type = type)
-        return(lf)
-      }) %>%  bindCache(input$species, input$scaler1)
-      
-      # Spring
-      output$MapSpr <- leaflet::renderLeaflet({
-        type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-        lf <- LeafletBase(AbsZdatar(), Type = type)
-        return(lf)
-      }) %>%  bindCache(input$species, input$scaler1)
-      
-
-      observe ({
-        type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-        LeafletObs(sdf = ZSdatar() %>% dplyr::filter(.data$Season == "December - February"), name = "MapSum", Type = type)
-        LeafletObs(sdf = ZSdatar() %>% dplyr::filter(.data$Season == "September - November"), name = "MapAut", Type = type)
-        LeafletObs(sdf = ZSdatar() %>% dplyr::filter(.data$Season == "June - August"), name = "MapWin", Type = type)
-        LeafletObs(sdf = ZSdatar() %>% dplyr::filter(.data$Season == "March - May"), name = "MapSpr", Type = type)
-        
-      }) 
-
-      
-    })
+    # Summer (December - February)
+    output$MapSum <- mapgl::renderMapboxgl({
+      req(is.null(input$NRSspatz) || input$NRSspatz == "1")
+      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+      MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
+                   season_label = "December - February", Type = type)
+    }) %>% bindCache(input$species, input$scaler1)
+    
+    # Autumn (September - November)
+    output$MapAut <- mapgl::renderMapboxgl({
+      req(is.null(input$NRSspatz) || input$NRSspatz == "1")
+      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+      MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
+                   season_label = "September - November", Type = type)
+    }) %>% bindCache(input$species, input$scaler1)
+    
+    # Winter (June - August)
+    output$MapWin <- mapgl::renderMapboxgl({
+      req(is.null(input$NRSspatz) || input$NRSspatz == "1")
+      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+      MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
+                   season_label = "June - August", Type = type)
+    }) %>% bindCache(input$species, input$scaler1)
+    
+    # Spring (March - May)
+    output$MapSpr <- mapgl::renderMapboxgl({
+      req(is.null(input$NRSspatz) || input$NRSspatz == "1")
+      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
+      MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
+                   season_label = "March - May", Type = type)
+    }) %>% bindCache(input$species, input$scaler1)
     
     # STI plot -----------------------------------------------------------------------------------------
-    # Subset data
+    selectedSTI <- reactive({
+      req(input$species1)
+      shiny::validate(need(!is.na(input$species1), "Error: Please select a species"))
+      
+      selectedSTI <- pkg.env$stiz %>%
+        dplyr::filter(.data$Species %in% input$species1)
+      
+    }) %>% bindCache(input$species1)
     
-    observeEvent({input$NRSspat == 2}, {
-      
-      selectedSTI <- reactive({
-        
-        req(input$species1)
-        shiny::validate(need(!is.na(input$species1), "Error: Please select a species"))
-        
-        selectedSTI <- pkg.env$stiz %>% 
-          dplyr::filter(.data$Species %in% input$species1) 
-        
-      }) %>% bindCache(input$species1)
-      
-      # sti plot
-      output$STIs <- renderPlot({
-        
-        shiny::validate(
-          need(nrow(selectedSTI()) > 20, "Not enough data for this copepod species")
-        )
-        
-        planktonr::pr_plot_STI(selectedSTI())
-        
-        
-      }) %>% bindCache(input$species1)
-      
-    })
-    
-    # daynight plot -----------------------------------------------------------------------------------------
-    # Subset data
-    
-    observeEvent({input$NRSspat == 3}, {
-      
-      selecteddn <- reactive({
-        
-        req(input$species2)
-        shiny::validate(need(!is.na(input$species2), "Error: Please select a species"))
-        
-        selecteddn <- pkg.env$daynightz %>% 
-          dplyr::filter(.data$Species %in% input$species2) 
+    # sti plot
+    output$STIs <- renderPlot({
+      shiny::validate(
+        need(nrow(selectedSTI()) > 20, "Not enough data for this copepod species")
+      )
+      planktonr::pr_plot_STI(selectedSTI())
+    }) %>% bindCache(input$species1)
 
-        
-      }) %>% bindCache(input$species2)
+    # daynight plot -----------------------------------------------------------------------------------------
+    selecteddn <- reactive({
+      req(input$species2)
+      shiny::validate(need(!is.na(input$species2), "Error: Please select a species"))
       
-      # daynight plot
-      output$DNs <- renderPlot({
-        
-        shiny::validate(
-          need(length(unique(selecteddn()$daynight)) == 2 | nrow(selecteddn()) > 20, "Not enough data for this copepod species to plot")
-        )
-        
-        plotdn <- planktonr::pr_plot_DayNight(selecteddn())
-        plotdn
-        
-      }) %>% bindCache(input$species2)
+      selecteddn <- pkg.env$daynightz %>%
+        dplyr::filter(.data$Species %in% input$species2)
       
-    })
+    }) %>% bindCache(input$species2)
+    
+    # daynight plot
+    output$DNs <- renderPlot({
+      shiny::validate(
+        need(length(unique(selecteddn()$daynight)) == 2 | nrow(selecteddn()) > 20, "Not enough data for this copepod species to plot")
+      )
+      plotdn <- planktonr::pr_plot_DayNight(selecteddn())
+      plotdn
+    }) %>% bindCache(input$species2)
     
 
     
     
   })
 }
-

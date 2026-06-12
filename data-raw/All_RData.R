@@ -2,6 +2,10 @@
 library(tidyverse)
 library(planktonr)
 
+# Animal Tracking needs to be reprocessed from the summary files every 6 months or so.
+
+reprocess_AT <- FALSE
+
 modified_time <- lubridate::now()
 
 # Set up colours for the app ----------------------------------------------
@@ -63,9 +67,12 @@ datNRSz <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Zooplankton")
 
 datNRSp <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Phytoplankton") 
 
-SOTSp <- planktonr::pr_get_Indices(Survey = "SOTS", Type = "Phytoplankton") 
+SOTSp <- planktonr::pr_get_Indices(Survey = "SOTS", Type = "Phytoplankton")
 
-datNRSm <- planktonr::pr_get_data(Survey = "NRS", Type = "Micro") %>% 
+# Pre-combined NRS + SOTS phytoplankton dataset (avoids repeated bind_rows() inside reactives)
+datNRSp_all <- dplyr::bind_rows(datNRSp, SOTSp)
+
+datNRSm <- planktonr::pr_get_data(Survey = "NRS", Type = "Microbes") %>% 
   tidyr::drop_na() ## NRS microbial data
 
 Tricho <- planktonr::pr_get_data(Survey = "NRS", Type = "Phytoplankton", Variable = "abundance", Subset = "genus") %>% 
@@ -78,14 +85,14 @@ datNRSm <- datNRSm %>%
   dplyr::bind_rows(Tricho)
 rm(Tricho)
 
-datCSm  <- planktonr::pr_get_data(Survey = "Coastal", Type = "Micro") %>% ## coastal microbial data
+datCSm  <- planktonr::pr_get_data(Survey = "Coastal", Type = "Microbes") %>% ## coastal microbial data
   droplevels() %>% 
   dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
   dplyr::filter(Values != -9999) %>% 
   tidyr::drop_na(Values)
 
-datGSm <- planktonr::pr_get_data(Survey = "GO-SHIP", Type = "Micro")
+datGSm <- planktonr::pr_get_data(Survey = "GO-SHIP", Type = "Microbes")
 
 datNRSw <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Water") %>% #TODO move the MLD calcs to planktonr
   tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
@@ -120,28 +127,30 @@ PCI <- planktonr::pr_get_PCIData()
 
 # HAB data from Coastal Phytoplankton
 SpecToInclude <- planktonr:::HABDat %>% 
-  dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = .data$TaxonName) %>% 
+  dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = TaxonName) %>% 
   dplyr::filter(.data$non_zero_count > 50)
-
+  
 GenToInclude <- planktonr:::HABDat %>% 
   dplyr::mutate(Genus = stringr::word(.data$TaxonName, 1)) %>% 
-  dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = .data$Genus) %>% 
+  dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = Genus) %>% 
   dplyr::filter(.data$non_zero_count > 50) 
 
 datHABg <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'Genus') %>% 
   dplyr::filter(Genus %in% GenToInclude$Genus) %>% 
   dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
-  dplyr::select(-"TripCode") %>% 
+  dplyr::select(-c("TripCode", "Month_Local", "Year_Local", "StationCode")) %>% 
   dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything()) %>%
-  dplyr::rename(TaxonName = .data$Genus)
+  dplyr::rename(TaxonName = Genus) %>% 
+  dplyr::filter(.data$Values != 0)
 
 datHABs <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'Species') %>% 
   dplyr::filter(TaxonName %in% SpecToInclude$TaxonName) %>% 
   dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]")),
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
-  dplyr::select(-"TripCode") %>% 
-  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything())
+  dplyr::select(-c("TripCode", "Month_Local", "Year_Local", "StationCode")) %>% 
+  dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything()) %>% 
+  dplyr::filter(.data$Values != 0)
 
 # FG time series data -----------------------------------------------------
 
@@ -364,7 +373,6 @@ LFData <- temp %>%
 
 rm(temp)
 
-
 # Get Taxa Accumulation Info ----------------------------------------------
 
 PSpNRSAccum <- planktonr::pr_get_TaxaAccum(Survey = "NRS", Type = "Phytoplankton")
@@ -375,22 +383,131 @@ ZSpCPRAccum <- planktonr::pr_get_TaxaAccum(Survey = "CPR", Type = "Zooplankton")
 # Parameter Definitions
 ParamDef <- readr::read_csv(file.path("data-raw", "ParameterDefn.csv"), na = character())
 
+# Pre-computed pr_relabel() parameter label lists for fPlanktonSidebar()
+# These are static and expensive to recompute at every UI build
+choicespNRSp <- planktonr:::pr_relabel(unique(datNRSp_all$Parameters), style = "simple", named = TRUE)
+choicespNRSz <- planktonr:::pr_relabel(unique(datNRSz$Parameters), style = "simple", named = TRUE)
+choicespNRSm <- planktonr:::pr_relabel(unique(datNRSm$Parameters), style = "simple", named = TRUE)
+choicespCPRp <- planktonr:::pr_relabel(unique(datCPRp$Parameters), style = "simple", named = TRUE)
+choicespCPRz <- planktonr:::pr_relabel(unique(datCPRz$Parameters), style = "simple", named = TRUE)
+choicespCSm  <- planktonr:::pr_relabel(unique(datCSm$Parameters),  style = "simple", named = TRUE)
+choicespHAB  <- planktonr:::pr_relabel(c("NoPhytoSpecies_Sample", "PhytoAbundance_CellsL",
+                                          "Biovolume_um3L", "PhytoBiomassCarbon_pgL"),
+                                        style = "simple", named = TRUE)
+
+AusStatesSimple <- readRDS("data-raw/aus_states_simplified.rds")
+
+
+# Animal Tracking ----
+
+if (isTRUE(reprocess_AT)){source("data-raw/AnimalTracking/AT_DataProcessing.R")}
+
+rds_dir <- file.path("data-raw", "AnimalTracking", "Output")
+
+AT_receivers <- readRDS(file.path(rds_dir, "ReceiverSummary.rds"))
+AT_animal_summary <- readRDS(file.path(rds_dir, "AnimalSummary.rds"))
+AT_species_summary <- readRDS(file.path(rds_dir, "SpeciesSummary.rds"))
+
+## Station-level aggregate counts ----
+AT_station_summary <- AT_animal_summary %>%
+  dplyr::group_by(.data$installation_name) %>%
+  dplyr::summarise(
+    n_species        = dplyr::n_distinct(.data$species_common_name),
+    n_individuals    = dplyr::n_distinct(.data$animal_id),
+    total_detections = sum(.data$total_detections),
+    .groups = "drop"
+  )
+
+## Species breakdown per station ----
+AT_station_species <- AT_animal_summary %>%
+  dplyr::group_by(
+    .data$installation_name, .data$species_common_name,
+    .data$species_scientific_name, .data$WORMS_species_aphia_id
+  ) %>%
+  dplyr::summarise(
+    n_individuals    = dplyr::n_distinct(.data$animal_id),
+    total_detections = sum(.data$total_detections),
+    .groups = "drop"
+  ) %>%
+  dplyr::arrange(.data$installation_name, .data$species_common_name)
+
+## Individual-level data (one row per animal per station) ----
+AT_individual_data <- AT_animal_summary %>%
+  dplyr::distinct(
+    .data$animal_id, .data$installation_name,
+    .data$species_common_name, .data$species_scientific_name,
+    .data$animal_sex, .data$Length_Type, .data$Length_cm
+  )
+
+## Sorted species list for the selectize filter ----
+AT_all_species <- sort(unique(AT_animal_summary$species_common_name))
+
+## Daily time-series per station x species ----
+AT_daily_summary <- AT_animal_summary %>%
+  dplyr::group_by(.data$installation_name, .data$species_common_name, .data$date_UTC) %>%
+  dplyr::summarise(
+    n_individuals    = dplyr::n_distinct(.data$animal_id),
+    total_detections = sum(.data$total_detections),
+    .groups = "drop"
+  )
+
+## Enrich receiver sf object — keep only stations with detection data  ----
+AT_receivers <- AT_receivers %>%
+  dplyr::left_join(AT_station_summary, by = "installation_name") %>%
+  dplyr::filter(!is.na(.data$n_species)) %>%
+  dplyr::mutate(
+    has_data         = TRUE,
+    n_species        = as.integer(.data$n_species),
+    n_individuals    = as.integer(.data$n_individuals),
+    total_detections = as.integer(.data$total_detections),
+    lon              = round(sf::st_coordinates(.)[, 1], 5),
+    lat              = round(sf::st_coordinates(.)[, 2], 5),
+    point_opacity    = pmin(1, pmax(0.1, log1p(.data$total_detections) / log1p(1e6)))
+  )
+
+## Build popup HTML column ----
+rx_df <- sf::st_drop_geometry(AT_receivers)
+AT_receivers$popup_html <- purrr::map_chr(seq_len(nrow(rx_df)), function(i) {
+  r <- rx_df[i, ]
+  data_line <- paste0(
+    '<span class="at-popup-has-data">&#10003;&nbsp;',
+    r$n_species, " species &bull; ",
+    format(r$n_individuals, big.mark = ","), " individuals",
+    "</span>"
+  )
+  paste0(
+    '<div class="at-popup">',
+    '<div class="at-popup-header">RECEIVER STATION</div>',
+    '<div class="at-popup-body">',
+    '<div class="at-popup-name">', htmltools::htmlEscape(r$installation_name), "</div>",
+    '<div class="at-popup-coords">', r$lon, ", ", r$lat, "</div>",
+    data_line,
+    "</div></div>"
+  )
+})
+
+
 # Add data to sysdata.rda -------------------------------------------------
 usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
-                  fMapDataz, fMapDatap, 
+                  fMapDataz, fMapDatap,
                   MooringTS, MooringClim,
                   PolNRS, PolCPR, PolLTM, PolSOTS,
                   NRSinfo, CPRinfo, SOTSinfo, NRSStation, SotsStation,
                   datCPRz, datCPRp, PCI,
-                  datNRSz, datNRSp, datNRSw, 
+                  datNRSz, datNRSp, datNRSw,
                   datNRSm, datCSm, datGSm,
-                  datHABg, datHABs, datHABTrip, datHABdataTable, 
+                  datHABg, datHABs, datHABTrip, datHABdataTable,
                   NRSfgz, NRSfgp, CPRfgz, CPRfgp, PMapData,
-                  SOTSp, SOTSfgp, 
+                  SOTSp, SOTSfgp,
+                  datNRSp_all,
+                  choicespNRSp, choicespNRSz, choicespNRSm,
+                  choicespCPRp, choicespCPRz, choicespCSm, choicespHAB,
                   stiz, stip, daynightz, daynightp,
                   SpInfoP, SpInfoZ, LFData, LFDataAbs,
                   datNRSTrip, datCPRTrip, datCPRTripSO,
                   PSpNRSAccum, PSpCPRAccum, ZSpNRSAccum, ZSpCPRAccum,
-                  ParamDef, col12, modified_time,
+                  ParamDef, col12, modified_time, AusStatesSimple,
+                  AT_species_summary, AT_receivers, AT_station_species,
+                  AT_individual_data, AT_all_species, AT_daily_summary,
                   overwrite = TRUE, internal = TRUE)
 

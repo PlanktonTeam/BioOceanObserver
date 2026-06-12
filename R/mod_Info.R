@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList
 mod_info_ui <- function(id) {
-  nsInfo <- NS(id)
+  ns <- NS(id)
   shiny::tagList(
     tabsetPanel(
       id = "info", type = "pills",
@@ -19,7 +19,7 @@ mod_info_ui <- function(id) {
         simple and effective, whilst retaining as much flexibility as possible. There are several legitimate ways to display data and to conduct analysis, what we are showing 
         is just one way. Under the following tabs we document our decisions but explain how you can access the raw data, with ease, to analyse as you wish.</p> <br>"),
         bslib::accordion(
-          id = nsInfo("samplingAccordion_tech"),
+          id = ns("samplingAccordion_tech"),
           open = character(0), # ensures all items are closed on render
           bslib::accordion_panel(
             title = shiny::HTML("<h3>Raise an issue</h3>"),
@@ -151,7 +151,7 @@ mod_info_ui <- function(id) {
       tabPanel("References",
         value = 4,
         bslib::accordion(
-          id = nsInfo("samplingAccordion_refs"),
+          id = ns("samplingAccordion_refs"),
           open = character(0), # ensures all items are closed on render
           bslib::accordion_panel(
             # div(class = "references",
@@ -197,7 +197,7 @@ mod_info_ui <- function(id) {
             <ul>
             <li>Chang W, Cheng J, Allaire J, Sievert C, Schloerke B, Xie Y, Allen J, McPherson J, Dipert A, Borges B (2022). <em>shiny: Web Application Framework for R</em>. R package version 1.7.2, <a href = https://CRAN.R-project.org/package=shiny target = _blank> Website</a>.</li>
             <li>Fay C, Guyader V, Rochette S, Girard C (2022). <em>golem: A Framework for Robust Shiny Applications</em>. R package version 0.3.3, <a href = https://CRAN.R-project.org/package=golem target = _blank> Website</a>.</li>
-            <li>Wickham H, François R, Henry L, Müller K (2022). <em>dplyr: A Grammar of Data Manipulation</em>. R package version 1.0.10, <a href = https://CRAN.R-project.org/package=dplyr target = _blank> Website</a>.</li>
+            <li>Wickham H, Fran&ccedil;ois R, Henry L, M&uuml;ller K (2022). <em>dplyr: A Grammar of Data Manipulation</em>. R package version 1.0.10, <a href = https://CRAN.R-project.org/package=dplyr target = _blank> Website</a>.</li>
             <li>Wickham H (2016). <em>ggplot2: Elegant Graphics for Data Analysis</em>. Springer-Verlag New York, <a href = https://ggplot2.tidyverse.org target = _blank> Website</a>.</li>
             <li>Garrett Grolemund, Hadley Wickham (2011). <em>Dates and Times Made Easy with lubridate.</em>, Journal of Statistical Software, 40(3), 1-25. <a href = https://www.jstatsoft.org/v40/i03/ target = _blank> Website</a>.</li>
             <li>Bache S, Wickham H (2022). <em>magrittr: A Forward-Pipe Operator for R</em>. R package version 2.0.3, <a href = https://CRAN.R-project.org/package=magrittr target = _blank> Website</a>.</li>
@@ -211,7 +211,7 @@ mod_info_ui <- function(id) {
             <li>Chang W, Borges Ribeiro B (2021). <em>shinydashboard: Create Dashboards with 'Shiny'</em>. R package version 0.7.2, <a href = https://CRAN.R-project.org/package=shinydashboard target = _blank> Website</a>.</li>
             <li>Attali D (2021). <em>shinyjs: Easily Improve the User Experience of Your Shiny Apps in Seconds</em>. R package version 2.1.0, <a href = https://CRAN.R-project.org/package=shinyjs target = _blank> Website</a>.</li>
             <li>Wickham H (2019). <em>stringr: Simple, Consistent Wrappers for Common String Operations</em>. R package version 1.4.0, <a href = https://CRAN.R-project.org/package=stringr target = _blank> Website</a>.</li>
-            <li>Müller K, Wickham H (2022). <em>tibble: Simple Data Frames</em>. R package version 3.1.8, <a href = https://CRAN.R-project.org/package=tibble target = _blank> Website</a>.</li>
+            <li>M&uuml;ller K, Wickham H (2022). <em>tibble: Simple Data Frames</em>. R package version 3.1.8, <a href = https://CRAN.R-project.org/package=tibble target = _blank> Website</a>.</li>
             <li>Wickham H, Girlich M (2022). <em>tidyr: Tidy Messy Data</em>. R package version 1.2.0, <a href = https://CRAN.R-project.org/package=tidyr target = _blank> Website</a>.</li>
             <li>Henry L, Wickham H (2022). <em>tidyselect: Select from a Set of Strings</em>. R package version 1.1.2, <a href = https://CRAN.R-project.org/package=tidyselect target = _blank> Website</a>.</li>
             </ul>
@@ -223,7 +223,7 @@ mod_info_ui <- function(id) {
       tabPanel("Sampling Details",
         value = 5,
         bslib::accordion(
-          id = nsInfo("samplingAccordion_details"),
+          id = ns("samplingAccordion_details"),
           open = character(0), # ensures all items are closed on render
           bslib::accordion_panel(
             title = shiny::HTML("<h3>National Reference Stations</h3>"),
@@ -237,7 +237,7 @@ mod_info_ui <- function(id) {
             The Victorian Bonney Mooring was only established in 2024, but is included here as it will be ongoing.</p>
             </p> <br>
             <h4>NRS Sampling details</h4>"),
-            DT::DTOutput(nsInfo("NRSDataTable")),
+            DT::DTOutput(ns("NRSDataTable")),
             div(
               h4("Key Data Streams"),
               tags$ul(
@@ -263,10 +263,10 @@ mod_info_ui <- function(id) {
             with support from IMOS through a UTAS / AAD collaboration and the the Southern Ocean zooplankton records, south of -47<sup>o</sup>S, are counted through the SO_CPR program at the AAD.</p> 
             <p> Adhoc samples are also collected from RV Investigator and other research vessels.</p><br>"),
             shiny::HTML("<h4>IMOS CPR Sampling details</h4>"),
-            DT::DTOutput(nsInfo("CPRDataTable")),
+            DT::DTOutput(ns("CPRDataTable")),
             shiny::HTML("<br><br>"),
             shiny::HTML("<h4>AAD CPR Sampling details</h4>"),
-            DT::DTOutput(nsInfo("CPRDataTableSO")),
+            DT::DTOutput(ns("CPRDataTableSO")),
             div(
               h4("Key Data Streams"),
               tags$ul(
@@ -317,22 +317,44 @@ mod_info_ui <- function(id) {
               img(src = "www/csm_eDNA.png")
             )
           )
-        )
       ),
-      tabPanel("Species Details",
+      bslib::accordion_panel(
+        title = shiny::HTML("<h3>Australian Coastal Phytoplankton</h3>"),
+        value = "am",
+        shiny::HTML("These data are collected by state councils and seafood industry bodies mostly as part of water quality and shellfish health programs. 
+                    The data are analysed by consultants for the abundance and presence of certain taxa, generally those that are described as Harmful Algal Bloom (HAB) species.
+                    These data do not consitute a full community analysis and therefore are displayed at genera or species level conly."),
+        shiny::HTML("<br><br>"),
+        shiny::HTML("NSW data is from Hornsby Council and the NSW Shellfish Program (DPIRD). These data are analysed by Microalgal Solutions."),
+        shiny::HTML("<br>"),
+        shiny::HTML("TAS data is from the EPA. These data are analysed by Analytical Services Tasmania."),
+        shiny::HTML("<br><br>"),
+        shiny::HTML("<h4>Sampling details</h4>"),
+        DT::DTOutput(ns("HABDataTable")),
+        shiny::HTML("<br><br>"),
+        div(
+          h4("Key Data Streams"),
+          tags$ul(
+            class = "image-row",
+            img(src = "www/csm_Phytoplankton.png")
+          )
+        )
+      )
+    ),
+    tabPanel("Species Details",
         value = 6,
         bslib::accordion(
-          id = nsInfo("samplingAccordion_species"),
+          id = ns("samplingAccordion_species"),
           open = character(0), # ensures all items are closed on render
           bslib::accordion_panel(
             title = shiny::HTML("<h3>Phytoplankton Species Information</h3>"),
             value = "p",
-            DT::DTOutput(nsInfo("PDataTable"))
+            DT::DTOutput(ns("PDataTable"))
           ),
           bslib::accordion_panel(
             title = shiny::HTML("<h3>Zooplankton Species Information</h3>"),
             value = "z",
-            DT::DTOutput(nsInfo("ZDataTable"))
+            DT::DTOutput(ns("ZDataTable"))
           )
         )
       )
@@ -364,52 +386,6 @@ mod_info_server <- function(id) {
         input$Info == 5
       },
       {
-        # # banner of variables for NRS 
-        # 
-        # img_paths_nrs <- c(
-        #   "www/csm_Chlorophyll.png",
-        #   "www/csm_Phytoplankton.png",
-        #   "www/csm_Zooplankton.png",
-        #   "www/csm_Larval_Fish.png",
-        #   "www/csm_Pigments.png",
-        #   "www/csm_Macronutrients.png",
-        #   "www/csm_eDNA.png",
-        #   "www/csm_Salinity.png",
-        #   "www/csm_Temperature.png",
-        #   "www/csm_Turbidity.png"
-        # )
-        # 
-        # # Reactive index
-        # startIndex <- reactiveVal(1)
-        # 
-        # # Update index on button click
-        # observeEvent(input$left, {
-        #   newIndex <- max(1, startIndex() - 3)
-        #   startIndex(newIndex)
-        # })
-        # 
-        # observeEvent(input$right, {
-        #   newIndex <- min(length(img_paths_nrs) - 2, startIndex() + 3)
-        #   startIndex(newIndex)
-        # })
-        # 
-        # # Render image boxes
-        # output$imageGallery <- renderUI({
-        #   idx <- startIndex()
-        #   selected <- img_paths_nrs[idx:min(idx + 2, length(img_paths_nrs))]
-        # 
-        #   fluidRow(
-        #     lapply(selected, function(path) {
-        #       column(
-        #         width = 4,
-        #         div(
-        #           class = "image-box",
-        #           img(src = path)
-        #         )
-        #       )
-        #     })
-        #   )
-        # })
 
         output$NRSDataTable <- DT::renderDT(
           pkg.env$NRSStation %>%
@@ -444,15 +420,16 @@ mod_info_server <- function(id) {
               Institution = ifelse(.data$Region == "Southern Ocean", "AAD / UTAS / CSIRO", "CSIRO")
             )
         )
-        output$CPRDataTableSO <- DT::renderDT(
+
+       output$CPRDataTableSO <- DT::renderDT(
           pkg.env$datCPRTripSO %>%
-            dplyr::select(-c("TripCode", "Latitude", "Longitude")) %>% 
-            dplyr::mutate(Region = 'Southern Ocean Region') %>% 
-            dplyr::group_by(.data$Region) %>% 
+            dplyr::select(-c("TripCode", "Latitude", "Longitude")) %>%
+            dplyr::mutate(Region = 'Southern Ocean Region') %>%
+            dplyr::group_by(.data$Region) %>%
             dplyr::summarise(SamplesCounted = sum(.data$Samples, na.rm = TRUE),
-                             MilesTowed = SamplesCounted * 5,
-                             StartDate = min(Year_Local, na.rm = TRUE),
-                             EndDate = max(Year_Local, na.rm = TRUE),
+                             MilesTowed = sum(.data$Samples, na.rm = TRUE) * 5,
+                             StartDate = min(.data$Year_Local, na.rm = TRUE),
+                             EndDate = max(.data$Year_Local, na.rm = TRUE),
                              Project = "SO-CPR",
                              Institution = "AAD",
                              .groups = "drop") %>%
@@ -460,6 +437,11 @@ mod_info_server <- function(id) {
               "Region", `Start Date` = "StartDate", `End Date` = "EndDate", `Miles Towed` = "MilesTowed",
               `Samples Counted` = "SamplesCounted", "Project", "Institution") 
             )
+                
+       output$HABDataTable <- DT::renderDT(
+         pkg.env$datHABdataTable 
+         )
+                
       }
     )
 

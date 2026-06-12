@@ -32,17 +32,17 @@ mod_WaterBGC_server <- function(id){
     
     selectedData <- reactive({
       req(input$site)
-      req(input$date)
-      shiny::validate(need(!is.na(input$date[1]) & !is.na(input$date[2]), "Error: Please provide both a start and an end date."))
-      shiny::validate(need(input$date[1] < input$date[2], "Error: Start date should be earlier than end date."))
+      req(input$DatesSlide)
+      shiny::validate(need(!is.na(input$DatesSlide[1]) & !is.na(input$DatesSlide[2]), "Error: Please provide both a start and an end date."))
+      shiny::validate(need(input$DatesSlide[1] < input$DatesSlide[2], "Error: Start date should be earlier than end date."))
       pkg.env$datNRSw %>%
         dplyr::filter(.data$StationName %in% input$site,
-               .data$SampleTime_Local > as.POSIXct(input$date[1]) & .data$SampleTime_Local < as.POSIXct(input$date[2]),
+               .data$SampleTime_Local > as.POSIXct(input$DatesSlide[1]) & .data$SampleTime_Local < as.POSIXct(input$DatesSlide[2]),
                .data$Parameters %in% input$parameter) %>%
         dplyr::mutate(name = as.factor(.data$Parameters)) %>%
-        tidyr::drop_na() 
+        tidyr::drop_na()
       
-    }) %>% bindCache(input$site, input$parameter, input$date)
+    }) %>% bindCache(input$site, input$parameter, input$DatesSlide)
     
     shiny::exportTestValues(
       WaterBGC = {ncol(selectedData())},
@@ -63,7 +63,7 @@ mod_WaterBGC_server <- function(id){
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
       
-    }) %>% bindCache(input$site, input$parameter, input$date, input$smoother)
+    }) %>% bindCache(input$site, input$parameter, input$DatesSlide)
     
     output$timeseries1 <- renderPlot({
       gg_out1()
@@ -73,14 +73,8 @@ mod_WaterBGC_server <- function(id){
     output$downloadData1 <- fDownloadButtonServer(input, selectedData, "water") # Download csv of data
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "water") # Download figure
     
-    # Sidebar Map - Initial render
-    output$plotmap <- leaflet::renderLeaflet({ 
-      fLeafletMap(character(0), Survey = "NRS", Type = "Zooplankton")
-    })
-    
-    # Update map when station selection changes
-    observe({
-      # Convert StationName to StationCode, handle empty selection
+    # Sidebar Map - Initial render with current selection
+    output$plotmap <- mapgl::renderMapboxgl({
       stationCodes <- if (length(input$site) > 0) {
         pkg.env$NRSStation %>%
           dplyr::filter(.data$StationName %in% input$site) %>%
@@ -88,9 +82,21 @@ mod_WaterBGC_server <- function(id){
       } else {
         character(0)
       }
-      fLeafletUpdate("plotmap", session, stationCodes, 
-                     Survey = "NRS", Type = "Zooplankton")
+      fMapboxMap(stationCodes, Survey = "NRS", Type = "Zooplankton")
     })
+
+    # Update map when station selection changes
+    observe({
+      stationCodes <- if (length(input$site) > 0) {
+        pkg.env$NRSStation %>%
+          dplyr::filter(.data$StationName %in% input$site) %>%
+          dplyr::pull(.data$StationCode)
+      } else {
+        character(0)
+      }
+      fMapboxUpdate("plotmap", session, stationCodes,
+                    Survey = "NRS", Type = "Zooplankton")
+    }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
     
     # add text information 
     output$PlotExp <- renderText({
