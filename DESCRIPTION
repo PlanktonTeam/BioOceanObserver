@@ -24,7 +24,7 @@ Imports:
     mapgl,
     patchwork,
     purrr,
-    planktonr (>= 0.7.2),
+    planktonr (>= 0.7.3),
     rlang (>= 1.1.0),
     sf,
     shiny (>= 1.6.0),
