@@ -72,7 +72,7 @@ SOTSp <- planktonr::pr_get_Indices(Survey = "SOTS", Type = "Phytoplankton")
 # Pre-combined NRS + SOTS phytoplankton dataset (avoids repeated bind_rows() inside reactives)
 datNRSp_all <- dplyr::bind_rows(datNRSp, SOTSp)
 
-datNRSm <- planktonr::pr_get_data(Survey = "NRS", Type = "Micro") %>% 
+datNRSm <- planktonr::pr_get_data(Survey = "NRS", Type = "Microbes") %>% 
   tidyr::drop_na() ## NRS microbial data
 
 Tricho <- planktonr::pr_get_data(Survey = "NRS", Type = "Phytoplankton", Variable = "abundance", Subset = "genus") %>% 
@@ -85,14 +85,14 @@ datNRSm <- datNRSm %>%
   dplyr::bind_rows(Tricho)
 rm(Tricho)
 
-datCSm  <- planktonr::pr_get_data(Survey = "Coastal", Type = "Micro") %>% ## coastal microbial data
+datCSm  <- planktonr::pr_get_data(Survey = "Coastal", Type = "Microbes") %>% ## coastal microbial data
   droplevels() %>% 
   dplyr::mutate(SampleDepth_m = round(.data$SampleDepth_m/10,0)*10,
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
   dplyr::filter(Values != -9999) %>% 
   tidyr::drop_na(Values)
 
-datGSm <- planktonr::pr_get_data(Survey = "GO-SHIP", Type = "Micro")
+datGSm <- planktonr::pr_get_data(Survey = "GO-SHIP", Type = "Microbes")
 
 datNRSw <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Water") %>% #TODO move the MLD calcs to planktonr
   tidyr::pivot_wider(values_from = "Values", names_from = "Parameters") %>%
