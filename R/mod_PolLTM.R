@@ -8,14 +8,14 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_PolLTM_ui <- function(id){
-  nsPolLTM <- NS(id)
+  ns <- NS(id)
   tagList(
     sidebarLayout(
       sidebarPanel(
         shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-        mapgl::mapboxglOutput(nsPolLTM("plotmap"), height = "400px"),
+        mapgl::mapboxglOutput(ns("plotmap"), height = "400px"),
         shiny::HTML("<h3>Select a station:</h3>"),
-        radioButtons(inputId = nsPolLTM("siteLTM"), 
+        radioButtons(inputId = ns("siteLTM"), 
                      label = NULL, 
                      choices = unique(sort(pkg.env$PolLTM$StationName)), 
                      selected = "Port Hacking")
@@ -29,9 +29,9 @@ mod_PolLTM_ui <- function(id){
                         feasiblity to take consistent measurements. They are commonly measured by observing systems and 
                         frequently used in policy making and input into reporting such as State of Environment."),
                 shiny::hr(class = "hr-separator"),
-                shiny::htmlOutput(nsPolLTM("StationSummary")),
+                shiny::htmlOutput(ns("StationSummary")),
                 shiny::br(),
-                plotOutput(nsPolLTM("timeseries1"), height = 1000) %>% 
+                plotOutput(ns("timeseries1"), height = 1000) %>% 
                   shinycssloaders::withSpinner(color="#0dc5c1"), 
                 div(class="download-button-container",
                     fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),

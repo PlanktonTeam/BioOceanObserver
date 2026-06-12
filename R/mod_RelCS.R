@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_RelCS_ui <- function(id){
-  nsRelCS <- NS(id)
+  ns <- NS(id)
   
   tagList(
     sidebarLayout(
@@ -128,7 +128,7 @@ mod_RelCS_server <- function(id){
     }) %>% bindCache(input$py, input$px, input$site, input$smoother)
     
     output$scatter1 <- renderPlot({
-      req(input$RelCS == 1)
+      req(is.null(input$RelCS) || input$RelCS == "1")
       gg_out1()
     }, height = function() {length(unique(selectedData()$SampleDepth_m)) * 200})
     
@@ -149,7 +149,6 @@ mod_RelCS_server <- function(id){
     }) %>% bindCache(input$py, input$site)
     
     output$box2 <- renderPlot({
-      req(input$RelCS == 2)
       gg_out2()
     })
     

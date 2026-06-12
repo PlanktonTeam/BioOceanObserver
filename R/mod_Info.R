@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList
 mod_info_ui <- function(id) {
-  nsInfo <- NS(id)
+  ns <- NS(id)
   shiny::tagList(
     tabsetPanel(
       id = "info", type = "pills",
@@ -19,7 +19,7 @@ mod_info_ui <- function(id) {
         simple and effective, whilst retaining as much flexibility as possible. There are several legitimate ways to display data and to conduct analysis, what we are showing 
         is just one way. Under the following tabs we document our decisions but explain how you can access the raw data, with ease, to analyse as you wish.</p> <br>"),
         bslib::accordion(
-          id = nsInfo("samplingAccordion_tech"),
+          id = ns("samplingAccordion_tech"),
           open = character(0), # ensures all items are closed on render
           bslib::accordion_panel(
             title = shiny::HTML("<h3>Raise an issue</h3>"),
@@ -151,7 +151,7 @@ mod_info_ui <- function(id) {
       tabPanel("References",
         value = 4,
         bslib::accordion(
-          id = nsInfo("samplingAccordion_refs"),
+          id = ns("samplingAccordion_refs"),
           open = character(0), # ensures all items are closed on render
           bslib::accordion_panel(
             # div(class = "references",
@@ -223,7 +223,7 @@ mod_info_ui <- function(id) {
       tabPanel("Sampling Details",
         value = 5,
         bslib::accordion(
-          id = nsInfo("samplingAccordion_details"),
+          id = ns("samplingAccordion_details"),
           open = character(0), # ensures all items are closed on render
           bslib::accordion_panel(
             title = shiny::HTML("<h3>National Reference Stations</h3>"),
@@ -237,7 +237,7 @@ mod_info_ui <- function(id) {
             The Victorian Bonney Mooring was only established in 2024, but is included here as it will be ongoing.</p>
             </p> <br>
             <h4>NRS Sampling details</h4>"),
-            DT::DTOutput(nsInfo("NRSDataTable")),
+            DT::DTOutput(ns("NRSDataTable")),
             div(
               h4("Key Data Streams"),
               tags$ul(
@@ -263,10 +263,10 @@ mod_info_ui <- function(id) {
             with support from IMOS through a UTAS / AAD collaboration and the the Southern Ocean zooplankton records, south of -47<sup>o</sup>S, are counted through the SO_CPR program at the AAD.</p> 
             <p> Adhoc samples are also collected from RV Investigator and other research vessels.</p><br>"),
             shiny::HTML("<h4>IMOS CPR Sampling details</h4>"),
-            DT::DTOutput(nsInfo("CPRDataTable")),
+            DT::DTOutput(ns("CPRDataTable")),
             shiny::HTML("<br><br>"),
             shiny::HTML("<h4>AAD CPR Sampling details</h4>"),
-            DT::DTOutput(nsInfo("CPRDataTableSO")),
+            DT::DTOutput(ns("CPRDataTableSO")),
             div(
               h4("Key Data Streams"),
               tags$ul(
@@ -330,7 +330,7 @@ mod_info_ui <- function(id) {
         shiny::HTML("TAS data is from the EPA. These data are analysed by Analytical Services Tasmania."),
         shiny::HTML("<br><br>"),
         shiny::HTML("<h4>Sampling details</h4>"),
-        DT::DTOutput(nsInfo("HABDataTable")),
+        DT::DTOutput(ns("HABDataTable")),
         shiny::HTML("<br><br>"),
         div(
           h4("Key Data Streams"),
@@ -344,17 +344,17 @@ mod_info_ui <- function(id) {
     tabPanel("Species Details",
         value = 6,
         bslib::accordion(
-          id = nsInfo("samplingAccordion_species"),
+          id = ns("samplingAccordion_species"),
           open = character(0), # ensures all items are closed on render
           bslib::accordion_panel(
             title = shiny::HTML("<h3>Phytoplankton Species Information</h3>"),
             value = "p",
-            DT::DTOutput(nsInfo("PDataTable"))
+            DT::DTOutput(ns("PDataTable"))
           ),
           bslib::accordion_panel(
             title = shiny::HTML("<h3>Zooplankton Species Information</h3>"),
             value = "z",
-            DT::DTOutput(nsInfo("ZDataTable"))
+            DT::DTOutput(ns("ZDataTable"))
           )
         )
       )

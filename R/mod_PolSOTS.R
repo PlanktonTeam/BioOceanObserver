@@ -8,21 +8,22 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_PolSOTS_ui <- function(id){
-  nsPolSOTS <- NS(id)
+  ns <- NS(id)
   tagList(
     sidebarLayout(
       sidebarPanel(
-        mapgl::mapboxglOutput(nsPolSOTS("plotmap"), height = "400px"),
+        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
+        mapgl::mapboxglOutput(ns("plotmap"), height = "400px"),
         shiny::HTML("<h3><strong>Station:</strong></h3>"),
         # shiny::HTML("<p>Southern Ocean Time Series</p>"),
-        shiny::radioButtons(inputId = nsPolSOTS("site"), 
+        shiny::radioButtons(inputId = ns("site"), 
                             label = NULL, 
                             choices = "Southern Ocean Time Series", 
                             selected = "Southern Ocean Time Series"),
         shiny::conditionalPanel(
           condition = paste0("input['", id, "-EOV_SOTS'] == 1"), # Only first tab
           shiny::HTML("<h5><strong>Select a parameter:</strong></h5>"),
-          shiny::checkboxGroupInput(inputId = nsPolSOTS("Parameters"), label = NULL, 
+          shiny::checkboxGroupInput(inputId = ns("Parameters"), label = NULL, 
                                     choices = planktonr:::pr_relabel(
                                       c("ChlF_mgm3", "DissolvedOxygen_umolkg", "PhytoBiomassCarbon_pgL",
                                         "ShannonPhytoDiversity", "Nitrate_umolL", 
@@ -30,7 +31,7 @@ mod_PolSOTS_ui <- function(id){
                                         "Phosphate_umolL"), style = "simple", named = TRUE),
                                     selected = c("ChlF_mgm3", "Temperature_degC", "Nitrate_umolL", "Phosphate_umolL")),
           shiny::HTML("<h5><strong>Select a depth:</strong></h5>"),
-          shiny::radioButtons(inputId = nsPolSOTS("Depths"), label = NULL, 
+          shiny::radioButtons(inputId = ns("Depths"), label = NULL, 
                               choices = c("0 m", "30 m"),
                               selected = c("0 m"))
         ),
@@ -45,36 +46,37 @@ mod_PolSOTS_ui <- function(id){
                         feasiblity to take consistent measurements. They are commonly measured by observing systems and 
                         frequently used in policy making and input into reporting such as State of Environment."),
         shiny::hr(class = "hr-separator"),
-        shiny::htmlOutput(nsPolSOTS("StationSummary")),
+        shiny::htmlOutput(ns("StationSummary")),
         shiny::br(),
-        shiny::tabsetPanel(id = nsPolSOTS("EOV_SOTS"), type = "pills",
-                           shiny::tabPanel("All", value = 1,
+        bslib::navset_pill(id = ns("EOV_SOTS"),
+                           selected = "1",
+                           bslib::nav_panel("All", value = "1",
                                            
-                                           shiny::plotOutput(nsPolSOTS("timeseries1"), height = 5 * 200) %>%
+                                           shiny::plotOutput(ns("timeseries1"), height = 5 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
                                            div(style="display:inline-block; float:right; width:60%",
                                                fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                                                fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                                                fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action"))
                            ),
-                           shiny::tabPanel("Biological", value = 2,
-                                           shiny::plotOutput(nsPolSOTS("timeseries2"), height = 5 * 200) %>%
+                           bslib::nav_panel("Biological", value = "2",
+                                           shiny::plotOutput(ns("timeseries2"), height = 5 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
                                            div(style="display:inline-block; float:right; width:60%",
                                                fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
                                                fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
                                                fButtons(id, button_id = "downloadCode2", label = "Code", Type = "Action"))
                            ),
-                           shiny::tabPanel("Chemical", value = 3,
-                                           shiny::plotOutput(nsPolSOTS("timeseries3"), height = 5 * 200) %>%
+                           bslib::nav_panel("Chemical", value = "3",
+                                           shiny::plotOutput(ns("timeseries3"), height = 5 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
                                            div(style="display:inline-block; float:right; width:60%",
                                                fButtons(id, button_id = "downloadPlot3", label = "Plot", Type = "Download"),
                                                fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
                                                fButtons(id, button_id = "downloadCode3", label = "Code", Type = "Action"))
                            ),
-                           shiny::tabPanel("Physical", value = 4,
-                                           shiny::plotOutput(nsPolSOTS("timeseries4"), height = 4 * 200) %>%
+                           bslib::nav_panel("Physical", value = "4",
+                                           shiny::plotOutput(ns("timeseries4"), height = 4 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
                                            div(style="display:inline-block; float:right; width:60%",
                                                fButtons(id, button_id = "downloadPlot4", label = "Plot", Type = "Download"),
@@ -129,10 +131,7 @@ mod_PolSOTS_server <- function(id){
     # SOTS is not in NRSStation; it is added by fMapboxMap when Type = "Phytoplankton".
     # Pass "SOTS" directly as the selected station code so the dot renders red on load.
     output$plotmap <- mapgl::renderMapboxgl({
-      shiny::tagList(
-        shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-        fMapboxMap("SOTS", Survey = "NRS", Type = "Phytoplankton")
-      )
+      fMapboxMap("SOTS", Survey = "NRS", Type = "Phytoplankton")
     })
     
     outputOptions(output, "plotmap", suspendWhenHidden = FALSE)
@@ -179,7 +178,7 @@ mod_PolSOTS_server <- function(id){
     }) %>% bindCache(input$Parameters, input$Depths)
     
     output$timeseries1 <- renderPlot({
-      req(input$EOV_SOTS == 1)
+      req(is.null(input$EOV_SOTS) || input$EOV_SOTS == "1")
       gg_out1()
     })
     
@@ -188,8 +187,6 @@ mod_PolSOTS_server <- function(id){
     output$downloadPlot1 <- fDownloadPlotServer(input, gg_id = gg_out1, "Policy_Select", papersize = "A4") # Download figure
     
     gg_out2 <- reactive({
-      req(input$EOV_SOTS == 2)
-      
       p10 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "ChlF_mgm3", trans = "identity", col = col1["ChlF_mgm3"], labels = FALSE)
       p130 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "ChlF_mgm3", trans = "identity", col = col1["ChlF_mgm3"], labels = FALSE)
       p20 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col1["PhytoBiomassCarbon_pgL"], labels = FALSE)
@@ -216,8 +213,6 @@ mod_PolSOTS_server <- function(id){
     output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "Policy_Bio", papersize = "A4") # Download figure
     
     gg_out3 <- reactive({
-      req(input$EOV_SOTS == 3)
-      
       p20 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Nitrate_umolL", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
       p230 <- planktonr::pr_plot_EOVs(selectedData30(), EOV = "Nitrate_umolL", trans = "identity", col = col1["Nitrate_umolL"], labels = FALSE)
       p30 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Silicate_umolL", trans = "identity", col = col1["Silicate_umolL"], labels = FALSE)
@@ -243,8 +238,6 @@ mod_PolSOTS_server <- function(id){
     output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "Policy_Chem", papersize = "A4") # Download figure
     
     gg_out4 <- reactive({
-      req(input$EOV_SOTS == 4)
-      
       p10 <- planktonr::pr_plot_EOVs(selectedData0(), EOV = "Temperature_degC", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
       p1200 <- planktonr::pr_plot_EOVs(selectedData200(), EOV = "Temperature_degC", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
       p1500 <- planktonr::pr_plot_EOVs(selectedData500(), EOV = "Temperature_degC", trans = "identity", col = col1["Temperature_degC"], labels = FALSE)
@@ -264,7 +257,7 @@ mod_PolSOTS_server <- function(id){
     output$timeseries4 <- renderPlot({
       gg_out4()
     })
-    
+
     # Download -------------------------------------------------------
     output$downloadData4 <- fDownloadButtonServer(input, selectedData0, "Policy_Phys") # Download csv of data
     output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4, "Policy_Phys", papersize = "A4") # Download figure

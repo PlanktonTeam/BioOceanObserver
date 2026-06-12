@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_MicroTsNRS_ui <- function(id){
-  nsMicroTsNRS <- NS(id)
+  ns <- NS(id)
   tagList(
     sidebarLayout(
       fPlanktonSidebar(id = id, tabsetPanel_id = "NRSmts", dat = pkg.env$datNRSm),
@@ -127,7 +127,7 @@ mod_MicroTsNRS_server <- function(id){
     }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     output$timeseries1 <- renderPlot({
-      req(input$NRSmts == 1)
+      req(is.null(input$NRSmts) || input$NRSmts == "1")
       gg_out1()
     }, height = function() {length(unique(selectedData()$StationName)) * 200})
     
@@ -170,7 +170,6 @@ mod_MicroTsNRS_server <- function(id){
     }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     output$timeseries2 <- renderPlot({
-      req(input$NRSmts == 2)
       gg_out2()
     })
     
@@ -201,13 +200,12 @@ mod_MicroTsNRS_server <- function(id){
     }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$interp)
     
     output$timeseries3 <- renderPlot({
-      req(input$NRSmts == 3)
       gg_out3()
     }, height = function() {
       if(length(unique(selectedDataDepth()$StationName)) < 2)
       {300} else
       {length(unique(selectedDataDepth()$StationName)) * 200}})
-    
+
     # Download -------------------------------------------------------
     output$downloadData3 <- fDownloadButtonServer(input, selectedData, "Enviro") # Download csv of data
     output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "Enviro") # Download figure

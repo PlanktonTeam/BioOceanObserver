@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_ZooTsCPR_ui <- function(id){
-  nsZooTsCPR <- NS(id)
+  ns <- NS(id)
   tagList(
     sidebarLayout(
       fPlanktonSidebar(id = id, tabsetPanel_id = "CPRzts", dat = pkg.env$datCPRz),
@@ -77,8 +77,8 @@ mod_ZooTsCPR_server <- function(id){
       sites <- if (length(input$site) > 0) input$site else character(0)
       fMapboxUpdate("plotmap", session, sites, Survey = "CPR", Type = "Zooplankton")
     }) %>% shiny::bindEvent(input$site, ignoreNULL = FALSE)
-    
-    # add text information 
+
+    # add text information
     output$PlotExp1 <- renderText({
       "A plot of selected zooplankton Parameters from the CPR around Australia, as a time series and a monthly climatology across bioregions. "
     }) 
@@ -102,7 +102,7 @@ mod_ZooTsCPR_server <- function(id){
     }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     output$timeseries1 <- renderPlot({
-      req(input$CPRzts == 1)
+      req(is.null(input$CPRzts) || input$CPRzts == "1")
       gg_out1()
     }, height = function() {length(unique(selectedData()$BioRegion)) * 200})
     
@@ -136,7 +136,6 @@ mod_ZooTsCPR_server <- function(id){
     }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     output$timeseries2 <- renderPlot({
-      req(input$CPRzts == 2)
       gg_out2()
     })
     
@@ -168,13 +167,12 @@ mod_ZooTsCPR_server <- function(id){
     }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
     
     output$timeseries3 <- renderPlot({
-      req(input$CPRzts == 3)
       gg_out3()
     }, height = function() {
       if(length(unique(selectedDataFG()$BioRegion)) < 2)
       {300} else
       {length(unique(selectedDataFG()$BioRegion)) * 200}})
-    
+
     # Download -------------------------------------------------------
     output$downloadData3 <- fDownloadButtonServer(input, selectedDataFG, "FuncGroup") # Download csv of data
     output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "FuncGroup") # Download figure

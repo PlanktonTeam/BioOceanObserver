@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_ZooTsNRS_ui <- function(id){
-  nsZooTsNRS <- NS(id)
+  ns <- NS(id)
   tagList(
     sidebarLayout(
       fPlanktonSidebar(id = id, tabsetPanel_id = "NRSzts", dat = pkg.env$datNRSz),
@@ -22,7 +22,6 @@ mod_ZooTsNRS_ui <- function(id){
 #' @noRd 
 mod_ZooTsNRS_server <- function(id){
   moduleServer(id, function(input, output, session, NRSzts){
-    
     
     # Sidebar ----------------------------------------------------------
     selectedData <- reactive({
@@ -107,7 +106,7 @@ mod_ZooTsNRS_server <- function(id){
     }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     output$timeseries1 <- renderPlot({
-      req(input$NRSzts == 1)
+      req(is.null(input$NRSzts) || input$NRSzts == "1")
       gg_out1()
     }, height = function() {length(unique(selectedData()$StationName)) * 200})
     
@@ -137,7 +136,6 @@ mod_ZooTsNRS_server <- function(id){
     }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     output$timeseries2 <- renderPlot({
-      req(input$NRSzts == 2)
       gg_out2()
     })
     
@@ -166,13 +164,12 @@ mod_ZooTsNRS_server <- function(id){
     }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
     
     output$timeseries3 <- renderPlot({
-      req(input$NRSzts == 3)
       gg_out3()
     }, height = function() {
       if(length(unique(selectedDataFG()$StationName)) < 2)
       {300} else
       {length(unique(selectedDataFG()$StationName)) * 200}})
-    
+
     output$downloadData3 <- fDownloadButtonServer(input, selectedDataFG, "FuncGroup")
     output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "FuncGroup")
     

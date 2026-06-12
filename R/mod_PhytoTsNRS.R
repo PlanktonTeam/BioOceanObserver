@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_PhytoTsNRS_ui <- function(id){
-  nsPhytoTsNRS <- NS(id)
+  ns <- NS(id)
   tagList(
     sidebarLayout(
       fPlanktonSidebar(id = id, tabsetPanel_id = "NRSpts", dat = pkg.env$datNRSp_all),
@@ -113,7 +113,7 @@ mod_PhytoTsNRS_server <- function(id){
     }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     output$timeseries1 <- renderPlot({
-      req(input$NRSpts == 1)
+      req(is.null(input$NRSpts) || input$NRSpts == "1")
       gg_out1()
     }, height = function() {length(unique(selectedData()$StationName)) * 200})
     
@@ -147,7 +147,6 @@ mod_PhytoTsNRS_server <- function(id){
     }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
     
     output$timeseries2 <- renderPlot({
-      req(input$NRSpts == 2)
       gg_out2()
     })
     
@@ -184,13 +183,12 @@ mod_PhytoTsNRS_server <- function(id){
     }) %>% bindCache(input$site, input$scaler3, input$DatesSlide[1], input$DatesSlide[2])
     
     output$timeseries3 <- renderPlot({
-      req(input$NRSpts == 3)
       gg_out3()
     }, height = function() {
       if(length(unique(selectedDataFG()$StationName)) < 2)
       {300} else
       {length(unique(selectedDataFG()$StationName)) * 200}})
-      
+
     # Download -------------------------------------------------------
     output$downloadData3 <- fDownloadButtonServer(input, selectedDataFG, "FuncGroup") # Download csv of data
     output$downloadPlot3 <- fDownloadPlotServer(input, gg_id = gg_out3, "FuncGroup") # Download figure

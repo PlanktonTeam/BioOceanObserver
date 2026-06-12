@@ -9,7 +9,7 @@
 #' @importFrom shiny NS tagList 
 mod_PhytoSpatial_ui <- function(id){
   
-  nsPhytoSpatial <- NS(id)
+  ns <- NS(id)
   
   tagList(
     sidebarLayout(
@@ -26,6 +26,7 @@ mod_PhytoSpatial_ui <- function(id){
 #' @noRd 
 mod_PhytoSpatial_server <- function(id){
   moduleServer( id, function(input, output, session, NRSspatp){
+    
     # Subset data
     
     AbsPdatar <- reactive({
@@ -87,7 +88,7 @@ mod_PhytoSpatial_server <- function(id){
     
     # Summer (December - February)
     output$MapSum <- mapgl::renderMapboxgl({
-      req(input$NRSspatp == 1)
+      req(is.null(input$NRSspatp) || input$NRSspatp == "1")
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
       MapboxSeason(df_abs = pkg.env$fMapDatap, df_pres = PSdatar(),
                    season_label = "December - February", Type = type)
@@ -95,7 +96,7 @@ mod_PhytoSpatial_server <- function(id){
     
     # Autumn (September - November)
     output$MapAut <- mapgl::renderMapboxgl({
-      req(input$NRSspatp == 1)
+      req(is.null(input$NRSspatp) || input$NRSspatp == "1")
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
       MapboxSeason(df_abs = pkg.env$fMapDatap, df_pres = PSdatar(),
                    season_label = "September - November", Type = type)
@@ -103,7 +104,7 @@ mod_PhytoSpatial_server <- function(id){
     
     # Winter (June - August)
     output$MapWin <- mapgl::renderMapboxgl({
-      req(input$NRSspatp == 1)
+      req(is.null(input$NRSspatp) || input$NRSspatp == "1")
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
       MapboxSeason(df_abs = pkg.env$fMapDatap, df_pres = PSdatar(),
                    season_label = "June - August", Type = type)
@@ -111,7 +112,7 @@ mod_PhytoSpatial_server <- function(id){
     
     # Spring (March - May)
     output$MapSpr <- mapgl::renderMapboxgl({
-      req(input$NRSspatp == 1)
+      req(is.null(input$NRSspatp) || input$NRSspatp == "1")
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
       MapboxSeason(df_abs = pkg.env$fMapDatap, df_pres = PSdatar(),
                    season_label = "March - May", Type = type)
@@ -129,10 +130,9 @@ mod_PhytoSpatial_server <- function(id){
     
     # sti plot
     output$STIs <- renderPlot({
-      req(input$NRSspatp == 2)
       planktonr::pr_plot_STI(selectedSTI())
     }) %>% bindCache(input$species1)
-    
+
     # daynight plot -----------------------------------------------------------------------------------------
     selecteddn <- reactive({
       req(input$species2)
@@ -145,7 +145,6 @@ mod_PhytoSpatial_server <- function(id){
     
     # daynight plot
     output$DNs <- renderPlot({
-      req(input$NRSspatp == 3)
       plotdn <- planktonr::pr_plot_DayNight(selecteddn())
       plotdn
     }) %>% bindCache(input$species2)

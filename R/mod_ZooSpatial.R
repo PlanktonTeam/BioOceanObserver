@@ -9,7 +9,7 @@
 #' @importFrom shiny NS tagList 
 mod_ZooSpatial_ui <- function(id){
   
-  nsZooSpatial <- NS(id)
+  ns <- NS(id)
   
   tagList(
 
@@ -26,6 +26,7 @@ mod_ZooSpatial_ui <- function(id){
 #' @noRd 
 mod_ZooSpatial_server <- function(id){
   moduleServer( id, function(input, output, session, NRSspatz){
+    
     # Subset data
     
     AbsZdatar <- reactive({
@@ -88,7 +89,7 @@ mod_ZooSpatial_server <- function(id){
     
     # Summer (December - February)
     output$MapSum <- mapgl::renderMapboxgl({
-      req(input$NRSspatz == 1)
+      req(is.null(input$NRSspatz) || input$NRSspatz == "1")
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
       MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
                    season_label = "December - February", Type = type)
@@ -96,7 +97,7 @@ mod_ZooSpatial_server <- function(id){
     
     # Autumn (September - November)
     output$MapAut <- mapgl::renderMapboxgl({
-      req(input$NRSspatz == 1)
+      req(is.null(input$NRSspatz) || input$NRSspatz == "1")
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
       MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
                    season_label = "September - November", Type = type)
@@ -104,7 +105,7 @@ mod_ZooSpatial_server <- function(id){
     
     # Winter (June - August)
     output$MapWin <- mapgl::renderMapboxgl({
-      req(input$NRSspatz == 1)
+      req(is.null(input$NRSspatz) || input$NRSspatz == "1")
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
       MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
                    season_label = "June - August", Type = type)
@@ -112,7 +113,7 @@ mod_ZooSpatial_server <- function(id){
     
     # Spring (March - May)
     output$MapSpr <- mapgl::renderMapboxgl({
-      req(input$NRSspatz == 1)
+      req(is.null(input$NRSspatz) || input$NRSspatz == "1")
       type <- dplyr::if_else(input$scaler1, "frequency", "PA")
       MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
                    season_label = "March - May", Type = type)
@@ -130,13 +131,12 @@ mod_ZooSpatial_server <- function(id){
     
     # sti plot
     output$STIs <- renderPlot({
-      req(input$NRSspatz == 2)
       shiny::validate(
         need(nrow(selectedSTI()) > 20, "Not enough data for this copepod species")
       )
       planktonr::pr_plot_STI(selectedSTI())
     }) %>% bindCache(input$species1)
-    
+
     # daynight plot -----------------------------------------------------------------------------------------
     selecteddn <- reactive({
       req(input$species2)
@@ -149,7 +149,6 @@ mod_ZooSpatial_server <- function(id){
     
     # daynight plot
     output$DNs <- renderPlot({
-      req(input$NRSspatz == 3)
       shiny::validate(
         need(length(unique(selecteddn()$daynight)) == 2 | nrow(selecteddn()) > 20, "Not enough data for this copepod species to plot")
       )

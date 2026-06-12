@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_RelNRS_ui <- function(id){
-  nsRelNRS <- NS(id)
+  ns <- NS(id)
 
   tagList(
     sidebarLayout(
@@ -197,7 +197,7 @@ mod_RelNRS_server <- function(id){
     }) %>% bindCache(input$site, input$py, input$px, input$smoother)
 
     output$scatter1 <- renderPlot({
-      req(input$relNRS == 1)
+      req(is.null(input$relNRS) || input$relNRS == "1")
       gg_out1()
     }, height = function() {
       if(input$groupy != 'Microbes - NRS')
@@ -223,7 +223,6 @@ mod_RelNRS_server <- function(id){
     }) %>% bindCache(input$py, input$site)
     
     output$box2 <- renderPlot({
-      req(input$relNRS == 2)
       gg_out2()
     })
     

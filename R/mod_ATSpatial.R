@@ -439,8 +439,6 @@ mod_ATSpatial_server <- function(id) {
       )
     }) # /renderUI sidebar_content
 
-    shiny::outputOptions(output, "sidebar_title",   suspendWhenHidden = FALSE)
-    shiny::outputOptions(output, "sidebar_content", suspendWhenHidden = FALSE)
 
   }) # /moduleServer
 }

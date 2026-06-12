@@ -24,7 +24,7 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
   } else if (Survey == "GO-SHIP") {
     clon <- -170.0; clat <- -40.0; zoom <- 2.0
   } else if (Survey == "HAB") {
-    clon <- 150.0; clat <- -32.5; zoom <- 4.0
+    clon <- 150.0; clat <- -32.5; zoom <- 3.0
   } 
   
   # --- Build base map ---

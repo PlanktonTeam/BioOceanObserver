@@ -8,13 +8,13 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_LFishSeason_ui <- function(id){
-  nsLFishSeason <- NS(id)
+  ns <- NS(id)
   
   tagList(
     shiny::fluidPage(    
       shiny::fluidRow(
         shiny::column(width = 6, offset = 6,
-                      selectizeInput(inputId = nsLFishSeason("species"), label = NULL, 
+                      selectizeInput(inputId = ns("species"), label = NULL, 
                                      choices = unique(pkg.env$LFData$Species), width = "100%",
                                      options = list(dropdownParent = 'body')),
         )),
@@ -22,12 +22,12 @@ mod_LFishSeason_ui <- function(id){
         shiny::column(width = 6,
                       class = "col-no-spacing",
                       shiny::h4("December - February"),
-                      mapgl::mapboxglOutput(nsLFishSeason("LFMapSum"), width = "99%", height = "300px") %>% 
+                      mapgl::mapboxglOutput(ns("LFMapSum"), width = "99%", height = "300px") %>% 
                         shinycssloaders::withSpinner(color="#0dc5c1")), 
         shiny::column(width = 6,
                       class = "col-no-spacing",
                       shiny::h4("March - May"),
-                      mapgl::mapboxglOutput(nsLFishSeason("LFMapAut"), width = "99%", height = "300px") %>%
+                      mapgl::mapboxglOutput(ns("LFMapAut"), width = "99%", height = "300px") %>%
                         shinycssloaders::withSpinner(color="#0dc5c1")
                       )
       ),
@@ -35,12 +35,12 @@ mod_LFishSeason_ui <- function(id){
         shiny::column(width = 6,
                       class = "col-no-spacing",
                       shiny::h4("June - August"),
-                      mapgl::mapboxglOutput(nsLFishSeason("LFMapWin"), width = "99%", height = "300px") %>% 
+                      mapgl::mapboxglOutput(ns("LFMapWin"), width = "99%", height = "300px") %>% 
                         shinycssloaders::withSpinner(color="#0dc5c1")), 
         shiny::column(width = 6,
                       class = "col-no-spacing",
                       shiny::h4("September - November"),
-                      mapgl::mapboxglOutput(nsLFishSeason("LFMapSpr"), width = "99%", height = "300px") %>% 
+                      mapgl::mapboxglOutput(ns("LFMapSpr"), width = "99%", height = "300px") %>% 
                         shinycssloaders::withSpinner(color="#0dc5c1"))
       )
       
