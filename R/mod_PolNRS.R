@@ -8,21 +8,21 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_PolNRS_ui <- function(id){
-  nsPolNRS <- NS(id)
+  ns <- NS(id)
   tagList(
     sidebarLayout(
       sidebarPanel(
         shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-        mapgl::mapboxglOutput(nsPolNRS("plotmap"), height = "400px"),
+        mapgl::mapboxglOutput(ns("plotmap"), height = "400px"),
         shiny::HTML("<h3>Select a station:</h3>"),
-        shiny::radioButtons(inputId = nsPolNRS("site"), 
+        shiny::radioButtons(inputId = ns("site"), 
                             label = NULL, 
                             choices = unique(sort(pkg.env$PolNRS$StationName)), 
                             selected = "Maria Island"),
         shiny::conditionalPanel(
           condition = paste0("input['", id, "-EOV_NRS'] == 1"), # Only first tab
           shiny::HTML("<h3>Select a parameter:</h3>"),
-          shiny::checkboxGroupInput(inputId = nsPolNRS("Parameters"), label = NULL, 
+          shiny::checkboxGroupInput(inputId = ns("Parameters"), label = NULL, 
                                     choices = planktonr:::pr_relabel(
                                       c("Biomass_mgm3", "PhytoBiomassCarbon_pgL", "ShannonPhytoDiversity", "ShannonCopepodDiversity", 
                                         "CTDTemperature_degC", "Salinity", "PigmentChla_mgm3", "Ammonium_umolL", "Nitrate_umolL", 
@@ -41,36 +41,37 @@ mod_PolNRS_ui <- function(id){
                         feasiblity to take consistent measurements. They are commonly measured by observing systems and 
                         frequently used in policy making and input into reporting such as State of Environment."),
         shiny::hr(class = "hr-separator"),
-        shiny::htmlOutput(nsPolNRS("StationSummary")),
+        shiny::htmlOutput(ns("StationSummary")),
         shiny::br(),
-        shiny::tabsetPanel(id = nsPolNRS("EOV_NRS"), type = "pills",
-                           shiny::tabPanel("All", value = 1,
+        bslib::navset_pill(id = ns("EOV_NRS"),
+                           selected = "1",
+                           bslib::nav_panel("All", value = "1",
                                            
-                                           shiny::plotOutput(nsPolNRS("timeseries1"), height = 5 * 200) %>%
+                                           shiny::plotOutput(ns("timeseries1"), height = 5 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
                                            div(class="download-button-container",
                                                fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
                                                fButtons(id, button_id = "downloadData1", label = "Data", Type = "Download"),
                                                fButtons(id, button_id = "downloadCode1", label = "Code", Type = "Action"))
                            ),
-                           shiny::tabPanel("Biological", value = 2,
-                                           shiny::plotOutput(nsPolNRS("timeseries2"), height = 5 * 200) %>%
+                           bslib::nav_panel("Biological", value = "2",
+                                           shiny::plotOutput(ns("timeseries2"), height = 5 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
                                            div(class="download-button-container",
                                                fButtons(id, button_id = "downloadPlot2", label = "Plot", Type = "Download"),
                                                fButtons(id, button_id = "downloadData2", label = "Data", Type = "Download"),
                                                fButtons(id, button_id = "downloadCode2", label = "Code", Type = "Action"))
                            ),
-                           shiny::tabPanel("Chemical", value = 3,
-                                           shiny::plotOutput(nsPolNRS("timeseries3"), height = 5 * 200) %>%
+                           bslib::nav_panel("Chemical", value = "3",
+                                           shiny::plotOutput(ns("timeseries3"), height = 5 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
                                            div(class="download-button-container",
                                                fButtons(id, button_id = "downloadPlot3", label = "Plot", Type = "Download"),
                                                fButtons(id, button_id = "downloadData3", label = "Data", Type = "Download"),
                                                fButtons(id, button_id = "downloadCode3", label = "Code", Type = "Action"))
                            ),
-                           shiny::tabPanel("Physical", value = 4,
-                                           shiny::plotOutput(nsPolNRS("timeseries4"), height = 2 * 200) %>%
+                           bslib::nav_panel("Physical", value = "4",
+                                           shiny::plotOutput(ns("timeseries4"), height = 2 * 200) %>%
                                              shinycssloaders::withSpinner(color="#0dc5c1"),
                                            div(class="download-button-container",
                                                fButtons(id, button_id = "downloadPlot4", label = "Plot", Type = "Download"),
@@ -176,7 +177,7 @@ mod_PolNRS_server <- function(id){
     }) %>% bindCache(input$site, input$Parameters)
     
     output$timeseries1 <- renderPlot({
-      req(input$EOV_NRS == 1)
+      req(is.null(input$EOV_NRS) || input$EOV_NRS == "1")
       gg_out1()
     })
     
@@ -200,7 +201,6 @@ mod_PolNRS_server <- function(id){
     }) %>% bindCache(input$site)
     
     output$timeseries2 <- renderPlot({
-      req(input$EOV_NRS == 2)
       gg_out2()
     })
     
@@ -230,7 +230,6 @@ mod_PolNRS_server <- function(id){
     }) %>% bindCache(input$site)
     
     output$timeseries3 <- renderPlot({
-      req(input$EOV_NRS == 3)
       gg_out3()
     })
     
@@ -251,10 +250,9 @@ mod_PolNRS_server <- function(id){
     }) %>% bindCache(input$site)
     
     output$timeseries4 <- renderPlot({
-      req(input$EOV_NRS == 4)
       gg_out4()
     })
-    
+
     # Download -------------------------------------------------------
     output$downloadData4 <- fDownloadButtonServer(input, selectedData, "Policy_Phys") # Download csv of data
     output$downloadPlot4 <- fDownloadPlotServer(input, gg_id = gg_out4, "Policy_Phys", papersize = "A4r") # Download figure

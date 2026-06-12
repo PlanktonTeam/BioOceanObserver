@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_RelCPR_ui <- function(id){
-  nsRelCPR <- NS(id)
+  ns <- NS(id)
   
   tagList(
     sidebarLayout(
@@ -132,7 +132,7 @@ mod_RelCPR_server <- function(id){
     }) %>% bindCache(input$py, input$px, input$site, input$smoother)
     
     output$scatter1 <- renderPlot({
-      req(input$RelCPR == 1)
+      req(is.null(input$RelCPR) || input$RelCPR == "1")
       gg_out1()
     }, height = 300)
     
@@ -148,7 +148,6 @@ mod_RelCPR_server <- function(id){
     }) %>% bindCache(input$py, input$site)
     
     output$box2 <- renderPlot({
-      req(input$RelCPR == 2)
       gg_out2()
     })
     

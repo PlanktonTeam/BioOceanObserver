@@ -34,51 +34,55 @@ app_server <- function( input, output, session ) {
   # Register all module servers once at startup.
   # Computation is deferred inside each module via req() gates on tab inputs.
   
-  # Top-level navbar tabs
+  # ── Home ──────────────────────────────────────────────────────
+  # Info content (Technical Information, References, Sampling Details,
+  # Species Details) is inlined directly into mod_home_server — no
+  # separate mod_info_server call needed.
   mod_home_server("home_1")
+
+  # ── Environmental Reporting ───────────────────────────────────
   mod_PolNRS_server("PolNRS_ui_1")
-  mod_MicroTsNRS_server("MicroTsNRS_ui_1")
-  mod_PhytoTsNRS_server("PhytoTsNRS_ui_1")
-  mod_PhytoTsHAB_server("PhytoTsHAB_ui_1")
-  mod_ZooTsNRS_server("ZooTsNRS_ui_1")
-  mod_LFishSpatial_server("LFishSpatial_1")
-  mod_NutrientsBGC_server("NutrientsBGC_ui_1")
-  mod_RelNRS_server("RelNRS_ui_1")
-  mod_info_server("info_1")
-  
-  # EOVs sub-tabs
   mod_PolCPR_server("PolCPR_ui_1")
   mod_PolLTM_server("PolLTM_ui_1")
   mod_PolSOTS_server("PolSOTS_ui_1")
-  
-  # Phytoplankton sub-tabs
-  mod_PhytoTsCPR_server("PhytoTsCPR_ui_1")
-  mod_PhytoSpatial_server("PhytoSpatial_ui_1")
-  
-  # Zooplankton sub-tabs
-  mod_ZooTsCPR_server("ZooTsCPR_ui_1")
-  mod_ZooSpatial_server("ZooSpatial_ui_1")
-  
-  # Microbes sub-tabs
+
+  # ── Biology: Microbes ─────────────────────────────────────────
+  mod_MicroTsNRS_server("MicroTsNRS_ui_1")
   mod_MicroTsCS_server("MicroTsCS_ui_1")
   mod_MicroLatGS_server("MicroLatGS_ui_1")
-  
-  # Larval Fish sub-tabs
+
+  # ── Biology: Phytoplankton (incl. Coastal HAB) ────────────────
+  mod_PhytoTsNRS_server("PhytoTsNRS_ui_1")
+  mod_PhytoTsCPR_server("PhytoTsCPR_ui_1")
+  mod_PhytoSpatial_server("PhytoSpatial_ui_1")
+  mod_PhytoTsHAB_server("PhytoTsHAB_ui_1")
+
+  # ── Biology: Zooplankton ──────────────────────────────────────
+  mod_ZooTsNRS_server("ZooTsNRS_ui_1")
+  mod_ZooTsCPR_server("ZooTsCPR_ui_1")
+  mod_ZooSpatial_server("ZooSpatial_ui_1")
+
+  # ── Biology: Larval Fish ──────────────────────────────────────
+  mod_LFishSpatial_server("LFishSpatial_1")
   mod_LFishSeason_server("LFishSeason_1")
   mod_LFishData_server("LFishData_1")
-  
-  # Environmental sub-tabs
-  mod_PigmentsBGC_server("PigmentsBGC_ui_1")
+
+  # ── Biology: Animal Tracking ──────────────────────────────────
+  mod_ATSpatial_server("ATSpatial_1")
+  mod_ATStats_server("ATStats_1")
+
+  # ── Biogeochemistry ───────────────────────────────────────────
+  mod_NutrientsBGC_server("NutrientsBGC_ui_1")
   mod_PicoBGC_server("PicoBGC_ui_1")
+  mod_PigmentsBGC_server("PigmentsBGC_ui_1")
   mod_WaterBGC_server("WaterBGC_ui_1")
-  mod_MoorBGC_server("MoorBGC_ui_1")
-  
-  # Relationships sub-tabs
+  # mod_MoorBGC_server("MoorBGC_ui_1")  # No matching UI — kept commented until Moorings tab is restored
+
+  # ── Data Analysis ─────────────────────────────────────────────
+  mod_RelNRS_server("RelNRS_ui_1")
   mod_RelCS_server("RelCS_ui_1")
   mod_RelCPR_server("RelCPR_ui_1")
 
-  # Animal Tracking sub-tabs
-  mod_ATSpatial_server("ATSpatial_1")
-  mod_ATStats_server("ATStats_1")
-  mod_ATCases_server("ATCases_1")
+  # ── Case Studies ──────────────────────────────────────────────
+  mod_Case1_server("Case1_1")
 }

@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_PhytoTsHAB_ui <- function(id){
-  nsPhytoTsHAB <- NS(id)
+  ns <- NS(id)
   tagList(
     sidebarLayout(
       fPlanktonSidebar(id = id, tabsetPanel_id = "pHABts", dat = pkg.env$datHABTrip), 
@@ -23,7 +23,7 @@ mod_PhytoTsHAB_ui <- function(id){
 mod_PhytoTsHAB_server <- function(id){
   
   moduleServer(id, function(input, output, session){
-    
+
     observeEvent({input$statepick1}, {
       
       req(input$statepick1)
@@ -58,16 +58,17 @@ mod_PhytoTsHAB_server <- function(id){
 
     observe({
       req(input$statepick1)
+      req(input$station1)
 
       dat <- taxa1()  %>%
         dplyr::filter(.data$StationName %in% input$station1) %>%
-        dplyr::summarise(non_zero_count = sum(.data$Values != 0, na.rm = TRUE), .by = c(.data$TaxonName, .data$Parameters)) %>% 
-        dplyr::filter(.data$non_zero_count > 50)  
+        dplyr::summarise(non_zero_count = sum(.data$Values != 0, na.rm = TRUE), .by = c(.data$TaxonName, .data$Parameters)) %>%
+        dplyr::filter(.data$non_zero_count > 50)
       
       taxa <- unique(sort(dat$TaxonName))
       params <- planktonr:::pr_relabel(unique(sort(dat$Parameters)), style = "simple", named = TRUE)
       
-      selectedtaxa1 <- if(input$taxgs1 %in% taxa){
+      selectedtaxa1 <- if(isTruthy(input$taxgs1) && input$taxgs1 %in% taxa){
         input$taxgs1
       } else {
         taxa[1]
@@ -76,7 +77,7 @@ mod_PhytoTsHAB_server <- function(id){
       shiny::updateSelectInput(session, 'taxgs1', choices = taxa, selected = selectedtaxa1)
       shiny::updateSelectInput(session, 'parameter', choices = params, selected = params[1])
       
-    }) 
+    }) %>% shiny::bindEvent(input$statepick1, input$station1, input$tax1, ignoreNULL = TRUE)
     
     # # Sidebar ----------------------------------------------------------
     # Sidebar Maps - Initial render with current selection
@@ -87,14 +88,6 @@ mod_PhytoTsHAB_server <- function(id){
         select1 <- c("Bar Island", "NSW")
       }
       fMapboxMap(select1, Survey = "HAB", Type = "Phytoplankton")
-    })
-    output$plotmap2 <- mapgl::renderMapboxgl({
-      if (shiny::isTruthy(input$statepick2) && shiny::isTruthy(input$station2)) {
-        select2 <- c(input$station2, input$statepick2)
-      } else {
-        select2 <- c("Bar Island", "NSW")
-      }
-      fMapboxMap(select2, Survey = "HAB", Type = "Phytoplankton")
     })
 
     observe({
@@ -189,7 +182,6 @@ mod_PhytoTsHAB_server <- function(id){
     }) %>% bindCache(input$statepick1, input$parameter, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$scaler1, input$tax1, input$taxgs1)
     
     output$timeseries1 <- renderPlot({
-      req(input$pHABts == 1)
       shiny::validate(
         shiny::need(
           nrow(gg_out1()$data) > 0,
@@ -217,8 +209,9 @@ mod_PhytoTsHAB_server <- function(id){
       
     }) %>% bindCache(input$tax2)
     
+    # Populate taxgs2 choices whenever tax2 changes (not gated on tab == "2" so
+    # choices are ready the moment the user switches to tab 2).
     observe({
-      req(input$pHABts == 2)
       taxa <- unique(sort(taxa2()$TaxonName))
       matched_taxa <- intersect(input$taxgs2, taxa)
       
@@ -230,8 +223,12 @@ mod_PhytoTsHAB_server <- function(id){
       params <- planktonr:::pr_relabel(unique(sort(taxa2()$Parameters)), style = "simple", named = TRUE)
       
       shiny::updateSelectInput(session, 'taxgs2', choices = taxa, selected = selectedtaxa)
-      shiny::updateSelectInput(session, 'parameter', choices = params, selected = params[1])
-    })
+      # Only update the shared parameter selector when on taxa analysis to avoid
+      # overwriting location analysis parameter choice.
+      if (isTRUE(input$hab_analysis == "taxa")) {
+        shiny::updateSelectInput(session, 'parameter', choices = params, selected = params[1])
+      }
+    }) %>% shiny::bindEvent(input$tax2, ignoreNULL = TRUE)
     
     param2 <- reactive({
       param <- taxa2() %>% dplyr::filter(.data$Parameters %in% input$parameter)
@@ -264,10 +261,9 @@ mod_PhytoTsHAB_server <- function(id){
       
     }) %>% bindCache(input$statepick2, input$taxgs2, input$tax2)
 
+    # Update the map for taxa analysis — fires when hab_analysis or statepick2/station2 change.
     observe({
-      req(input$pHABts == 2)
       req(input$statepick2)
-      req(input$station2)
 
       station <- tryCatch({
         availableStations2()
@@ -275,17 +271,19 @@ mod_PhytoTsHAB_server <- function(id){
         return(NULL) # isTruthy(NULL) is FALSE
       })
 
-      if(isTruthy(station) && input$station2 %in% station){
+      if(isTruthy(station) && isTruthy(input$station2) && input$station2 %in% station){
         select2 <- c(input$station2, input$statepick2)
       } else {
         select2 <- unname(input$statepick2)
       }
 
-      fMapboxUpdate("plotmap2", session, select2, Survey = "HAB", Type = "Phytoplankton")
-    }) %>% shiny::bindEvent(input$statepick2, input$station2, ignoreNULL = FALSE)
+      fMapboxUpdate("plotmap1", session, select2, Survey = "HAB", Type = "Phytoplankton")
+    }) %>% shiny::bindEvent(input$statepick2, input$station2, input$hab_analysis, ignoreNULL = FALSE)
     
+    # Update station2 choices whenever the taxa/state/dates change.
+    # Not gated on pHABts == "2" so the list is ready when the tab is first shown;
+    # req(input$taxgs2) guards against running before taxgs2 is populated.
     observeEvent(list(input$tax2, input$taxgs2, input$statepick2, input$DatesSlide[1], input$DatesSlide[2]), {
-      req(input$pHABts == 2)
       req(input$statepick2)
       req(input$taxgs2)
       
@@ -294,7 +292,7 @@ mod_PhytoTsHAB_server <- function(id){
       if(length(station) < 1){
         choices <- list("No stations available" = "")
         selectedstation2 <- ""
-      } else if(input$station2 %in% station) {
+      } else if(isTruthy(input$station2) && input$station2 %in% station) {
         choices <- station
         selectedstation2 <- input$station2
       } else {
@@ -307,13 +305,18 @@ mod_PhytoTsHAB_server <- function(id){
     selectedData2 <- reactive({
       req(input$statepick2)
       req(input$tax2)
-      req(input$taxgs2)
       req(input$parameter)
       station2_val <- input$station2
+      taxgs2_val <- input$taxgs2
+      
+      # Return empty data frame when taxgs2 not yet populated or no valid station
+      if (is.null(taxgs2_val) || length(taxgs2_val) == 0 || identical(taxgs2_val, "")) {
+        return(data.frame())
+      }
+      
       validStations <- availableStations2()
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       shiny::validate(need(!is.na(input$tax2), "Error: Please select the taxonomic resolution."))
-      shiny::validate(need(!is.na(input$taxgs2), "Error: Please select the taxonomic resolution."))
       shiny::validate(need(!is.na(input$statepick2), "Error: Please select a state."))
       
       # Return empty data frame when no station is available or if station2 is no longer valid
@@ -374,7 +377,6 @@ mod_PhytoTsHAB_server <- function(id){
     }) %>% bindCache(input$statepick2, input$parameter, input$station2, input$DatesSlide[1], input$DatesSlide[2], input$scaler1, input$tax2, input$taxgs2)
 
     output$timeseries2 <- renderPlot({
-      req(input$pHABts == 2)
       shiny::validate(
         shiny::need(
           nrow(gg_out2()$data) > 0,
@@ -382,17 +384,22 @@ mod_PhytoTsHAB_server <- function(id){
         )
       )
       gg_out2()
-    }, height = function() {if(length(unique(selectedData2()$StationName))>0) {
-      length(unique(selectedData2()$StationName)) * 200
-    } else {200}})
+    }, height = function() {
+      # Guard: only compute dynamic height when taxa analysis is active and data exists.
+      if (isTRUE(input$hab_analysis == "taxa")) {
+        dat2 <- tryCatch(selectedData2(), error = function(e) data.frame())
+        n <- length(unique(dat2$StationName))
+        if (n > 0) n * 200 else 200
+      } else {
+        200
+      }
+    })
 
     # Download -------------------------------------------------------
     output$downloadData2 <- fDownloadButtonServer(input, selectedData2, "TrendTaxa") # Download csv of data
     output$downloadPlot2 <- fDownloadPlotServer(input, gg_id = gg_out2, "TrendTaxa") # Download figure
 
-    outputOptions(output, "timeseries2", suspendWhenHidden = FALSE)
     outputOptions(output, "plotmap1", suspendWhenHidden = FALSE) # prevent shiny from suspending map when tab is hidden
-    outputOptions(output, "plotmap2", suspendWhenHidden = FALSE)
     
   })
 }

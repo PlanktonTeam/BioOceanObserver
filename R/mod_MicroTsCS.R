@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList
 mod_MicroTsCS_ui <- function(id){
-  nsMicroTsCS <- NS(id)
+  ns <- NS(id)
   tagList(
     sidebarLayout(
       fPlanktonSidebar(id = id, tabsetPanel_id = "CSmts", dat = pkg.env$datCSm),
@@ -121,7 +121,7 @@ mod_MicroTsCS_server <- function(id){
     }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
 
     output$timeseries1 <- renderPlot({
-      req(input$CSmts == 1)
+      req(is.null(input$CSmts) || input$CSmts == "1")
       gg_out1()
     }, height = function() {
       if(length(unique(selectedData()$StationName)) < 2)
@@ -174,7 +174,6 @@ mod_MicroTsCS_server <- function(id){
     }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
 
     output$timeseries2 <- renderPlot({
-      req(input$CSmts == 2)
       gg_out2()
     })
 
@@ -194,7 +193,6 @@ mod_MicroTsCS_server <- function(id){
     }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$smoother)
 
     output$timeseries3 <- renderPlot({
-      req(input$CSmts == 3)
       gg_out3()
     }, height = function() {
       if(length(unique(selectedData()$SampleDepth_m)) < 2)

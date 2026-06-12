@@ -8,16 +8,16 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_LFishSpatial_ui <- function(id){
-  nsLFishSpatial <- NS(id)
+  ns <- NS(id)
   tagList(
     shiny::fluidPage(    
       shiny::fluidRow(
         # shiny::column(width = 3, shiny::HTML("<strong>Select Larval Fish:</strong>")),
         shiny::column(width = 6, offset = 6,
-                      selectizeInput(inputId = nsLFishSpatial("species"), label = NULL, choices = unique(pkg.env$LFData$Species), width = "100%"),
+                      selectizeInput(inputId = ns("species"), label = NULL, choices = unique(pkg.env$LFData$Species), width = "100%"),
         )),
       shiny::fluidRow(
-        mapgl::mapboxglOutput(nsLFishSpatial("LFMap"), width = "100%", height = "800px") %>% 
+        mapgl::mapboxglOutput(ns("LFMap"), width = "100%", height = "800px") %>% 
           shinycssloaders::withSpinner(color="#0dc5c1"),
       ),
     )

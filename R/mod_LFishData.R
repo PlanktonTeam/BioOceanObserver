@@ -8,17 +8,17 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_LFishData_ui <- function(id){
-  nsLFishData <- NS(id)
+  ns <- NS(id)
   tagList(
     shiny::fluidPage(
       shiny::fluidRow(
         shiny::column(width = 6, offset = 6,
-                      selectizeInput(inputId = nsLFishData("species"), label = NULL, 
+                      selectizeInput(inputId = ns("species"), label = NULL, 
                                      choices = unique(pkg.env$LFData$Species), width = "100%",
                                      options = list(dropdownParent = 'body')),
         )),
       shiny::fluidRow(
-        DT::DTOutput(nsLFishData("SpeciesTable")),
+        DT::DTOutput(ns("SpeciesTable")),
       ),
       
       div(class="download-button-container",

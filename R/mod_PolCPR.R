@@ -8,14 +8,14 @@
 #'
 #' @importFrom shiny NS tagList 
 mod_PolCPR_ui <- function(id){
-  nsPolCPR <- NS(id)
+  ns <- NS(id)
   tagList(
     sidebarLayout(
       sidebarPanel(
-        mapgl::mapboxglOutput(nsPolCPR("plotmap"), height = "400px"),
+        mapgl::mapboxglOutput(ns("plotmap"), height = "400px"),
         shiny::p("Note there is very little data in the North and North-west regions"),
         shiny::HTML("<h3>Select a bioregion:</h3>"),
-        shiny::radioButtons(inputId = nsPolCPR("site"), label = NULL, 
+        shiny::radioButtons(inputId = ns("site"), label = NULL, 
                      choices = unique(sort(pkg.env$PolCPR$BioRegion)), selected = "Temperate East"),
       ),
       mainPanel(id = "EOV Biomass by CPR", 
@@ -27,9 +27,9 @@ mod_PolCPR_ui <- function(id){
                         feasiblity to take consistent measurements. They are commonly measured by observing systems and 
                         frequently used in policy making and input into reporting such as State of Environment."),
                 shiny::hr(class = "hr-separator"),
-                shiny::htmlOutput(nsPolCPR("StationSummary")),
+                shiny::htmlOutput(ns("StationSummary")),
                 shiny::br(),
-                plotOutput(nsPolCPR("timeseries1"), height = 1500) %>% 
+                plotOutput(ns("timeseries1"), height = 1500) %>% 
                   shinycssloaders::withSpinner(color="#0dc5c1"),
                     div(class="download-button-container",
                        fButtons(id, button_id = "downloadPlot1", label = "Plot", Type = "Download"),
