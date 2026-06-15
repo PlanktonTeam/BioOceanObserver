@@ -9,6 +9,7 @@ run_app(
   options = list(),
   enableBookmarking = NULL,
   uiPattern = "/",
+  MAPBOX_PUBLIC_TOKEN = NULL,
   ...
 )
 }
