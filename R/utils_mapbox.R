@@ -29,7 +29,7 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
   
   # --- Build base map ---
   base_map <- mapgl::mapboxgl(
-    access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+    access_token = golem::get_golem_options("MAPBOX_PUBLIC_TOKEN"),
     style        = mapgl::mapbox_style("light"),
     center       = c(clon, clat),
     zoom         = zoom,
@@ -449,7 +449,7 @@ fProgressMap <- function(dat) {
   # ---- Build the map ----
   # Centre shifted south and zoom reduced to include the Southern Ocean region
   mapgl::mapboxgl(
-    access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+    access_token = golem::get_golem_options("MAPBOX_PUBLIC_TOKEN"),
     style        = mapgl::mapbox_style("light"),
     center       = c(134.0, -32.0),
     zoom         = 2.8,
@@ -686,7 +686,7 @@ MapboxSeason <- function(df_abs, df_pres, season_label, Type = "PA") {
     }
     
     mapgl::mapboxgl(
-      access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+      access_token = golem::get_golem_options("MAPBOX_PUBLIC_TOKEN"),
       style        = mapgl::mapbox_style("light"),
       center       = c(134.0, -27.0),
       zoom         = 3.0,
@@ -741,7 +741,7 @@ MapboxSeason <- function(df_abs, df_pres, season_label, Type = "PA") {
     }
     
     mapgl::mapboxgl(
-      access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+      access_token = golem::get_golem_options("MAPBOX_PUBLIC_TOKEN"),
       style        = mapgl::mapbox_style("light"),
       center       = c(134.0, -27.0),
       zoom         = 3.0,
@@ -803,7 +803,7 @@ MapboxBase <- function(df, Type = "PA") {
   abs_opacity <- if (Type == "frequency") 0 else 1
   
   mapgl::mapboxgl(
-    access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+    access_token = golem::get_golem_options("MAPBOX_PUBLIC_TOKEN"),
     style        = mapgl::mapbox_style("light"),
     center       = c(134.0, -27.0),
     zoom         = 3.0,
