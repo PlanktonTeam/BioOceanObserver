@@ -7,7 +7,6 @@ inst/doc
 /doc/
 /Meta/
 docs
-*.html
 *.log
 run1/sessions/0_0_0.csv
 run1/sessions/10_0_2.csv
