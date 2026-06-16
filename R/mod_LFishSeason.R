@@ -99,7 +99,7 @@ mod_LFishSeason_server <- function(id){
         sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
       
       mapgl::mapboxgl(
-        access_token = golem::get_golem_options("mapbox_token"),
+        access_token = golem::get_golem_options("MAPBOX_PUBLIC_TOKEN"),
         style        = mapgl::mapbox_style("light"),
         center       = c(134.0, -27.0),
         zoom         = 3.0,
