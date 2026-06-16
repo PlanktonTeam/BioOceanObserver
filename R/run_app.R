@@ -24,7 +24,7 @@ run_app <- function(
       enableBookmarking = enableBookmarking, 
       uiPattern = uiPattern
     ), 
-    golem_opts = list(...)
+    golem_opts = list(MAPBOX_PUBLIC_TOKEN = MAPBOX_PUBLIC_TOKEN, ...)
   )
 }
 
