@@ -130,7 +130,7 @@ mod_ATSpatial_server <- function(id) {
 
     output$map <- mapgl::renderMapboxgl({
       mapgl::mapboxgl(
-        access_token       = golem::get_golem_options("MAPBOX_PUBLIC_TOKEN"),
+        access_token       = golem::get_golem_options("mapbox_token"),
         projection         = "mercator",
         style              = mapgl::mapbox_style("light"),
         center             = c(134.0, -27.0),
