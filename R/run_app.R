@@ -12,7 +12,7 @@ run_app <- function(
   options = list(), 
   enableBookmarking = NULL,
   uiPattern = "/",
-  MAPBOX_PUBLIC_TOKEN="",
+  MAPBOX_PUBLIC_TOKEN=MAPBOX_PUBLIC_TOKEN,
   ...
 ) {
   with_golem_options(

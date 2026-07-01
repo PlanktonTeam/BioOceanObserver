@@ -21,7 +21,7 @@ Imports:
     jsonlite,
     lubridate,
     magrittr,
-    mapgl,
+    mapgl (>= 0.2.0),
     patchwork,
     purrr,
     planktonr (>= 0.7.3),
