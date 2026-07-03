@@ -411,7 +411,7 @@ fSpatialSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3){
       selectizeInput(inputId = ns('species1'), label = labeltext, choices = unique(dat2$Species),
                      selected = selectedVar),
       shiny::p("This is a reduced species list that only contains species with enough data to create an STI plot")
-      
+
     ),
     shiny::conditionalPanel(
       condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3"),
