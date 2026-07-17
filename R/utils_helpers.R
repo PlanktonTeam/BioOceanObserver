@@ -240,61 +240,90 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                          min = min_date, 
                          max = Sys.time(), 
                          value = c(min_date, Sys.time()-1), timeFormat="%m-%Y")),
-    # Parameter selection for Microbes
-    # All subtabs (ie 1-3) using this input need to be created together
+    # Parameter selection for Microbes (tabs 1-3).
+    # Wrapped in R-side if() so this block is only ever rendered inside a Micro
+    # module's sidebar — no JS input.navbar guard needed or wanted.
+    if (stringr::str_detect(id, "Micro")) {
+      shiny::conditionalPanel(
+        condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 3"),
+        shiny::HTML("<h3>Select a parameter:</h3>"),
+        shiny::selectInput(inputId = ns("parameterm"),
+                           label = NULL,
+                           choices = selectedVar,
+                           selected = selectedVar),
+        shiny::htmlOutput(ns("ParamDefm")),
+        shiny::checkboxInput(inputId = ns("all"),
+                             label = "Tick for more microbial parameters",
+                             value = FALSE)
+      )
+    },
+
+    # Parameter Selection for Plankton (tabs 1-2).
+    # Wrapped in R-side if() so this block is only ever rendered inside a
+    # Phyto/Zoo/CPR/HAB module's sidebar — no JS input.navbar guard needed.
+    if (!stringr::str_detect(id, "Micro")) {
+      shiny::conditionalPanel(
+        condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 2"),
+        shiny::HTML("<h3>Select a parameter:</h3>"),
+        shiny::selectInput(inputId = ns("parameter"),
+                           label = NULL,
+                           choices = choicesp,
+                           selected = selectedVar),
+        shiny::htmlOutput(ns("ParamDef")),
+      )
+    },
+
+    # log10 checkbox — shown on tabs 1 and 2 for all module types (including
+    # Micro, which also uses input$scaler1 for log10 scaling).
+    # Null guard added: when the inner navset_pill has not yet fired its initial
+    # input event (tab not yet visited), the value is null; null == 1 is false
+    # in JS, so without the guard the checkbox would be hidden on first load.
     shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 3 && input.navbar == 'Microbes'"), # Micro
-      shiny::HTML("<h3>Select a parameter:</h3>"),
-      shiny::selectInput(inputId = ns("parameterm"), 
-                         label = NULL, 
-                         choices = selectedVar, 
-                         selected = selectedVar),
-      shiny::htmlOutput(ns("ParamDefm")),
-      shiny::checkboxInput(inputId = ns("all"), 
-                           label = "Tick for more microbial parameters", 
-                           value = FALSE)
-    ),
-    
-    
-    # Parameter Selection for Plankton (Tabs 1-2)
-    # All subtabs (ie 1-2) using this input need to be created together
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 2 && input.navbar != 'Microbes'"),
-      shiny::HTML("<h3>Select a parameter:</h3>"),
-      shiny::selectInput(inputId = ns("parameter"), 
-                         label = NULL, 
-                         choices = choicesp, 
-                         selected = selectedVar),
-      shiny::htmlOutput(ns("ParamDef")),
-    ),
-    
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 1 | input['", id, "-", tabsetPanel_id, "'] == 2"),
-      shiny::checkboxInput(inputId = ns("scaler1"), 
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == null || ",
+                         "input['", id, "-", tabsetPanel_id, "'] == 1 || ",
+                         "input['", id, "-", tabsetPanel_id, "'] == 2"),
+      shiny::checkboxInput(inputId = ns("scaler1"),
                            label = "Change the plot scale to log10",
                            value = FALSE),
     ),
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3 && input.navbar != 'Microbes'"), # Plankton
-      shiny::checkboxInput(inputId = ns("scaler3"),
-                           label = strong("Change the plot scale to proportion"),
-                           value = FALSE),
-    ),
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3 && input.mic == 'mts' && input.navbar == 'Microbes'"), # MicroNRS
-      shiny::selectizeInput(inputId = ns("interp"),
-                            label = shiny::strong("Interpolate data?"),
-                            choices = c("Interpolate", "Raw data"),
-                            selected = "Raw data"),
-    ),
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3 && input.mic == 'mtsCS'"), # MicroCoastal
-      shiny::HTML("<h3>Overlay trend line?</h3>"),
-      shiny::selectizeInput(inputId = ns("smoother"),
-                            label = NULL,
-                            choices = c("None", "Linear", "Smoother"),
-                            selected = "None"),
-    )
+
+    # Proportion checkbox — tab 3, Phyto/Zoo only.
+    # Wrapped in R-side if() to avoid rendering in Micro sidebars.
+    if (!stringr::str_detect(id, "Micro")) {
+      shiny::conditionalPanel(
+        condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3"),
+        shiny::checkboxInput(inputId = ns("scaler3"),
+                             label = strong("Change the plot scale to proportion"),
+                             value = FALSE),
+      )
+    },
+
+    # Interpolation selector — tab 3, MicroNRS only.
+    # Wrapped in R-side if() so it is only rendered in the MicroTsNRS sidebar.
+    # input.mic == 'mts' is the correct discriminator (outer navset_pill value).
+    if (stringr::str_detect(id, "Micro") && stringr::str_detect(id, "NRS")) {
+      shiny::conditionalPanel(
+        condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3 && input.mic == 'mts'"),
+        shiny::selectizeInput(inputId = ns("interp"),
+                              label = shiny::strong("Interpolate data?"),
+                              choices = c("Interpolate", "Raw data"),
+                              selected = "Raw data"),
+      )
+    },
+
+    # Smoother selector — tab 3, MicroCoastal only.
+    # Wrapped in R-side if() so it is only rendered in the MicroTsCS sidebar.
+    # input.mic == 'mtsCS' is the correct discriminator.
+    if (stringr::str_detect(id, "CS")) {
+      shiny::conditionalPanel(
+        condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3 && input.mic == 'mtsCS'"),
+        shiny::HTML("<h3>Overlay trend line?</h3>"),
+        shiny::selectizeInput(inputId = ns("smoother"),
+                              label = NULL,
+                              choices = c("None", "Linear", "Smoother"),
+                              selected = "None"),
+      )
+    }
   ) # End of shiny::sidebarpanel
   
 }
@@ -398,21 +427,29 @@ fSpatialSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3){
   }
   
   shiny::sidebarPanel(
+    # Tab 1 — Observation maps.
+    # Null guard added: when the inner navset_pill has not yet fired its initial
+    # input event (Species Information tab not yet visited), the value is null.
+    # null == 1 is false in JS, so without the guard the entire sidebar would be
+    # blank on first load. Tab 1 is the default (selected = "1" in fSpatialPanel),
+    # so showing it when null is the correct behaviour.
     shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 1"),
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == null || ",
+                         "input['", id, "-", tabsetPanel_id, "'] == 1"),
       selectizeInput(inputId = ns('species'), label = labeltext, choices = unique(dat1$Species),
                      selected = selectedVar),
       shiny::checkboxInput(inputId = ns("scaler1"),
                            label = "Change between frequency or Presence/Absence plot",
                            value = FALSE)
     ),
+    # Tab 2 — Species Temperature Index graphs.
     shiny::conditionalPanel(
       condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 2"),
       selectizeInput(inputId = ns('species1'), label = labeltext, choices = unique(dat2$Species),
                      selected = selectedVar),
       shiny::p("This is a reduced species list that only contains species with enough data to create an STI plot")
-
     ),
+    # Tab 3 — Species Diurnal Behaviour.
     shiny::conditionalPanel(
       condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3"),
       selectizeInput(inputId = ns('species2'), label = labeltext, choices = unique(dat3$Species),
