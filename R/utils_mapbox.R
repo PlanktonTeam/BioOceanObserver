@@ -557,7 +557,7 @@ fProgressMap <- function(dat) {
     # Title control (top-left) — unique id to avoid overwriting
     mapgl::add_control(
       id       = "map-title",
-      html     = "<div style='background:rgba(255,255,255,0.85);padding:4px 10px;font-weight:bold;font-size:16px;border-radius:4px;'>Biological Ocean Observer Sampling Progress</div>",
+      html     = "<div style='background:rgba(255,255,255,0.85);padding:4px 10px;font-weight:bold;font-size:16px;border-radius:4px;'>Sampling locations of data in the Biological Ocean Observer </div>",
       position = "top-left"
     ) %>%
     mapgl::add_control(

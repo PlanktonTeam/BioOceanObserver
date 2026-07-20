@@ -100,31 +100,31 @@ mod_home_ui <- function(id){
                              )
                            )
                          )),
-                tabPanel("Sampling Progress", value = 2,
+                tabPanel("Sampling Locations", value = 2,
                          mapgl::mapboxglOutput(ns("progplot"), height = "800px") %>%
                            shinycssloaders::withSpinner()
                  ),
-                tabPanel("Sampling Status", value = 3,
-                         shiny::br(),
-                         shiny::HTML("Gantt plots to show the time range and regularity of samples processed from each NRS station 
-                                     or CPR route."),
-                         shiny::br(),
-                         shiny::br(),
-                         plotOutput(ns("gantt"), height = 700) %>% 
-                           shinycssloaders::withSpinner(color="#0dc5c1")
-                ),
+                # tabPanel("Sampling Status", value = 3,
+                #          shiny::br(),
+                #          shiny::HTML("Gantt plots to show the time range and regularity of samples processed from each NRS station 
+                #                      or CPR route."),
+                #          shiny::br(),
+                #          shiny::br(),
+                #          plotOutput(ns("gantt"), height = 700) %>% 
+                #            shinycssloaders::withSpinner(color="#0dc5c1")
+                # ),
                 
-                tabPanel("Sampling Summary", value = 4,
-                         # Add plots to highlight species etc.
-                         shiny::h3("What functional groups do we commonly see?"),
-                         plotOutput(ns("TaxaPie")) %>% 
-                           shinycssloaders::withSpinner(color="#0dc5c1"),
-                         shiny::h3("How many taxa are we identifying?"),
-                         plotOutput(ns("SpAccum")) %>% 
-                           shinycssloaders::withSpinner(color="#0dc5c1"),
-                         shiny::br(),
-                         shiny::br()
-                ),
+                # tabPanel("Sampling Summary", value = 4,
+                #          # Add plots to highlight species etc.
+                #          shiny::h3("What functional groups do we commonly see?"),
+                #          plotOutput(ns("TaxaPie")) %>% 
+                #            shinycssloaders::withSpinner(color="#0dc5c1"),
+                #          shiny::h3("How many taxa are we identifying?"),
+                #          plotOutput(ns("SpAccum")) %>% 
+                #            shinycssloaders::withSpinner(color="#0dc5c1"),
+                #          shiny::br(),
+                #          shiny::br()
+                # ),
 
                 # ── Information tabs (inlined from mod_Info) ─────────────
                 tabPanel("Technical Information", value = 5,
