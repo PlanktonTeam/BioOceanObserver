@@ -108,7 +108,7 @@ mod_LFishSeason_server <- function(id){
         mapgl::add_circle_layer(
           id             = "absence",
           source         = abs_sf,
-          circle_color   = "#CCCCCC",
+          circle_color   = "#595959",
           circle_opacity = 1,
           circle_radius  = 2
         ) %>%

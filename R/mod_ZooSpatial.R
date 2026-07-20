@@ -12,11 +12,9 @@ mod_ZooSpatial_ui <- function(id){
   ns <- NS(id)
   
   tagList(
-
     sidebarLayout(
-      fSpatialSidebar(id = id, tabsetPanel_id = "NRSspatz", dat1 = pkg.env$fMapDataz, dat2 = pkg.env$stiz, dat3 = pkg.env$daynightz),
-      fSpatialPanel(id= id, tabsetPanel_id = "NRSspatz")
-
+      fSpatialSidebar(id = id, dat1 = pkg.env$fMapDataz),
+      fSpatialPanel(id = id)
     )
   )
 }
@@ -25,139 +23,133 @@ mod_ZooSpatial_ui <- function(id){
 #'
 #' @noRd 
 mod_ZooSpatial_server <- function(id){
-  moduleServer( id, function(input, output, session, NRSspatz){
-    
-    # Subset data
-    
-    AbsZdatar <- reactive({
-      
-      AbsZdatar <- pkg.env$fMapDataz %>%
-        dplyr::distinct(.data$Longitude, .data$Latitude, .data$Season, .data$Survey) %>% 
-        dplyr::mutate(Species = input$species, 
-                      freqfac = factor('Absent'))
-      
-    }) %>% bindCache(input$species)
-    
+  moduleServer(id, function(input, output, session){
+
+    # ── Reactive: species-filtered data (all seasons) ──────────────────────────
+    # Returns only rows for the selected species with freqfac re-levelled to
+    # include "Absent". The absence background dots come from pkg.env$fMapDataz
+    # inside MapboxSeason() itself — we must NOT add absent rows here or they
+    # will appear in the presence layer coloured grey.
     ZSdatar <- reactive({
-      
       req(input$species)
       shiny::validate(need(!is.na(input$species), "Error: Please select a species"))
-      
-      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-      
-      ZSdatar <- pkg.env$fMapDataz %>%
-        dplyr::filter(.data$Species == input$species)
-      
-      if(type == "frequency"){
-        ZSdatar <- ZSdatar %>% dplyr::bind_rows(AbsZdatar()) %>%
-          dplyr::mutate(freqfac = factor(.data$freqfac, levels = c("Absent", "Seen in 25%",'50%', '75%', '100% of Samples')))
-      } else {
-        ZSdatar
-      }
-      
-    }) %>% bindCache(input$species, input$scaler1)
-    
+
+      pkg.env$fMapDataz %>%
+        dplyr::filter(.data$Species == input$species) %>%
+        dplyr::mutate(freqfac = factor(
+          .data$freqfac,
+          levels = c("Absent", "Seen in 25%", "50%", "75%", "100% of Samples")
+        ))
+    }) %>% bindCache(input$species)
+
     shiny::exportTestValues(
-      ZooSpatial = {ncol(ZSdatar())},
-      ZooSpatialRows = {nrow(ZSdatar()) > 0},
-      ZooSpatialLatisNumeric = {class(ZSdatar()$Lat)},
-      ZooSpatialLongisNumeric = {class(ZSdatar()$Long)},
-      ZooSpatialFreqisFactor = {class(ZSdatar()$Freqfac)},
-      ZooSpatialSeasonisChr = {class(ZSdatar()$Season)}
+      ZooSpatial            = { ncol(ZSdatar()) },
+      ZooSpatialRows        = { nrow(ZSdatar()) > 0 },
+      ZooSpatialLatisNumeric  = { class(ZSdatar()$Lat) },
+      ZooSpatialLongisNumeric = { class(ZSdatar()$Long) },
+      ZooSpatialFreqisFactor  = { class(ZSdatar()$Freqfac) },
+      ZooSpatialSeasonisChr   = { class(ZSdatar()$Season) }
     )
-    
-    # add text information ------------------------------------------------------------------------------
-    output$DistMapExp <- renderText({
-      "This map is either a presence absence map based on the NRS and CPR data for each species or a frequency map based on the 
-      number of times a species is seen in the sample location"
-    }) 
-    output$STIsExp <- renderText({
-      paste("Figure of the species STI showing the temperature range at which this species is most common. 
-            A bimodal shape may indicate a sub-species or two species being identified as the same species")
-    }) 
-    output$SDBsExp <- renderText({
-      paste("Figure of the diurnal abundances from CPR data. Note that the CPR is towed at ~10m depth so these abundances are representative of surface waters")
-    }) 
-    
-    
-    # select initial map  ------------------------------------------------------------------------------
-    # Create dot map of distribution using Mapbox
-    # Full re-render approach: each renderMapboxgl() builds the complete map
-    # (absence + presence) for its season in one call, avoiding proxy timing issues.
-    # df_abs = all sample locations (for grey absence dots)
-    # df_pres = species-filtered data (for coloured presence dots)
-    
-    # Summer (December - February)
-    output$MapSum <- mapgl::renderMapboxgl({
-      req(is.null(input$NRSspatz) || input$NRSspatz == "1")
-      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-      MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
-                   season_label = "December - February", Type = type)
-    }) %>% bindCache(input$species, input$scaler1)
-    
-    # Autumn (September - November)
-    output$MapAut <- mapgl::renderMapboxgl({
-      req(is.null(input$NRSspatz) || input$NRSspatz == "1")
-      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-      MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
-                   season_label = "September - November", Type = type)
-    }) %>% bindCache(input$species, input$scaler1)
-    
-    # Winter (June - August)
-    output$MapWin <- mapgl::renderMapboxgl({
-      req(is.null(input$NRSspatz) || input$NRSspatz == "1")
-      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-      MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
-                   season_label = "June - August", Type = type)
-    }) %>% bindCache(input$species, input$scaler1)
-    
-    # Spring (March - May)
-    output$MapSpr <- mapgl::renderMapboxgl({
-      req(is.null(input$NRSspatz) || input$NRSspatz == "1")
-      type <- dplyr::if_else(input$scaler1, "frequency", "PA")
-      MapboxSeason(df_abs = pkg.env$fMapDataz, df_pres = ZSdatar(),
-                   season_label = "March - May", Type = type)
-    }) %>% bindCache(input$species, input$scaler1)
-    
-    # STI plot -----------------------------------------------------------------------------------------
+
+    # ── Derived inputs ─────────────────────────────────────────────────────────
+    # Map type: FALSE = PA, TRUE = frequency
+    map_type <- reactive({
+      if (isTRUE(input$scaler1)) "frequency" else "PA"
+    })
+
+    # Season label from radio button (defaults to "December - February")
+    season_label <- reactive({
+      req(input$season)
+      input$season
+    })
+
+    # ── Initial full render ────────────────────────────────────────────────────
+    # Full re-render when species or map type changes. Season changes are handled
+    # by the proxy observer below to avoid rebuilding the entire map.
+    # bindCache() on species + scaler1 + season means switching back to a
+    # previously viewed combination is instant.
+    output$MapSeason <- mapgl::renderMapboxgl({
+      req(input$species)
+      MapboxSeason(
+        df_abs       = pkg.env$fMapDataz,
+        df_pres      = ZSdatar(),
+        season_label = season_label(),
+        Type         = map_type()
+      )
+    }) %>% bindCache(input$species, input$scaler1, input$season)
+
+    # ── Proxy update: season or type change ───────────────────────────────────
+    # When only the season radio button or the PA/frequency checkbox changes,
+    # update the two presence layers and the legend without rebuilding the map.
+    # ignoreInit = TRUE prevents a double-render on first load (renderMapboxgl
+    # already draws the correct season on initialisation).
+    observeEvent(
+      list(input$season, input$scaler1),
+      {
+        req(input$species, input$season)
+        MapboxSeasonProxy(
+          df_abs       = pkg.env$fMapDataz,
+          df_pres      = ZSdatar(),
+          season_label = season_label(),
+          Type         = map_type(),
+          map_id       = "MapSeason",
+          session      = session
+        )
+      },
+      ignoreInit = TRUE
+    )
+
+    # ── STI plot ───────────────────────────────────────────────────────────────
     selectedSTI <- reactive({
-      req(input$species1)
-      shiny::validate(need(!is.na(input$species1), "Error: Please select a species"))
-      
-      selectedSTI <- pkg.env$stiz %>%
-        dplyr::filter(.data$Species %in% input$species1)
-      
-    }) %>% bindCache(input$species1)
-    
-    # sti plot
+      req(input$species)
+      shiny::validate(need(!is.na(input$species), "Error: Please select a species"))
+      pkg.env$stiz %>% dplyr::filter(.data$Species %in% input$species)
+    }) %>% bindCache(input$species)
+
+    # Plot is blank (not a grey error box) when there is no data; the warning
+    # message and species list are rendered above it by output$STISpeciesList.
     output$STIs <- renderPlot({
-      shiny::validate(
-        need(nrow(selectedSTI()) > 20, "Not enough data for this copepod species")
-      )
+      req(nrow(selectedSTI()) > 0)
       planktonr::pr_plot_STI(selectedSTI())
-    }) %>% bindCache(input$species1)
+    }) %>% bindCache(input$species)
 
-    # daynight plot -----------------------------------------------------------------------------------------
-    selecteddn <- reactive({
-      req(input$species2)
-      shiny::validate(need(!is.na(input$species2), "Error: Please select a species"))
-      
-      selecteddn <- pkg.env$daynightz %>%
-        dplyr::filter(.data$Species %in% input$species2)
-      
-    }) %>% bindCache(input$species2)
-    
-    # daynight plot
-    output$DNs <- renderPlot({
-      shiny::validate(
-        need(length(unique(selecteddn()$daynight)) == 2 | nrow(selecteddn()) > 20, "Not enough data for this copepod species to plot")
+    # Warning message + 3-column species list shown above the plot when the
+    # selected species has no STI data. Returns NULL when data exist.
+    output$STISpeciesList <- shiny::renderUI({
+      req(input$species)
+      if (nrow(selectedSTI()) > 0) return(NULL)
+      shiny::p(
+        shiny::strong(paste0(
+          "No Species Temperature Index data available for '",
+          input$species, "'."
+        ))
       )
-      plotdn <- planktonr::pr_plot_DayNight(selecteddn())
-      plotdn
-    }) %>% bindCache(input$species2)
-    
+    })
 
-    
-    
+    # ── Diurnal behaviour plot ─────────────────────────────────────────────────
+    selecteddn <- reactive({
+      req(input$species)
+      shiny::validate(need(!is.na(input$species), "Error: Please select a species"))
+      pkg.env$daynightz %>% dplyr::filter(.data$Species %in% input$species)
+    }) %>% bindCache(input$species)
+
+    output$DNs <- renderPlot({
+      req(nrow(selecteddn()) > 0)
+      planktonr::pr_plot_DayNight(selecteddn())
+    }) %>% bindCache(input$species)
+
+    # Warning message + 3-column species list shown above the plot when the
+    # selected species has no diurnal data. Returns NULL when data exist.
+    output$DNSpeciesList <- shiny::renderUI({
+      req(input$species)
+      if (nrow(selecteddn()) > 0) return(NULL)
+      shiny::p(
+        shiny::strong(paste0(
+          "No diurnal behaviour data available for '",
+          input$species, "'."
+        ))
+      )
+    })
+
   })
 }

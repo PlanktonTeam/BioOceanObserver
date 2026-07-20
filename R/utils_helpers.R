@@ -413,99 +413,105 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
 
 
 #' Generic BOO Plankton Spatial Sidebar
-#' 
+#'
+#' Single-page layout: species selector, map type toggle, season radio buttons,
+#' STI plot, and diurnal plot all live in the sidebar. The main panel shows a
+#' single Mapbox map that updates via proxy when the season or type changes.
+#'
 #' @noRd
-fSpatialSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3){
+fSpatialSidebar <- function(id, dat1){
   ns <- NS(id)
-  
-  if (stringr::str_detect(id, "Zoo")) { # Zoo
+
+  if (stringr::str_detect(id, "Zoo")) {
     selectedVar <- "Acartia danae"
-    labeltext <- "Select a zooplankton species"
-  } else { # Phyto
+    labeltext   <- "Select a zooplankton species"
+  } else {
     selectedVar <- "Tripos furca"
-    labeltext <- "Select a phytoplankton species"
+    labeltext   <- "Select a phytoplankton species"
   }
-  
+
   shiny::sidebarPanel(
-    # Tab 1 — Observation maps.
-    # Null guard added: when the inner navset_pill has not yet fired its initial
-    # input event (Species Information tab not yet visited), the value is null.
-    # null == 1 is false in JS, so without the guard the entire sidebar would be
-    # blank on first load. Tab 1 is the default (selected = "1" in fSpatialPanel),
-    # so showing it when null is the correct behaviour.
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == null || ",
-                         "input['", id, "-", tabsetPanel_id, "'] == 1"),
-      selectizeInput(inputId = ns('species'), label = labeltext, choices = unique(dat1$Species),
-                     selected = selectedVar),
-      shiny::checkboxInput(inputId = ns("scaler1"),
-                           label = "Change between frequency or Presence/Absence plot",
-                           value = FALSE)
+    width = 4,
+
+    shiny::h4("Species Distribution"),
+
+    # ── Species selector ──────────────────────────────────────────────────────
+    selectizeInput(
+      inputId  = ns("species"),
+      label    = labeltext,
+      choices  = unique(dat1$Species),
+      selected = selectedVar
     ),
-    # Tab 2 — Species Temperature Index graphs.
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 2"),
-      selectizeInput(inputId = ns('species1'), label = labeltext, choices = unique(dat2$Species),
-                     selected = selectedVar),
-      shiny::p("This is a reduced species list that only contains species with enough data to create an STI plot")
+
+    # ── Map type toggle ───────────────────────────────────────────────────────
+    shiny::checkboxInput(
+      inputId = ns("scaler1"),
+      label   = "Show frequency of observations.",
+      value   = FALSE
     ),
-    # Tab 3 — Species Diurnal Behaviour.
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3"),
-      selectizeInput(inputId = ns('species2'), label = labeltext, choices = unique(dat3$Species),
-                     selected = selectedVar),
-      shiny::p("This is a reduced species list that only contains species with enough data to create a day night plot")
+
+    # ── Season selector ───────────────────────────────────────────────────────
+    shiny::radioButtons(
+      inputId  = ns("season"),
+      label    = shiny::strong("Mapped Season:"), 
+      choices  = c(
+        "Summer (Dec\u2013Feb)"  = "December - February",
+        "Autumn (Mar\u2013May)"  = "March - May",
+        "Winter (Jun\u2013Aug)"  = "June - August",
+        "Spring (Sep\u2013Nov)"  = "September - November"
+      ),
+      selected = "December - February"
     ),
+
+    shiny::hr(),
+
+    # ── Species Temperature Index ─────────────────────────────────────────────
+    shiny::h4("Species Temperature Index"),
+    shiny::p(
+      "Temperature range at which this species is most common.",
+      "A bimodal shape may indicate a sub-species or two species being",
+      "identified as the same. Note: This plot is not seasonal.",
+      class = "small-text"
+    ),
+    # Warning message + available species list (rendered server-side when no data)
+    shiny::uiOutput(ns("STISpeciesList")),
+    plotOutput(ns("STIs"), height = "300px") %>%
+      shinycssloaders::withSpinner(color = "#0dc5c1"),
+
+    shiny::hr(),
+
+    # ── Diurnal Behaviour ─────────────────────────────────────────────────────
+    shiny::h4("Diurnal Behaviour"),
+    shiny::p(
+      "Diurnal abundances from CPR data (towed at ~10 m depth). Note: This plot is not seasonal.",
+      class = "small-text"
+    ),
+    # Warning message + available species list (rendered server-side when no data)
+    shiny::uiOutput(ns("DNSpeciesList")),
+    plotOutput(ns("DNs"), height = "300px") %>%
+      shinycssloaders::withSpinner(color = "#0dc5c1")
   )
 }
 
 
-
 #' Generic BOO Plankton Spatial Panel
-#' 
+#'
+#' Single Mapbox map that fills the main panel. Season and type are controlled
+#' by radio buttons and a checkbox in the sidebar; the map updates via proxy.
+#'
 #' @noRd
-fSpatialPanel <- function(id, tabsetPanel_id){
+fSpatialPanel <- function(id){
   ns <- NS(id)
   shiny::mainPanel(
-    bslib::navset_pill(id = ns(tabsetPanel_id),
-                selected = "1",
-                bslib::nav_panel("Observation maps", value = "1",
-                         p(textOutput(ns("DistMapExp"), container = span)),
-                         fluidRow(
-                           shiny::column(width = 6,
-                                         class = "col-no-spacing",
-                                         shiny::h4("December - February"),
-                                         mapgl::mapboxglOutput(ns("MapSum"), width = "99%", height = "300px") %>%
-                                           shinycssloaders::withSpinner(color="#0dc5c1")),
-                           shiny::column(width = 6,
-                                         class = "col-no-spacing",
-                                         shiny::h4("March - May"),
-                                         mapgl::mapboxglOutput(ns("MapAut"), width = "99%", height = "300px") %>%
-                                           shinycssloaders::withSpinner(color="#0dc5c1")
-                           ),
-                           shiny::column(width = 6,
-                                         class = "col-no-spacing",
-                                         shiny::h4("June - August"),
-                                         mapgl::mapboxglOutput(ns("MapWin"), width = "99%", height = "300px") %>%
-                                           shinycssloaders::withSpinner(color="#0dc5c1")),
-                           shiny::column(width = 6,
-                                         class = "col-no-spacing",
-                                         shiny::h4("September - November"),
-                                         mapgl::mapboxglOutput(ns("MapSpr"), width = "99%", height = "300px") %>%
-                                           shinycssloaders::withSpinner(color="#0dc5c1"))
-                         )
-                ),
-                bslib::nav_panel("Species Temperature Index graphs", value = "2",
-                         shiny::p(textOutput(ns("STIsExp"), container = span)),
-                         plotOutput(ns("STIs"), height = 700) %>%
-                           shinycssloaders::withSpinner(color="#0dc5c1")
-                ),
-                bslib::nav_panel("Species Diurnal Behaviour", value = "3",
-                         shiny::p(textOutput(ns("SDBsExp"), container = span)),
-                         plotOutput(ns("DNs"), height = 700) %>%
-                           shinycssloaders::withSpinner(color="#0dc5c1")
-                )
-    )
+    width = 8,
+    shiny::p(
+      "Distribution map showing where this species has been observed across",
+      "NRS and CPR sampling locations. Toggle between Presence/Absence and",
+      "Frequency views using the sidebar checkbox.",
+      class = "small-text"
+    ),
+    mapgl::mapboxglOutput(ns("MapSeason"), width = "100%", height = "750px") %>%
+      shinycssloaders::withSpinner(color = "#0dc5c1")
   )
 }
 
