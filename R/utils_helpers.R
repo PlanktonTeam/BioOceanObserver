@@ -240,61 +240,90 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
                          min = min_date, 
                          max = Sys.time(), 
                          value = c(min_date, Sys.time()-1), timeFormat="%m-%Y")),
-    # Parameter selection for Microbes
-    # All subtabs (ie 1-3) using this input need to be created together
+    # Parameter selection for Microbes (tabs 1-3).
+    # Wrapped in R-side if() so this block is only ever rendered inside a Micro
+    # module's sidebar — no JS input.navbar guard needed or wanted.
+    if (stringr::str_detect(id, "Micro")) {
+      shiny::conditionalPanel(
+        condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 3"),
+        shiny::HTML("<h3>Select a parameter:</h3>"),
+        shiny::selectInput(inputId = ns("parameterm"),
+                           label = NULL,
+                           choices = selectedVar,
+                           selected = selectedVar),
+        shiny::htmlOutput(ns("ParamDefm")),
+        shiny::checkboxInput(inputId = ns("all"),
+                             label = "Tick for more microbial parameters",
+                             value = FALSE)
+      )
+    },
+
+    # Parameter Selection for Plankton (tabs 1-2).
+    # Wrapped in R-side if() so this block is only ever rendered inside a
+    # Phyto/Zoo/CPR/HAB module's sidebar — no JS input.navbar guard needed.
+    if (!stringr::str_detect(id, "Micro")) {
+      shiny::conditionalPanel(
+        condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 2"),
+        shiny::HTML("<h3>Select a parameter:</h3>"),
+        shiny::selectInput(inputId = ns("parameter"),
+                           label = NULL,
+                           choices = choicesp,
+                           selected = selectedVar),
+        shiny::htmlOutput(ns("ParamDef")),
+      )
+    },
+
+    # log10 checkbox — shown on tabs 1 and 2 for all module types (including
+    # Micro, which also uses input$scaler1 for log10 scaling).
+    # Null guard added: when the inner navset_pill has not yet fired its initial
+    # input event (tab not yet visited), the value is null; null == 1 is false
+    # in JS, so without the guard the checkbox would be hidden on first load.
     shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 3 && input.navbar == 'Microbes'"), # Micro
-      shiny::HTML("<h3>Select a parameter:</h3>"),
-      shiny::selectInput(inputId = ns("parameterm"), 
-                         label = NULL, 
-                         choices = selectedVar, 
-                         selected = selectedVar),
-      shiny::htmlOutput(ns("ParamDefm")),
-      shiny::checkboxInput(inputId = ns("all"), 
-                           label = "Tick for more microbial parameters", 
-                           value = FALSE)
-    ),
-    
-    
-    # Parameter Selection for Plankton (Tabs 1-2)
-    # All subtabs (ie 1-2) using this input need to be created together
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 2 && input.navbar != 'Microbes'"),
-      shiny::HTML("<h3>Select a parameter:</h3>"),
-      shiny::selectInput(inputId = ns("parameter"), 
-                         label = NULL, 
-                         choices = choicesp, 
-                         selected = selectedVar),
-      shiny::htmlOutput(ns("ParamDef")),
-    ),
-    
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 1 | input['", id, "-", tabsetPanel_id, "'] == 2"),
-      shiny::checkboxInput(inputId = ns("scaler1"), 
+      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == null || ",
+                         "input['", id, "-", tabsetPanel_id, "'] == 1 || ",
+                         "input['", id, "-", tabsetPanel_id, "'] == 2"),
+      shiny::checkboxInput(inputId = ns("scaler1"),
                            label = "Change the plot scale to log10",
                            value = FALSE),
     ),
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3 && input.navbar != 'Microbes'"), # Plankton
-      shiny::checkboxInput(inputId = ns("scaler3"),
-                           label = strong("Change the plot scale to proportion"),
-                           value = FALSE),
-    ),
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3 && input.mic == 'mts' && input.navbar == 'Microbes'"), # MicroNRS
-      shiny::selectizeInput(inputId = ns("interp"),
-                            label = shiny::strong("Interpolate data?"),
-                            choices = c("Interpolate", "Raw data"),
-                            selected = "Raw data"),
-    ),
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3 && input.mic == 'mtsCS'"), # MicroCoastal
-      shiny::HTML("<h3>Overlay trend line?</h3>"),
-      shiny::selectizeInput(inputId = ns("smoother"),
-                            label = NULL,
-                            choices = c("None", "Linear", "Smoother"),
-                            selected = "None"),
-    )
+
+    # Proportion checkbox — tab 3, Phyto/Zoo only.
+    # Wrapped in R-side if() to avoid rendering in Micro sidebars.
+    if (!stringr::str_detect(id, "Micro")) {
+      shiny::conditionalPanel(
+        condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3"),
+        shiny::checkboxInput(inputId = ns("scaler3"),
+                             label = strong("Change the plot scale to proportion"),
+                             value = FALSE),
+      )
+    },
+
+    # Interpolation selector — tab 3, MicroNRS only.
+    # Wrapped in R-side if() so it is only rendered in the MicroTsNRS sidebar.
+    # input.mic == 'mts' is the correct discriminator (outer navset_pill value).
+    if (stringr::str_detect(id, "Micro") && stringr::str_detect(id, "NRS")) {
+      shiny::conditionalPanel(
+        condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3 && input.mic == 'mts'"),
+        shiny::selectizeInput(inputId = ns("interp"),
+                              label = shiny::strong("Interpolate data?"),
+                              choices = c("Interpolate", "Raw data"),
+                              selected = "Raw data"),
+      )
+    },
+
+    # Smoother selector — tab 3, MicroCoastal only.
+    # Wrapped in R-side if() so it is only rendered in the MicroTsCS sidebar.
+    # input.mic == 'mtsCS' is the correct discriminator.
+    if (stringr::str_detect(id, "CS")) {
+      shiny::conditionalPanel(
+        condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3 && input.mic == 'mtsCS'"),
+        shiny::HTML("<h3>Overlay trend line?</h3>"),
+        shiny::selectizeInput(inputId = ns("smoother"),
+                              label = NULL,
+                              choices = c("None", "Linear", "Smoother"),
+                              selected = "None"),
+      )
+    }
   ) # End of shiny::sidebarpanel
   
 }
@@ -384,91 +413,106 @@ fPLanktonPanel <- function(id, tabsetPanel_id){
 
 
 #' Generic BOO Plankton Spatial Sidebar
-#' 
+#'
+#' Single-page layout: species selector, map type toggle, season radio buttons,
+#' STI plot, and diurnal plot all live in the sidebar. The main panel shows a
+#' single Mapbox map that updates via proxy when the season or type changes.
+#'
 #' @noRd
-fSpatialSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3){
+fSpatialSidebar <- function(id, dat1){
   ns <- NS(id)
-  
-  if (stringr::str_detect(id, "Zoo")) { # Zoo
+
+  if (stringr::str_detect(id, "Zoo")) {
     selectedVar <- "Acartia danae"
-    labeltext <- "Select a zooplankton species"
-  } else { # Phyto
+    labeltext   <- "Select a zooplankton species"
+  } else {
     selectedVar <- "Tripos furca"
-    labeltext <- "Select a phytoplankton species"
+    labeltext   <- "Select a phytoplankton species"
   }
-  
+
   shiny::sidebarPanel(
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 1"),
-      selectizeInput(inputId = ns('species'), label = labeltext, choices = unique(dat1$Species),
-                     selected = selectedVar),
-      shiny::checkboxInput(inputId = ns("scaler1"),
-                           label = "Change between frequency or Presence/Absence plot",
-                           value = FALSE)
+    width = 4,
+
+    shiny::h4("Species Distribution"),
+
+    # ── Species selector ──────────────────────────────────────────────────────
+    selectizeInput(
+      inputId  = ns("species"),
+      label    = labeltext,
+      choices  = unique(dat1$Species),
+      selected = selectedVar
     ),
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 2"),
-      selectizeInput(inputId = ns('species1'), label = labeltext, choices = unique(dat2$Species),
-                     selected = selectedVar),
-      shiny::p("This is a reduced species list that only contains species with enough data to create an STI plot")
-      
+
+    # ── Map type toggle ───────────────────────────────────────────────────────
+    shiny::checkboxInput(
+      inputId = ns("scaler1"),
+      label   = "Show frequency of observations.",
+      value   = FALSE
     ),
-    shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == 3"),
-      selectizeInput(inputId = ns('species2'), label = labeltext, choices = unique(dat3$Species),
-                     selected = selectedVar),
-      shiny::p("This is a reduced species list that only contains species with enough data to create a day night plot")
+
+    # ── Season selector ───────────────────────────────────────────────────────
+    shiny::radioButtons(
+      inputId  = ns("season"),
+      label    = shiny::strong("Mapped Season:"), 
+      choices  = c(
+        "Summer (Dec\u2013Feb)"  = "December - February",
+        "Autumn (Mar\u2013May)"  = "March - May",
+        "Winter (Jun\u2013Aug)"  = "June - August",
+        "Spring (Sep\u2013Nov)"  = "September - November"
+      ),
+      selected = "December - February"
     ),
+
+    shiny::hr(),
+
+    # ── Species Temperature Index ─────────────────────────────────────────────
+    shiny::h4("Species Temperature Index"),
+    shiny::p(
+      "Temperature range at which this species is most common.",
+      "A bimodal shape may indicate a sub-species or two species being",
+      "identified as the same. Note: This plot is not seasonal.",
+      class = "small-text"
+    ),
+    # Warning message + available species list (rendered server-side when no data)
+    shiny::uiOutput(ns("STISpeciesList")),
+    plotOutput(ns("STIs"), height = "300px") %>%
+      shinycssloaders::withSpinner(color = "#0dc5c1"),
+
+    shiny::hr(),
+
+    # ── Diurnal Behaviour ─────────────────────────────────────────────────────
+    shiny::h4("Diurnal Behaviour"),
+    shiny::p(
+      "Diurnal abundances from CPR data (towed at ~10 m depth). Note: This plot is not seasonal.",
+      class = "small-text"
+    ),
+    # Warning message + available species list (rendered server-side when no data)
+    shiny::uiOutput(ns("DNSpeciesList")),
+    plotOutput(ns("DNs"), height = "300px") %>%
+      shinycssloaders::withSpinner(color = "#0dc5c1")
   )
 }
 
 
-
 #' Generic BOO Plankton Spatial Panel
-#' 
+#'
+#' Single Mapbox map that fills the main panel. Season and type are controlled
+#' by radio buttons and a checkbox in the sidebar; the map updates via proxy.
+#'
 #' @noRd
-fSpatialPanel <- function(id, tabsetPanel_id){
+fSpatialPanel <- function(id){
   ns <- NS(id)
   shiny::mainPanel(
-    bslib::navset_pill(id = ns(tabsetPanel_id),
-                selected = "1",
-                bslib::nav_panel("Observation maps", value = "1",
-                         p(textOutput(ns("DistMapExp"), container = span)),
-                         fluidRow(
-                           shiny::column(width = 6,
-                                         class = "col-no-spacing",
-                                         shiny::h4("December - February"),
-                                         mapgl::mapboxglOutput(ns("MapSum"), width = "99%", height = "300px") %>%
-                                           shinycssloaders::withSpinner(color="#0dc5c1")),
-                           shiny::column(width = 6,
-                                         class = "col-no-spacing",
-                                         shiny::h4("March - May"),
-                                         mapgl::mapboxglOutput(ns("MapAut"), width = "99%", height = "300px") %>%
-                                           shinycssloaders::withSpinner(color="#0dc5c1")
-                           ),
-                           shiny::column(width = 6,
-                                         class = "col-no-spacing",
-                                         shiny::h4("June - August"),
-                                         mapgl::mapboxglOutput(ns("MapWin"), width = "99%", height = "300px") %>%
-                                           shinycssloaders::withSpinner(color="#0dc5c1")),
-                           shiny::column(width = 6,
-                                         class = "col-no-spacing",
-                                         shiny::h4("September - November"),
-                                         mapgl::mapboxglOutput(ns("MapSpr"), width = "99%", height = "300px") %>%
-                                           shinycssloaders::withSpinner(color="#0dc5c1"))
-                         )
-                ),
-                bslib::nav_panel("Species Temperature Index graphs", value = "2",
-                         shiny::p(textOutput(ns("STIsExp"), container = span)),
-                         plotOutput(ns("STIs"), height = 700) %>%
-                           shinycssloaders::withSpinner(color="#0dc5c1")
-                ),
-                bslib::nav_panel("Species Diurnal Behaviour", value = "3",
-                         shiny::p(textOutput(ns("SDBsExp"), container = span)),
-                         plotOutput(ns("DNs"), height = 700) %>%
-                           shinycssloaders::withSpinner(color="#0dc5c1")
-                )
-    )
+    width = 8,
+    shiny::p(
+      "Distribution map showing where this species has been observed across",
+      "the standard NRS and CPR sampling locations plus ad-hoc sampling",
+      "following these methods. Toggle between Presence/Absence and",
+      "Frequency views using the sidebar checkbox.",
+      class = "small-text"
+    ),
+    mapgl::mapboxglOutput(ns("MapSeason"), width = "100%", height = "750px") %>%
+      shinycssloaders::withSpinner(color = "#0dc5c1")
   )
 }
 

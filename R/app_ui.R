@@ -194,6 +194,8 @@ golem_add_external_resources <- function(){
     
     # Script for navigating between modules ----
     tags$script(type="text/javascript", src="navigate.js"),
+    # Script for custom Shiny input handlers (e.g. bslib tab binding fix) ----
+    tags$script(type="text/javascript", src="handlers.js"),
     # Script for CSIRO branding tab ----
     shiny::tags$script(type="text/javascript", src="csirotab.min.js"),
     # Custom CSIRO styling CSS for modal ----

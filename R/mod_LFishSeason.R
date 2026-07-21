@@ -99,7 +99,7 @@ mod_LFishSeason_server <- function(id){
         sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
       
       mapgl::mapboxgl(
-        access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+        access_token = golem::get_golem_options("MAPBOX_PUBLIC_TOKEN"),
         style        = mapgl::mapbox_style("light"),
         center       = c(134.0, -27.0),
         zoom         = 3.0,
@@ -108,7 +108,7 @@ mod_LFishSeason_server <- function(id){
         mapgl::add_circle_layer(
           id             = "absence",
           source         = abs_sf,
-          circle_color   = "#CCCCCC",
+          circle_color   = "#595959",
           circle_opacity = 1,
           circle_radius  = 2
         ) %>%

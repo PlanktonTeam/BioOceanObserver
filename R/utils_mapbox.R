@@ -1,5 +1,4 @@
-
-#' Create interactive Mapbox map of station locations
+' Create interactive Mapbox map of station locations
 #'
 #' @description Creates a mapboxgl map of station locations with colored points
 #' and hover tooltips. Handles NRS, LTM, Coastal, CPR (polygons), GO-SHIP, and
@@ -29,7 +28,7 @@ fMapboxMap <- function(sites, Survey = "NRS", Type = "Zooplankton") {
   
   # --- Build base map ---
   base_map <- mapgl::mapboxgl(
-    access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+    access_token = golem::get_golem_options("MAPBOX_PUBLIC_TOKEN"),
     style        = mapgl::mapbox_style("light"),
     center       = c(clon, clat),
     zoom         = zoom,
@@ -449,7 +448,7 @@ fProgressMap <- function(dat) {
   # ---- Build the map ----
   # Centre shifted south and zoom reduced to include the Southern Ocean region
   mapgl::mapboxgl(
-    access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+    access_token = golem::get_golem_options("MAPBOX_PUBLIC_TOKEN"),
     style        = mapgl::mapbox_style("light"),
     center       = c(134.0, -32.0),
     zoom         = 2.8,
@@ -558,7 +557,7 @@ fProgressMap <- function(dat) {
     # Title control (top-left) — unique id to avoid overwriting
     mapgl::add_control(
       id       = "map-title",
-      html     = "<div style='background:rgba(255,255,255,0.85);padding:4px 10px;font-weight:bold;font-size:16px;border-radius:4px;'>Biological Ocean Observer Sampling Progress</div>",
+      html     = "<div style='background:rgba(255,255,255,0.85);padding:4px 10px;font-weight:bold;font-size:16px;border-radius:4px;'>Sampling locations of data in the Biological Ocean Observer </div>",
       position = "top-left"
     ) %>%
     mapgl::add_control(
@@ -620,21 +619,214 @@ fProgressMap <- function(dat) {
 # MAPBOX (mapgl) SPATIAL HELPERS ----
 # Used by mod_ZooSpatial and mod_PhytoSpatial main-panel maps.
 
+# Shared frequency palette used by both MapboxSeason() and MapboxSeasonProxy().
+# A single unified blue gradient encodes frequency for both CPR and NRS data.
+# Survey type is distinguished by marker size: CPR = radius 5 (smaller),
+# NRS = radius 8 (larger). This avoids the cognitive load of two colour schemes
+# while still allowing the user to distinguish survey types visually.
+.freq_levels <- c("Absent", "Seen in 25%", "50%", "75%", "100% of Samples")
+.freq_colors <- c("#595959", "#99CCFF", "#3399FF", "#0066CC", "#003366")
+
+
+#' Build presence sf layers split by survey type
+#'
+#' Internal helper used by both \code{MapboxSeason()} and
+#' \code{MapboxSeasonProxy()}.  Filters \code{df_pres} to the requested season,
+#' adds \code{dot_color} and \code{popup_html} columns, and returns a named
+#' list with \code{$cpr} and \code{$nrs} sf objects (zero-row if no data).
+#'
+#' @param df_pres  Species-filtered data frame (all seasons).
+#' @param abs_sf   Absence sf used as a zero-row template when no data exist.
+#' @param season_label  Character season label.
+#' @param Type  \code{"frequency"} or \code{"PA"}.
+#' @return Named list: \code{$cpr} sf, \code{$nrs} sf.
+#' @noRd
+.build_presence_layers <- function(df_pres, abs_sf, season_label, Type) {
+
+  sdf <- df_pres %>% dplyr::filter(.data$Season == season_label)
+
+  if (Type == "frequency") {
+
+    sdf <- sdf %>%
+      dplyr::mutate(
+        freqfac_chr = as.character(.data$freqfac),
+        dot_color   = .freq_colors[match(.data$freqfac_chr, .freq_levels)],
+        dot_color   = dplyr::if_else(is.na(.data$dot_color), "#CCCCCC", .data$dot_color),
+        popup_html  = paste0(
+          "<strong>Survey:</strong> ", .data$Survey, "<br>",
+          "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
+          "<strong>Longitude:</strong> ", .data$Longitude, "<br>",
+          "<strong>Frequency in sample:</strong> ", .data$freqfac_chr
+        )
+      )
+
+  } else {
+
+    # PA mode: all present observations get the same blue; absent = grey absence layer
+    sdf <- sdf %>%
+      dplyr::mutate(
+        dot_color  = "#3399FF",
+        popup_html = paste0(
+          "<strong>Survey:</strong> ", .data$Survey, "<br>",
+          "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
+          "<strong>Longitude:</strong> ", .data$Longitude, "<br>",
+          "<strong>Frequency in sample:</strong> ", as.character(.data$freqfac)
+        )
+      )
+  }
+
+  # Split by survey type; fall back to zero-row sf when no data
+  to_sf <- function(d) {
+    if (nrow(d) > 0) {
+      sf::st_as_sf(d, coords = c("Longitude", "Latitude"), crs = 4326)
+    } else {
+      abs_sf[0, ]
+    }
+  }
+
+  list(
+    cpr = to_sf(dplyr::filter(sdf, .data$Survey == "CPR")),
+    nrs = to_sf(dplyr::filter(sdf, .data$Survey == "NRS"))
+  )
+}
+
+
+#' Layer-toggle HTML control for the species distribution map
+#'
+#' Produces the top-right checkbox panel that lets users show/hide the CPR and
+#' NRS layers (both absence and presence) independently.  Each checkbox toggles
+#' both the absence and presence layer for that survey type so that the size
+#' distinction is preserved regardless of whether the species is present.
+#' Uses the same inline-JS pattern as \code{fProgressMap()}.
+#'
+#' @return Character string of HTML.
+#' @noRd
+.species_map_toggle_html <- function() {
+  paste0(
+    "<div style='background:rgba(255,255,255,0.92);padding:8px 12px;border-radius:6px;",
+    "box-shadow:0 1px 4px rgba(0,0,0,0.25);",
+    "font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;",
+    "font-size:13px;font-weight:normal;line-height:1.8;'>",
+    "<strong style='display:block;margin-bottom:4px;'>Show layers</strong>",
+    # CPR toggle — controls both absence_cpr and presence_cpr
+    "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;margin-bottom:2px;'>",
+    "<input type='checkbox' checked style='cursor:pointer;width:14px;height:14px;'",
+    " onchange=\"var m=this.closest('.mapboxgl-map').map;",
+    "var v=this.checked?'visible':'none';",
+    "m.setLayoutProperty('absence_cpr','visibility',v);",
+    "m.setLayoutProperty('presence_cpr','visibility',v);\">",
+    "CPR</label>",
+    # NRS toggle — controls both absence_nrs and presence_nrs
+    "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;'>",
+    "<input type='checkbox' checked style='cursor:pointer;width:14px;height:14px;'",
+    " onchange=\"var m=this.closest('.mapboxgl-map').map;",
+    "var v=this.checked?'visible':'none';",
+    "m.setLayoutProperty('absence_nrs','visibility',v);",
+    "m.setLayoutProperty('presence_nrs','visibility',v);\">",
+    "NRS</label>",
+    "</div>"
+  )
+}
+
+
+#' Legend HTML for the species distribution map
+#'
+#' Builds a single bottom-left legend that covers both PA and frequency modes.
+#' In PA mode only the first two entries (Present / Absent) are meaningful; in
+#' frequency mode the full gradient is shown.  A size key below the colour
+#' entries explains the CPR (small) vs NRS (large) circle distinction.
+#'
+#' @param Type  \code{"frequency"} or \code{"PA"}.
+#' @return Character string of HTML.
+#' @noRd
+.species_map_legend_html <- function(Type) {
+
+  if (Type == "frequency") {
+    colour_rows <- paste0(
+      "<div style='display:flex;align-items:center;gap:6px;margin-bottom:3px;'>",
+      "<span style='display:inline-block;width:12px;height:12px;border-radius:50%;",
+      "background:", .freq_colors, ";flex-shrink:0;'></span>",
+      "<span>", .freq_levels, "</span>",
+      "</div>",
+      collapse = ""
+    )
+    title_html <- "<strong style='display:block;margin-bottom:4px;'>Frequency</strong>"
+  } else {
+    colour_rows <- paste0(
+      "<div style='display:flex;align-items:center;gap:6px;margin-bottom:3px;'>",
+      "<span style='display:inline-block;width:12px;height:12px;border-radius:50%;",
+      "background:#3399FF;flex-shrink:0;'></span>",
+      "<span>Present</span>",
+      "</div>",
+      "<div style='display:flex;align-items:center;gap:6px;margin-bottom:3px;'>",
+      "<span style='display:inline-block;width:12px;height:12px;border-radius:50%;",
+      "background:#595959;flex-shrink:0;'></span>",
+      "<span>Absent</span>",
+      "</div>"
+    )
+    title_html <- "<strong style='display:block;margin-bottom:4px;'>Presence / Absence</strong>"
+  }
+
+  # Size key: CPR (small) vs NRS (large)
+  size_key <- paste0(
+    "<hr style='margin:6px 0;border-color:#ddd;'>",
+    "<div style='display:flex;align-items:center;gap:6px;margin-bottom:3px;'>",
+    "<span style='display:inline-block;width:10px;height:10px;border-radius:50%;",
+    "background:#666;flex-shrink:0;'></span>",
+    "<span>CPR</span>",
+    "</div>",
+    "<div style='display:flex;align-items:center;gap:6px;'>",
+    "<span style='display:inline-block;width:16px;height:16px;border-radius:50%;",
+    "background:#666;flex-shrink:0;'></span>",
+    "<span>NRS </span>",
+    "</div>"
+  )
+
+  paste0(
+    "<div style='background:rgba(255,255,255,0.92);padding:8px 12px;border-radius:6px;",
+    "box-shadow:0 1px 4px rgba(0,0,0,0.25);",
+    "font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;",
+    "font-size:12px;line-height:1.5;max-width:180px;'>",
+    title_html,
+    colour_rows,
+    size_key,
+    "</div>"
+  )
+}
+
+#' Title HTML for the species distribution map
+#'
+#' Builds a single top-left legend that covers both PA and frequency modes.
+#'
+#' @param Season Character string of season 
+#' @return Character string of HTML.
+#' @noRd
+.species_map_title_style <- function(Season){
+  paste0(
+    "<div style='background:rgba(255,255,255,0.92);padding:8px 12px;border-radius:6px;",
+    "box-shadow:0 1px 4px rgba(0,0,0,0.25);",
+    "font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;",
+    "font-size:12px;line-height:1.5;max-width:180px;font-weight:bold;'>",
+    Season,
+    "</div>"
+  )  
+}
+
 #' Full Mapbox seasonal map (absence + presence in one render)
 #'
-#' Builds a complete \code{mapboxgl} map for a single season, including both
-#' the grey absence layer (all sample locations) and the coloured presence
-#' layer (species observations for that season).  This avoids the proxy timing
-#' issue where \code{set_source()} arrives before the map layers are ready.
+#' Builds a complete \code{mapboxgl} map for a single season.  The absence
+#' layer (grey dots, all sample locations) is always visible.  The presence
+#' layer is split into two sub-layers — \code{"presence_cpr"} (radius 5) and
+#' \code{"presence_nrs"} (radius 8) — so the user can toggle each survey type
+#' independently via the top-right control.  Both layers share the same unified
+#' blue gradient palette (\code{.freq_colors}) in frequency mode, or a flat
+#' blue in PA mode.
 #'
-#' @param df_abs  Data frame of \strong{all} sample locations (used for the
-#'   absence layer).  Must contain \code{Latitude} and \code{Longitude}.
-#'   Typically \code{pkg.env$fMapDataz} or \code{pkg.env$fMapDatap}.
-#' @param df_pres  Data frame of species observations (already filtered to the
-#'   selected species, all seasons).  Must contain \code{Latitude},
-#'   \code{Longitude}, \code{Season}, \code{Survey}, \code{Species},
-#'   \code{freqfac}.  Typically the \code{ZSdatar()} / \code{PSdatar()}
-#'   reactive value.
+#' @param df_abs  Data frame of \strong{all} sample locations (absence layer).
+#'   Must contain \code{Latitude} and \code{Longitude}.
+#' @param df_pres  Species-filtered data frame (all seasons).  Must contain
+#'   \code{Latitude}, \code{Longitude}, \code{Season}, \code{Survey},
+#'   \code{Species}, \code{freqfac}.
 #' @param season_label  Character; one of \code{"December - February"},
 #'   \code{"March - May"}, \code{"June - August"},
 #'   \code{"September - November"}.
@@ -643,280 +835,140 @@ fProgressMap <- function(dat) {
 #' @return A \code{mapboxgl} map object suitable for \code{renderMapboxgl()}.
 #' @noRd
 MapboxSeason <- function(df_abs, df_pres, season_label, Type = "PA") {
-  
-  # --- Absence layer: all distinct sample locations ---
-  abs_sf <- df_abs %>%
+
+  # --- Absence layers: all distinct sample locations split by survey type ---
+  # Splitting by Survey ensures NRS locations are always rendered at radius 8
+  # and CPR locations at radius 5, regardless of whether the species is present.
+  # This is the key fix: a single merged absence layer would force all absence
+  # dots to the same radius, making NRS absence dots incorrectly small.
+  abs_cpr_sf <- df_abs %>%
+    dplyr::filter(.data$Survey == "CPR") %>%
     dplyr::distinct(.data$Latitude, .data$Longitude) %>%
     dplyr::mutate(id = dplyr::row_number()) %>%
     sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-  
-  abs_opacity <- if (Type == "frequency") 0 else 1
-  
-  # --- Presence layer: species observations for this season ---
-  sdf <- df_pres %>% dplyr::filter(.data$Season == season_label)
-  
-  Species <- if (nrow(sdf) > 0) unique(sdf$Species)[1] else ""
-  
-  if (Type == "frequency") {
-    
-    freq_levels <- c("Absent", "Seen in 25%", "50%", "75%", "100% of Samples")
-    cpr_colors  <- c("#CCCCCC", "#99CCFF", "#3399FF", "#0066CC", "#003366")
-    nrs_colors  <- c("#CCCCCC", "#CCFFCC", "#99FF99", "#009900", "#006600")
-    
-    sdf <- sdf %>%
-      dplyr::mutate(
-        freqfac_chr = as.character(.data$freqfac),
-        dot_color = dplyr::case_when(
-          .data$Survey == "CPR" ~ cpr_colors[match(.data$freqfac_chr, freq_levels)],
-          .data$Survey == "NRS" ~ nrs_colors[match(.data$freqfac_chr, freq_levels)],
-          TRUE ~ "#CCCCCC"
-        ),
-        popup_html = paste0(
-          "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
-          "<strong>Longitude:</strong> ", .data$Longitude, "<br>",
-          "<strong>Frequency in sample:</strong> ", .data$freqfac_chr
-        )
-      )
-    
-    if (nrow(sdf) > 0) {
-      pres_sf <- sdf %>%
-        sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-    } else {
-      pres_sf <- abs_sf[0, ]
-    }
-    
-    mapgl::mapboxgl(
-      access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
-      style        = mapgl::mapbox_style("light"),
-      center       = c(134.0, -27.0),
-      zoom         = 3.0,
-      projection   = "mercator"
-    ) %>%
-      mapgl::add_circle_layer(
-        id             = "absence",
-        source         = abs_sf,
-        circle_color   = "#CCCCCC",
-        circle_opacity = abs_opacity,
-        circle_radius  = 2
-      ) %>%
-      mapgl::add_circle_layer(
-        id             = "presence",
-        source         = pres_sf,
-        circle_color   = list("get", "dot_color"),
-        circle_opacity = 1,
-        circle_radius  = 3,
-        popup          = "popup_html"
-      ) %>%
-      mapgl::add_categorical_legend(
-        legend_title = "CPR",
-        values       = freq_levels,
-        colors       = cpr_colors,
-        position     = "bottom-left",
-        add          = FALSE
-      ) %>%
-      mapgl::add_categorical_legend(
-        legend_title = "NRS",
-        values       = freq_levels,
-        colors       = nrs_colors,
-        position     = "bottom-left",
-        add          = TRUE
-      )
-    
-  } else {
-    
-    # PA mode
-    if (nrow(sdf) > 0) {
-      sdf <- sdf %>%
-        dplyr::mutate(
-          popup_html = paste0(
-            "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
-            "<strong>Longitude:</strong> ", .data$Longitude, "<br>",
-            "<strong>Frequency in sample:</strong> ", as.character(.data$freqfac)
-          )
-        )
-      pres_sf <- sdf %>%
-        sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-    } else {
-      pres_sf <- abs_sf[0, ]
-    }
-    
-    mapgl::mapboxgl(
-      access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
-      style        = mapgl::mapbox_style("light"),
-      center       = c(134.0, -27.0),
-      zoom         = 3.0,
-      projection   = "mercator"
-    ) %>%
-      mapgl::add_circle_layer(
-        id             = "absence",
-        source         = abs_sf,
-        circle_color   = "#CCCCCC",
-        circle_opacity = abs_opacity,
-        circle_radius  = 2
-      ) %>%
-      mapgl::add_circle_layer(
-        id             = "presence",
-        source         = pres_sf,
-        circle_color   = "blue",
-        circle_opacity = 1,
-        circle_radius  = 3,
-        popup          = "popup_html"
-      ) %>%
-      mapgl::add_categorical_legend(
-        legend_title = "",
-        values       = c("Seasonal Presence", "Seasonal Absence"),
-        colors       = c("blue", "#CCCCCC"),
-        position     = "bottom-left"
-      )
-  }
-}
 
-
-#' Base Mapbox map for all sample points (absence layer)
-#'
-#' Renders the initial mapboxgl map with a grey "absence" circle layer and a
-#' transparent placeholder "presence" layer (empty sf).  The presence layer is
-#' subsequently updated via \code{MapboxObs()} using \code{mapboxgl_proxy()}.
-#'
-#' @param df  Data frame with \code{Latitude} and \code{Longitude} columns
-#'   (all sample locations — used for the absence layer).
-#' @param Type Character; \code{"frequency"} or \code{"PA"} (presence/absence).
-#'   Controls whether absence dots are visible (\code{"PA"}) or hidden
-#'   (\code{"frequency"}).
-#'
-#' @return A \code{mapboxgl} map object suitable for \code{renderMapboxgl()}.
-#' @noRd
-MapboxBase <- function(df, Type = "PA") {
-  
-  # Absence layer: all distinct sample locations as grey dots
-  # NOTE: a non-geometry property column (id) is required so that
-  # geojsonsf::sf_geojson() produces a FeatureCollection (length 1)
-  # rather than individual geometry strings (length n).
-  abs_sf <- df %>%
+  abs_nrs_sf <- df_abs %>%
+    dplyr::filter(.data$Survey == "NRS") %>%
     dplyr::distinct(.data$Latitude, .data$Longitude) %>%
     dplyr::mutate(id = dplyr::row_number()) %>%
     sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+  # Use the CPR absence sf as the zero-row template for .build_presence_layers()
+  abs_template_sf <- df_abs %>%
+    dplyr::distinct(.data$Latitude, .data$Longitude) %>%
+    dplyr::mutate(id = dplyr::row_number()) %>%
+    sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+  # --- Split presence data into CPR and NRS layers ---
+  layers <- .build_presence_layers(df_pres, abs_template_sf, season_label, Type)
   
-  # Empty presence layer placeholder (same CRS, zero rows)
-  empty_sf <- abs_sf[0, ]
-  
-  abs_opacity <- if (Type == "frequency") 0 else 1
-  
+  # --- Build map ---
   mapgl::mapboxgl(
-    access_token = Sys.getenv("MAPBOX_PUBLIC_TOKEN"),
+    access_token = golem::get_golem_options("MAPBOX_PUBLIC_TOKEN"),
     style        = mapgl::mapbox_style("light"),
     center       = c(134.0, -27.0),
     zoom         = 3.0,
     projection   = "mercator"
   ) %>%
+    # CPR absence dots — radius 5 (smaller), grey
     mapgl::add_circle_layer(
-      id             = "absence",
-      source         = abs_sf,
-      circle_color   = "#CCCCCC",
-      circle_opacity = abs_opacity,
-      circle_radius  = 2
+      id             = "absence_cpr",
+      source         = abs_cpr_sf,
+      circle_color   = "#595959",
+      circle_opacity = 0.6,
+      circle_radius  = 5
     ) %>%
+    # NRS absence dots — radius 8 (larger), grey
     mapgl::add_circle_layer(
-      id             = "presence",
-      source         = empty_sf,
-      circle_color   = "blue",
-      circle_opacity = 1,
-      circle_radius  = 3,
+      id             = "absence_nrs",
+      source         = abs_nrs_sf,
+      circle_color   = "#595959",
+      circle_opacity = 0.6,
+      circle_radius  = 8
+    ) %>%
+    # CPR presence layer — radius 5, coloured by frequency/PA
+    mapgl::add_circle_layer(
+      id             = "presence_cpr",
+      source         = layers$cpr,
+      circle_color   = list("get", "dot_color"),
+      circle_opacity = 0.9,
+      circle_radius  = 5,
       popup          = "popup_html"
+    ) %>%
+    # NRS presence layer — radius 8, coloured by frequency/PA
+    mapgl::add_circle_layer(
+      id             = "presence_nrs",
+      source         = layers$nrs,
+      circle_color   = list("get", "dot_color"),
+      circle_opacity = 0.9,
+      circle_radius  = 8,
+      popup          = "popup_html"
+    ) %>%
+    # Layer toggle — top-right
+    mapgl::add_control(
+      id       = "layer-toggle",
+      position = "top-right",
+      html     = .species_map_toggle_html()
+    ) %>%
+    # Single legend — bottom-left
+    mapgl::add_control(
+      id       = "map-legend",
+      position = "bottom-left",
+      html     = .species_map_legend_html(Type)
+    ) %>%
+    mapgl::add_control(
+      id = 'season-label',
+      position = "top-left",
+      html = .species_map_title_style(season_label)
     )
 }
 
 
-#' Update Mapbox presence layer with species observations
+#' Update Mapbox presence layers via proxy (season or type change)
 #'
-#' Uses \code{mapboxgl_proxy()} to update the \code{"presence"} source layer
-#' with new species data, and refreshes the legend.
+#' Uses \code{mapboxgl_proxy()} to update the \code{"presence_cpr"} and
+#' \code{"presence_nrs"} source layers and refresh the legend control without
+#' rebuilding the entire map.  Call this from an \code{observeEvent()} that
+#' watches \code{input$season} or \code{input$scaler1}.
 #'
-#' @param sdf   Data frame of species observations for one season, filtered to
-#'   the selected species.  Must contain \code{Latitude}, \code{Longitude}, and
-#'   either \code{freqfac} (frequency mode) or standard columns.
-#' @param name  Character; the Shiny output ID of the target map (e.g.
-#'   \code{"MapSum"}).
-#' @param Type  Character; \code{"frequency"} or \code{"PA"}.
-#' @param session  The Shiny session object (passed from the module server).
+#' @param df_abs   Data frame of all sample locations (for the zero-row
+#'   template when no data exist for a survey type in this season).
+#' @param df_pres  Species-filtered data frame (all seasons).
+#' @param season_label  Character season label.
+#' @param Type  \code{"frequency"} or \code{"PA"}.
+#' @param map_id  Character; the Shiny output ID of the target map
+#'   (e.g. \code{"MapSeason"}).
+#' @param session  The Shiny session object.
 #'
 #' @return Called for side-effects only (proxy update).
 #' @noRd
-MapboxObs <- function(sdf, name, Type = "PA", session) {
+MapboxSeasonProxy <- function(df_abs, df_pres, season_label, Type = "PA",
+                              map_id, session) {
+
+  # Build the absence sf template (needed for zero-row fallback)
+  abs_sf <- df_abs %>%
+    dplyr::distinct(.data$Latitude, .data$Longitude) %>%
+    dplyr::mutate(id = dplyr::row_number()) %>%
+    sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+  layers <- .build_presence_layers(df_pres, abs_sf, season_label, Type)
+
+  proxy <- mapgl::mapboxgl_proxy(map_id, session = session)
+
+  proxy %>%
+    mapgl::set_source(layer_id = "presence_cpr", source = layers$cpr) %>%
+    mapgl::set_source(layer_id = "presence_nrs", source = layers$nrs) %>%
+    mapgl::set_paint_property(
+      layer_id = "presence_cpr",
+      name     = "circle-color",
+      value    = list("get", "dot_color")
+    ) %>%
+    mapgl::set_paint_property(
+      layer_id = "presence_nrs",
+      name     = "circle-color",
+      value    = list("get", "dot_color")
+    ) 
   
-  Species <- unique(sdf$Species)
-  proxy   <- mapgl::mapboxgl_proxy(name, session = session)
-  
-  if (Type == "frequency") {
-    
-    # Frequency palette: CPR (blues) and NRS (greens), matching LeafletObs()
-    freq_levels <- c("Absent", "Seen in 25%", "50%", "75%", "100% of Samples")
-    cpr_colors  <- c("#CCCCCC", "#99CCFF", "#3399FF", "#0066CC", "#003366")
-    nrs_colors  <- c("#CCCCCC", "#CCFFCC", "#99FF99", "#009900", "#006600")
-    
-    # Map freqfac to colour per survey
-    sdf <- sdf %>%
-      dplyr::mutate(
-        freqfac_chr = as.character(.data$freqfac),
-        dot_color = dplyr::case_when(
-          .data$Survey == "CPR" ~ cpr_colors[match(.data$freqfac_chr, freq_levels)],
-          .data$Survey == "NRS" ~ nrs_colors[match(.data$freqfac_chr, freq_levels)],
-          TRUE ~ "#CCCCCC"
-        ),
-        popup_html = paste0(
-          "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
-          "<strong>Longitude:</strong> ", .data$Longitude, "<br>",
-          "<strong>Frequency in sample:</strong> ", .data$freqfac_chr
-        )
-      )
-    
-    pres_sf <- sdf %>%
-      sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-    
-    proxy %>%
-      mapgl::set_source(layer_id = "presence", source = pres_sf) %>%
-      mapgl::set_paint_property(layer_id = "presence", name = "circle-color",
-                                value = list("get", "dot_color")) %>%
-      mapgl::clear_legend() %>%
-      mapgl::add_categorical_legend(
-        legend_title = paste(Species, "CPR"),
-        values       = freq_levels,
-        colors       = cpr_colors,
-        position     = "bottom-left",
-        add          = FALSE
-      ) %>%
-      mapgl::add_categorical_legend(
-        legend_title = paste(Species, "NRS"),
-        values       = freq_levels,
-        colors       = nrs_colors,
-        position     = "bottom-left",
-        add          = TRUE
-      )
-    
-  } else {
-    
-    # Presence/Absence mode
-    pres_sf <- sdf %>%
-      dplyr::mutate(
-        popup_html = paste0(
-          "<strong>Latitude:</strong> ", .data$Latitude, "<br>",
-          "<strong>Longitude:</strong> ", .data$Longitude, "<br>",
-          "<strong>Frequency in sample:</strong> ", as.character(.data$freqfac)
-        )
-      ) %>%
-      sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-    
-    proxy %>%
-      mapgl::set_source(layer_id = "presence", source = pres_sf) %>%
-      mapgl::set_paint_property(layer_id = "presence", name = "circle-color",
-                                value = "blue") %>%
-      mapgl::clear_legend() %>%
-      mapgl::add_categorical_legend(
-        legend_title = Species,
-        values       = c("Seasonal Presence", "Seasonal Absence"),
-        colors       = c("blue", "#CCCCCC"),
-        position     = "bottom-left"
-      )
-  }
+  invisible(NULL)
 }
 

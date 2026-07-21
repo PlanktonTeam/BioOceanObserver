@@ -97,7 +97,8 @@ mod_PolNRS_server <- function(id){
       shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       
       selectedData <- pkg.env$PolNRS %>%
-        dplyr::filter(.data$StationName %in% input$site)
+        dplyr::filter(.data$StationName %in% input$site) %>% 
+        tidyr::drop_na(Values)
       
     }) %>% bindCache(input$site)
     
@@ -159,8 +160,7 @@ mod_PolNRS_server <- function(id){
     
     col1 <- fEOVutilities(vector = "col")
     trans1 <- fEOVutilities(vector = "trans")
-    
-    
+
     gg_out1 <- reactive({
       p_list <- list()
       for (idx in 1:length(input$Parameters)){
@@ -189,8 +189,8 @@ mod_PolNRS_server <- function(id){
       p1 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "PigmentChla_mgm3", trans = "log10", col = col1["PigmentChla_mgm3"], labels = FALSE)
       p2 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "PhytoBiomassCarbon_pgL", trans = "log10", col = col1["PhytoBiomassCarbon_pgL"], labels = FALSE)
       p3 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "Biomass_mgm3", trans = "log10", col = col1["Biomass_mgm3"], labels = FALSE)
-      p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonPhytoDiversity", trans = "log10", col = col1["ShannonPhytoDiversity"], labels = FALSE)
-      p5 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonCopepodDiversity", trans = "log10", col = col1["ShannonCopepodDiversity"])
+      p4 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonPhytoDiversity", trans = "identity", col = col1["ShannonPhytoDiversity"], labels = FALSE)
+      p5 <- planktonr::pr_plot_EOVs(selectedData(), EOV = "ShannonCopepodDiversity", trans = "identity", col = col1["ShannonCopepodDiversity"])
       
       patchwork::wrap_elements(p1 / p2 / p3 / p4 / p5) &
         ggplot2::theme(title = ggplot2::element_text(size = 20, face = "bold"),

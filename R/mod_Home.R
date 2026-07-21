@@ -52,11 +52,11 @@ mod_home_ui <- function(id){
                                shiny::br(),
                                shiny::br(),
                                shiny::h3("Citation"),
-                               shiny::HTML("If you use this app in any publication, please cite as: <br> <i>'Davies, Claire H., Everett, Jason D., Ord, Louise (2022) Integrated Marine Observing System (IMOS) Biological Ocean Observer - Shiny APP. v9.3. CSIRO. Service Collection. <a href = http://hdl.handle.net/102.100.100/447365?index=1>http://hdl.handle.net/102.100.100/447365?index=1</a></i>."),
+                               shiny::HTML("If you use this app in any publication, please cite as: <br> <i>'Davies, Claire H., Everett, Jason D., Ord, Louise (2026) Integrated Marine Observing System (IMOS) Biological Ocean Observer - Shiny APP. v4.0 CSIRO. Service Collection. <a href = http://hdl.handle.net/102.100.100/447365?index=1>http://hdl.handle.net/102.100.100/447365?index=1</a></i>."),
                                shiny::br(),
                                shiny::br(),
                                shiny::HTML("All of the analysis and plotting contained in this application are powered by the <i>planktonr</i> package: <br>
-                                       <i>Everett Jason D., Davies Claire H. (2022). planktonr: Analysis and visualisation of plankton data. R package version 0.5.6.0000, <a href = 'https://github.com/PlanktonTeam/planktonr', target = '_blank'>https://github.com/PlanktonTeam/planktonr</a>.</i>"),
+                                       <i>Everett Jason D., Davies Claire H. (2026). planktonr: Analysis and visualisation of plankton data. R package version 0.7.3.0000, <a href = 'https://github.com/PlanktonTeam/planktonr', target = '_blank'>https://github.com/PlanktonTeam/planktonr</a>.</i>"),
                                shiny::br(),
                                shiny::br(),
                                shiny::h3("Acknowledging IMOS Data"),
@@ -100,31 +100,31 @@ mod_home_ui <- function(id){
                              )
                            )
                          )),
-                tabPanel("Sampling Progress", value = 2,
+                tabPanel("Sampling Locations", value = 2,
                          mapgl::mapboxglOutput(ns("progplot"), height = "800px") %>%
                            shinycssloaders::withSpinner()
                  ),
-                tabPanel("Sampling Status", value = 3,
-                         shiny::br(),
-                         shiny::HTML("Gantt plots to show the time range and regularity of samples processed from each NRS station 
-                                     or CPR route."),
-                         shiny::br(),
-                         shiny::br(),
-                         plotOutput(ns("gantt"), height = 700) %>% 
-                           shinycssloaders::withSpinner(color="#0dc5c1")
-                ),
+                # tabPanel("Sampling Status", value = 3,
+                #          shiny::br(),
+                #          shiny::HTML("Gantt plots to show the time range and regularity of samples processed from each NRS station 
+                #                      or CPR route."),
+                #          shiny::br(),
+                #          shiny::br(),
+                #          plotOutput(ns("gantt"), height = 700) %>% 
+                #            shinycssloaders::withSpinner(color="#0dc5c1")
+                # ),
                 
-                tabPanel("Sampling Summary", value = 4,
-                         # Add plots to highlight species etc.
-                         shiny::h3("What functional groups do we commonly see?"),
-                         plotOutput(ns("TaxaPie")) %>% 
-                           shinycssloaders::withSpinner(color="#0dc5c1"),
-                         shiny::h3("How many taxa are we identifying?"),
-                         plotOutput(ns("SpAccum")) %>% 
-                           shinycssloaders::withSpinner(color="#0dc5c1"),
-                         shiny::br(),
-                         shiny::br()
-                ),
+                # tabPanel("Sampling Summary", value = 4,
+                #          # Add plots to highlight species etc.
+                #          shiny::h3("What functional groups do we commonly see?"),
+                #          plotOutput(ns("TaxaPie")) %>% 
+                #            shinycssloaders::withSpinner(color="#0dc5c1"),
+                #          shiny::h3("How many taxa are we identifying?"),
+                #          plotOutput(ns("SpAccum")) %>% 
+                #            shinycssloaders::withSpinner(color="#0dc5c1"),
+                #          shiny::br(),
+                #          shiny::br()
+                # ),
 
                 # ── Information tabs (inlined from mod_Info) ─────────────
                 tabPanel("Technical Information", value = 5,
