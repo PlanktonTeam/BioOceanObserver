@@ -48,7 +48,7 @@ mod_PhytoTsHAB_server <- function(id){
       
       req(input$tax1)
 
-      taxa <- if(input$tax1 == "genus"){
+      taxa <- if(input$tax1 == "Genus"){
         taxa <-pkg.env$datHABg 
       } else {
         taxa <-pkg.env$datHABs 
@@ -61,20 +61,25 @@ mod_PhytoTsHAB_server <- function(id){
       req(input$station1)
 
       dat <- taxa1()  %>%
-        dplyr::filter(.data$StationName %in% input$station1) %>%
-        dplyr::summarise(non_zero_count = sum(.data$Values != 0, na.rm = TRUE), .by = c(.data$TaxonName, .data$Parameters)) %>%
-        dplyr::filter(.data$non_zero_count > 50)
+        dplyr::filter(.data$StationName %in% input$station1,
+                      .data$Values > 0) %>%
+        dplyr::summarise(n = dplyr::n(), .by = c(.data$TaxonName, .data$Parameters)) %>%
+        dplyr::filter(.data$n > 15)
       
       taxa <- unique(sort(dat$TaxonName))
       params <- planktonr:::pr_relabel(unique(sort(dat$Parameters)), style = "simple", named = TRUE)
       
-      selectedtaxa1 <- if(isTruthy(input$taxgs1) && input$taxgs1 %in% taxa){
-        input$taxgs1
+      if(length(taxa) < 1){
+        choices <- list("No taxa available" = "")
+        selectedtaxa1 <- ""
+      } else if(isTruthy(input$taxgs1) && input$taxgs1 %in% taxa) {
+        choices <- taxa
+        selectedtaxa1 <- input$taxgs1
       } else {
-        taxa[1]
+        choices <- taxa
+        selectedtaxa1 <- taxa[1]
       }
-      
-      shiny::updateSelectInput(session, 'taxgs1', choices = taxa, selected = selectedtaxa1)
+      shiny::updateSelectInput(session, 'taxgs1', choices = choices, selected = selectedtaxa1)
       shiny::updateSelectInput(session, 'parameter', choices = params, selected = params[1])
       
     }) %>% shiny::bindEvent(input$statepick1, input$station1, input$tax1, ignoreNULL = TRUE)
@@ -201,7 +206,7 @@ mod_PhytoTsHAB_server <- function(id){
     taxa2 <- reactive({
       req(input$tax2)
       
-      taxa <- if(input$tax2 == "genus"){
+      taxa <- if(input$tax2 == "Genus"){
         taxa <- pkg.env$datHABg
       } else {
         taxa <- pkg.env$datHABs
@@ -212,7 +217,16 @@ mod_PhytoTsHAB_server <- function(id){
     # Populate taxgs2 choices whenever tax2 changes (not gated on tab == "2" so
     # choices are ready the moment the user switches to tab 2).
     observe({
-      taxa <- unique(sort(taxa2()$TaxonName))
+      taxa <- taxa2() %>% 
+        dplyr::left_join(pkg.env$datHABTrip %>% dplyr::select(StationName, State), dplyr::join_by(StationName)) %>% 
+        dplyr::filter(.data$State %in% input$statepick2, 
+                      .data$Values > 0) %>% 
+        dplyr::summarise(n = dplyr::n(), .by = TaxonName) %>% 
+        dplyr::filter(.data$n > 15) %>% 
+        dplyr::pull(.data$TaxonName)  %>%
+        unique() %>%
+        sort()
+        
       matched_taxa <- intersect(input$taxgs2, taxa)
       
       selectedtaxa <- if(length(matched_taxa) > 0){
@@ -228,7 +242,7 @@ mod_PhytoTsHAB_server <- function(id){
       if (isTRUE(input$hab_analysis == "taxa")) {
         shiny::updateSelectInput(session, 'parameter', choices = params, selected = params[1])
       }
-    }) %>% shiny::bindEvent(input$tax2, ignoreNULL = TRUE)
+    }) %>% shiny::bindEvent(input$tax2, input$statepick2, ignoreNULL = TRUE)
     
     param2 <- reactive({
       param <- taxa2() %>% dplyr::filter(.data$Parameters %in% input$parameter)
@@ -253,10 +267,11 @@ mod_PhytoTsHAB_server <- function(id){
 
       dat <- taxa2() %>%
         dplyr::filter(.data$StationName %in% stationsInState,
-                      .data$TaxonName %in% input$taxgs2) %>%
-        dplyr::summarise(non_zero_count = sum(.data$Values != 0, na.rm = TRUE), .by = c(.data$TaxonName, .data$StationName)) %>%
-        dplyr::filter(.data$non_zero_count > 50)
-      
+                      .data$TaxonName %in% input$taxgs2, 
+                      .data$Values > 0) %>%
+        dplyr::summarise(n = dplyr::n(), .by = c(.data$TaxonName, .data$StationName)) %>%
+        dplyr::filter(.data$n > 15)
+
       unique(sort(dat$StationName))
       
     }) %>% bindCache(input$statepick2, input$taxgs2, input$tax2)

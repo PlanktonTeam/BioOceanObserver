@@ -63,6 +63,13 @@ mod_PhytoSpatial_server <- function(id){
       input$season
     })
 
+    # Absence layer filtered by season (defaults to "December - February")
+    absence_layer <- reactive({
+      req(input$season)
+      pkg.env$fMapDatap %>%
+        dplyr::filter(.data$Season == input$season)
+    })
+    
     # ── Initial full render ────────────────────────────────────────────────────
     # Full re-render when species or map type changes. Season changes are handled
     # by the proxy observer below to avoid rebuilding the entire map.
@@ -71,7 +78,7 @@ mod_PhytoSpatial_server <- function(id){
     output$MapSeason <- mapgl::renderMapboxgl({
       req(input$species)
       MapboxSeason(
-        df_abs       = pkg.env$fMapDatap,
+        df_abs       = absence_layer(),
         df_pres      = PSdatar(),
         season_label = season_label(),
         Type         = map_type()
@@ -89,7 +96,7 @@ mod_PhytoSpatial_server <- function(id){
       {
         req(input$species, input$season)
         MapboxSeasonProxy(
-          df_abs       = pkg.env$fMapDatap,
+          df_abs       = absence_layer(),
           df_pres      = PSdatar(),
           season_label = season_label(),
           Type         = map_type(),

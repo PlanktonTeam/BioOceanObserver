@@ -31,12 +31,22 @@ datCPRTripSO <- planktonr:::cpr_AAD %>%
                    .groups = 'drop') %>%
   dplyr::distinct()
 
+StationToInclude <- planktonr:::HABDat %>% 
+  dplyr::left_join(planktonr:::HABSamples %>% dplyr::select(SampleCode, SiteCode), by = dplyr::join_by(SampleCode)) %>% 
+  dplyr::left_join(planktonr:::HABSites %>% dplyr::select(StationName = Name, SiteCode), by = dplyr::join_by(SiteCode)) %>% 
+  dplyr::filter(.data$CellsL != 0) %>% 
+  dplyr::summarise(n = dplyr::n(), .by = c("StationName", "TaxonName")) %>% 
+  dplyr::filter(.data$n > 15) %>% 
+  dplyr::distinct(.data$StationName) %>% 
+  dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]"))) 
+
 datHABTrip <- planktonr::pr_get_trips(Survey = "HAB") %>% 
   dplyr::mutate(StationName = stringr::str_trim(stringr::str_remove(StationName, "\\[.*?\\]"))) %>% 
   dplyr::summarise(Latitude = mean(Latitude),
                    Longitude = mean(Longitude),
                    StartDate = min(SampleDate),
-                   .by = c(StationName, State))
+                   .by = c(StationName, State)) %>% 
+  dplyr::filter(StationName %in% StationToInclude$StationName)
 
 datHABdataTable <- planktonr:::HABSamples %>% 
   dplyr::left_join(planktonr:::HABSites %>% dplyr::select(SiteCode, State, Name, DataOwner, AnalysedBy), by = "SiteCode") %>% 
@@ -128,12 +138,12 @@ PCI <- planktonr::pr_get_PCIData()
 # HAB data from Coastal Phytoplankton
 SpecToInclude <- planktonr:::HABDat %>% 
   dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = TaxonName) %>% 
-  dplyr::filter(.data$non_zero_count > 50)
+  dplyr::filter(.data$non_zero_count > 15)
   
 GenToInclude <- planktonr:::HABDat %>% 
   dplyr::mutate(Genus = stringr::word(.data$TaxonName, 1)) %>% 
   dplyr::summarise(non_zero_count = sum(.data$CellsL != 0, na.rm = TRUE), .by = Genus) %>% 
-  dplyr::filter(.data$non_zero_count > 50) 
+  dplyr::filter(.data$non_zero_count > 15) 
 
 datHABg <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'Genus') %>% 
   dplyr::filter(Genus %in% GenToInclude$Genus) %>% 
@@ -142,7 +152,8 @@ datHABg <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Sub
   dplyr::select(-c("TripCode", "Month_Local", "Year_Local", "StationCode")) %>% 
   dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything()) %>%
   dplyr::rename(TaxonName = Genus) %>% 
-  dplyr::filter(.data$Values != 0)
+  dplyr::filter(.data$Values != 0, 
+                .data$StationName %in% StationToInclude$StationName)
 
 datHABs <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Subset = 'Species') %>% 
   dplyr::filter(TaxonName %in% SpecToInclude$TaxonName) %>% 
@@ -150,7 +161,8 @@ datHABs <- planktonr::pr_get_Indices(Survey = 'HAB', Type = 'Phytoplankton', Sub
                 SampleTime_Local = lubridate::floor_date(.data$SampleTime_Local, unit = "day")) %>% 
   dplyr::select(-c("TripCode", "Month_Local", "Year_Local", "StationCode")) %>% 
   dplyr::summarise(Values = mean(.data$Values, na.rm = TRUE), .by = everything()) %>% 
-  dplyr::filter(.data$Values != 0)
+  dplyr::filter(.data$Values != 0, 
+                .data$StationName %in% StationToInclude$StationName)
 
 # FG time series data -----------------------------------------------------
 

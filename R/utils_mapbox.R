@@ -794,6 +794,23 @@ fProgressMap <- function(dat) {
   )
 }
 
+#' Title HTML for the species distribution map
+#'
+#' Builds a single top-left legend that covers both PA and frequency modes.
+#'
+#' @param Season Character string of season 
+#' @return Character string of HTML.
+#' @noRd
+.species_map_title_style <- function(Season){
+  paste0(
+    "<div style='background:rgba(255,255,255,0.92);padding:8px 12px;border-radius:6px;",
+    "box-shadow:0 1px 4px rgba(0,0,0,0.25);",
+    "font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;",
+    "font-size:12px;line-height:1.5;max-width:180px;font-weight:bold;'>",
+    Season,
+    "</div>"
+  )  
+}
 
 #' Full Mapbox seasonal map (absence + presence in one render)
 #'
@@ -844,7 +861,7 @@ MapboxSeason <- function(df_abs, df_pres, season_label, Type = "PA") {
 
   # --- Split presence data into CPR and NRS layers ---
   layers <- .build_presence_layers(df_pres, abs_template_sf, season_label, Type)
-
+  
   # --- Build map ---
   mapgl::mapboxgl(
     access_token = golem::get_golem_options("MAPBOX_PUBLIC_TOKEN"),
@@ -898,6 +915,11 @@ MapboxSeason <- function(df_abs, df_pres, season_label, Type = "PA") {
       id       = "map-legend",
       position = "bottom-left",
       html     = .species_map_legend_html(Type)
+    ) %>%
+    mapgl::add_control(
+      id = 'season-label',
+      position = "top-left",
+      html = .species_map_title_style(season_label)
     )
 }
 
@@ -945,8 +967,8 @@ MapboxSeasonProxy <- function(df_abs, df_pres, season_label, Type = "PA",
       layer_id = "presence_nrs",
       name     = "circle-color",
       value    = list("get", "dot_color")
-    )
-
+    ) 
+  
   invisible(NULL)
 }
 

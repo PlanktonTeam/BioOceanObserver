@@ -506,7 +506,8 @@ fSpatialPanel <- function(id){
     width = 8,
     shiny::p(
       "Distribution map showing where this species has been observed across",
-      "NRS and CPR sampling locations. Toggle between Presence/Absence and",
+      "the standard NRS and CPR sampling locations plus ad-hoc sampling",
+      "following these methods. Toggle between Presence/Absence and",
       "Frequency views using the sidebar checkbox.",
       class = "small-text"
     ),
