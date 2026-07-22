@@ -439,7 +439,7 @@ fSpatialSidebar <- function(id, dat1){
     selectizeInput(
       inputId  = ns("species"),
       label    = labeltext,
-      choices  = unique(dat1$Species),
+      choices  = unique(na.omit(dat1$Species)),
       selected = selectedVar
     ),
 
