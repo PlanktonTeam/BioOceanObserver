@@ -16,10 +16,10 @@ mod_LFishSpatial_ui <- function(id){
       #   shiny::column(width = 6, offset = 6,
       #                 shiny::selectizeInput(inputId = ns("species"), label = NULL, choices = unique(pkg.env$LFData$Species), width = "100%"),
       #   )),
-      # shiny::fluidRow(
-      #   mapgl::mapboxglOutput(ns("LFMap"), width = "100%", height = "800px") %>%
-      #     shinycssloaders::withSpinner(color="#0dc5c1"),
-      # ),
+      shiny::fluidRow(
+        mapgl::mapboxglOutput(ns("LFMap"), width = "100%", height = "800px") %>%
+          shinycssloaders::withSpinner(color="#0dc5c1"),
+      ),
     )
   )
 }
