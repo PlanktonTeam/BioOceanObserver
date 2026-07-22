@@ -14,7 +14,7 @@ mod_LFishSpatial_ui <- function(id){
       shiny::fluidRow(
         # shiny::column(width = 3, shiny::HTML("<strong>Select Larval Fish:</strong>")),
         shiny::column(width = 6, offset = 6,
-                      selectizeInput(inputId = ns("species"), label = NULL, choices = unique(pkg.env$LFData$Species), width = "100%"),
+                      shiny::selectizeInput(inputId = ns("species"), label = NULL, choices = unique(pkg.env$LFData$Species), width = "100%"),
         )),
       shiny::fluidRow(
         mapgl::mapboxglOutput(ns("LFMap"), width = "100%", height = "800px") %>% 
