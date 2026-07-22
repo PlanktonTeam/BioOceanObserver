@@ -13,7 +13,7 @@ mod_LFishData_ui <- function(id){
     shiny::fluidPage(
       shiny::fluidRow(
         shiny::column(width = 6, offset = 6,
-                      selectizeInput(inputId = ns("species"), label = NULL, 
+                      shiny::selectizeInput(inputId = ns("species"), label = NULL, 
                                      choices = unique(pkg.env$LFData$Species), width = "100%",
                                      options = list(dropdownParent = 'body')),
         )),
