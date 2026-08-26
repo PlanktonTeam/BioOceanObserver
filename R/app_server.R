@@ -14,16 +14,6 @@ app_server <- function( input, output, session ) {
   # ggplot2::theme_set(ggplot2::theme_bw(base_size = 12) + ggplot2::theme(legend.position = "bottom"))
   options(na.action = "na.omit")
   
-  # print(pkg.env$data.source)
-  if(pkg.env$data.source != "") {
-    showModal(modalDialog(
-      HTML(paste0("<p>Data loaded from: ", pkg.env$data.source, "</p>",
-                  "<p>Load time: ", format(pkg.env$load.time), "</p>",
-                  "<p>File size: ", units::as_units(pkg.env$file.size, "b") |>
-                    units::set_units("Mb") |> format(digits = 4), "</p>"))
-    ))
-  }
-  
   # Informative pop-up modal; advises that DAP is inaccessible and historical data is being used.
   # new.data is defined in 000.R which is sourced first (alphabetical sorting)
   if (!pkg.env$new.data) {
