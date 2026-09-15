@@ -235,11 +235,14 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     shiny::conditionalPanel(
       condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 5"),
       shiny::HTML("<h3>Dates:</h3>"),
-      shiny::sliderInput(ns("DatesSlide"), 
-                         label = NULL, 
-                         min = min_date, 
-                         max = Sys.time(), 
-                         value = c(min_date, Sys.time()-1), timeFormat="%m-%Y")),
+      shiny::sliderInput(ns("DatesSlide"),
+                         label = NULL,
+                         min = lubridate::floor_date(min_date, "month"),
+                         max = lubridate::floor_date(Sys.time(), "month"),
+                         value = c(lubridate::floor_date(min_date, "month"),
+                                   lubridate::floor_date(Sys.time(), "month")),
+                         step = 60 * 60 * 24 * 30,
+                         timeFormat = "%m-%Y")),
     # Parameter selection for Microbes (tabs 1-3).
     # Wrapped in R-side if() so this block is only ever rendered inside a Micro
     # module's sidebar — no JS input.navbar guard needed or wanted.
@@ -556,8 +559,13 @@ fEnviroSidebar <- function(id, dat = NULL){
     if (id != "MoorBGC_ui_1"){
       shiny::tagList(
         shiny::HTML("<h3>Select dates:</h3>"),
-        sliderInput(ns("DatesSlide"), label = NULL, min = lubridate::ymd(20090101), max = Sys.Date(),
-                    value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%m-%Y")
+        sliderInput(ns("DatesSlide"), label = NULL,
+                    min   = lubridate::floor_date(lubridate::ymd(20090101), "month"),
+                    max   = lubridate::floor_date(Sys.Date(), "month"),
+                    value = c(lubridate::floor_date(lubridate::ymd(20090101), "month"),
+                              lubridate::floor_date(Sys.Date(), "month")),
+                    step  = 60 * 60 * 24 * 30,
+                    timeFormat = "%m-%Y")
       )
     },
     
@@ -666,7 +674,6 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
                                     "))),
       condition = paste0("input['", id, "-", tabsetPanel_id, "'] == null || input['", id, "-", tabsetPanel_id, "'] <= 2"),
       
-      # Use plotlyOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
       if(stringr::str_detect(id, "CPR")) {
         shiny::tagList(
           shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
@@ -678,8 +685,7 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
           mapgl::mapboxglOutput(ns("plotmap"), height = "400px")
         )
       },
-      # shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-      # plotly::plotlyOutput(ns("plotmap"), height = "auto"),   
+      
       shiny::HTML("<h3>Select a station:</h3>"),
       shiny::fluidRow(class = "row_multicol",
                       tags$div(align = "left",
@@ -743,6 +749,35 @@ fRelationPanel <- function(id, tabsetPanel_id){
 }
 
 
+
+
+#' Snap DatesSlide slider to calendar-month boundaries
+#'
+#' Call once inside each module server that contains a DatesSlide slider.
+#' The observer fires whenever the slider moves and snaps both handles to
+#' exact month boundaries:
+#'   [1]  -> first moment of the selected start month  (floor_date)
+#'   [2]  -> last  moment of the selected end   month  (ceiling_date - 1 second)
+#' This means all existing between() / < as.POSIXct() filter calls in module
+#' servers work correctly without any modification.
+#'
+#' @param input,output,session  Standard Shiny module arguments.
+#' @noRd
+fSnapMonthSlider <- function(input, output, session) {
+  shiny::observe({
+    req(input$DatesSlide)
+    val <- input$DatesSlide
+    snapped <- c(
+      lubridate::floor_date(val[1], "month"),
+      lubridate::ceiling_date(val[2], "month") - lubridate::seconds(1)
+    )
+    # Only update when the value actually needs snapping to avoid an
+    # infinite observe loop.
+    if (!isTRUE(all.equal(as.numeric(val), as.numeric(snapped)))) {
+      shiny::updateSliderInput(session, "DatesSlide", value = snapped)
+    }
+  }) %>% shiny::bindEvent(input$DatesSlide, ignoreNULL = TRUE)
+}
 
 
 fParamDefServer <- function(selectedData){

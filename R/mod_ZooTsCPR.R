@@ -24,21 +24,26 @@ mod_ZooTsCPR_server <- function(id){
   moduleServer( id, function(input, output, session, CPRzts){
     
     # Sidebar ----------------------------------------------------------
-    
-    ## update date slider input when SO is selected
+    fSnapMonthSlider(input, output, session)
+
+    ## update date slider input when SO is selected; snap bounds to month boundaries
     observe({
       if("Southern Ocean Region" %in% input$site){
-        min_date <- as.POSIXct(paste0(min(pkg.env$datCPRz$Year_Local), "-01-01 00:00"), format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
+        min_date <- lubridate::floor_date(
+          as.POSIXct(paste0(min(pkg.env$datCPRz$Year_Local), "-01-01 00:00"),
+                     format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart"),
+          "month")
       } else {
         min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
       }
-      max_date = Sys.time()-1
+      max_date <- lubridate::floor_date(Sys.time(), "month")
 
       updateSliderInput(session, "DatesSlide",
-                        min = min_date,
-                        max = max_date,
-                        value = c(min_date, max_date), timeFormat="%m-%Y")
-      }) %>%  shiny::bindEvent(input$site)
+                        min   = min_date,
+                        max   = max_date,
+                        value = c(min_date, max_date),
+                        timeFormat = "%m-%Y")
+      }) %>% shiny::bindEvent(input$site)
 
     selectedData <- reactive({
       req(input$site)

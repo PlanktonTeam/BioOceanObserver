@@ -24,6 +24,8 @@ mod_ZooTsNRS_server <- function(id){
   moduleServer(id, function(input, output, session, NRSzts){
     
     # Sidebar ----------------------------------------------------------
+    fSnapMonthSlider(input, output, session)
+
     selectedData <- reactive({
       req(input$site)
       req(input$parameter)

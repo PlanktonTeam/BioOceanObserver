@@ -24,6 +24,8 @@ mod_PhytoTsHAB_server <- function(id){
   
   moduleServer(id, function(input, output, session){
 
+    fSnapMonthSlider(input, output, session)
+
     observeEvent({input$statepick1}, {
       
       req(input$statepick1)

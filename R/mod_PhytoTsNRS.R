@@ -25,6 +25,8 @@ mod_PhytoTsNRS_server <- function(id){
   moduleServer(id, function(input, output, session, NRSpts){
     
     # Sidebar ----------------------------------------------------------
+    fSnapMonthSlider(input, output, session)
+
     # observeEvent({input$NRSpt == 1 | input$NRSpt == 2}, {
     selectedData <- reactive({ #TODO - This reactive encompasses things from 1/2 AND 3. Can we split them?
       

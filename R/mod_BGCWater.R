@@ -22,7 +22,8 @@ mod_WaterBGC_ui <- function(id){
 mod_WaterBGC_server <- function(id){
   moduleServer( id, function(input, output, session){
     #     select depths
-    
+    fSnapMonthSlider(input, output, session)
+
     observe({
       req(input$site)
       req(input$parameter)

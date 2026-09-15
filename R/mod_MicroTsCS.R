@@ -26,6 +26,8 @@ mod_MicroTsCS_server <- function(id){
   moduleServer(id, function(input, output, session, CSmts){
 
     # Sidebar ----------------------------------------------------------
+    fSnapMonthSlider(input, output, session)
+
     observeEvent(input$all, {
       if(input$all == TRUE){
         params <- planktonr:::pr_relabel(unique(pkg.env$datCSm$Parameters), style = "simple", named = TRUE)
