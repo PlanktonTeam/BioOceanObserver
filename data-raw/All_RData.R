@@ -499,6 +499,11 @@ AT_receivers$popup_html <- purrr::map_chr(seq_len(nrow(rx_df)), function(i) {
 })
 
 
+imcra <- sf::st_read("data-raw/Integrated_Marine_and_Coastal_Regionalisation_of_Australia_(IMCRA)_v4.0_-_Provincial_Bioregions.geojson") %>% 
+  dplyr::select("PB_NAME","WATER_TYPE")
+
+
+
 # Add data to sysdata.rda -------------------------------------------------
 usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   fMapDataz, fMapDatap,
@@ -521,5 +526,6 @@ usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   ParamDef, col12, modified_time, AusStatesSimple,
                   AT_species_summary, AT_receivers, AT_station_species,
                   AT_individual_data, AT_all_species, AT_daily_summary,
+                  imcra,
                   overwrite = TRUE, internal = TRUE)
 
