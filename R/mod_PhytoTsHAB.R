@@ -24,7 +24,9 @@ mod_PhytoTsHAB_server <- function(id){
   
   moduleServer(id, function(input, output, session){
 
-    fSnapMonthSlider(input, output, session)
+    # Month-aligned date bounds derived from the slider position
+    date_min <- reactive(lubridate::floor_date(input$DatesSlide[1], "month"))
+    date_max <- reactive(lubridate::ceiling_date(input$DatesSlide[2], "month") - lubridate::days(1))
 
     observeEvent({input$statepick1}, {
       
@@ -138,13 +140,13 @@ mod_PhytoTsHAB_server <- function(id){
         dplyr::filter(.data$TaxonName %in% input$taxgs1,
                       .data$StationName %in% input$station1,
                       .data$Parameters %in% input$parameter,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max())) %>%
         dplyr::select(.data$SampleTime_Local, .data$StationName, .data$TaxonName, .data$Parameters, .data$Values)
       
       ## Need to add in zeros
       events <- taxa1() %>%
         dplyr::filter(.data$StationName %in% input$station1,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max())) %>%
         dplyr::select(-c(.data$Parameters, .data$Values, .data$TaxonName)) %>%
         dplyr::distinct()
       
@@ -157,7 +159,7 @@ mod_PhytoTsHAB_server <- function(id){
                       Year_Local = lubridate::year(.data$SampleTime_Local),
                       StationCode = .data$StationName)
       
-    }) %>% bindCache(input$statepick1, input$parameter, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$tax1, input$taxgs1)
+    }) %>% bindCache(input$statepick1, input$parameter, input$station1, date_min(), date_max(), input$tax1, input$taxgs1)
 
     gg_out1 <- reactive({
       dat <- selectedData()
@@ -186,7 +188,7 @@ mod_PhytoTsHAB_server <- function(id){
       } else {
         ggplot2::ggplot() + ggplot2::theme_void()
       }
-    }) %>% bindCache(input$statepick1, input$parameter, input$station1, input$DatesSlide[1], input$DatesSlide[2], input$scaler1, input$tax1, input$taxgs1)
+    }) %>% bindCache(input$statepick1, input$parameter, input$station1, date_min(), date_max(), input$scaler1, input$tax1, input$taxgs1)
     
     output$timeseries1 <- renderPlot({
       shiny::validate(
@@ -300,7 +302,7 @@ mod_PhytoTsHAB_server <- function(id){
     # Update station2 choices whenever the taxa/state/dates change.
     # Not gated on pHABts == "2" so the list is ready when the tab is first shown;
     # req(input$taxgs2) guards against running before taxgs2 is populated.
-    observeEvent(list(input$tax2, input$taxgs2, input$statepick2, input$DatesSlide[1], input$DatesSlide[2]), {
+    observeEvent(list(input$tax2, input$taxgs2, input$statepick2, date_min(), date_max()), {
       req(input$statepick2)
       req(input$taxgs2)
       
@@ -345,13 +347,13 @@ mod_PhytoTsHAB_server <- function(id){
         dplyr::filter(.data$TaxonName %in% input$taxgs2,
                       .data$StationName %in% station2_val,
                       .data$Parameters %in% input$parameter,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max())) %>%
         dplyr::select(.data$SampleTime_Local, .data$StationName, .data$TaxonName, .data$Parameters, .data$Values)
       
       ## Need to add in zeros
       events <- taxa2() %>%
         dplyr::filter(.data$StationName %in% station2_val,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max())) %>%
         dplyr::select(-c(.data$Parameters, .data$Values, .data$TaxonName)) %>%
         dplyr::distinct() %>%
         tidyr::expand_grid(TaxonName = c(input$taxgs2))
@@ -370,7 +372,7 @@ mod_PhytoTsHAB_server <- function(id){
       
       selectedData2
 
-    }) %>% bindCache(input$statepick2, input$parameter, input$station2, input$DatesSlide[1], input$DatesSlide[2], input$tax2, input$taxgs2)
+    }) %>% bindCache(input$statepick2, input$parameter, input$station2, date_min(), date_max(), input$tax2, input$taxgs2)
 
     gg_out2 <- reactive({
       dat <- selectedData2()
@@ -391,7 +393,7 @@ mod_PhytoTsHAB_server <- function(id){
         ggplot2::ggplot() + ggplot2::theme_void()
       }
       
-    }) %>% bindCache(input$statepick2, input$parameter, input$station2, input$DatesSlide[1], input$DatesSlide[2], input$scaler1, input$tax2, input$taxgs2)
+    }) %>% bindCache(input$statepick2, input$parameter, input$station2, date_min(), date_max(), input$scaler1, input$tax2, input$taxgs2)
 
     output$timeseries2 <- renderPlot({
       shiny::validate(

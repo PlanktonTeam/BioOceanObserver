@@ -22,7 +22,9 @@ mod_PicoBGC_ui <- function(id){
 mod_PicoBGC_server <- function(id){
   moduleServer( id, function(input, output, session){
     #     select depths
-    fSnapMonthSlider(input, output, session)
+    # Month-aligned date bounds derived from the slider position
+    date_min <- reactive(lubridate::floor_date(input$DatesSlide[1], "month"))
+    date_max <- reactive(lubridate::ceiling_date(input$DatesSlide[2], "month") - lubridate::days(1))
 
     observe({
       req(input$site)
@@ -35,17 +37,14 @@ mod_PicoBGC_server <- function(id){
     
     selectedData <- reactive({
       req(input$site)
-      req(input$DatesSlide)
-      shiny::validate(need(!is.na(input$DatesSlide[1]) & !is.na(input$DatesSlide[2]), "Error: Please provide both a start and an end date."))
-      shiny::validate(need(input$DatesSlide[1] < input$DatesSlide[2], "Error: Start date should be earlier than end date."))
       pkg.env$Pico %>%
         dplyr::filter(.data$StationName %in% input$site,
-                      .data$SampleTime_Local > as.POSIXct(input$DatesSlide[1]) & .data$SampleTime_Local < as.POSIXct(input$DatesSlide[2]),
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max()),
                       .data$Parameters %in% input$parameter) %>%
         dplyr::mutate(name = as.factor(.data$Parameters)) %>%
         tidyr::drop_na()
       
-    }) %>% bindCache(input$site, input$parameter, input$DatesSlide)
+    }) %>% bindCache(input$site, input$parameter, date_min(), date_max())
     
     shiny::exportTestValues(
       PicoBGC = {ncol(selectedData())},
@@ -71,7 +70,7 @@ mod_PicoBGC_server <- function(id){
         planktonr::pr_plot_NRSEnvContour(selectedData(), na.fill = FALSE)
       }
       
-    }) %>% bindCache(input$site, input$parameter, input$DatesSlide, input$interp)
+    }) %>% bindCache(input$site, input$parameter, date_min(), date_max(), input$interp)
     
     output$timeseries1 <- renderPlot({
       gg_out1()

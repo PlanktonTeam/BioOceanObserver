@@ -22,7 +22,9 @@ mod_WaterBGC_ui <- function(id){
 mod_WaterBGC_server <- function(id){
   moduleServer( id, function(input, output, session){
     #     select depths
-    fSnapMonthSlider(input, output, session)
+    # Month-aligned date bounds derived from the slider position
+    date_min <- reactive(lubridate::floor_date(input$DatesSlide[1], "month"))
+    date_max <- reactive(lubridate::ceiling_date(input$DatesSlide[2], "month") - lubridate::days(1))
 
     observe({
       req(input$site)
@@ -33,17 +35,14 @@ mod_WaterBGC_server <- function(id){
     
     selectedData <- reactive({
       req(input$site)
-      req(input$DatesSlide)
-      shiny::validate(need(!is.na(input$DatesSlide[1]) & !is.na(input$DatesSlide[2]), "Error: Please provide both a start and an end date."))
-      shiny::validate(need(input$DatesSlide[1] < input$DatesSlide[2], "Error: Start date should be earlier than end date."))
       pkg.env$datNRSw %>%
         dplyr::filter(.data$StationName %in% input$site,
-               .data$SampleTime_Local > as.POSIXct(input$DatesSlide[1]) & .data$SampleTime_Local < as.POSIXct(input$DatesSlide[2]),
-               .data$Parameters %in% input$parameter) %>%
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max()),
+                      .data$Parameters %in% input$parameter) %>%
         dplyr::mutate(name = as.factor(.data$Parameters)) %>%
         tidyr::drop_na()
       
-    }) %>% bindCache(input$site, input$parameter, input$DatesSlide)
+    }) %>% bindCache(input$site, input$parameter, date_min(), date_max())
     
     shiny::exportTestValues(
       WaterBGC = {ncol(selectedData())},
@@ -64,7 +63,7 @@ mod_WaterBGC_server <- function(id){
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = 'collect')
       
-    }) %>% bindCache(input$site, input$parameter, input$DatesSlide)
+    }) %>% bindCache(input$site, input$parameter, date_min(), date_max())
     
     output$timeseries1 <- renderPlot({
       gg_out1()

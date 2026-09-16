@@ -24,19 +24,19 @@ mod_ZooTsCPR_server <- function(id){
   moduleServer( id, function(input, output, session, CPRzts){
     
     # Sidebar ----------------------------------------------------------
-    fSnapMonthSlider(input, output, session)
+    # Month-aligned date bounds derived from the slider position
+    date_min <- reactive(lubridate::floor_date(input$DatesSlide[1], "month"))
+    date_max <- reactive(lubridate::ceiling_date(input$DatesSlide[2], "month") - lubridate::days(1))
 
-    ## update date slider input when SO is selected; snap bounds to month boundaries
+    ## update date slider input when SO is selected
     observe({
       if("Southern Ocean Region" %in% input$site){
         min_date <- lubridate::floor_date(
-          as.POSIXct(paste0(min(pkg.env$datCPRz$Year_Local), "-01-01 00:00"),
-                     format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart"),
-          "month")
+          as.Date(paste0(min(pkg.env$datCPRz$Year_Local), "-01-01")), "month")
       } else {
-        min_date <- as.POSIXct('2009-01-01 00:00', format = "%Y-%m-%d %H:%M", tz = "Australia/Hobart")
+        min_date <- lubridate::ymd("2009-01-01")
       }
-      max_date <- lubridate::floor_date(Sys.time(), "month")
+      max_date <- lubridate::floor_date(Sys.Date(), "month")
 
       updateSliderInput(session, "DatesSlide",
                         min   = min_date,
@@ -52,13 +52,13 @@ mod_ZooTsCPR_server <- function(id){
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
       ## Need to make these factors load automatically...... if possible
-      selectedData <- pkg.env$datCPRz %>% 
+      selectedData <- pkg.env$datCPRz %>%
         dplyr::filter(.data$BioRegion %in% input$site,
                       .data$Parameters %in% input$parameter,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max())) %>%
         droplevels()
       
-    }) %>% bindCache(input$parameter,input$site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$parameter, input$site, date_min(), date_max())
     
     shiny::exportTestValues(
       ZtsCPR = {ncol(selectedData())},
@@ -104,7 +104,7 @@ mod_ZooTsCPR_server <- function(id){
       
       p1 + p2 + patchwork::plot_layout(widths = c(3,1))
       
-    }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    }) %>% bindCache(input$parameter, input$site, date_min(), date_max(), input$scaler1)
     
     output$timeseries1 <- renderPlot({
       req(is.null(input$CPRzts) || input$CPRzts == "1")
@@ -138,7 +138,7 @@ mod_ZooTsCPR_server <- function(id){
       p1 /
         (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom"))
       
-    }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    }) %>% bindCache(input$parameter, input$site, date_min(), date_max(), input$scaler1)
     
     output$timeseries2 <- renderPlot({
       gg_out2()
@@ -155,9 +155,9 @@ mod_ZooTsCPR_server <- function(id){
       
       selectedDataFG <- pkg.env$CPRfgz %>%
         dplyr::filter(.data$BioRegion %in% input$site,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max())) %>%
         droplevels()
-    }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$site, date_min(), date_max())
     
     gg_out3 <- reactive({
       if (is.null(pkg.env$CPRfgz$BioRegion)) {return(NULL)}
@@ -169,7 +169,7 @@ mod_ZooTsCPR_server <- function(id){
                        legend.position = "none")
       p1 + p2 + patchwork::plot_layout(widths = c(3,1))
       
-    }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
+    }) %>% bindCache(input$site, date_min(), date_max(), input$scaler3)
     
     output$timeseries3 <- renderPlot({
       gg_out3()

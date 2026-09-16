@@ -26,7 +26,9 @@ mod_MicroTsCS_server <- function(id){
   moduleServer(id, function(input, output, session, CSmts){
 
     # Sidebar ----------------------------------------------------------
-    fSnapMonthSlider(input, output, session)
+    # Month-aligned date bounds derived from the slider position
+    date_min <- reactive(lubridate::floor_date(input$DatesSlide[1], "month"))
+    date_max <- reactive(lubridate::ceiling_date(input$DatesSlide[2], "month") - lubridate::days(1))
 
     observeEvent(input$all, {
       if(input$all == TRUE){
@@ -45,13 +47,13 @@ mod_MicroTsCS_server <- function(id){
       selectedData <- pkg.env$datCSm %>%
         dplyr::filter(.data$State %in% input$site,
                       .data$Parameters %in% input$parameterm,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max())) %>%
         droplevels() %>%
-        dplyr::mutate(name = as.factor(.data$Parameters)) %>% 
-        dplyr::arrange(.data$State) %>% 
+        dplyr::mutate(name = as.factor(.data$Parameters)) %>%
+        dplyr::arrange(.data$State) %>%
         tidyr::drop_na()
 
-    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$parameterm, input$site, date_min(), date_max())
 
     shiny::exportTestValues(
       MicroTsC = {ncol(selectedData())},
@@ -120,7 +122,7 @@ mod_MicroTsCS_server <- function(id){
         ggplot2::ggplot() + ggplot2::geom_blank()
       }
 
-    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    }) %>% bindCache(input$parameterm, input$site, date_min(), date_max(), input$scaler1)
 
     output$timeseries1 <- renderPlot({
       req(is.null(input$CSmts) || input$CSmts == "1")
@@ -173,7 +175,7 @@ mod_MicroTsCS_server <- function(id){
         ggplot2::ggplot() + ggplot2::geom_blank()
       }
 
-    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    }) %>% bindCache(input$parameterm, input$site, date_min(), date_max(), input$scaler1)
 
     output$timeseries2 <- renderPlot({
       gg_out2()
@@ -192,7 +194,7 @@ mod_MicroTsCS_server <- function(id){
         ggplot2::ggplot() + ggplot2::geom_blank()
       }
 
-    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$smoother)
+    }) %>% bindCache(input$parameterm, input$site, date_min(), date_max(), input$smoother)
 
     output$timeseries3 <- renderPlot({
       gg_out3()

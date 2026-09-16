@@ -24,7 +24,9 @@ mod_ZooTsNRS_server <- function(id){
   moduleServer(id, function(input, output, session, NRSzts){
     
     # Sidebar ----------------------------------------------------------
-    fSnapMonthSlider(input, output, session)
+    # Month-aligned date bounds derived from the slider position
+    date_min <- reactive(lubridate::floor_date(input$DatesSlide[1], "month"))
+    date_max <- reactive(lubridate::ceiling_date(input$DatesSlide[2], "month") - lubridate::days(1))
 
     selectedData <- reactive({
       req(input$site)
@@ -32,13 +34,13 @@ mod_ZooTsNRS_server <- function(id){
       shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       shiny::validate(need(!is.na(input$parameter), "Error: Please select a parameter."))
       
-      selectedData <- pkg.env$datNRSz %>% 
+      selectedData <- pkg.env$datNRSz %>%
         dplyr::filter(.data$StationName %in% input$site,
                       .data$Parameters %in% input$parameter,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max())) %>%
         droplevels()
       
-    }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$parameter, input$site, date_min(), date_max())
     
     shiny::exportTestValues(
       ZtsNRS = {ncol(selectedData())},
@@ -105,7 +107,7 @@ mod_ZooTsNRS_server <- function(id){
       
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
       
-    }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    }) %>% bindCache(input$parameter, input$site, date_min(), date_max(), input$scaler1)
     
     output$timeseries1 <- renderPlot({
       req(is.null(input$NRSzts) || input$NRSzts == "1")
@@ -135,7 +137,7 @@ mod_ZooTsNRS_server <- function(id){
       p1 /
         (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom"))
       
-    }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    }) %>% bindCache(input$parameter, input$site, date_min(), date_max(), input$scaler1)
     
     output$timeseries2 <- renderPlot({
       gg_out2()
@@ -151,9 +153,9 @@ mod_ZooTsNRS_server <- function(id){
       shiny::validate(need(!is.na(input$site), "Error: Please select a station."))
       pkg.env$NRSfgz %>%
         dplyr::filter(.data$StationName %in% input$site,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max())) %>%
         droplevels()
-    }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$site, date_min(), date_max())
     
     gg_out3 <- reactive({
       scale <- dplyr::if_else(input$scaler3, "Proportion", "Actual")
@@ -163,7 +165,7 @@ mod_ZooTsNRS_server <- function(id){
         ggplot2::theme(axis.title.y = ggplot2::element_blank())
       p1 + p2 + patchwork::plot_layout(widths = c(3,1), guides = "collect") &
         ggplot2::theme(legend.position = "bottom")
-    }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler3)
+    }) %>% bindCache(input$site, date_min(), date_max(), input$scaler3)
     
     output$timeseries3 <- renderPlot({
       gg_out3()
