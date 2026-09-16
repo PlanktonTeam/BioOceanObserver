@@ -25,6 +25,10 @@ mod_PhytoTsNRS_server <- function(id){
   moduleServer(id, function(input, output, session, NRSpts){
     
     # Sidebar ----------------------------------------------------------
+    # Month-aligned date bounds derived from the slider position
+    date_min <- reactive(lubridate::floor_date(input$DatesSlide[1], "month"))
+    date_max <- reactive(lubridate::ceiling_date(input$DatesSlide[2], "month") - lubridate::days(1))
+
     # observeEvent({input$NRSpt == 1 | input$NRSpt == 2}, {
     selectedData <- reactive({ #TODO - This reactive encompasses things from 1/2 AND 3. Can we split them?
       
@@ -36,10 +40,10 @@ mod_PhytoTsNRS_server <- function(id){
       selectedData <- pkg.env$datNRSp_all %>%
         dplyr::filter(.data$StationName %in% input$site,
                       .data$Parameters %in% input$parameter,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>% 
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max())) %>%
         planktonr:::pr_reorder()
       
-    }) %>% bindCache(input$parameter,input$site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$parameter, input$site, date_min(), date_max())
     # })
     
     # Sidebar Map - Initial render with current selection
@@ -79,7 +83,7 @@ mod_PhytoTsNRS_server <- function(id){
         paste0("A plot of selected phytoplankton Parameters from the NRS around Australia, as a time series and a monthly climatology by station.<br>
         <b>Note:</b> At SOTS, phytoplankton samples were initially collected around 30m, from 2020 onwards this was changed to 5-10m")
     } else {
-      "A plot of selected phytoplankton Parameters from the NRS around Australia, as a time series and a monthly climatology by station."
+      "A plot of selected phytoplankton parameters from the NRS around Australia, as a time series and a monthly climatology by station. The monthly climatology will recalculate to represent the time-period selected."
     }
       })
     output$PlotExp2 <- renderText({
@@ -87,7 +91,7 @@ mod_PhytoTsNRS_server <- function(id){
         paste0("A plot of selected indicies from the NRS around Australia, as a time series, a monthly climatology and an annual mean.<br>
         <b>Note:</b> At SOTS, phytoplankton samples were initially collected around 30m, from 2020 onwards this was changed to 5-10m")
       } else {
-        "A plot of selected indicies from the NRS around Australia, as a time series, a monthly climatology and an annual mean"
+        "A plot of selected indicies from the NRS around Australia, as a time series, a monthly climatology and an annual mean. The monthly climatology will recalculate to represent the time-period selected."
         }
     })
     output$PlotExp3 <- renderText({
@@ -95,7 +99,7 @@ mod_PhytoTsNRS_server <- function(id){
         paste0("A plot of functional groups from the light microscope phytoplankton counts from the NRS around Australia, as a time series and a monthly climatology.<br>
         <b>Note:</b> At SOTS, phytoplankton samples were initially collected around 30m, from 2020 onwards this was changed to 5-10m")
       } else {
-        "A plot of functional groups from the light microscope phytoplankton counts from the NRS around Australia, as a time series and a monthly climatology."}
+        "A plot of functional groups from the light microscope phytoplankton counts from the NRS around Australia, as a time series and a monthly climatology. The monthly climatology will recalculate to represent the time-period selected."}
     })
 
     # Plot Trends -------------------------------------------------------------
@@ -110,7 +114,7 @@ mod_PhytoTsNRS_server <- function(id){
       
       p1 + p2 + patchwork::plot_layout(widths = c(3, 1), guides = "collect")
       
-    }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    }) %>% bindCache(input$parameter, input$site, date_min(), date_max(), input$scaler1)
     
     output$timeseries1 <- renderPlot({
       req(is.null(input$NRSpts) || input$NRSpts == "1")
@@ -144,7 +148,7 @@ mod_PhytoTsNRS_server <- function(id){
       p1 /
         (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom"))
       
-    }) %>% bindCache(input$parameter, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    }) %>% bindCache(input$parameter, input$site, date_min(), date_max(), input$scaler1)
     
     output$timeseries2 <- renderPlot({
       gg_out2()
@@ -162,11 +166,11 @@ mod_PhytoTsNRS_server <- function(id){
       selectedDataFG <- pkg.env$NRSfgp %>%
         #dplyr::bind_rows(pkg.env$SOTSfgp) %>%
         dplyr::filter(.data$StationName %in% input$site,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max())) %>%
         planktonr:::pr_reorder() %>%
         droplevels()
       
-    }) %>% bindCache(input$site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$site, date_min(), date_max())
     
     gg_out3 <- reactive({
       if (is.null(pkg.env$NRSfgp$StationCode)) {return(NULL)}
@@ -180,7 +184,7 @@ mod_PhytoTsNRS_server <- function(id){
       
       p1 + p2 + patchwork::plot_layout(widths = c(3,1))
       
-    }) %>% bindCache(input$site, input$scaler3, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$site, input$scaler3, date_min(), date_max())
     
     output$timeseries3 <- renderPlot({
       gg_out3()

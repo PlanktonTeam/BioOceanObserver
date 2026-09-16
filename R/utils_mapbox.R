@@ -424,6 +424,12 @@ fProgressMap <- function(dat) {
   pci_sf <- df_PCI %>%
     sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
   
+  # ---- IMCRA Provincial Bioregions ----
+  imcra_sf <- pkg.env$imcra %>%
+    dplyr::mutate(
+      hover_label = paste0(.data$PB_NAME, " \u2014 ", .data$WATER_TYPE)
+    )
+
   # ---- Marine Bioregions (mbr polygons from planktonr) ----
   mbr_sf <- planktonr::mbr
   if (!inherits(mbr_sf, "sf")) mbr_sf <- sf::st_as_sf(mbr_sf)
@@ -468,7 +474,23 @@ fProgressMap <- function(dat) {
       line_color = list("get", "Colour"),
       line_width = 1
     ) %>%
-    # Layer 2: CPR samples with phyto/zoo counts
+    # Layer 2a: IMCRA Provincial Bioregions — hidden by default
+    mapgl::add_fill_layer(
+      id           = "imcra_fill",
+      source       = imcra_sf,
+      fill_color   = "#000000",
+      fill_opacity = 0.05,
+      tooltip      = "hover_label",
+      visibility   = "none"
+    ) %>%
+    mapgl::add_line_layer(
+      id         = "imcra_outline",
+      source     = imcra_sf,
+      line_color = "#000000",
+      line_width = 0.5,
+      visibility = "none"
+    ) %>%
+    # Layer 2b: CPR samples with phyto/zoo counts
     mapgl::add_circle_layer(
       id             = "cpr_counts",
       source         = cpr_sf,
@@ -496,7 +518,7 @@ fProgressMap <- function(dat) {
       circle_radius  = 10,
       popup          = "popup_html"
     ) %>%
-    # Layer 5: Coastal stations (sea green, square-ish)
+    # Layer 5: Coastal stations (sea green) — hidden by default
     mapgl::add_circle_layer(
       id                  = "coastal_stations",
       source              = cs_sf,
@@ -505,7 +527,20 @@ fProgressMap <- function(dat) {
       circle_radius       = 8,
       circle_stroke_color = "#ffffff",
       circle_stroke_width = 2,
-      popup               = "popup_html"
+      popup               = "popup_html",
+      visibility          = "none"
+    ) %>%
+    # Layer 6: Animal Tracking receivers — hidden by default
+    mapgl::add_circle_layer(
+      id                  = "at_receivers",
+      source              = pkg.env$AT_receivers,
+      circle_color        = "#3B6E8F",
+      circle_opacity      = list("get", "point_opacity"),
+      circle_radius       = 7,
+      circle_stroke_color = "#ffffff",
+      circle_stroke_width = 1.5,
+      popup               = "popup_html",
+      visibility          = "none"
     ) %>%
     # Layer toggle control — custom checkbox panel (top-right).
     # Each add_control() call MUST have a unique id= or they overwrite each other
@@ -526,12 +561,18 @@ fProgressMap <- function(dat) {
         " onchange=\"var m=this.closest('.mapboxgl-map').map;",
         "m.setLayoutProperty('nrs_stations','visibility',this.checked?'visible':'none');\">",
         "National Reference Stations</label>",
-        # Coastal stations — checked by default
+        # Coastal stations — unchecked by default (hidden on initial render)
         "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;margin-bottom:2px;'>",
-        "<input type='checkbox' checked style='cursor:pointer;width:14px;height:14px;'",
+        "<input type='checkbox' style='cursor:pointer;width:14px;height:14px;'",
         " onchange=\"var m=this.closest('.mapboxgl-map').map;",
         "m.setLayoutProperty('coastal_stations','visibility',this.checked?'visible':'none');\">",
         "Coastal Stations</label>",
+        # Animal Tracking receivers — unchecked by default (hidden on initial render)
+        "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;margin-bottom:2px;'>",
+        "<input type='checkbox' style='cursor:pointer;width:14px;height:14px;'",
+        " onchange=\"var m=this.closest('.mapboxgl-map').map;",
+        "m.setLayoutProperty('at_receivers','visibility',this.checked?'visible':'none');\">",
+        "Animal Tracking Receivers</label>",
         # CPR phyto/zoo counts — checked by default
         "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;margin-bottom:2px;'>",
         "<input type='checkbox' checked style='cursor:pointer;width:14px;height:14px;'",
@@ -544,6 +585,13 @@ fProgressMap <- function(dat) {
         " onchange=\"var m=this.closest('.mapboxgl-map').map;",
         "m.setLayoutProperty('cpr_pci','visibility',this.checked?'visible':'none');\">",
         "CPR (PCI Only)</label>",
+        # IMCRA Bioregions — unchecked by default (hidden on initial render)
+        "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;margin-bottom:2px;'>",
+        "<input type='checkbox' style='cursor:pointer;width:14px;height:14px;'",
+        " onchange=\"var m=this.closest('.mapboxgl-map').map;",
+        "m.setLayoutProperty('imcra_fill','visibility',this.checked?'visible':'none');",
+        "m.setLayoutProperty('imcra_outline','visibility',this.checked?'visible':'none');\">",
+        "IMCRA Bioregions</label>",
         # Marine Bioregions — checked by default
         "<label style='display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;'>",
         "<input type='checkbox' checked style='cursor:pointer;width:14px;height:14px;'",
@@ -602,6 +650,18 @@ fProgressMap <- function(dat) {
           "<span style='display:inline-block;width:14px;height:14px;border-radius:50%;",
           "background:", cs_colour, ";flex-shrink:0;'></span>",
           "<span>Coastal Stations</span>",
+          "</div>",
+          # Animal Tracking Receivers entry: circle marker
+          "<div style='display:flex;align-items:center;gap:6px;margin-bottom:3px;'>",
+          "<span style='display:inline-block;width:14px;height:14px;border-radius:50%;",
+          "background:#3B6E8F;flex-shrink:0;'></span>",
+          "<span>Animal Tracking Receivers</span>",
+          "</div>",
+          # IMCRA Bioregions entry: square with black border, light fill
+          "<div style='display:flex;align-items:center;gap:6px;margin-bottom:3px;'>",
+          "<span style='display:inline-block;width:14px;height:14px;border-radius:2px;",
+          "background:rgba(0,0,0,0.05);border:1.5px solid #000000;flex-shrink:0;'></span>",
+          "<span>IMCRA Bioregions</span>",
           "</div>",
           bioregion_rows,
           "</div>"
