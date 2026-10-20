@@ -27,37 +27,41 @@ pkg.env <- new.env(parent = emptyenv())
                  "AT_individual_data", "AT_all_species", "AT_daily_summary")
 
   tryCatch({
-    # Access data from local server (fastest)
-    # The variable data.url is a string that is the url to the served data and is defined in a local config.rda file.
-    # If config.rda doesn't exist, this step results in an error that is then handled.
-    start_time <- Sys.time()
-    cat(file=stderr(), "Attempting to access data from Bowen\n")
-
     
-    thredds_url <- "https://data-cbr.it.csiro.au/thredds/fileServer/catch_all/imosboo/BOODataUpload/sysdata.rda"
+    # Access from GitHub
+    start_time <- Sys.time()
+    cat(file=stderr(), "Attempting to access data from GitHub\n")
+    
+    github_url <- "https://github.com/PlanktonTeam/BioOceanObserver/raw/refs/heads/main/R/sysdata.rda"
     tmp <- tempfile(fileext='.rda')
-    httr::GET(thredds_url, httr::write_disk(tmp))
+    httr::GET(github_url, httr::write_disk(tmp))
     load(tmp)
-    cat(file=stderr(), paste0("Up-to-date data accessed from Bowen\n"))
+    cat(file=stderr(), paste0("Up-to-date data accessed from GitHub\n"))
     pkg.env$new.data <- TRUE
+    
     
   }, error = function(e) {
     cat(file=stderr(), as.character(e))
     tryCatch({
-      # Access from GitHub
-      start_time <- Sys.time()
-      cat(file=stderr(), "Attempting to access data from GitHub\n")
       
-      github_url <- "https://github.com/PlanktonTeam/BioOceanObserver/raw/refs/heads/main/R/sysdata.rda"
+      # Access data from local server (fastest)
+      # The variable data.url is a string that is the url to the served data and is defined in a local config.rda file.
+      # If config.rda doesn't exist, this step results in an error that is then handled.
+      start_time <- Sys.time()
+      cat(file=stderr(), "Attempting to access data from Bowen\n")
+      
+      
+      thredds_url <- "https://data-cbr.it.csiro.au/thredds/fileServer/catch_all/imosboo/BOODataUpload/sysdata.rda"
       tmp <- tempfile(fileext='.rda')
-      httr::GET(github_url, httr::write_disk(tmp))
+      httr::GET(thredds_url, httr::write_disk(tmp))
       load(tmp)
-      cat(file=stderr(), paste0("Up-to-date data accessed from GitHub\n"))
-      pkg.env$new.data <- TRUE
+      cat(file=stderr(), paste0("Up-to-date data accessed from Bowen\n"))
+      pkg.env$new.data <- TRUE      
       
     }, error = function(e) {
       cat(file=stderr(), as.character(e))
       tryCatch({
+        
         # Access data from DAP (fallback)
         start_time <- Sys.time()
         cat(file=stderr(), "Attempting to access data from CSIRO DAP.\n")
@@ -73,6 +77,7 @@ pkg.env <- new.env(parent = emptyenv())
 
         
       }, error = function(e) {
+        
         # Warn that data is not up-to-date
         cat(file=stderr(), as.character(e))
         cat(file=stderr(), "Building the Biological Ocean Observer package using built in sysdata.rda. If this message appears when running the app, the data being served is not up-to-date.\n")
