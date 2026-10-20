@@ -1123,9 +1123,33 @@ table.dataTable tbody tr.selected:hover td {
   border: none !important;
 }
 
-/* Target specific content rows but preserve navbar/footer styling */
-.row:not(.navbar-header):not(.home-footer .row) {
+/* Target content rows in main panel area only — not navbar, footer, or sidebar */
+.tab-content .row,
+.main-panel .row,
+.col-sm-8 > .row,
+.col-sm-9 > .row {
   background-color: var(--neutral-2) !important;
+}
+
+/* Sidebar rows and columns must be transparent to show the .well background.
+   These rules must come after any generic .row rules to win on specificity. */
+.well .row,
+.well [class*="col-"] {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Explicit override for the sidebar variable+depth input rows.
+   The .sidebar-input-row class is added in fRelationSidebar() to each
+   fluidRow() containing a Variable and Depth selectize pair. Using a
+   dedicated class avoids CSS specificity battles with generic .row rules. */
+.sidebar-input-row,
+.sidebar-input-row [class*="col-"],
+.sidebar-input-row .shiny-input-container {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* ========================================
@@ -1366,6 +1390,31 @@ table.dataTable tbody tr.selected:hover td {
 .well .selectize-dropdown .option.active {
   background-color: var(--primary-1) !important;
   color: var(--text-3) !important;
+}
+
+/* ========================================
+   SELECTIZE OPTGROUP HEADERS
+   Applies to grouped selectize dropdowns (e.g. Relationships sidebar).
+   Headers are bold, slightly larger, and use the sidebar light-blue
+   background (--primary-5) so they visually separate the groups while
+   matching the overall sidebar colour scheme.
+   ======================================== */
+
+.selectize-dropdown .optgroup-header {
+  font-family: "Poppins", "Open Sans", sans-serif !important;
+  font-weight: var(--font-weight-semibold) !important;
+  font-size: var(--font-size-lg) !important;
+  background-color: var(--primary-4) !important;
+  color: var(--primary-2) !important;
+  padding: 5px 10px !important;
+  border-top: 1px solid var(--primary-4) !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* First optgroup header — no top border so it doesn't double-up with the
+   dropdown container border */
+.selectize-dropdown .optgroup:first-child .optgroup-header {
+  border-top: none !important;
 }
 
 /* ========================================

@@ -25,7 +25,8 @@ pkg.env <- new.env(parent = emptyenv())
                  "PSpNRSAccum", "PSpCPRAccum", "ZSpNRSAccum", "ZSpCPRAccum",
                  "col12", "ParamDef", "AusStatesSimple",
                  "AT_species_summary", "AT_receivers", "AT_station_species",
-                 "AT_individual_data", "AT_all_species", "AT_daily_summary")
+                 "AT_individual_data", "AT_all_species", "AT_daily_summary",
+                 "imcra")
 
   tryCatch({
     # Access data from local server (fastest)

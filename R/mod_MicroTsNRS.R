@@ -26,6 +26,10 @@ mod_MicroTsNRS_server <- function(id){
   moduleServer(id, function(input, output, session, NRSmts){
     
     # Sidebar ----------------------------------------------------------
+    # Month-aligned date bounds derived from the slider position
+    date_min <- reactive(lubridate::floor_date(input$DatesSlide[1], "month"))
+    date_max <- reactive(lubridate::ceiling_date(input$DatesSlide[2], "month") - lubridate::days(1))
+
     observeEvent(input$all, {
       if(input$all == TRUE){
         params <- planktonr:::pr_relabel(unique(pkg.env$datNRSm$Parameters), style = "simple", named = TRUE)
@@ -39,14 +43,14 @@ mod_MicroTsNRS_server <- function(id){
     selectedData <- reactive({
       req(input$site)
       
-      selectedData <- pkg.env$datNRSm %>% 
+      selectedData <- pkg.env$datNRSm %>%
         dplyr::filter(.data$StationName %in% input$site,
                       .data$Parameters %in% input$parameterm,
-                      dplyr::between(.data$SampleTime_Local, input$DatesSlide[1], input$DatesSlide[2])) %>%
-        droplevels() %>% 
+                      dplyr::between(.data$SampleTime_Local, date_min(), date_max())) %>%
+        droplevels() %>%
         dplyr::mutate(name = as.factor(.data$Parameters))
       
-    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$parameterm, input$site, date_min(), date_max())
     
     shiny::exportTestValues(
       MicroTs = {ncol(selectedData())},
@@ -124,7 +128,7 @@ mod_MicroTsNRS_server <- function(id){
         ggplot2::ggplot() + ggplot2::geom_blank()
       }
       
-    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    }) %>% bindCache(input$parameterm, input$site, date_min(), date_max(), input$scaler1)
     
     output$timeseries1 <- renderPlot({
       req(is.null(input$NRSmts) || input$NRSmts == "1")
@@ -167,7 +171,7 @@ mod_MicroTsNRS_server <- function(id){
         (p2 + p3 + patchwork::plot_layout(ncol = 2, guides = "collect") & ggplot2::theme(legend.position = "bottom")) #+
       # patchwork::plot_annotation(title = titleplot)
       
-    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$scaler1)
+    }) %>% bindCache(input$parameterm, input$site, date_min(), date_max(), input$scaler1)
     
     output$timeseries2 <- renderPlot({
       gg_out2()
@@ -186,7 +190,7 @@ mod_MicroTsNRS_server <- function(id){
         droplevels() %>%
         planktonr:::pr_reorder()
       
-    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2])
+    }) %>% bindCache(input$parameterm, input$site, date_min(), date_max())
     
     gg_out3 <- reactive({
       interp <- input$interp
@@ -197,7 +201,7 @@ mod_MicroTsNRS_server <- function(id){
         planktonr::pr_plot_NRSEnvContour(selectedDataDepth(), na.fill = FALSE)
       }
       
-    }) %>% bindCache(input$parameterm, input$site, input$DatesSlide[1], input$DatesSlide[2], input$interp)
+    }) %>% bindCache(input$parameterm, input$site, date_min(), date_max(), input$interp)
     
     output$timeseries3 <- renderPlot({
       gg_out3()

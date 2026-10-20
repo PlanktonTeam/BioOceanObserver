@@ -235,11 +235,14 @@ fPlanktonSidebar <- function(id, tabsetPanel_id, dat, dat1 = NULL){ # dat1 added
     shiny::conditionalPanel(
       condition = paste0("input['", id, "-", tabsetPanel_id, "'] <= 5"),
       shiny::HTML("<h3>Dates:</h3>"),
-      shiny::sliderInput(ns("DatesSlide"), 
-                         label = NULL, 
-                         min = min_date, 
-                         max = Sys.time(), 
-                         value = c(min_date, Sys.time()-1), timeFormat="%m-%Y")),
+      shiny::sliderInput(ns("DatesSlide"),
+                         label = NULL,
+                         min = lubridate::floor_date(as.Date(min_date), "month"),
+                         max = lubridate::floor_date(Sys.Date(), "month"),
+                         value = c(lubridate::floor_date(as.Date(min_date), "month"),
+                                   lubridate::floor_date(Sys.Date(), "month")),
+                         step = 28,
+                         timeFormat = "%m-%Y")),
     # Parameter selection for Microbes (tabs 1-3).
     # Wrapped in R-side if() so this block is only ever rendered inside a Micro
     # module's sidebar — no JS input.navbar guard needed or wanted.
@@ -556,8 +559,13 @@ fEnviroSidebar <- function(id, dat = NULL){
     if (id != "MoorBGC_ui_1"){
       shiny::tagList(
         shiny::HTML("<h3>Select dates:</h3>"),
-        sliderInput(ns("DatesSlide"), label = NULL, min = lubridate::ymd(20090101), max = Sys.Date(),
-                    value = c(lubridate::ymd(20090101), Sys.Date()-1), timeFormat="%m-%Y")
+        sliderInput(ns("DatesSlide"), label = NULL,
+                    min   = lubridate::floor_date(lubridate::ymd(20090101), "month"),
+                    max   = lubridate::floor_date(Sys.Date(), "month"),
+                    value = c(lubridate::floor_date(lubridate::ymd(20090101), "month"),
+                              lubridate::floor_date(Sys.Date(), "month")),
+                    step  = 28,
+                    timeFormat = "%m-%Y")
       )
     },
     
@@ -624,52 +632,106 @@ fEnviroPanel <- function(id){
 
 
 # Generic BOO relationships sidebar panel function
-#' 
+#'
+#' @param id          Module id string. Used to detect survey type (NRS/CPR/CS)
+#'                    and to namespace all inputs.
+#' @param tabsetPanel_id  Id of the navset_pill in the main panel. Used to
+#'                    conditionally show/hide sidebar controls.
+#' @param dat1        Primary biological dataset (Zooplankton for NRS/CPR,
+#'                    Microbes for CS). Used to derive site choices.
+#' @param dat2        Secondary biological dataset (Phytoplankton for NRS/CPR).
+#' @param dat3        Tertiary biological dataset (Microbes for NRS).
+#' @param dat4        Physical dataset (CTD for NRS, PolCPR for CPR).
+#' @param dat5        Chemical dataset (Nuts for NRS, CSChem for CS).
+#'
 #' @noRd
-fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ #dat 1-3 group data vars, dat4 physical, dat5 chemical params
+fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){
   ns <- NS(id)
-  
-  if(stringr::str_detect(id, "CS")){
-    ChoiceSite = unique(sort(dat1$State))
-    ChoicesGroupy = 'Microbes - Coastal'
-    ChoicesGroupx = 'Physical'
-    SelectedVar = 'GBR'
-    SelectedGroupy = 'Microbes - Coastal'
-    SelectedGroupx = 'Physical'
-    selectedParamy = 'Bacterial_Temperature_Index_KD'
-    selectedParamx = 'Temperature_degC'
-  } else if (stringr::str_detect(id, "NRS")){
-    ChoiceSite = unique(sort(dat1$StationName))
-    ChoicesGroupy = c("Zooplankton", "Phytoplankton", "Microbes - NRS", "Physical", "Chemical")
-    ChoicesGroupx = c("Zooplankton", "Phytoplankton", "Microbes - NRS", "Physical", "Chemical")
-    SelectedVar = 'Maria Island'
-    SelectedGroupy = 'Zooplankton'
-    SelectedGroupx = 'Physical'
-    selectedParamy = 'Biomass_mgm3'
-    selectedParamx = 'CTD_Temperature_degC'
-  } else if (stringr::str_detect(id, "CPR")){
-    ChoiceSite = unique(sort(dat1$BioRegion))
-    ChoicesGroupy = c("Zooplankton", "Phytoplankton", "Physical")
-    ChoicesGroupx = c("Zooplankton", "Phytoplankton", "Physical")
-    SelectedVar = 'Temperate East'
-    SelectedGroupy = 'Zooplankton'
-    SelectedGroupx = 'Physical'
-    selectedParamy = 'BiomassIndex_mgm3'
-    selectedParamx = 'SST'
+
+  # ── Site choices ────────────────────────────────────────────────────────────
+  if (stringr::str_detect(id, "CS")) {
+    ChoiceSite   <- unique(sort(dat1$State))
+    SelectedSite <- "GBR"
+  } else if (stringr::str_detect(id, "NRS")) {
+    ChoiceSite   <- unique(sort(dat1$StationName))
+    SelectedSite <- "Maria Island"
+  } else if (stringr::str_detect(id, "CPR")) {
+    ChoiceSite   <- unique(sort(dat1$BioRegion))
+    SelectedSite <- "Temperate East"
   }
-  
-  
+
+  # ── NRS: build initial grouped variable choices ──────────────────────────
+  # The full grouped list is rebuilt reactively in the server when input$all
+  # changes. Here we supply only the default selections so the UI renders
+  # immediately without waiting for the server observer to fire.
+  if (stringr::str_detect(id, "NRS")) {
+    selectedParamy <- "Biomass_mgm3"
+    selectedParamx <- "CTD_Temperature_degC"
+
+    # Initial grouped choices (key microbial parameters only; server updates
+    # this list reactively when input$all changes).
+    initialChoicesy <- list(
+      "Zooplankton"   = planktonr:::pr_relabel(unique(dat1$Parameters), style = "simple", named = TRUE),
+      "Phytoplankton" = planktonr:::pr_relabel(unique(dat2$Parameters), style = "simple", named = TRUE),
+      "Microbes"      = planktonr:::pr_relabel(
+        unique(dat3$Parameters[grepl("Temperature_Index_KD|Abund|gene|ASV", dat3$Parameters)]),
+        style = "simple", named = TRUE),
+      "Physical"      = planktonr:::pr_relabel(unique(dat4$Parameters), style = "simple", named = TRUE),
+      "Chemical"      = planktonr:::pr_relabel(unique(dat5$Parameters), style = "simple", named = TRUE)
+    )
+    initialChoicesx <- initialChoicesy  # same grouped list for both axes
+  }
+
+  # ── CPR: build initial grouped variable choices ──────────────────────────
+  if (stringr::str_detect(id, "CPR")) {
+    selectedParamy <- "BiomassIndex_mgm3"
+    selectedParamx <- "SST"
+    initialChoicesy <- list(
+      "Zooplankton"   = planktonr:::pr_relabel(unique(dat1$Parameters), style = "simple", named = TRUE),
+      "Phytoplankton" = planktonr:::pr_relabel(unique(dat2$Parameters), style = "simple", named = TRUE),
+      "Physical"      = planktonr:::pr_relabel(
+        unique(dat4$Parameters[dat4$Parameters %in% c("SST", "chl_oc3")]),
+        style = "simple", named = TRUE)
+    )
+    initialChoicesx <- initialChoicesy
+  }
+
+  # ── CS: build initial grouped variable choices ───────────────────────────
+  # dat1 = datCSm (Microbes), dat2 = CSChem (Chemistry)
+  if (stringr::str_detect(id, "CS")) {
+    selectedParamy <- "Bacterial_Temperature_Index_KD"
+    selectedParamx <- "Temperature_degC"
+    initialChoicesy <- list(
+      "Microbes"  = planktonr:::pr_relabel(
+        unique(dat1$Parameters[grepl("Temperature_Index_KD|Abund|gene|ASV", dat1$Parameters)]),
+        style = "simple", named = TRUE),
+      "Chemical"  = planktonr:::pr_relabel(unique(dat2$Parameters), style = "simple", named = TRUE)
+    )
+    initialChoicesx <- list(
+      "Microbes"  = planktonr:::pr_relabel(
+        unique(dat1$Parameters[grepl("Temperature_Index_KD|Abund|gene|ASV", dat1$Parameters)]),
+        style = "simple", named = TRUE),
+      "Chemical"  = planktonr:::pr_relabel(unique(dat2$Parameters), style = "simple", named = TRUE)
+    )
+  }
+
+  # ── Sidebar layout ───────────────────────────────────────────────────────
   shiny::sidebarPanel(
+    tags$head(tags$style(shiny::HTML(
+      # Allow selectize dropdowns to overflow their container
+      ".shiny-split-layout > div {overflow: visible;}"
+    ))),
     shiny::conditionalPanel(
-      tags$head(tags$style(HTML("
-                              .shiny-split-layout > div {overflow: visible;}
-                                    "))),
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == null || input['", id, "-", tabsetPanel_id, "'] <= 2"),
-      
-      # Use plotlyOutput for NRS/CS (interactive points), plotOutput for CPR (static polygons)
-      if(stringr::str_detect(id, "CPR")) {
+      condition = paste0(
+        "input['", id, "-", tabsetPanel_id, "'] == null || ",
+        "input['", id, "-", tabsetPanel_id, "'] <= 2"
+      ),
+
+      # Map
+      if (stringr::str_detect(id, "CPR")) {
         shiny::tagList(
-          shiny::p("Note: There is very little data in the North and North-west regions", class = "small-text"),
+          shiny::p("Note: There is very little data in the North and North-west regions",
+                   class = "small-text"),
           mapgl::mapboxglOutput(ns("plotmap"), height = "400px")
         )
       } else {
@@ -678,38 +740,130 @@ fRelationSidebar <- function(id, tabsetPanel_id, dat1, dat2, dat3, dat4, dat5){ 
           mapgl::mapboxglOutput(ns("plotmap"), height = "400px")
         )
       },
-      # shiny::p("Note: Hover cursor over circles for station name", class = "small-text"),
-      # plotly::plotlyOutput(ns("plotmap"), height = "auto"),   
+
+      # Station selector
       shiny::HTML("<h3>Select a station:</h3>"),
-      shiny::fluidRow(class = "row_multicol",
-                      tags$div(align = "left",
-                               class = "multicol",
-                               shiny::checkboxGroupInput(inputId = ns("site"), label = NULL,
-                                                         choices = ChoiceSite, selected = SelectedVar))),
-      shiny::HTML("<h4>Select a group & variable for the y axis:</h4>"),
-      shiny::splitLayout(
-        shiny::selectizeInput(inputId = ns('groupy'), label = NULL, choices = ChoicesGroupy,
-                              selected = SelectedGroupy),
-        shiny::selectizeInput(inputId = ns('py'), label = NULL, choices = selectedParamy, selected = selectedParamy)
-        
-      ),
-      shiny::htmlOutput(ns("ParamDefy")),
-      shiny::checkboxInput(inputId = ns("all"), 
-                           label = "Tick for more microbial parameters", 
-                           value = FALSE),
-    ),    
+      shiny::fluidRow(
+        class = "row_multicol",
+        tags$div(
+          align = "left",
+          class = "multicol",
+          shiny::checkboxGroupInput(
+            inputId  = ns("site"),
+            label    = NULL,
+            choices  = ChoiceSite,
+            selected = SelectedSite
+          )
+        )
+      )
+    ),
+
     shiny::conditionalPanel(
-      condition = paste0("input['", id, "-", tabsetPanel_id, "'] == null || input['", id, "-", tabsetPanel_id, "'] == 1"),
-      shiny::HTML("<h4>Select a group & variable for the x axis:</h4>"),
-      shiny::splitLayout(
-        shiny::selectizeInput(inputId = ns('groupx'), label = NULL, choices = ChoicesGroupx,
-                              selected = SelectedGroupx),
-        shiny::selectizeInput(inputId = ns('px'), label = NULL, choices = selectedParamx, selected = selectedParamx)
+      condition = paste0(
+        "input['", id, "-", tabsetPanel_id, "'] == null || ",
+        "input['", id, "-", tabsetPanel_id, "'] == 1"
       ),
+
+      # ── X axis: variable + optional depth ───────────────────────────────
+      # Depth dropdown is shown for NRS and CS (both have depth-resolved data).
+      # CPR is towed at ~7 m so no depth selection is needed.
+      shiny::HTML("<h4>Configure X Data</h4>"),
+      if (stringr::str_detect(id, "NRS|CS")) {
+        shiny::fluidRow(
+          class = "sidebar-input-row",
+          shiny::column(7,
+            shiny::selectizeInput(
+              inputId  = ns("px"),
+              label    = shiny::strong("Variable:"),
+              choices  = initialChoicesx,
+              selected = selectedParamx,
+              width    = "100%"
+            )
+          ),
+          shiny::column(5,
+            shiny::selectizeInput(
+              inputId  = ns("depthx"),
+              label    = shiny::strong("Depth:"),
+              choices  = "Depth Integrated",
+              selected = "Depth Integrated",
+              width    = "100%"
+            )
+          )
+        )
+      } else {
+        shiny::fluidRow(
+          class = "sidebar-input-row",
+          shiny::column(12,
+            shiny::selectizeInput(
+              inputId  = ns("px"),
+              label    = shiny::strong("Variable:"),
+              choices  = initialChoicesx,
+              selected = selectedParamx,
+              width    = "100%"
+            )
+          )
+        )
+      },
       shiny::htmlOutput(ns("ParamDefx")),
+
+      # ── Y axis: variable + optional depth ───────────────────────────────
+      shiny::HTML("<h4>Configure Y Data</h4>"),
+      if (stringr::str_detect(id, "NRS|CS")) {
+        shiny::fluidRow(
+          class = "sidebar-input-row",
+          shiny::column(7,
+            shiny::selectizeInput(
+              inputId  = ns("py"),
+              label    = shiny::strong("Variable:"),
+              choices  = initialChoicesy,
+              selected = selectedParamy,
+              width    = "100%"
+            )
+          ),
+          shiny::column(5,
+            shiny::selectizeInput(
+              inputId  = ns("depthy"),
+              label    = shiny::strong("Depth:"),
+              choices  = "Depth Integrated",
+              selected = "Depth Integrated",
+              width    = "100%"
+            )
+          )
+        )
+      } else {
+        shiny::fluidRow(
+          class = "sidebar-input-row",
+          shiny::column(12,
+            shiny::selectizeInput(
+              inputId  = ns("py"),
+              label    = shiny::strong("Variable:"),
+              choices  = initialChoicesy,
+              selected = selectedParamy,
+              width    = "100%"
+            )
+          )
+        )
+      },
+      shiny::htmlOutput(ns("ParamDefy")),
+
+      # "More microbial parameters" checkbox — NRS and CS only (both have
+      # microbial data with depth; CPR does not include microbes).
+      if (stringr::str_detect(id, "NRS|CS")) {
+        shiny::checkboxInput(
+          inputId = ns("all"),
+          label   = "Tick for more microbial parameters",
+          value   = FALSE
+        )
+      },
+
+      # Trend line selector
       shiny::HTML("<h3>Overlay trend line?</h3>"),
-      shiny::selectizeInput(inputId = ns("smoother"), label = NULL, 
-                            choices = c("Smoother", "Linear", "None"), selected = "None")
+      shiny::selectizeInput(
+        inputId  = ns("smoother"),
+        label    = NULL,
+        choices  = c("Smoother", "Linear", "None"),
+        selected = "Linear"
+      )
     )
   )
 }
