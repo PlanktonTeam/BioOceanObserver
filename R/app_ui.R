@@ -138,8 +138,10 @@ app_ui <- function(request) {
     # ── 6. Case Studies ──────────────────────────────────────────
     bslib::nav_menu(
       title = "Case Studies",
-      bslib::nav_panel("Case Study 1",
-        shiny::tagList(section_banner("Case Study 1"), mod_Case1_ui("Case1_1"))
+      bslib::nav_panel(
+        shiny::HTML("<i>Noctiluca</i> in South East Australia"),
+        shiny::tagList(section_banner(shiny::HTML("<i>Noctiluca</i> in South East Australia")), 
+        mod_Case1_ui("Case1_1"))
       )
     ),
 
