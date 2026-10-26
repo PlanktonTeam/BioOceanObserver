@@ -61,6 +61,7 @@ app_server <- function( input, output, session ) {
   mod_ZooTsNRS_server("ZooTsNRS_ui_1")
   mod_ZooTsCPR_server("ZooTsCPR_ui_1")
   mod_ZooSpatial_server("ZooSpatial_ui_1")
+  mod_ZooBiomass_server("ZooBiomass_1")
 
   # ── Biology: Larval Fish ──────────────────────────────────────
   mod_LFishSpatial_server("LFishSpatial_1")

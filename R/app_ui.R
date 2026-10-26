@@ -79,7 +79,8 @@ app_ui <- function(request) {
           bslib::navset_pill(id = "zoo",
             bslib::nav_panel("NRS Time Series",    value = "zts",    mod_ZooTsNRS_ui("ZooTsNRS_ui_1")),
             bslib::nav_panel("CPR Time Series",    value = "ztscpr", mod_ZooTsCPR_ui("ZooTsCPR_ui_1")),
-            bslib::nav_panel("Species Information",value = "dist",   mod_ZooSpatial_ui("ZooSpatial_ui_1"))
+            bslib::nav_panel("Species Information",value = "dist",   mod_ZooSpatial_ui("ZooSpatial_ui_1")),
+            bslib::nav_panel("Biomass Maps",      value = "zbio",   mod_ZooBiomass_ui("ZooBiomass_1"))
           )
         )
       ),

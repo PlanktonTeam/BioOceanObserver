@@ -409,6 +409,18 @@ choicespHAB  <- planktonr:::pr_relabel(c("NoPhytoSpecies_Sample", "PhytoAbundanc
 
 AusStatesSimple <- readRDS("data-raw/aus_states_simplified.rds")
 
+# Zooplankton Biomass GLM raster (12-layer monthly SpatRaster) ----
+# Reprojected to EPSG:3857 (Web Mercator) so pixel cells align correctly with
+# the Mapbox GL map, which renders in Web Mercator regardless of the declared
+# projection. bilinear interpolation preserves continuous biomass values.
+
+ZooBiomass <- terra::rast("data-raw/ZooBiomass/Biomass_m13_monthly_200307_201606.tif")
+names(ZooBiomass) <- month.abb  # Jan, Feb, ..., Dec
+ZooBiomass <- terra::project(ZooBiomass, "EPSG:3857", method = "bilinear")
+names(ZooBiomass) <- month.abb  # terra::project() drops layer names; re-apply
+ZooBiomass_packed <- terra::wrap(ZooBiomass)
+rm(ZooBiomass)
+
 
 # Animal Tracking ----
 
@@ -526,6 +538,6 @@ usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   ParamDef, col12, modified_time, AusStatesSimple,
                   AT_species_summary, AT_receivers, AT_station_species,
                   AT_individual_data, AT_all_species, AT_daily_summary,
-                  imcra,
+                  imcra, ZooBiomass_packed,
                   overwrite = TRUE, internal = TRUE)
 

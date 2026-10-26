@@ -25,7 +25,8 @@ pkg.env <- new.env(parent = emptyenv())
                  "col12", "ParamDef", "AusStatesSimple",
                  "AT_species_summary", "AT_receivers", "AT_station_species",
                  "AT_individual_data", "AT_all_species", "AT_daily_summary",
-                 "imcra")
+                 "imcra",
+                 "ZooBiomass_packed")
 
   tryCatch({
     
@@ -93,6 +94,10 @@ pkg.env <- new.env(parent = emptyenv())
   for (currVar in data.vars) {
     pkg.env[[currVar]] <- get(currVar)
   }
+
+  # Unwrap the packed SpatRaster — terra::wrap() is needed for .rda serialisation;
+  # terra::unwrap() restores the live C++ object at runtime.
+  pkg.env$ZooBiomass <- terra::unwrap(pkg.env$ZooBiomass_packed)
 }
 
 
