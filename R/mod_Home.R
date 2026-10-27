@@ -41,7 +41,7 @@ mod_home_ui <- function(id){
                                shiny::br(),
                                shiny::HTML("The major categories of data we provide within the app are found across the top bar, and include
                                  microbial, phytoplankton, zooplankton, larval fish and environment (chemical) parameters. The
-                                 <strong>Environmental Reporting</strong> section includes summary data that may be useful as data overviews
+                                 Environmental Reporting section includes summary data that may be useful as data overviews
                                  for managers and policy makers. Within each section, the data is often designated by sampling regime,
                                  which is generally the
                                  <a href = 'https://imos.org.au/facilities/nationalmooringnetwork/nrs', target = '_blank'> National Reference Stations (NRS)</a>

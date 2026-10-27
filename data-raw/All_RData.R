@@ -410,16 +410,29 @@ choicespHAB  <- planktonr:::pr_relabel(c("NoPhytoSpecies_Sample", "PhytoAbundanc
 AusStatesSimple <- readRDS("data-raw/aus_states_simplified.rds")
 
 # Zooplankton Biomass GLM raster (12-layer monthly SpatRaster) ----
+# Written to inst/extdata/ as a compressed GeoTIFF rather than packed into
+# sysdata.rda, keeping the .rda file under the GitHub 100 MB limit.
+# Float32 (FLT4S, 4 bytes/pixel) provides ~7 significant figures — more than
+# sufficient for biomass values in mg m-3. DEFLATE + PREDICTOR=2 compresses
+# floating-point data efficiently; TILED=YES improves read performance.
 # Reprojected to EPSG:3857 (Web Mercator) so pixel cells align correctly with
-# the Mapbox GL map, which renders in Web Mercator regardless of the declared
-# projection. bilinear interpolation preserves continuous biomass values.
+# the Mapbox GL map. bilinear interpolation preserves continuous biomass values.
 
 ZooBiomass <- terra::rast("data-raw/ZooBiomass/Biomass_m13_monthly_200307_201606.tif")
 names(ZooBiomass) <- month.abb  # Jan, Feb, ..., Dec
 ZooBiomass <- terra::project(ZooBiomass, "EPSG:3857", method = "bilinear")
 names(ZooBiomass) <- month.abb  # terra::project() drops layer names; re-apply
-ZooBiomass_packed <- terra::wrap(ZooBiomass)
+
+dir.create("inst/extdata", recursive = TRUE, showWarnings = FALSE)
+terra::writeRaster(
+  ZooBiomass,
+  "inst/extdata/ZooBiomass_3857.tif",
+  overwrite = TRUE,
+  datatype  = "FLT4S",                            # Float32 — halves raw size vs Float64
+  gdal      = c("COMPRESS=DEFLATE", "PREDICTOR=2", "TILED=YES")
+)
 rm(ZooBiomass)
+# ZooBiomass_packed is no longer created — removed from use_data() call below
 
 
 # Animal Tracking ----
@@ -538,6 +551,6 @@ usethis::use_data(Nuts, Pigs, Pico, ctd, CSChem,
                   ParamDef, col12, modified_time, AusStatesSimple,
                   AT_species_summary, AT_receivers, AT_station_species,
                   AT_individual_data, AT_all_species, AT_daily_summary,
-                  imcra, ZooBiomass_packed,
+                  imcra,
                   overwrite = TRUE, internal = TRUE)
 

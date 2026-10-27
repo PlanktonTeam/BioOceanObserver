@@ -3,7 +3,7 @@
 #' @description Shiny module for visualising the Australian zooplankton biomass
 #' generalised linear model output. Renders a full-width Mapbox GL map with a
 #' 12-layer monthly SpatRaster (mg m-3) overlaid as a colourised PNG image
-#' source. A floating month selector and global/monthly range toggle sit
+#' source. A floating month selector and annual/monthly range toggle sit
 #' top-left; a viridis colourbar legend sits bottom-left; a download button
 #' allows the user to save the currently visible layer as a GeoTIFF.
 #'
@@ -35,7 +35,7 @@ mod_ZooBiomass_ui <- function(id) {
       class = "zb-map-container",
 
       # Full-width Mapbox map ------------------------------------------------
-      mapgl::mapboxglOutput(ns("map"), width = "100%", height = "calc(100vh - 160px)"),
+      mapgl::mapboxglOutput(ns("map"), width = "100%", height = "calc(100vh - 230px)"),
 
       # Month selector + range toggle — floating panel top-left --------------
       shiny::tags$div(
@@ -51,8 +51,8 @@ mod_ZooBiomass_ui <- function(id) {
         shiny::radioButtons(
           inputId  = ns("range_type"),
           label    = NULL,
-          choices  = c("Global", "Monthly"),
-          selected = "Global",
+          choices  = c("Annual", "Monthly"),
+          selected = "Annual",
           inline   = TRUE
         ),
         # Download button sits inside the filter panel for compactness
@@ -84,11 +84,17 @@ mod_ZooBiomass_server <- function(id) {
 
     rast_all <- pkg.env$ZooBiomass  # 12-layer SpatRaster, names = month.abb
 
-    # ── Pre-compute global 10th/90th percentile (all 12 layers) ───────────
-    # Computed once at module startup; used when range_type == "Global".
-    global_vals  <- terra::values(rast_all, na.rm = TRUE)
-    global_range <- stats::quantile(global_vals, probs = c(0.10, 0.90),
-                                    na.rm = TRUE)
+    # ── Annual 10th/90th percentile (all 12 layers) ───────────────────────
+    # Wrapped in a reactive so terra::values() — which reads all pixel data
+    # into RAM — is deferred until the user first visits this tab (i.e. until
+    # input$month is first available). shiny::reactive() caches the result so
+    # it is computed only once per session regardless of how many times it is
+    # subsequently referenced.
+    annual_range <- shiny::reactive({
+      shiny::req(input$month)  # fires only after the tab is first rendered
+      vals <- terra::values(rast_all, na.rm = TRUE)
+      stats::quantile(vals, probs = c(0.10, 0.90), na.rm = TRUE)
+    })
 
     # ── Bounding box corners for add_image_source ──────────────────────────
     # The raster is stored in EPSG:3857 (Web Mercator). Mapbox GL expects
@@ -127,8 +133,8 @@ mod_ZooBiomass_server <- function(id) {
     # ── Reactive: active value range (10th/90th percentile) ───────────────
     active_range <- shiny::reactive({
       shiny::req(input$range_type)
-      if (input$range_type == "Global") {
-        global_range
+      if (input$range_type == "Annual") {
+        annual_range()  # annual_range is now a reactive; call it to get the value
       } else {
         # Monthly: recompute for the selected layer only
         vals <- terra::values(selected_layer(), na.rm = TRUE)
@@ -226,7 +232,7 @@ mod_ZooBiomass_server <- function(id) {
         mapgl::add_raster_layer(
           id             = "biomass_layer",
           source         = "biomass",
-          raster_opacity = 0.85
+          raster_opacity = 0.7
         )
     })
 
