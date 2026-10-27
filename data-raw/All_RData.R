@@ -80,7 +80,8 @@ datNRSp <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Phytoplankton")
 SOTSp <- planktonr::pr_get_Indices(Survey = "SOTS", Type = "Phytoplankton")
 
 # Pre-combined NRS + SOTS phytoplankton dataset (avoids repeated bind_rows() inside reactives)
-datNRSp_all <- dplyr::bind_rows(datNRSp, SOTSp)
+datNRSp_all <- dplyr::bind_rows(datNRSp, SOTSp) %>% 
+  planktonr:::pr_reorder()
 
 datNRSm <- planktonr::pr_get_data(Survey = "NRS", Type = "Microbes") %>% 
   tidyr::drop_na() ## NRS microbial data
