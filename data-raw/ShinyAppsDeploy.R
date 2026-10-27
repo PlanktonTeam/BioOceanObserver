@@ -1,6 +1,4 @@
 
-# First reinstall spatialplanr from github
-# remotes::install_github('spatialplanning/spatialplanr')
 
 library(tidyverse)
 

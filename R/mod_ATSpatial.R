@@ -30,7 +30,7 @@ mod_ATSpatial_ui <- function(id) {
       class = "at-map-container",
 
       # Full-width Mapbox map -------------------------------------------------
-      mapgl::mapboxglOutput(ns("map"), width = "100%", height = "calc(100vh - 115px)"),
+      mapgl::mapboxglOutput(ns("map"), width = "100%", height = "calc(100vh - 230px)"),
 
       # Species filter — floating panel top-left ------------------------------
       shiny::tags$div(

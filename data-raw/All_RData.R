@@ -80,7 +80,8 @@ datNRSp <- planktonr::pr_get_Indices(Survey = "NRS", Type = "Phytoplankton")
 SOTSp <- planktonr::pr_get_Indices(Survey = "SOTS", Type = "Phytoplankton")
 
 # Pre-combined NRS + SOTS phytoplankton dataset (avoids repeated bind_rows() inside reactives)
-datNRSp_all <- dplyr::bind_rows(datNRSp, SOTSp)
+datNRSp_all <- dplyr::bind_rows(datNRSp, SOTSp) %>% 
+  planktonr:::pr_reorder()
 
 datNRSm <- planktonr::pr_get_data(Survey = "NRS", Type = "Microbes") %>% 
   tidyr::drop_na() ## NRS microbial data
@@ -408,6 +409,31 @@ choicespHAB  <- planktonr:::pr_relabel(c("NoPhytoSpecies_Sample", "PhytoAbundanc
                                         style = "simple", named = TRUE)
 
 AusStatesSimple <- readRDS("data-raw/aus_states_simplified.rds")
+
+# Zooplankton Biomass GLM raster (12-layer monthly SpatRaster) ----
+# Written to inst/extdata/ as a compressed GeoTIFF rather than packed into
+# sysdata.rda, keeping the .rda file under the GitHub 100 MB limit.
+# Float32 (FLT4S, 4 bytes/pixel) provides ~7 significant figures — more than
+# sufficient for biomass values in mg m-3. DEFLATE + PREDICTOR=2 compresses
+# floating-point data efficiently; TILED=YES improves read performance.
+# Reprojected to EPSG:3857 (Web Mercator) so pixel cells align correctly with
+# the Mapbox GL map. bilinear interpolation preserves continuous biomass values.
+
+ZooBiomass <- terra::rast("data-raw/ZooBiomass/Biomass_m13_monthly_200307_201606.tif")
+names(ZooBiomass) <- month.abb  # Jan, Feb, ..., Dec
+ZooBiomass <- terra::project(ZooBiomass, "EPSG:3857", method = "bilinear")
+names(ZooBiomass) <- month.abb  # terra::project() drops layer names; re-apply
+
+dir.create("inst/extdata", recursive = TRUE, showWarnings = FALSE)
+terra::writeRaster(
+  ZooBiomass,
+  "inst/extdata/ZooBiomass_3857.tif",
+  overwrite = TRUE,
+  datatype  = "FLT4S",                            # Float32 — halves raw size vs Float64
+  gdal      = c("COMPRESS=DEFLATE", "PREDICTOR=2", "TILED=YES")
+)
+rm(ZooBiomass)
+# ZooBiomass_packed is no longer created — removed from use_data() call below
 
 
 # Animal Tracking ----

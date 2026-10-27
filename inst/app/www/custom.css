@@ -2368,3 +2368,108 @@ nav[class*="navbar"],
   overflow: visible !important;
 }
 
+/* ========================================
+   ZOO BIOMASS SPATIAL MODULE
+   ======================================== */
+
+/* Full-screen map container — mirrors .at-map-container */
+.zb-map-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ---- Month selector + range toggle panel (top-left floating) ----------- */
+.zb-month-filter {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 10px 14px 8px 14px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  min-width: 160px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Shared legend/panel title style */
+.zb-legend-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-2);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Compact selectize inside the month filter */
+.zb-month-filter .selectize-control {
+  margin-bottom: 6px;
+}
+
+.zb-month-filter .selectize-input {
+  font-size: var(--font-size-base) !important;
+  padding: 4px 8px !important;
+  min-height: 30px !important;
+}
+
+.zb-month-filter .selectize-dropdown {
+  font-size: var(--font-size-base) !important;
+}
+
+/* Compact radio buttons inside the month filter */
+.zb-month-filter .shiny-input-radiogroup label {
+  font-size: var(--font-size-base);
+  font-weight: normal;
+  margin-bottom: 0;
+}
+
+.zb-month-filter .radio-inline {
+  margin-right: 8px;
+}
+
+/* Download button inside the filter panel */
+.zb-download-btn {
+  margin-top: 8px;
+  width: 100%;
+  font-size: var(--font-size-base) !important;
+}
+
+/* ---- Colourbar legend (bottom-left floating) --------------------------- */
+.zb-legend {
+  position: absolute;
+  bottom: 30px;
+  left: 10px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  min-width: 190px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Viridis gradient bar */
+.zb-legend-bar {
+  width: 100%;
+  height: 14px;
+  border-radius: 3px;
+  margin: 6px 0 2px 0;
+  background: linear-gradient(
+    to right,
+    #440154 0%,
+    #31688e 33%,
+    #35b779 66%,
+    #fde725 100%
+  );
+}
+
+/* Min / max labels below the gradient bar */
+.zb-legend-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #595959;
+}
+

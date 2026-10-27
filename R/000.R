@@ -93,6 +93,23 @@ pkg.env <- new.env(parent = emptyenv())
   for (currVar in data.vars) {
     pkg.env[[currVar]] <- get(currVar)
   }
+
+  # Open the ZooBiomass GeoTIFF lazily — terra::rast() on a file path reads only
+  # metadata (dimensions, CRS, extent, layer names) and memory-maps the file.
+  # No pixel data is loaded until the ZooBiomass module is first used.
+  # system.file() works in installed packages; the inst/ fallback covers dev
+  # (load_all) where the package is not installed and system.file() returns "".
+  tif_path <- system.file("extdata", "ZooBiomass_3857.tif", package = pkgname)
+  if (!nzchar(tif_path)) {
+    # Dev / load_all fallback: resolve relative to the package source root
+    tif_path <- file.path(golem::pkg_path(), "inst", "extdata", "ZooBiomass_3857.tif")
+  }
+  if (file.exists(tif_path)) {
+    pkg.env$ZooBiomass <- terra::rast(tif_path)
+    names(pkg.env$ZooBiomass) <- month.abb
+  } else {
+    pkg.env$ZooBiomass <- NULL
+  }
 }
 
 
