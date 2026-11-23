@@ -1,3 +1,52 @@
+#' Get images and captions for a case study
+#' @param case_id Character or numeric identifier for the case study (e.g. "case1", "case2")
+#' @return A list with imagesList and captionsList
+fImagesCaptions <- function(case_id) {
+  switch(
+    as.character(case_id),
+    "Noctiluca" = list(
+      imagesList = c(
+        "www/Noctiluca/Picture1.png",
+        "www/Noctiluca/Picture2.png",
+        "www/Noctiluca/Picture3.png",
+        "www/Noctiluca/Picture4.png"
+      ),
+      captionsList = list(
+        tagList("Figure 1: A ", tags$i("Noctiluca"), "cell"),
+        tagList(
+          "Figure 2: Showing the changing range of ",
+          tags$i("Noctiluca")
+        ),
+        tagList("Figure 3: Increasing abundance at Maria Island"),
+        tagList(
+          "Figure 4: Model output showing dependence on food availability"
+        )
+      )
+    ),
+    "Tricho" = list(
+      imagesList = c(
+        "www/Tricho/Picture1.png",
+        "www/Tricho/Picture2.png",
+        "www/Tricho/Picture3.png",
+        "www/Tricho/Picture4.png"
+      ),
+      captionsList = list(
+        tagList("Figure 1: A bundle of ", tags$i("Trichodesmium"), "cells"),
+        tagList(
+          "Figure 2: Showing the changing range of ",
+          tags$i("Trichodesmium")
+        ),
+        tagList("Figure 3: Increasing abundance at Maria Island"),
+        tagList(
+          "Figure 4: Model output showing dependence on food availability"
+        )
+      )
+    ),
+    # Add more cases as needed
+    stop("Unknown case_id")
+  )
+}
+
 #' Create a scrollable image box for case studies
 #' @param images A character vector of image paths
 #' @param captions A character vector of captions (same length as images)
@@ -37,7 +86,8 @@ fShowImageGallery <- function(
     title = NULL,
     size = "l",
     easyClose = TRUE,
-tags$style(HTML("
+    tags$style(HTML(
+      "
   .modal-dialog .modal-content .modal-header {
     display: none !important;
     background: transparent !important;
@@ -48,7 +98,8 @@ tags$style(HTML("
     padding: 0 !important;
     margin: 0 !important;
   }
-")),
+"
+    )),
     tags$div(
       style = paste(
         "display: flex;",

@@ -7,26 +7,16 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-imagesList <- c(
-  "www/Tricho/Picture1.png",
-  "www/Tricho/Picture2.png",
-  "www/Tricho/Picture3.png",
-  "www/Tricho/Picture4.png"
-)
-captionsList <- list(
-  tagList("Figure 1: A bundle of ", tags$i("Trichodesmium"), "cells"),
-  tagList("Figure 2: Showing the changing range of ", tags$i("Trichodesmium")),
-  tagList("Figure 3: Increasing abundance at Maria Island"),
-  tagList("Figure 4: Model output showing dependence on food availability")
-)
 
 mod_Case2_ui <- function(id) {
   ns <- NS(id)
+  case_data <- fImagesCaptions("Tricho")
+  imagesList <- case_data$imagesList
+  captionsList <- case_data$captionsList
   tagList(
     shiny::fluidPage(
       tags$div(
         style = "padding: 10px; line-height: 1.6; font-size: 16px; color: #333;",
-        #fCaseHeader(tagList("Case Study 1: ", tags$i("Trichodesmium"))),
         tags$div(
           #style = "display: flex; gap: 10px; width: 100%;",
           actionButton(

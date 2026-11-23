@@ -7,21 +7,12 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-imagesList <- c(
-  "www/Noctiluca/Picture1.png",
-  "www/Noctiluca/Picture2.png",
-  "www/Noctiluca/Picture3.png",
-  "www/Noctiluca/Picture4.png"
-)
-captionsList <- list(
-  tagList("Figure 1: A ", tags$i("Noctiluca"), "cell"),
-  tagList("Figure 2: Showing the changing range of ", tags$i("Noctiluca")),
-  tagList("Figure 3: Increasing abundance at Maria Island"),
-  tagList("Figure 4: Model output showing dependence on food availability")
-)
 
 mod_Case1_ui <- function(id) {
   ns <- NS(id)
+  case_data <- fImagesCaptions("Noctiluca")
+  imagesList <- case_data$imagesList
+  captionsList <- case_data$captionsList
   tagList(
     shiny::fluidPage(
       tags$div(
