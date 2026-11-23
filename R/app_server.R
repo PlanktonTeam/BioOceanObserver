@@ -85,4 +85,5 @@ app_server <- function( input, output, session ) {
 
   # ── Case Studies ──────────────────────────────────────────────
   mod_Case1_server("Case1_1")
+  mod_Case2_server("Case2_1")
 }

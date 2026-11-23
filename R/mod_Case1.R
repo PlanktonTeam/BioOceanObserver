@@ -7,192 +7,91 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
+imagesList <- c(
+  "www/Noctiluca/Picture1.png",
+  "www/Noctiluca/Picture2.png",
+  "www/Noctiluca/Picture3.png",
+  "www/Noctiluca/Picture4.png"
+)
+captionsList <- list(
+  tagList("Figure 1: A ", tags$i("Noctiluca"), "cell"),
+  tagList("Figure 2: Showing the changing range of ", tags$i("Noctiluca")),
+  tagList("Figure 3: Increasing abundance at Maria Island"),
+  tagList("Figure 4: Model output showing dependence on food availability")
+)
+
 mod_Case1_ui <- function(id) {
   ns <- NS(id)
   tagList(
     shiny::fluidPage(
-      #shiny::br(),
-      #shiny::h2("Case Study 1 - Noctiluca"),
-      #shiny::br(),
-      # Wrap your plot inside a clickable action button element
-
-      # Main content container
       tags$div(
         style = "padding: 10px; line-height: 1.6; font-size: 16px; color: #333;",
-
-        # =========================================================================
-        # THE FLOATING CONTAINER (Sits in top right corner)
-        # =========================================================================
+        #fCaseHeader(tagList("Case Study 1: ", tags$i("Noctiluca"))),
         tags$div(
-          style = "
-        float: right; 
-        width: 600px;           /* Adjust width to control how much space it takes up */
-        margin-left: 25px;      /* Creates a buffer zone so text doesn't touch the box */
-        margin-bottom: 20px;    /* Buffer zone below the container */
-        background-color: #fcfcfc; 
-        border: 1px solid #ddd;
-        border-radius: 12px; 
-        padding: 15px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      ",
-
-          # The Scrollable Image Box inside the floating container
-          tags$div(
-            style = "
-          display: flex; 
-          overflow-x: auto; 
-          scroll-snap-type: x mandatory; 
-          gap: 15px; 
-          padding-bottom: 10px;
-          -webkit-overflow-scrolling: touch;
-        ",
-
-            tags$figure(
-              style = "scroll-snap-align: start; flex-shrink: 0; margin: 0; text-align: center; width: 100%;",
-              tags$img(
-                src = "www/csm_Zooplankton.png",
-                style = "max-height: 250px; border-radius: 6px;"
-              ),
-              tags$figcaption(
-                style = "margin-top: 8px; font-size: 13px; font-weight: bold; color: #555;",
-                "Figure 1: Zooplankton"
-              )
-            ),
-            tags$figure(
-              style = "scroll-snap-align: start; flex-shrink: 0; margin: 0; text-align: center; width: 100%;",
-              tags$img(
-                src = "www/csm_Larval_Fish.png",
-                style = "max-height: 250px; border-radius: 6px;"
-              ),
-              tags$figcaption(
-                style = "margin-top: 8px; font-size: 13px; font-weight: bold; color: #555;",
-                "Figure 1: Larval Fish"
-              )
-            ),
-            tags$figure(
-              style = "scroll-snap-align: start; flex-shrink: 0; margin: 0; text-align: center; width: 100%;",
-              tags$img(
-                src = "www/csm_Phytoplankton.png",
-                style = "max-height: 250px; border-radius: 6px;"
-              ),
-              tags$figcaption(
-                style = "margin-top: 8px; font-size: 13px; font-weight: bold; color: #555;",
-                "Figure 2: Phytoplankton"
-              )
-            )
-          ),
-
-          # -----------------------------------------------------------------------
-          # SIDE-BY-SIDE BUTTON CONTAINER
-          # -----------------------------------------------------------------------
-          tags$div(
-            style = "display: flex; gap: 10px; width: 100%;",
-
-            # Original View Gallery Button
-            actionButton(
-              inputId = ns("view_images"),
-              "Open Image Gallery",
-              class = "btn-primary btn-lg"
-            ),
-
-            # New Download Image Button
-            downloadButton(
-              outputId = "download_btn",
-              label = "Download",
-              class = "btn-success",
-              style = "flex: 1;"
-            )
+          #style = "display: flex; gap: 10px; width: 100%;",
+          actionButton(
+            inputId = ns("view_images"),
+            "Open Image Gallery",
+            class = "btn-default"
           )
         ),
-
-        # =========================================================================
-        # THE WRAPPING TEXT (Flows around the floating container)
-        # =========================================================================
-        tags$h3("Introduction", style = "margin-top: 0;"),
-
-        tags$p(
-          "This paragraph starts at the very top of the page. Because the image box container on the right is set to float, 
-    this text will fill up the remaining space on the left side of the screen. As you add more details, observations, and data discussions, 
-    the sentences will perfectly conform to the dimensions of the container. This layout mimics standard editorial structures commonly 
-    seen in professional data reports or news articles."
+        fCaseImageBox(
+          images = imagesList,
+          captions = captionsList
         ),
-
-        tags$h3("Findings", style = "margin-top: 0;"),
-
-        tags$p(
-          "You can discuss the methodology here. For instance, the metrics captured in the figures on the right illustrate our core 
-    telemetry data over the last fiscal quarter. Users can interact directly with the card element by scrolling horizontally to see multiple
-     plots, or click the action button integrated at the base of the card to pull reports. The fluid layout ensures that everything stays 
-     tightly bound together without breaking your typography structure."
+        shiny::h3("Introduction", style = "margin-top: 0;"),
+        shiny::HTML(
+          "<i>Noctiluca scintillans</i> is a large dinoflagellate that is conspicuous due to spectacular bioluminescence and red tide events. 
+          It has very limited ichthyotoxicity and is not normally considered a harmful algae. <i>Noctiluca</i> is phagotrophic, meaning it 
+          gets food by engulfing solid particles, i.e. diatoms, instead of absorbing nutrients or photosynthesising. "
         ),
-
-        tags$h3("Implications", style = "margin-top: 0;"),
-
-        tags$p(
-          "You can discuss the methodology here. For instance, the metrics captured in the figures on the right illustrate our core 
-    telemetry data over the last fiscal quarter. Users can interact directly with the card element by scrolling horizontally to see multiple
-     plots, or click the action button integrated at the base of the card to pull reports. The fluid layout ensures that everything stays 
-     tightly bound together without breaking your typography structure."
+        shiny::br(),
+        shiny::br(),
+        shiny::HTML(
+          "<i>Noctiluca</i> was first reported in Australia in 1860 in Sydney Harbour and despite extensive sampling through 1950 - 1980s 
+        <i>Noctiluca</i> was only found in a few locations.Therefore, before the 1990s, <i>Noctiluca</i> appeared to be a rare and ephemeral species in 
+        warmer waters of Australia."
         ),
-
-        tags$h3("References", style = "margin-top: 0;"),
-
-        tags$ul(
-          style = "margin-left: 20px; margin-bottom: 15px;", # Indents the bullets nicely
-
-          tags$li("First reference"),
-          tags$li("Second reference"),
-          tags$li("Third reference"),
+        shiny::h3("Findings", style = "margin-top: 0;"),
+        shiny::HTML(
+          "In the 1990s, <i>Noctiluca</i> expanded its distribution into southern NSW and Moreton Bay. It was first observed in Tasmania in 1994, 
+          apparently carried by the East Australian Current, and in 2013 the SOCPR survey recorded the most southerly record globally at 45<sup>o</sup>S."
+        ),
+        shiny::br(),
+        shiny::br(),
+        shiny::HTML(
+          "<i>Noctiluca</i> has now established overwintering populations in Tasmania as shown by a timeseries of abundances from Maria Island 
+        National Reference Station, although abundances through the winter months remain low."
+        ),
+        shiny::h3("Implications", style = "margin-top: 0;"),
+        shiny::HTML(
+          "While <i>Noctiluca</i> blooms are largely driven by prey availability, these seasonal responses indicate that temperature plays an important 
+          role in distribution. Temperature is an important driver but <i>Noctiluca's</i> preferred temperature range ( ~10 - 23<sup>o</sup>C) encompasses 
+          Australia’s temperate climate. While <i>Noctiluca</i> in Tasmania favour summer temperatures, improved food availability is likely 
+          to maintain its occurrence throughout the rest of the year.   "
+        ),
+        shiny::HTML(
+          "<h3>Further reading</h3>
+          <ul>
+          <li>McLeod, D. J., Hallegraeff, G. M., Hosie, G. W., & Richardson, A. J. (2012). Climate-driven range expansion of the red-tide dinoflagellate <i>Noctiluca scintillans</i> into the Southern Ocean. Journal of Plankton Research, 34(4), 332-337. <a href = http://dx.doi.org/10.1093/plankt/fbr112 target = _blank> Website</a>.</li>
+            <li>Hallegraeff G, Davies C, Rochester W. (2020) Range expansion of the red tide dinoflagellate Noctiluca scintillans. In Richardson A.J, Eriksen R, Moltmann T, Hodgson-Johnston I, Wallis J.R. (Eds). State and Trends of Australia’s Ocean Report. <a href = http://dx.doi.org/10.26198/5e16ad2e49e85 target = _blank> Website</a>.</li>
+            <li>Hallegraeff, G. M., Albinsson, L., Dowdney, J., Holmes, A. K., Mansour, P., & Seger, A. (2019). Prey selection, environmental tolerances and ichthyotoxicity by the red-tide dinoflagellate Noctiluca scintillans cultured from Tasmanian waters. Journal of Plankton Research, 41, 407-418. <a href = https://doi.org/10.1093/plankt/fbz037 target = _blank> Website</a>.</li>
+            </ul>"
         )
       )
     )
   )
 }
 
-
 #' Case Study 1 Server Function
 #'
 #' @noRd
 mod_Case1_server <- function(id) {
   moduleServer(id, function(input, output, session) {
-    observeEvent(input$view_images, {
-      showModal(modalDialog(
-        title = "Scroll Through Gallery",
-        size = "l", # Large size modal window
-        easyClose = TRUE, # Click outside to close
-
-        # Custom CSS container allowing smooth, horizontal scrolling for overflow images
-        tags$div(
-          style = "display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 15px; padding-bottom: 10px;",
-
-          # Add your PNGs here (Make sure they live in your 'www/' folder)
-          tags$img(
-            src = "www/csm_Zooplankton.png",
-            style = "max-height: 450px; scroll-snap-align: start; border-radius: 8px;"
-          ),
-          tags$img(
-            src = "www/csm_Phytoplankton.png",
-            style = "max-height: 450px; scroll-snap-align: start; border-radius: 8px;"
-          ),
-          tags$img(
-            src = "www/csm_Larval_Fish.png",
-            style = "max-height: 450px; scroll-snap-align: start; border-radius: 8px;"
-          )
-        ),
-
-        footer = modalButton("Close")
-      ))
+   
+   observeEvent(input$view_images, {
+      fShowImageGallery(imagesList, captions = captionsList)
     })
 
-    # Server logic for handling the download process
-    output$download_btn <- downloadHandler(
-      filename = function() {
-        "metric_figure.png"
-      },
-      content = function(file) {
-        # Path to the actual file on your server/computer
-        file.copy("www/image1.png", file)
-      }
-    )
   })
 }

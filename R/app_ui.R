@@ -142,6 +142,11 @@ app_ui <- function(request) {
         shiny::HTML("<i>Noctiluca</i> in South East Australia"),
         shiny::tagList(section_banner(shiny::HTML("<i>Noctiluca</i> in South East Australia")), 
         mod_Case1_ui("Case1_1"))
+      ),
+      bslib::nav_panel(
+        shiny::HTML("<i>Trichodesmium</i> on the Great Barrier Reef"),
+        shiny::tagList(section_banner(shiny::HTML("<i>Trichodesmium</i> on the Great Barrier Reef")), 
+        mod_Case2_ui("Case2_1"))
       )
     ),
 
